@@ -1,0 +1,14 @@
+# For more information do to https://github.com/Kentico/Home/wiki/CI-and-Automation-Guidelines
+
+name: "Build"   # Represents the name of the whole action.
+on:   # Specifies the section where we describe our build triggers.
+  push: # The action runs with push.
+  pull_request: # The action runs with a pull request.
+  schedule: # Specifies the section where we describe the schedule of running the action.
+    - cron: '0 18 * * 1' # The CRON expression describes when to run the action.
+jobs: # Specifies the section where we describe our jobs.
+  Build: # Specific job section.
+    runs-on: ubuntu-latest   # Describes the environment.
+    steps: # Specifies the section where we describe the job's steps.
+    - name: Output some string
+      run: echo "Set some actual CI steps"
