@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Migration.Toolkit.Common\Migration.Toolkit.Common.csproj" />
+      <ProjectReference Include="..\Migration.Toolkit.Core\Migration.Toolkit.Core.csproj" />
+      <ProjectReference Include="..\Migration.Toolkit.KX13\Migration.Toolkit.KX13.csproj" />
+      <ProjectReference Include="..\Migration.Toolkit.KXO\Migration.Toolkit.KXO.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="appsettings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="appsettings.local.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+</Project>
