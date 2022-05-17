@@ -3,7 +3,7 @@ using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.KXO.Models;
 
-namespace Migration.Toolkit.Core.MigratePageTypesCommand;
+namespace Migration.Toolkit.Core.MigratePageTypes;
 
 public class CmsClassMapper : IEntityMapper<KX13.Models.CmsClass, KXO.Models.CmsClass>
 {

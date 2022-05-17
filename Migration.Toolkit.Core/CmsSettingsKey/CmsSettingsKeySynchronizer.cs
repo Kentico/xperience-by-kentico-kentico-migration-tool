@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Configuration;
-using Migration.Toolkit.Core.MigrateSettingKeysCommand;
+using Migration.Toolkit.Core.MigrateSettingKeys;
 using Migration.Toolkit.Core.Services;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KXO.Context;

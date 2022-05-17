@@ -5,7 +5,7 @@ using Migration.Toolkit.Core.Configuration;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KXO.Context;
 
-namespace Migration.Toolkit.Core.MigratePageTypesCommand;
+namespace Migration.Toolkit.Core.MigratePageTypes;
 
 public class PageTypeSynchronizer: SynchronizerBase<Migration.Toolkit.KX13.Models.CmsClass, Migration.Toolkit.KXO.Models.CmsClass, string>, ISynchronizer<Migration.Toolkit.KX13.Models.CmsClass,Migration.Toolkit.KXO.Models.CmsClass>
 {

@@ -1,13 +1,15 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using MediatR;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Core;
 using Migration.Toolkit.Core.Abstractions;
+using Migration.Toolkit.Core.Commands;
 using Migration.Toolkit.Core.Configuration;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigratePageTypesCommand;
-using Migration.Toolkit.Core.MigrateSettingKeysCommand;
+using Migration.Toolkit.Core.MigratePageTypes;
+using Migration.Toolkit.Core.MigrateSettingKeys;
 using Migration.Toolkit.KX13;
 using Migration.Toolkit.KX13.Models;
 using Migration.Toolkit.KXO;
@@ -75,34 +77,32 @@ foreach (var (k, v) in globalConfiguration.SiteIdMapping)
     }
 }
 
+var mediatr = scope.ServiceProvider.GetRequiredService<IMediator>();
+
 switch (args.Length)
 {
     case 1 when args[0].IsIn("help", "h"):
-        WriteCommandDesc($"starts migration of {Green("Page types")}", $"migrate --{IMigratePageTypesCommand.Moniker}");
-        WriteCommandDesc($"starts migration of {Green("Setting keys")}", $"migrate --{IMigrateSettingKeysCommand.Moniker}");
+        WriteCommandDesc($"starts migration of {Green("Page types")}", $"migrate --{MigratePageTypesCommand.Moniker}");
+        WriteCommandDesc($"starts migration of {Green("Setting keys")}", $"migrate --{MigrateSettingKeysCommand.Moniker}");
         break;
     
-    case 2 when args[0] == $"migrate" && args[1] == $"--{IMigratePageTypesCommand.Moniker}":
+    case 2 when args[0] == $"migrate" && args[1] == $"--{MigratePageTypesCommand.Moniker}":
     {
-        ICommand command = scope.ServiceProvider.GetRequiredService<MigratePageTypesCommand>();
-        command.Execute();
-        
+        await mediatr.Send(new MigratePageTypesCommand());
         logger.LogInformation("Finished!");
         break;
     }
 
-    case 2 when args[0] == $"migrate" && args[1] == $"--{IMigrateSettingKeysCommand.Moniker}":
+    case 2 when args[0] == $"migrate" && args[1] == $"--{MigrateSettingKeysCommand.Moniker}":
     {
-        ICommand command = scope.ServiceProvider.GetRequiredService<MigrateSettingKeysCommand>();
-        command.Execute();
-        
+        await mediatr.Send(new MigrateSettingKeysCommand());
         logger.LogInformation("Finished!");
         break;
     }
 
     default:
         logger.LogError($"Invalid arguments, for help call with command {Yellow("help")}, usable commands:");
-        WriteCommandDesc($"starts migration of {Green("Page types")}", $"migrate --{IMigratePageTypesCommand.Moniker}");
-        WriteCommandDesc($"starts migration of {Green("Setting keys")}", $"migrate --{IMigrateSettingKeysCommand.Moniker}");
+        WriteCommandDesc($"starts migration of {Green("Page types")}", $"migrate --{MigratePageTypesCommand.Moniker}");
+        WriteCommandDesc($"starts migration of {Green("Setting keys")}", $"migrate --{MigrateSettingKeysCommand.Moniker}");
         break;
 };

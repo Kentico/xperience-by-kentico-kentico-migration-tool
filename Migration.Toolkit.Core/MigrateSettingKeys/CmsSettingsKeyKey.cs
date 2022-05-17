@@ -1,4 +1,4 @@
-namespace Migration.Toolkit.Core.MigrateSettingKeysCommand;
+namespace Migration.Toolkit.Core.MigrateSettingKeys;
 
 public record CmsSettingsKeyKey(string KeyName, int? SiteId, Guid KeyGuid)
 {

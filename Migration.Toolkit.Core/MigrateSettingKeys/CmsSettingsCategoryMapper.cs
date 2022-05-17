@@ -3,7 +3,7 @@ using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.KX13.Models;
 
-namespace Migration.Toolkit.Core.MigrateSettingKeysCommand;
+namespace Migration.Toolkit.Core.MigrateSettingKeys;
 
 public class CmsSettingsCategoryMapper : IEntityMapper<Migration.Toolkit.KX13.Models.CmsSettingsCategory, Migration.Toolkit.KXO.Models.CmsSettingsCategory>
 {

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Core.Abstractions;
@@ -7,18 +8,18 @@ using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KX13.Models;
 using Migration.Toolkit.KXO.Context;
 
-namespace Migration.Toolkit.Core.MigratePageTypesCommand;
+namespace Migration.Toolkit.Core.MigratePageTypes;
 
-public class MigratePageTypesCommand: IMigratePageTypesCommand
+public class MigratePageTypesCommandHandler: IRequestHandler<Commands.MigratePageTypesCommand, MigratePageTypesResult>
 {
-    private readonly ILogger<MigratePageTypesCommand> _logger;
+    private readonly ILogger<MigratePageTypesCommandHandler> _logger;
     private readonly IEntityMapper<CmsClass, KXO.Models.CmsClass> _mapper;
     private readonly EntityConfigurations _entityConfigurations;
     private readonly IDbContextFactory<KxoContext> _kxoContextFactory;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
 
-    public MigratePageTypesCommand(
-        ILogger<MigratePageTypesCommand> logger,
+    public MigratePageTypesCommandHandler(
+        ILogger<MigratePageTypesCommandHandler> logger,
         IEntityMapper<KX13.Models.CmsClass, KXO.Models.CmsClass> mapper,
         EntityConfigurations entityConfigurations,
         IDbContextFactory<KXO.Context.KxoContext> kxoContextFactory,
@@ -30,8 +31,8 @@ public class MigratePageTypesCommand: IMigratePageTypesCommand
         _kxoContextFactory = kxoContextFactory;
         _kx13ContextFactory = kx13ContextFactory;
     }
-    
-    public void Execute()
+
+    public async Task<MigratePageTypesResult> Handle(Commands.MigratePageTypesCommand request, CancellationToken cancellationToken)
     {
         var sw = Stopwatch.StartNew();
         
@@ -76,5 +77,7 @@ public class MigratePageTypesCommand: IMigratePageTypesCommand
         }
         
         _logger.LogInformation("Finished: {took}", sw.Elapsed);
+
+        return new MigratePageTypesResult();
     }
 }

@@ -1,12 +1,14 @@
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.CmsResource;
 using Migration.Toolkit.Core.CmsSettingsKey;
 using Migration.Toolkit.Core.CmsSite;
+using Migration.Toolkit.Core.Commands;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigratePageTypesCommand;
-using Migration.Toolkit.Core.MigrateSettingKeysCommand;
+using Migration.Toolkit.Core.MigratePageTypes;
+using Migration.Toolkit.Core.MigrateSettingKeys;
 using Migration.Toolkit.Core.Services;
 
 namespace Migration.Toolkit.Core;
@@ -30,18 +32,20 @@ public static class DependencyInjectionExtensions
 
 
         // page type synchronizer
-        services.AddTransient<MigratePageTypesCommand.MigratePageTypesCommand>();
+        services.AddTransient<MigratePageTypesCommandHandler>();
         services.AddTransient<IEntityMapper<Migration.Toolkit.KX13.Models.CmsClass, Migration.Toolkit.KXO.Models.CmsClass>, CmsClassMapper>();
         // TODO tk: 2022-05-17 rem
         // services.AddTransient<ISynchronizer<Migration.Toolkit.KX13.Models.CmsClass, Migration.Toolkit.KXO.Models.CmsClass>, PageTypeSynchronizer>();
         
         // setting keys migrate command
-        services.AddTransient<MigrateSettingKeysCommand.MigrateSettingKeysCommand>();
+        services.AddTransient<MigrateSettingKeysCommandHandler>();
         services.AddTransient<IEntityMapper<Migration.Toolkit.KX13.Models.CmsSettingsCategory, Migration.Toolkit.KXO.Models.CmsSettingsCategory>, CmsSettingsCategoryMapper>();
         
         // cms resource
         services.AddTransient<IEntityMapper<Migration.Toolkit.KX13.Models.CmsResource, Migration.Toolkit.KXO.Models.CmsResource>, CmsResourceMapper>();
-        
+
+        services.AddMediatR(typeof(DependencyInjectionExtensions));
+            
         return services;
     }
 }
