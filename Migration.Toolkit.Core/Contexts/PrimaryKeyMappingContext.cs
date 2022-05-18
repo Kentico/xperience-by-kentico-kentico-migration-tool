@@ -15,7 +15,7 @@ public class PrimaryKeyMappingContext
         _logger = logger;
     }
 
-    public void SetMapping<T>(Expression<Func<T, object>> keyNameSelector, int sourceId, int targetId)
+    public void SetMapping<T>(Expression<Func<T, object>> keyNameSelector, int sourceId, int targetId) 
     {
         Debug.Assert(sourceId > 0, "sourceId > 0");
         Debug.Assert(targetId > 0, "targetId > 0");

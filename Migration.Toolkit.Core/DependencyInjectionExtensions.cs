@@ -9,6 +9,7 @@ using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigratePageTypes;
 using Migration.Toolkit.Core.MigrateSettingKeys;
 using Migration.Toolkit.Core.MigrateUsers;
+using Migration.Toolkit.Core.MigrationProtocol;
 
 namespace Migration.Toolkit.Core;
 
@@ -16,6 +17,8 @@ public static class DependencyInjectionExtensions
 {
     public static IServiceCollection UseToolkitCore(this IServiceCollection services)
     {
+        services.AddSingleton<IMigrationProtocol, NullMigrationProtocol>();
+        
         // TODO tk: 2022-05-17 rem
         // services.AddTransient<IPkMappingService, PkMappingService>();
         services.AddScoped<PrimaryKeyMappingContext>();
