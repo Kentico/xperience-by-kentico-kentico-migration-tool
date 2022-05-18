@@ -64,7 +64,7 @@ void WriteCommandDesc(string desc, string commandMoniker) {
     Console.WriteLine($"{Yellow(commandMoniker)}: {desc}");
 }
 
-var mappingContext = scope.ServiceProvider.GetRequiredService<PkMappingContext>();
+var mappingContext = scope.ServiceProvider.GetRequiredService<PrimaryKeyMappingContext>();
 var globalConfiguration = scope.ServiceProvider.GetRequiredService<GlobalConfiguration>();
 foreach (var (k, v) in globalConfiguration.SiteIdMapping)
 {
@@ -77,6 +77,7 @@ foreach (var (k, v) in globalConfiguration.SiteIdMapping)
 void PrintCommandDescriptions()
 {
     WriteCommandDesc($"starts migration of {Green(MigratePageTypesCommand.MonikerFriendly)}", $"migrate --{MigratePageTypesCommand.Moniker}");
+    WriteCommandDesc($"starts migration of {Green(MigratePagesCommand.MonikerFriendly)}", $"migrate --{MigratePagesCommand.Moniker}");
     WriteCommandDesc($"starts migration of {Green(MigrateSettingKeysCommand.MonikerFriendly)}", $"migrate --{MigrateSettingKeysCommand.Moniker}");
     WriteCommandDesc($"starts migration of {Green(MigrateContactGroupsCommand.MonikerFriendly)}", $"migrate --{MigrateContactGroupsCommand.Moniker}");
     WriteCommandDesc($"starts migration of {Green(MigrateContactManagementCommand.MonikerFriendly)}", $"migrate --{MigrateContactManagementCommand.Moniker}");
@@ -152,6 +153,13 @@ switch (args.Length)
             break;
         }
         
+        if (args[0] == "migrate" && args[1] == $"--{MigratePagesCommand.Moniker}")
+        {
+            await mediatr.Send(new MigratePagesCommand(dry));
+            logger.LogInformation("Finished!");
+            break;
+        }
+
         if (args[0] == "migrate" && args[1] == $"--{MigrateSettingKeysCommand.Moniker}")
         {
             await mediatr.Send(new MigrateSettingKeysCommand(dry));

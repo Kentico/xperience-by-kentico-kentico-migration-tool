@@ -5,12 +5,12 @@ using Migration.Toolkit.Common;
 
 namespace Migration.Toolkit.Core.Contexts;
 
-public class PkMappingContext
+public class PrimaryKeyMappingContext
 {
     private Dictionary<string, int> _mappings = new(); 
-    private readonly ILogger<PkMappingContext> _logger;
+    private readonly ILogger<PrimaryKeyMappingContext> _logger;
 
-    public PkMappingContext(ILogger<PkMappingContext> logger)
+    public PrimaryKeyMappingContext(ILogger<PrimaryKeyMappingContext> logger)
     {
         _logger = logger;
     }

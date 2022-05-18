@@ -7,12 +7,12 @@ namespace Migration.Toolkit.Core.MigrateSettingKeys;
 public class CmsSettingsKeyMapper : IEntityMapper<Migration.Toolkit.KX13.Models.CmsSettingsKey, Migration.Toolkit.KXO.Models.CmsSettingsKey>
 {
     private readonly ILogger<CmsSettingsKeyMapper> _logger;
-    private readonly PkMappingContext _pkMappingContext;
+    private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
 
-    public CmsSettingsKeyMapper(ILogger<CmsSettingsKeyMapper> logger, PkMappingContext pkMappingContext)
+    public CmsSettingsKeyMapper(ILogger<CmsSettingsKeyMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext)
     {
         _logger = logger;
-        _pkMappingContext = pkMappingContext;
+        _primaryKeyMappingContext = primaryKeyMappingContext;
     }
 
     public ModelMappingResult<Migration.Toolkit.KXO.Models.CmsSettingsKey> Map(Migration.Toolkit.KX13.Models.CmsSettingsKey? source, Migration.Toolkit.KXO.Models.CmsSettingsKey? target)
@@ -45,7 +45,7 @@ public class CmsSettingsKeyMapper : IEntityMapper<Migration.Toolkit.KX13.Models.
         target.KeyValue = source.KeyValue;
         target.KeyType = source.KeyType;
         target.KeyCategoryId = source.KeyCategoryId;
-        target.SiteId = _pkMappingContext.MapFromSourceNonRequired<KX13.Models.CmsSite>(s => s.SiteId, source.SiteId);
+        target.SiteId = _primaryKeyMappingContext.MapFromSourceNonRequired<KX13.Models.CmsSite>(s => s.SiteId, source.SiteId);
         target.KeyGuid = source.KeyGuid;
         target.KeyLastModified = source.KeyLastModified;
         target.KeyOrder = source.KeyOrder;

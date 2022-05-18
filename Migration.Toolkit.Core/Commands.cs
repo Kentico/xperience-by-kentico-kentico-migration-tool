@@ -39,6 +39,12 @@ public record MigratePageTypesCommand(bool Dry): IRequest<MigratePageTypesResult
     public static string MonikerFriendly => "Page types";
 }
 
+public record MigratePagesCommand(bool Dry): IRequest<GenericCommandResult>
+{
+    public static string Moniker => "pages";
+    public static string MonikerFriendly => "Pages";
+}
+
 public record MigrateSettingKeysCommand(bool Dry) : IRequest<MigrateSettingsKeysResult>
 {
     public static string Moniker => "settings-keys";

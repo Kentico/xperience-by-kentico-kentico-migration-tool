@@ -8,12 +8,12 @@ namespace Migration.Toolkit.Core.MigratePageTypes;
 public class CmsClassMapper : IEntityMapper<KX13.Models.CmsClass, KXO.Models.CmsClass>
 {
     private readonly ILogger<CmsClass> _logger;
-    private readonly PkMappingContext _pkMappingContext;
+    private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
 
-    public CmsClassMapper(ILogger<CmsClass> logger, PkMappingContext pkMappingContext)
+    public CmsClassMapper(ILogger<CmsClass> logger, PrimaryKeyMappingContext primaryKeyMappingContext)
     {
         _logger = logger;
-        _pkMappingContext = pkMappingContext;
+        _primaryKeyMappingContext = primaryKeyMappingContext;
     }
     
     public ModelMappingResult<CmsClass> Map(KX13.Models.CmsClass? source, CmsClass? target)

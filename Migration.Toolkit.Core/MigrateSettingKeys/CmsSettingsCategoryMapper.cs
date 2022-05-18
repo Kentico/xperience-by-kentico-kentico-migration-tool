@@ -8,12 +8,12 @@ namespace Migration.Toolkit.Core.MigrateSettingKeys;
 public class CmsSettingsCategoryMapper : IEntityMapper<Migration.Toolkit.KX13.Models.CmsSettingsCategory, Migration.Toolkit.KXO.Models.CmsSettingsCategory>
 {
     private readonly ILogger<CmsSettingsCategoryMapper> _logger;
-    private readonly PkMappingContext _pkMappingContext;
+    private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
 
-    public CmsSettingsCategoryMapper(ILogger<CmsSettingsCategoryMapper> logger, PkMappingContext pkMappingContext)
+    public CmsSettingsCategoryMapper(ILogger<CmsSettingsCategoryMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext)
     {
         _logger = logger;
-        _pkMappingContext = pkMappingContext;
+        _primaryKeyMappingContext = primaryKeyMappingContext;
     }
 
     public ModelMappingResult<Migration.Toolkit.KXO.Models.CmsSettingsCategory> Map(Migration.Toolkit.KX13.Models.CmsSettingsCategory? source, Migration.Toolkit.KXO.Models.CmsSettingsCategory? target)
@@ -43,14 +43,14 @@ public class CmsSettingsCategoryMapper : IEntityMapper<Migration.Toolkit.KX13.Mo
         target.CategoryDisplayName = source.CategoryDisplayName;
         target.CategoryOrder = source.CategoryOrder;
         target.CategoryName = source.CategoryName;
-        target.CategoryParentId = _pkMappingContext.MapFromSourceNonRequired<CmsCategory>(c => c.CategoryId, source.CategoryParentId);
+        target.CategoryParentId = _primaryKeyMappingContext.MapFromSourceNonRequired<CmsCategory>(c => c.CategoryId, source.CategoryParentId);
         target.CategoryIdpath = source.CategoryIdpath;
         target.CategoryLevel = source.CategoryLevel;
         target.CategoryChildCount = source.CategoryChildCount;
         target.CategoryIconPath = source.CategoryIconPath;
         target.CategoryIsGroup = source.CategoryIsGroup;
         target.CategoryIsCustom = source.CategoryIsCustom;
-        target.CategoryResourceId = _pkMappingContext.MapFromSourceNonRequired<KX13.Models.CmsResource>(r => r.ResourceId, source.CategoryResourceId);
+        target.CategoryResourceId = _primaryKeyMappingContext.MapFromSourceNonRequired<KX13.Models.CmsResource>(r => r.ResourceId, source.CategoryResourceId);
         
         return new ModelMappingSuccess<Migration.Toolkit.KXO.Models.CmsSettingsCategory>(target, newInstance);
     }

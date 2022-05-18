@@ -18,7 +18,7 @@ public static class DependencyInjectionExtensions
     {
         // TODO tk: 2022-05-17 rem
         // services.AddTransient<IPkMappingService, PkMappingService>();
-        services.AddScoped<PkMappingContext>();
+        services.AddScoped<PrimaryKeyMappingContext>();
         
         services.AddTransient<IDataEqualityComparer<KX13.Models.CmsSite, KXO.Models.CmsSite>, CmsSiteEqualityComparer>();
         services.AddTransient<IEntityMapper<Migration.Toolkit.KX13.Models.CmsSite, Migration.Toolkit.KXO.Models.CmsSite>, CmsSiteModelMapper>();

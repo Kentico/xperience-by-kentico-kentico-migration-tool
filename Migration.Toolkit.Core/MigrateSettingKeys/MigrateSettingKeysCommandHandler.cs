@@ -17,7 +17,7 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
     private readonly EntityConfigurations _entityConfigurations;
     private readonly IDbContextFactory<KxoContext> _kxoContextFactory;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
-    private readonly PkMappingContext _pkMappingContext;
+    private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly GlobalConfiguration _globalConfiguration;
     private readonly IEntityMapper<KX13.Models.CmsSettingsKey, KXO.Models.CmsSettingsKey> _mapper;
     private readonly IEntityMapper<CmsSettingsCategory, KXO.Models.CmsSettingsCategory> _categoryMapper;
@@ -33,7 +33,7 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
         EntityConfigurations entityConfigurations,
         IDbContextFactory<KXO.Context.KxoContext> kxoContextFactory,
         IDbContextFactory<KX13.Context.KX13Context> kx13ContextFactory,
-        PkMappingContext pkMappingContext,
+        PrimaryKeyMappingContext primaryKeyMappingContext,
         GlobalConfiguration globalConfiguration
         )
     {
@@ -44,7 +44,7 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
         _entityConfigurations = entityConfigurations;
         _kxoContextFactory = kxoContextFactory;
         _kx13ContextFactory = kx13ContextFactory;
-        _pkMappingContext = pkMappingContext;
+        _primaryKeyMappingContext = primaryKeyMappingContext;
         _globalConfiguration = globalConfiguration;
         _kxoContext = _kxoContextFactory.CreateDbContext();
     }
@@ -81,7 +81,7 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
                         ? $"CmsResource: {cmsResource.ResourceName} was inserted."
                         : $"CmsResource: {cmsResource.ResourceName} was updated.");
 
-                    _pkMappingContext.SetMapping<KX13.Models.CmsResource>(r => r.ResourceId, sourceResource.ResourceId, cmsResource.ResourceId);
+                    _primaryKeyMappingContext.SetMapping<KX13.Models.CmsResource>(r => r.ResourceId, sourceResource.ResourceId, cmsResource.ResourceId);
 
                     return;
                 default:
@@ -122,7 +122,7 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
 
                     if (cmsSettingsCategory.CategoryResourceId is int categoryResourceId)
                     {
-                        result.CategoryResourceId = _pkMappingContext.MapFromSource<KX13.Models.CmsResource>(r => r.ResourceId, categoryResourceId);
+                        result.CategoryResourceId = _primaryKeyMappingContext.MapFromSource<KX13.Models.CmsResource>(r => r.ResourceId, categoryResourceId);
                     }
                     
                     if (newInstance)
@@ -135,7 +135,7 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
                     }
 
                     await _kxoContext.SaveChangesAsync(cancellationToken);
-                    _pkMappingContext.SetMapping<KX13.Models.CmsCategory>(c => c.CategoryId, cmsSettingsCategory.CategoryId, result.CategoryId);
+                    _primaryKeyMappingContext.SetMapping<KX13.Models.CmsCategory>(c => c.CategoryId, cmsSettingsCategory.CategoryId, result.CategoryId);
 
                     _logger.LogInformation(newInstance
                         ? $"CmsSettingsCategory: {result.CategoryName} was inserted."
@@ -167,7 +167,7 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
                     
                     if (cmsSettingsKey.KeyCategoryId is int sourceCategoryId)
                     {
-                        mapped.Item!.KeyCategoryId = _pkMappingContext.MapFromSource<KX13.Models.CmsCategory>(c => c.CategoryId, sourceCategoryId);
+                        mapped.Item!.KeyCategoryId = _primaryKeyMappingContext.MapFromSource<KX13.Models.CmsCategory>(c => c.CategoryId, sourceCategoryId);
                     }
                     
                     if (newInstance)

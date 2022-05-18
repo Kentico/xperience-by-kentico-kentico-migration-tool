@@ -45,7 +45,12 @@ public class MigratePageTypesCommandHandler: IRequestHandler<MigratePageTypesCom
         
         foreach (var cmsClassesDocumentType in cmsClassesDocumentTypes)
         {
-            if (cmsClassesDocumentType.ClassName == "CMS.Root") continue;
+            if (cmsClassesDocumentType.ClassName == "CMS.Root")
+            {
+                _logger.LogInformation(""); // TODO tk: 2022-05-18 log skip
+                continue;
+            }
+            
             // TODO tk: 2022-05-16 verify target schema
             var target = kxoContext.CmsClasses.FirstOrDefault(c => c.ClassName == cmsClassesDocumentType.ClassName && c.ClassIsDocumentType == true);
             var mapped = _mapper.Map(cmsClassesDocumentType, target);

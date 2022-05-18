@@ -16,7 +16,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
     private readonly IDbContextFactory<KxoContext> _kxoContextFactory;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
     private readonly IEntityMapper<CmsUser, KXO.Models.CmsUser> _userMapper;
-    private readonly PkMappingContext _pkMappingContext;
+    private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     
     private KxoContext _kxoContext;
 
@@ -25,14 +25,14 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
         IDbContextFactory<KXO.Context.KxoContext> kxoContextFactory,
         IDbContextFactory<KX13.Context.KX13Context> kx13ContextFactory,
         IEntityMapper<KX13.Models.CmsUser, KXO.Models.CmsUser> userMapper,
-        PkMappingContext pkMappingContext
+        PrimaryKeyMappingContext primaryKeyMappingContext
         )
     {
         _logger = logger;
         _kxoContextFactory = kxoContextFactory;
         _kx13ContextFactory = kx13ContextFactory;
         _userMapper = userMapper;
-        _pkMappingContext = pkMappingContext;
+        _primaryKeyMappingContext = primaryKeyMappingContext;
         _kxoContext = _kxoContextFactory.CreateDbContext();
     }
     
@@ -98,7 +98,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
                         continue;
                     }
 
-                    _pkMappingContext.SetMapping<KX13.Models.CmsUser>(r => r.UserId, kx13User.UserId, cmsUser.UserId);
+                    _primaryKeyMappingContext.SetMapping<KX13.Models.CmsUser>(r => r.UserId, kx13User.UserId, cmsUser.UserId);
 
                     break;
                 default:
