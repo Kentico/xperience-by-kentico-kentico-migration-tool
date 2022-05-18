@@ -5,11 +5,10 @@ using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.CmsResource;
 using Migration.Toolkit.Core.CmsSettingsKey;
 using Migration.Toolkit.Core.CmsSite;
-using Migration.Toolkit.Core.Commands;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigratePageTypes;
 using Migration.Toolkit.Core.MigrateSettingKeys;
-using Migration.Toolkit.Core.Services;
+using Migration.Toolkit.Core.MigrateUsers;
 
 namespace Migration.Toolkit.Core;
 
@@ -43,7 +42,12 @@ public static class DependencyInjectionExtensions
         
         // cms resource
         services.AddTransient<IEntityMapper<Migration.Toolkit.KX13.Models.CmsResource, Migration.Toolkit.KXO.Models.CmsResource>, CmsResourceMapper>();
-
+        
+        // cms user
+        services.AddTransient<IEntityMapper<KX13.Models.CmsUser, KXO.Models.CmsUser>, CmsUserMapper>();
+        services.AddTransient<MigrateUsersCommandHandler>();
+        
+        
         services.AddMediatR(typeof(DependencyInjectionExtensions));
             
         return services;

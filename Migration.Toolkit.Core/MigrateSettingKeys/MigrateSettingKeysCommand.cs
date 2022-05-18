@@ -11,7 +11,7 @@ using Migration.Toolkit.KXO.Context;
 
 namespace Migration.Toolkit.Core.MigrateSettingKeys;
 
-public class MigrateSettingKeysCommandHandler: IRequestHandler<Commands.MigrateSettingKeysCommand, MigrateSettingsKeysResult>
+public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKeysCommand, MigrateSettingsKeysResult>, IDisposable
 {
     private readonly ILogger<MigrateSettingKeysCommandHandler> _logger;
     private readonly EntityConfigurations _entityConfigurations;
@@ -22,6 +22,8 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<Commands.MigrateS
     private readonly IEntityMapper<KX13.Models.CmsSettingsKey, KXO.Models.CmsSettingsKey> _mapper;
     private readonly IEntityMapper<CmsSettingsCategory, KXO.Models.CmsSettingsCategory> _categoryMapper;
     private readonly IEntityMapper<KX13.Models.CmsResource, KXO.Models.CmsResource> _resourceMapper;
+    
+    private KxoContext _kxoContext;
 
     public MigrateSettingKeysCommandHandler(
         ILogger<MigrateSettingKeysCommandHandler> logger,
@@ -44,15 +46,16 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<Commands.MigrateS
         _kx13ContextFactory = kx13ContextFactory;
         _pkMappingContext = pkMappingContext;
         _globalConfiguration = globalConfiguration;
+        _kxoContext = _kxoContextFactory.CreateDbContext();
     }
    
-    private int? EnsureCmsResourceDependency(KX13.Models.CmsResource? sourceResource, KxoContext kxoContext)
+    private void EnsureCmsResourceDependency(KX13.Models.CmsResource? sourceResource)
     {
         if (sourceResource != null)
         {
             _logger.LogTrace("Creating dependency for {cmsSettingsCategory} on {cmsResourceString} in target instance", nameof(KX13.Models.CmsSettingsCategory), nameof(KX13.Models.CmsResource));
 
-            var targetResource = kxoContext.CmsResources.FirstOrDefault(r => r.ResourceName == sourceResource.ResourceName);
+            var targetResource = _kxoContext.CmsResources.FirstOrDefault(r => r.ResourceName == sourceResource.ResourceName);
 
             var mapped = _resourceMapper.Map(sourceResource, targetResource);
             
@@ -65,33 +68,33 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<Commands.MigrateS
                     
                     if (newInstance)
                     {
-                        kxoContext.CmsResources.Add(cmsResource);
-                        _logger.LogInformation($"CmsSettingsKey: {cmsResource.ResourceName} was inserted.");
+                        _kxoContext.CmsResources.Add(cmsResource);
                     }
                     else
                     {
-                        kxoContext.CmsResources.Update(cmsResource);
-                        _logger.LogInformation($"CmsSettingsKey: {cmsResource.ResourceName} was updated.");
+                        _kxoContext.CmsResources.Update(cmsResource);
                     }
 
-                    kxoContext.SaveChanges();
+                    _kxoContext.SaveChanges(); // TODO tk: 2022-05-18 context needs to be disposed/recreated after error
+
+                    _logger.LogInformation(newInstance
+                        ? $"CmsResource: {cmsResource.ResourceName} was inserted."
+                        : $"CmsResource: {cmsResource.ResourceName} was updated.");
 
                     _pkMappingContext.SetMapping<KX13.Models.CmsResource>(r => r.ResourceId, sourceResource.ResourceId, cmsResource.ResourceId);
-                    
-                    return cmsResource.ResourceId;
+
+                    return;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(mapped));
+                    // TODO tk: 2022-05-18 mapping failed but already logged, do something..
+                    break;
             }
         }
-        
-        return null;
     }
 
-    public async Task<MigrateSettingsKeysResult> Handle(Commands.MigrateSettingKeysCommand request, CancellationToken cancellationToken)
+    public async Task<MigrateSettingsKeysResult> Handle(MigrateSettingKeysCommand request, CancellationToken cancellationToken)
     {
         var sw = Stopwatch.StartNew();
-        using var kx13Context = _kx13ContextFactory.CreateDbContext();
-        using var kxoContext = _kxoContextFactory.CreateDbContext();
+        await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
         _logger.LogInformation("Selecting source CMS_SettingsCategory");
         var cmsSettingsCategories = kx13Context.CmsSettingsCategories
@@ -102,12 +105,12 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<Commands.MigrateS
 
         foreach (var cmsSettingsCategory in cmsSettingsCategories)
         {
-            _logger.LogInformation($"CmsSettingsCategory: {cmsSettingsCategory.CategoryName} starting.");
-            var target = kxoContext.CmsSettingsCategories.FirstOrDefault(k => k.CategoryName == cmsSettingsCategory.CategoryName);
+            _logger.LogInformation($"Migrating CmsSettingsCategory: {cmsSettingsCategory.CategoryName}");
+            var target = _kxoContext.CmsSettingsCategories.FirstOrDefault(k => k.CategoryName == cmsSettingsCategory.CategoryName);
             
             // check required dependencies
             _logger.LogTrace("Check {cmsSettingsCategory} dependency on {cmsResourceString}", nameof(KX13.Models.CmsSettingsCategory), nameof(KX13.Models.CmsResourceString));
-            EnsureCmsResourceDependency(cmsSettingsCategory.CategoryResource, kxoContext);
+            EnsureCmsResourceDependency(cmsSettingsCategory.CategoryResource);
             
             var mapped = _categoryMapper.Map(cmsSettingsCategory, target);
             mapped.LogResult(_logger);
@@ -124,17 +127,19 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<Commands.MigrateS
                     
                     if (newInstance)
                     {
-                        kxoContext.CmsSettingsCategories.Add(result);
-                        _logger.LogInformation($"CmsSettingsCategory: {result.CategoryName} was inserted.");
+                        _kxoContext.CmsSettingsCategories.Add(result);
                     }
                     else
                     {
-                        kxoContext.CmsSettingsCategories.Update(result);
-                        _logger.LogInformation($"CmsSettingsCategory: {result.CategoryName} was updated.");
+                        _kxoContext.CmsSettingsCategories.Update(result);
                     }
 
-                    kxoContext.SaveChanges();
+                    await _kxoContext.SaveChangesAsync(cancellationToken);
                     _pkMappingContext.SetMapping<KX13.Models.CmsCategory>(c => c.CategoryId, cmsSettingsCategory.CategoryId, result.CategoryId);
+
+                    _logger.LogInformation(newInstance
+                        ? $"CmsSettingsCategory: {result.CategoryName} was inserted."
+                        : $"CmsSettingsCategory: {result.CategoryName} was updated.");
 
                     break;
                 default:
@@ -150,7 +155,7 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<Commands.MigrateS
         
         foreach (var cmsSettingsKey in cmsSettingsKeys)
         {
-            var target = kxoContext.CmsSettingsKeys.FirstOrDefault(k => k.KeyName == cmsSettingsKey.KeyName && k.SiteId == cmsSettingsKey.SiteId);
+            var target = _kxoContext.CmsSettingsKeys.FirstOrDefault(k => k.KeyName == cmsSettingsKey.KeyName && k.SiteId == cmsSettingsKey.SiteId);
             var mapped = _mapper.Map(cmsSettingsKey, target);
 
             mapped.LogResult(_logger);
@@ -167,16 +172,19 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<Commands.MigrateS
                     
                     if (newInstance)
                     {
-                        kxoContext.CmsSettingsKeys.Add(cmsSettingsKeyResult);
-                        _logger.LogInformation($"CmsSettingsKey: {cmsSettingsKeyResult.KeyName} was inserted.");
+                        _kxoContext.CmsSettingsKeys.Add(cmsSettingsKeyResult);
                     }
                     else
                     {
-                        kxoContext.CmsSettingsKeys.Update(cmsSettingsKeyResult);
-                        _logger.LogInformation($"CmsSettingsKey: {cmsSettingsKeyResult.KeyName} was updated.");
+                        _kxoContext.CmsSettingsKeys.Update(cmsSettingsKeyResult);
                     }
 
-                    kxoContext.SaveChanges();
+                    await _kxoContext.SaveChangesAsync(cancellationToken); // TODO tk: 2022-05-18 context needs to be disposed/recreated after error
+
+                    _logger.LogInformation(newInstance
+                        ? $"CmsSettingsKey: {cmsSettingsKeyResult.KeyName} was inserted."
+                        : $"CmsSettingsKey: {cmsSettingsKeyResult.KeyName} was updated.");
+
                     // kxoContext.SaveChangesWithIdentityInsert<KXO.Models.CmsClass>();
                     break;
                 default:
@@ -187,5 +195,10 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<Commands.MigrateS
         _logger.LogInformation("Finished: {took}", sw.Elapsed);
 
         return new MigrateSettingsKeysResult();
+    }
+
+    public void Dispose()
+    {
+        _kxoContext.Dispose();
     }
 }

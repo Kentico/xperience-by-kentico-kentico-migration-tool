@@ -10,7 +10,7 @@ using Migration.Toolkit.KXO.Context;
 
 namespace Migration.Toolkit.Core.MigratePageTypes;
 
-public class MigratePageTypesCommandHandler: IRequestHandler<Commands.MigratePageTypesCommand, MigratePageTypesResult>
+public class MigratePageTypesCommandHandler: IRequestHandler<MigratePageTypesCommand, MigratePageTypesResult>
 {
     private readonly ILogger<MigratePageTypesCommandHandler> _logger;
     private readonly IEntityMapper<CmsClass, KXO.Models.CmsClass> _mapper;
@@ -32,12 +32,12 @@ public class MigratePageTypesCommandHandler: IRequestHandler<Commands.MigratePag
         _kx13ContextFactory = kx13ContextFactory;
     }
 
-    public async Task<MigratePageTypesResult> Handle(Commands.MigratePageTypesCommand request, CancellationToken cancellationToken)
+    public async Task<MigratePageTypesResult> Handle(MigratePageTypesCommand request, CancellationToken cancellationToken)
     {
         var sw = Stopwatch.StartNew();
-        
-        using var kx13Context = _kx13ContextFactory.CreateDbContext();
-        using var kxoContext = _kxoContextFactory.CreateDbContext();
+
+        await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
+        await using var kxoContext = await _kxoContextFactory.CreateDbContextAsync(cancellationToken); // TODO tk: 2022-05-18 context needs to be disposed/recreated after error
         
         _logger.LogInformation("Selecting source CMS_Classes");
         var cmsClassesDocumentTypes = kx13Context.CmsClasses.Where(x => x.ClassIsDocumentType).AsEnumerable();
@@ -60,15 +60,18 @@ public class MigratePageTypesCommandHandler: IRequestHandler<Commands.MigratePag
                     if (newInstance)
                     {
                         kxoContext.CmsClasses.Add(cmsClass);
-                        _logger.LogInformation($"CmsClass: {cmsClass.ClassName} was inserted.");
                     }
                     else
                     {
                         kxoContext.CmsClasses.Update(cmsClass);
-                        _logger.LogInformation($"CmsClass: {cmsClass.ClassName} was updated.");
                     }
 
-                    kxoContext.SaveChanges();
+                    await kxoContext.SaveChangesAsync(cancellationToken); // TODO tk: 2022-05-18 context needs to be disposed/recreated after error
+
+                    _logger.LogInformation(newInstance
+                        ? $"CmsClass: {cmsClass.ClassName} was inserted."
+                        : $"CmsClass: {cmsClass.ClassName} was updated.");
+
                     // kxoContext.SaveChangesWithIdentityInsert<KXO.Models.CmsClass>();
                     break;
                 default:
