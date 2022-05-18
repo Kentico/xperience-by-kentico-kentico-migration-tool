@@ -10,6 +10,16 @@ public class NullMigrationProtocol: IMigrationProtocol
     {
         // TODO tk: 2022-05-18 write to protocol that manual action needs to be done - HandbookReference is used to point into user handbook for further instructions
     }
+    
+    public void Warning<T>(HandbookReference handbookRef, T? entity)
+    {
+        // TODO tk: 2022-05-18 impl
+    }
+
+    public void Warning<TSource, TTarget>(HandbookReference handbookRef, TSource? source, TTarget? target)
+    {
+        // TODO tk: 2022-05-18 impl
+    }
 
     public void MappedTarget<TTarget>(ModelMappingResult<TTarget> mapped)
     {
@@ -36,7 +46,7 @@ public class NullMigrationProtocol: IMigrationProtocol
         // TODO tk: 2022-05-18 scoping of protocol
         return new DummyDisposable();
     }
-    
+
     private class DummyDisposable: IDisposable
     {
         public void Dispose() { }

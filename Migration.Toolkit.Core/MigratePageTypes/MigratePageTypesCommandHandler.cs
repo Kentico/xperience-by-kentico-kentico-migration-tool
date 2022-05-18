@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Configuration;
+using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KX13.Models;
 using Migration.Toolkit.KXO.Context;
@@ -17,19 +18,23 @@ public class MigratePageTypesCommandHandler: IRequestHandler<MigratePageTypesCom
     private readonly EntityConfigurations _entityConfigurations;
     private readonly IDbContextFactory<KxoContext> _kxoContextFactory;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
+    private readonly IMigrationProtocol _migrationProtocol;
 
     public MigratePageTypesCommandHandler(
         ILogger<MigratePageTypesCommandHandler> logger,
         IEntityMapper<KX13.Models.CmsClass, KXO.Models.CmsClass> mapper,
         EntityConfigurations entityConfigurations,
         IDbContextFactory<KXO.Context.KxoContext> kxoContextFactory,
-        IDbContextFactory<KX13.Context.KX13Context> kx13ContextFactory)
+        IDbContextFactory<KX13.Context.KX13Context> kx13ContextFactory,
+        IMigrationProtocol migrationProtocol
+        )
     {
         _logger = logger;
         _mapper = mapper;
         _entityConfigurations = entityConfigurations;
         _kxoContextFactory = kxoContextFactory;
         _kx13ContextFactory = kx13ContextFactory;
+        _migrationProtocol = migrationProtocol;
     }
 
     public async Task<MigratePageTypesResult> Handle(MigratePageTypesCommand request, CancellationToken cancellationToken)
@@ -43,18 +48,23 @@ public class MigratePageTypesCommandHandler: IRequestHandler<MigratePageTypesCom
         var cmsClassesDocumentTypes = kx13Context.CmsClasses.Where(x => x.ClassIsDocumentType).AsEnumerable();
         _logger.LogInformation("Selected source CMS_Classes, took: {took}", sw.Elapsed);
         
-        foreach (var cmsClassesDocumentType in cmsClassesDocumentTypes)
+        foreach (var kx13CmsClassesDocumentType in cmsClassesDocumentTypes)
         {
-            if (cmsClassesDocumentType.ClassName == "CMS.Root")
+            _migrationProtocol.FetchedSource(kx13CmsClassesDocumentType);
+            
+            if (kx13CmsClassesDocumentType.ClassName == "CMS.Root")
             {
+                _migrationProtocol.Warning(HandbookReferences.CmsClassCmsRootClassTypeSkip, kx13CmsClassesDocumentType);
                 _logger.LogInformation(""); // TODO tk: 2022-05-18 log skip
                 continue;
             }
             
             // TODO tk: 2022-05-16 verify target schema
-            var target = kxoContext.CmsClasses.FirstOrDefault(c => c.ClassName == cmsClassesDocumentType.ClassName && c.ClassIsDocumentType == true);
-            var mapped = _mapper.Map(cmsClassesDocumentType, target);
-
+            var kxoCmsClass = kxoContext.CmsClasses.FirstOrDefault(c => c.ClassName == kx13CmsClassesDocumentType.ClassName && c.ClassIsDocumentType == true);
+            _migrationProtocol.FetchedTarget(kxoCmsClass);
+            
+            var mapped = _mapper.Map(kx13CmsClassesDocumentType, kxoCmsClass);
+            _migrationProtocol.MappedTarget(mapped);
             mapped.LogResult(_logger);
             
             switch (mapped)
@@ -73,6 +83,8 @@ public class MigratePageTypesCommandHandler: IRequestHandler<MigratePageTypesCom
 
                     await kxoContext.SaveChangesAsync(cancellationToken); // TODO tk: 2022-05-18 context needs to be disposed/recreated after error
 
+                    _migrationProtocol.Success(kx13CmsClassesDocumentType, kxoCmsClass, mapped);
+                    
                     _logger.LogInformation(newInstance
                         ? $"CmsClass: {cmsClass.ClassName} was inserted."
                         : $"CmsClass: {cmsClass.ClassName} was updated.");

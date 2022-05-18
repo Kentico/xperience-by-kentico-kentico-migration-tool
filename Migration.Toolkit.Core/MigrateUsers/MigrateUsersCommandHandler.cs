@@ -55,20 +55,21 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
 
             if (kxoUser?.UserAdministrationAccess ?? false || kx13User.UserPrivilegeLevel == 3)
             {
+                _migrationProtocol.Warning(HandbookReferences.CmsUserAdminUserSkip, kx13User, kxoUser);
                 _logger.LogInformation("User with guid {guid} is administrator, you need to set administrators manually => skipping.", kxoUser?.UserGuid ?? kx13User.UserGuid);
                 continue;
             }
             
             if (kxoUser?.UserName == "public" || kx13User.UserName == "public")
             {
+                _migrationProtocol.Warning(HandbookReferences.CmsUserPublicUserSkip, kx13User, kxoUser);
                 _logger.LogInformation("User with guid {guid} is public user, special case that can't be migrated => skipping.", kxoUser?.UserGuid ?? kx13User.UserGuid);
                 continue;
             }
             
             var mapped = _userMapper.Map(kx13User, kxoUser);
-            
-            mapped.LogResult(_logger);
             _migrationProtocol.MappedTarget(mapped);
+            mapped.LogResult(_logger);
 
             switch (mapped)
             {
