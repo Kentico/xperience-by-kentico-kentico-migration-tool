@@ -9,6 +9,7 @@ using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigratePageTypes;
 using Migration.Toolkit.Core.MigrateSettingKeys;
 using Migration.Toolkit.Core.MigrateUsers;
+using Migration.Toolkit.Core.MigrateWebFarms;
 using Migration.Toolkit.Core.MigrationProtocol;
 
 namespace Migration.Toolkit.Core;
@@ -49,8 +50,12 @@ public static class DependencyInjectionExtensions
         // cms user
         services.AddTransient<IEntityMapper<KX13.Models.CmsUser, KXO.Models.CmsUser>, CmsUserMapper>();
         services.AddTransient<MigrateUsersCommandHandler>();
-        
-        
+
+        // cms web farm
+        services.AddTransient<IEntityMapper<KX13.Models.CmsWebFarmServer, KXO.Models.CmsWebFarmServer>, CmsWebFarmMapper>();
+        services.AddTransient<MigrateWebFarmsCommandHandler>();
+
+
         services.AddMediatR(typeof(DependencyInjectionExtensions));
             
         return services;
