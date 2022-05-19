@@ -36,24 +36,30 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
         {
             if (sourceType == typeof(KX13.Models.CmsClass))
             {
-                var kx13Guid = kx13Context.CmsClasses.Where(c => c.ClassId == sourceId).Select(x => x.ClassGuid).SingleOrDefault();
-                targetId = kxoContext.CmsClasses.Where(x => x.ClassGuid == kx13Guid).Select(x => x.ClassId).SingleOrDefault();
+                var kx13Guid = kx13Context.CmsClasses.Where(c => c.ClassId == sourceId).Select(x => x.ClassGuid).Single();
+                targetId = kxoContext.CmsClasses.Where(x => x.ClassGuid == kx13Guid).Select(x => x.ClassId).Single();
                 return true;
             }
 
             if (sourceType == typeof(KX13.Models.CmsUser))
             {
-                var kx13Guid = kx13Context.CmsUsers.Where(c => c.UserId == sourceId).Select(x => x.UserGuid).SingleOrDefault();
-                targetId = kxoContext.CmsUsers.Where(x => x.UserGuid == kx13Guid).Select(x => x.UserId).SingleOrDefault();
+                var kx13Guid = kx13Context.CmsUsers.Where(c => c.UserId == sourceId).Select(x => x.UserGuid).Single();
+                targetId = kxoContext.CmsUsers.Where(x => x.UserGuid == kx13Guid).Select(x => x.UserId).Single();
                 return true;
             }
 
             if (sourceType == typeof(KX13.Models.CmsSite))
             {
-                var kx13Guid = kx13Context.CmsSites.Where(c => c.SiteId == sourceId).Select(x => x.SiteGuid).SingleOrDefault();
-                targetId = kxoContext.CmsSites.Where(x => x.SiteGuid == kx13Guid).Select(x => x.SiteId).SingleOrDefault();
+                var kx13Guid = kx13Context.CmsSites.Where(c => c.SiteId == sourceId).Select(x => x.SiteGuid).Single();
+                targetId = kxoContext.CmsSites.Where(x => x.SiteGuid == kx13Guid).Select(x => x.SiteId).Single();
                 return true;
             }
+        }
+        catch (InvalidOperationException ioex)
+            // when(ioex.Message.Contains("SequenceContainsN"))
+        {
+            _logger.LogWarning("Mapping {sourceFullType} primary key: {sourceId} failed, {message}", sourceType.FullName, sourceId, ioex.Message);
+            return false;
         }
         finally
         {

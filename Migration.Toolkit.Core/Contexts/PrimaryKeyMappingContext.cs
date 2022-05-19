@@ -37,11 +37,15 @@ public class PrimaryKeyMappingContext
 
         if (_mappings.TryGetValue(fullKeyName, out var resultId))
         {
+            _logger.LogTrace("{key} resolved as {value}", fullKeyName, resultId);
             return resultId;
         }
+        
+        _logger.LogTrace("TryLocate {key}", fullKeyName);
         if(_primaryKeyLocatorService.TryLocate(keyNameSelector, sourceId, out var targetId))
         {
             SetMapping(keyNameSelector, sourceId, targetId); // cache id
+            _logger.LogTrace("{key} located as {value}", fullKeyName, resultId);
             return targetId;
         }
         
@@ -57,15 +61,19 @@ public class PrimaryKeyMappingContext
         var fullKeyName = $"{typeof(T).FullName}.{keyNameSelector.GetMemberName()}.{sourceId}";
         if (_mappings.TryGetValue(fullKeyName, out var resultId))
         {
+            _logger.LogTrace("{key} resolved as {value}", fullKeyName, resultId);
             return resultId;
         }
-        if (!(sourceId is int sid))
+        if (sourceId is not { } sid)
         {
             return null;
         }
+        
+        _logger.LogTrace("TryLocate {key}", fullKeyName);
         if(_primaryKeyLocatorService.TryLocate(keyNameSelector, sid, out var targetId))
         {
             SetMapping(keyNameSelector, sid, targetId); // cache id
+            _logger.LogTrace("{key} located as {value}", fullKeyName, resultId);
             return targetId;
         }
 

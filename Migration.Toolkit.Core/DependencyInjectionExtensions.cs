@@ -53,6 +53,7 @@ public static class DependencyInjectionExtensions
         
         // cms user
         services.AddTransient<IEntityMapper<KX13.Models.CmsUser, KXO.Models.CmsUser>, CmsUserMapper>();
+        services.AddTransient<IEntityMapper<KX13.Models.CmsRole, KXO.Models.CmsRole>, CmsRoleMapper>();
         services.AddTransient<MigrateUsersCommandHandler>();
 
         // cms web farm

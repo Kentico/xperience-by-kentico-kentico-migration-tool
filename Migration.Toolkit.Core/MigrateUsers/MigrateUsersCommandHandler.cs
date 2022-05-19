@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Core.Abstractions;
+using Migration.Toolkit.Core.Configuration;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
@@ -16,6 +17,8 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
     private readonly IDbContextFactory<KxoContext> _kxoContextFactory;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
     private readonly IEntityMapper<KX13.Models.CmsUser, KXO.Models.CmsUser> _userMapper;
+    private readonly IEntityMapper<KX13.Models.CmsRole, KXO.Models.CmsRole> _roleMapper;
+    private readonly GlobalConfiguration _globalConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IMigrationProtocol _migrationProtocol;
 
@@ -26,6 +29,8 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
         IDbContextFactory<KXO.Context.KxoContext> kxoContextFactory,
         IDbContextFactory<KX13.Context.KX13Context> kx13ContextFactory,
         IEntityMapper<KX13.Models.CmsUser, KXO.Models.CmsUser> userMapper,
+        IEntityMapper<KX13.Models.CmsRole, KXO.Models.CmsRole> roleMapper,
+        GlobalConfiguration globalConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IMigrationProtocol migrationProtocol
     )
@@ -34,6 +39,8 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
         _kxoContextFactory = kxoContextFactory;
         _kx13ContextFactory = kx13ContextFactory;
         _userMapper = userMapper;
+        _roleMapper = roleMapper;
+        _globalConfiguration = globalConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _migrationProtocol = migrationProtocol;
         _kxoContext = _kxoContextFactory.CreateDbContext();
@@ -41,16 +48,30 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
     
     public async Task<GenericCommandResult> Handle(MigrateUsersCommand request, CancellationToken cancellationToken)
     {
-        using var protocolScope = _migrationProtocol.CreateScope<MigrateUsersCommandHandler>();  
+        // using var protocolScope = _migrationProtocol.CreateScope<MigrateUsersCommandHandler>();  
         
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
-        foreach (var kx13User in kx13Context.CmsUsers)
+        var selectedSites = _globalConfiguration.SiteIdMapping.Keys;
+        
+        await RequireMigratedCmsRoles(kx13Context, cancellationToken);
+
+        var kx13CmsUsers = kx13Context.CmsUsers
+                .Include(u => u.CmsUserRoles.Where(x => selectedSites.Contains(x.Role.SiteId) || x.Role.SiteId == null))
+                .ThenInclude(ur => ur.Role)
+            ;
+
+        foreach (var kx13User in kx13CmsUsers)
         {
             _migrationProtocol.FetchedSource(kx13User);
             _logger.LogTrace("Migrating user {userName} with UserGuid {userGuid}", kx13User.UserName, kx13User.UserGuid);
+
+            var kxoUser = await _kxoContext.CmsUsers
+                    .Include(u => u.CmsUserRoles)
+                    .ThenInclude(ur => ur.Role)
+                    .FirstOrDefaultAsync(u => u.UserGuid == kx13User.UserGuid, cancellationToken)
+                ;
             
-            var kxoUser = await _kxoContext.CmsUsers.FirstOrDefaultAsync(u => u.UserGuid == kx13User.UserGuid, cancellationToken);
             _migrationProtocol.FetchedTarget(kxoUser);
 
             if (kx13User.UserPrivilegeLevel == 3 && kxoUser != null)
@@ -155,6 +176,65 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
         }
 
         return new GenericCommandResult();
+    }
+
+    private async Task RequireMigratedCmsRoles(KX13Context kx13Context, CancellationToken cancellationToken)
+    {
+        var kx13CmsRoles = kx13Context.CmsRoles
+            .Where(x => _globalConfiguration.SiteIdMapping.Keys.Contains(x.SiteId) || x.SiteId == null);
+
+        foreach (var kx13CmsRole in kx13CmsRoles)
+        {
+            _migrationProtocol.FetchedSource(kx13CmsRole);
+
+            var kxoCmsRole = await _kxoContext.CmsRoles
+                .FirstOrDefaultAsync(x => x.RoleGuid == kx13CmsRole.RoleGuid, cancellationToken: cancellationToken);
+
+            _migrationProtocol.FetchedTarget(kxoCmsRole);
+
+            var mapped = _roleMapper.Map(kx13CmsRole, kxoCmsRole);
+            _migrationProtocol.MappedTarget(mapped);
+            mapped.LogResult(_logger);
+
+            switch (mapped)
+            {
+                case ModelMappingSuccess<KXO.Models.CmsRole>(var cmsRole, var newInstance):
+                    ArgumentNullException.ThrowIfNull(cmsRole, nameof(cmsRole));
+
+                    if (newInstance)
+                    {
+                        _kxoContext.CmsRoles.Add(cmsRole);
+                    }
+                    else
+                    {
+                        _kxoContext.CmsRoles.Update(cmsRole);
+                    }
+
+                    try
+                    {
+                        await _kxoContext.SaveChangesAsync(cancellationToken);
+
+                        _migrationProtocol.Success(kx13CmsRole, cmsRole, mapped);
+                        _logger.LogInformation(newInstance
+                            ? $"CmsRole: {cmsRole.RoleGuid} was inserted."
+                            : $"CmsRole: {cmsRole.RoleGuid} was updated.");
+                    }
+                    catch (Exception ex) // TODO tk: 2022-05-18 handle exceptions
+                    {
+                        throw;
+                    }
+
+                    _primaryKeyMappingContext.SetMapping<KX13.Models.CmsRole>(
+                        r => r.RoleId,
+                        kx13CmsRole.RoleId,
+                        cmsRole.RoleId
+                    );
+
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(mapped));
+            }
+        }
     }
 
     public void Dispose()

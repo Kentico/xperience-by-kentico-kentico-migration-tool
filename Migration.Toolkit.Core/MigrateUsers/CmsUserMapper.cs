@@ -1,15 +1,21 @@
 ﻿using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Core.Abstractions;
+using Migration.Toolkit.Core.Contexts;
 
 namespace Migration.Toolkit.Core.MigrateUsers;
 
 public class CmsUserMapper: IEntityMapper<KX13.Models.CmsUser, KXO.Models.CmsUser>
 {
     private readonly ILogger<CmsUserMapper> _logger;
+    private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
 
-    public CmsUserMapper(ILogger<CmsUserMapper> logger)
+    public CmsUserMapper(
+        ILogger<CmsUserMapper> logger,
+        PrimaryKeyMappingContext primaryKeyMappingContext 
+    )
     {
         _logger = logger;
+        _primaryKeyMappingContext = primaryKeyMappingContext;
     }
     
     public ModelMappingResult<KXO.Models.CmsUser> Map(KX13.Models.CmsUser? source, KXO.Models.CmsUser? target)
@@ -17,21 +23,21 @@ public class CmsUserMapper: IEntityMapper<KX13.Models.CmsUser, KXO.Models.CmsUse
         if (source is null)
         {
             _logger.LogTrace("Source entity is not defined.");
-            return new ModelMappingFailedSourceNotDefined<Migration.Toolkit.KXO.Models.CmsUser>();
+            return new ModelMappingFailedSourceNotDefined<KXO.Models.CmsUser>();
         }
 
         var newInstance = false;
         if (target is null)
         {
             _logger.LogTrace("Null target supplied, creating new instance.");
-            target = new Migration.Toolkit.KXO.Models.CmsUser();
+            target = new KXO.Models.CmsUser();
             newInstance = true;
         }
         else if (source.UserGuid != target.UserGuid)
         {
             // assertion failed
             _logger.LogTrace("Assertion failed, entity key mismatch.");
-            return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXO.Models.CmsUser>();
+            return new ModelMappingFailedKeyMismatch<KXO.Models.CmsUser>();
         }
 
         // do not try to insert pk
@@ -56,9 +62,20 @@ public class CmsUserMapper: IEntityMapper<KX13.Models.CmsUser, KXO.Models.CmsUse
         target.UserPasswordLastChanged = DateTime.Now;
         // TODO tk: 2022-05-18 deduce info
         target.UserRegistrationLinkExpiration = DateTime.Now.AddDays(365);
-
-        // TODO tk: 2022-05-18 ROLE
-        // TODO tk: 2022-05-18 SITE
+        
+        foreach (var sourceCmsUserRole in source.CmsUserRoles)
+        {
+            var targetRoleId = _primaryKeyMappingContext.RequireMapFromSource<KX13.Models.CmsRole>(r => r.RoleId, sourceCmsUserRole.RoleId);
+            if (target.CmsUserRoles.All(x => x.RoleId != targetRoleId))
+            {
+                target.CmsUserRoles.Add(new KXO.Models.CmsUserRole
+                {
+                    RoleId = _primaryKeyMappingContext.RequireMapFromSource<KX13.Models.CmsRole>(r => r.RoleId, sourceCmsUserRole.RoleId),
+                    User = target,
+                    ValidTo = sourceCmsUserRole.ValidTo
+                });    
+            }
+        }
 
         return new ModelMappingSuccess<KXO.Models.CmsUser>(target, newInstance);
 
