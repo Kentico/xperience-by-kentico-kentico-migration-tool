@@ -87,16 +87,16 @@ public class MigrateWebFarmsCommandHandler: IRequestHandler<MigrateWebFarmsComma
                     {
                         await _kxoContext.DisposeAsync();
                         // TODO tk: 2022-05-18 protocol - request manual migration
-                        //_logger.LogError("Failed to migrate web farm server, possibly due to duplicated email - user guid: {userGuid}. Use needs manual migration. Email: {email}", kx13User.UserGuid, kx13User.Email);
-                        //_kxoContext = await _kxoContextFactory.CreateDbContextAsync(cancellationToken);
+                        _logger.LogError("Failed to migrate web farm server - server guid: {srverGuid}. Use needs manual migration. Server name: {serverName}", kx13WebFarm.ServerGuid, kx13WebFarm.ServerName);
+                        _kxoContext = await _kxoContextFactory.CreateDbContextAsync(cancellationToken);
 
-                        //_migrationProtocol.NeedsManualAction(
-                        //    HandbookReferences.CmsUserEmailConstraintBroken,
-                        //    $"Failed to migrate user, possibly due to duplicated email - user guid: {kx13User.UserGuid}. Use needs manual migration. Email: {kx13User.Email}",
-                        //    kx13User, 
-                        //    cmsUser, 
-                        //    mapped
-                        //);
+                        _migrationProtocol.NeedsManualAction(
+                            HandbookReferences.CmsWebFarmServerSkip,
+                            $"Failed to migrate web farm server - server guid: {kx13WebFarm.ServerGuid}. Use needs manual migration. Server name: {kx13WebFarm.ServerName}",
+                            kx13WebFarm,
+                            cmsWebFarmServer,
+                            mapped
+                        );
                         continue;
                     }
 
