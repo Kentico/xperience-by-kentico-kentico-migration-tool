@@ -39,7 +39,7 @@ public record MigratePageTypesCommand(bool Dry): IRequest<MigratePageTypesResult
     public static string MonikerFriendly => "Page types";
 }
 
-public record MigratePagesCommand(bool Dry): IRequest<GenericCommandResult>
+public record MigratePagesCommand(bool Dry, string CultureCode): IRequest<GenericCommandResult>
 {
     public static string Moniker => "pages";
     public static string MonikerFriendly => "Pages";

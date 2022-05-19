@@ -43,14 +43,14 @@ public class CmsSettingsCategoryMapper : IEntityMapper<Migration.Toolkit.KX13.Mo
         target.CategoryDisplayName = source.CategoryDisplayName;
         target.CategoryOrder = source.CategoryOrder;
         target.CategoryName = source.CategoryName;
-        target.CategoryParentId = _primaryKeyMappingContext.MapFromSourceNonRequired<CmsCategory>(c => c.CategoryId, source.CategoryParentId);
+        target.CategoryParentId = _primaryKeyMappingContext.MapFromSource<CmsCategory>(c => c.CategoryId, source.CategoryParentId);
         target.CategoryIdpath = source.CategoryIdpath;
         target.CategoryLevel = source.CategoryLevel;
         target.CategoryChildCount = source.CategoryChildCount;
         target.CategoryIconPath = source.CategoryIconPath;
         target.CategoryIsGroup = source.CategoryIsGroup;
         target.CategoryIsCustom = source.CategoryIsCustom;
-        target.CategoryResourceId = _primaryKeyMappingContext.MapFromSourceNonRequired<KX13.Models.CmsResource>(r => r.ResourceId, source.CategoryResourceId);
+        target.CategoryResourceId = _primaryKeyMappingContext.MapFromSource<KX13.Models.CmsResource>(r => r.ResourceId, source.CategoryResourceId);
         
         return new ModelMappingSuccess<Migration.Toolkit.KXO.Models.CmsSettingsCategory>(target, newInstance);
     }

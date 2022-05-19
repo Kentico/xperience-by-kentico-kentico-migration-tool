@@ -13,4 +13,5 @@ public interface IMigrationProtocol
     IDisposable CreateScope<TScopeType>();
     void Warning<T>(HandbookReference handbookRef, T? entity);
     void Warning<TSource, TTarget>(HandbookReference handbookRef, TSource? source, TTarget? target);
+    void Fatal<T>(HandbookReference handbookRef, T? entity);
 }

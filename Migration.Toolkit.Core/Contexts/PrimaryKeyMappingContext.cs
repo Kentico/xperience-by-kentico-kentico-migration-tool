@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
+using Migration.Toolkit.Core.Services;
 
 namespace Migration.Toolkit.Core.Contexts;
 
@@ -9,10 +10,12 @@ public class PrimaryKeyMappingContext
 {
     private Dictionary<string, int> _mappings = new(); 
     private readonly ILogger<PrimaryKeyMappingContext> _logger;
+    private readonly IPrimaryKeyLocatorService _primaryKeyLocatorService;
 
-    public PrimaryKeyMappingContext(ILogger<PrimaryKeyMappingContext> logger)
+    public PrimaryKeyMappingContext(ILogger<PrimaryKeyMappingContext> logger, IPrimaryKeyLocatorService primaryKeyLocatorService)
     {
         _logger = logger;
+        _primaryKeyLocatorService = primaryKeyLocatorService;
     }
 
     public void SetMapping<T>(Expression<Func<T, object>> keyNameSelector, int sourceId, int targetId) 
@@ -26,16 +29,26 @@ public class PrimaryKeyMappingContext
         _logger.LogTrace("Primary key for {fullKeyName} stored. {sourceId} maps to {targetId}", fullKeyName, sourceId, targetId);
     }
     
-    public int MapFromSource<T>(Expression<Func<T, object>> keyNameSelector, int sourceId)
+    public int RequireMapFromSource<T>(Expression<Func<T, object>> keyNameSelector, int sourceId)
     {
         Debug.Assert(sourceId > 0, "sourceId > 0");
         
         var fullKeyName = $"{typeof(T).FullName}.{keyNameSelector.GetMemberName()}.{sourceId}";
 
-        return _mappings[fullKeyName];
+        if (_mappings.TryGetValue(fullKeyName, out var resultId))
+        {
+            return resultId;
+        }
+        if(_primaryKeyLocatorService.TryLocate(keyNameSelector, sourceId, out var targetId))
+        {
+            SetMapping(keyNameSelector, sourceId, targetId); // cache id
+            return targetId;
+        }
+        
+        throw new KeyNotFoundException(fullKeyName);
     }
     
-    public int? MapFromSourceNonRequired<T>(Expression<Func<T, object>> keyNameSelector, int? sourceId)
+    public int? MapFromSource<T>(Expression<Func<T, object>> keyNameSelector, int? sourceId)
     {
         if (sourceId == null) return null;
         
@@ -44,7 +57,16 @@ public class PrimaryKeyMappingContext
         var fullKeyName = $"{typeof(T).FullName}.{keyNameSelector.GetMemberName()}.{sourceId}";
         if (_mappings.TryGetValue(fullKeyName, out var resultId))
         {
-            return resultId;    
+            return resultId;
+        }
+        if (!(sourceId is int sid))
+        {
+            return null;
+        }
+        if(_primaryKeyLocatorService.TryLocate(keyNameSelector, sid, out var targetId))
+        {
+            SetMapping(keyNameSelector, sid, targetId); // cache id
+            return targetId;
         }
 
         throw new InvalidOperationException($"Mapping with key {fullKeyName} is not present!");

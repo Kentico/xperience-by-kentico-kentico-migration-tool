@@ -21,6 +21,11 @@ public class NullMigrationProtocol: IMigrationProtocol
         // TODO tk: 2022-05-18 impl
     }
 
+    public void Fatal<T>(HandbookReference handbookRef, T? entity)
+    {
+        // TODO tk: 2022-05-19 cannot continue
+    }
+
     public void MappedTarget<TTarget>(ModelMappingResult<TTarget> mapped)
     {
         // TODO tk: 2022-05-18 log serialized mapping result conditionally

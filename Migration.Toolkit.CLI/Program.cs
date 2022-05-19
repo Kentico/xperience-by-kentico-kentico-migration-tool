@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using System.Globalization;
+using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -59,10 +60,24 @@ var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
 string Yellow(string ctext) => $"\x1b[33m{ctext}\x1b[0m";
 string Green(string ctext) => $"\x1b[32m{ctext}\x1b[0m";
-// string Red(string ctext) => $"\x1b[31m{ctext}\x1b[0m";
+string Red(string ctext) => $"\x1b[31m{ctext}\x1b[0m";
 void WriteCommandDesc(string desc, string commandMoniker) {
     Console.WriteLine($"{Yellow(commandMoniker)}: {desc}");
 }
+
+bool RequireParameter(string paramName, out string paramValue)
+{
+    if (Array.IndexOf(args, "--culture") is int cIdx and > -1 && args.Length > cIdx + 1)
+    {
+        paramValue = args[cIdx + 1];
+        return true;
+    }
+
+    Console.WriteLine(Red($"Parameter {paramName} is reqiured."));
+    paramValue = null;
+    return false;
+}
+
 
 var mappingContext = scope.ServiceProvider.GetRequiredService<PrimaryKeyMappingContext>();
 var globalConfiguration = scope.ServiceProvider.GetRequiredService<GlobalConfiguration>();
@@ -110,7 +125,8 @@ switch (args.Length)
     default:
     {
         var dry = args.Contains("--dry");
-        
+        var cultureCode = "";
+
         if (args[0] == "migrate" && args[1] == $"--{MigrateContactGroupsCommand.Moniker}")
         {
             await mediatr.Send(new MigrateContactGroupsCommand(dry));
@@ -154,8 +170,26 @@ switch (args.Length)
         
         if (args[0] == "migrate" && args[1] == $"--{MigratePagesCommand.Moniker}")
         {
-            await mediatr.Send(new MigratePagesCommand(dry));
-            logger.LogInformation("Finished!");
+            if (RequireParameter("--culture", out var culture))
+            {
+                try
+                {
+                    if (CultureInfo.GetCultureInfo(culture) is CultureInfo cultureInfo) // TODO tk: 2022-05-18 also check in kentico db for validity
+                    {
+                        cultureCode = cultureInfo.Name;
+                    }
+                }
+                catch (CultureNotFoundException cnfex)
+                {
+                    Console.WriteLine($"{Red($"Culture '{culture}' not found!")}");
+                    break;
+                }
+                
+                await mediatr.Send(new MigratePagesCommand(dry, cultureCode));
+                logger.LogInformation("Finished!");
+                break;
+            }
+
             break;
         }
 

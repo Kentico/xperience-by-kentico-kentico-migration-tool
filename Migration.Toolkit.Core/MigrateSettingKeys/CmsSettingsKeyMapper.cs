@@ -45,7 +45,7 @@ public class CmsSettingsKeyMapper : IEntityMapper<Migration.Toolkit.KX13.Models.
         target.KeyValue = source.KeyValue;
         target.KeyType = source.KeyType;
         target.KeyCategoryId = source.KeyCategoryId;
-        target.SiteId = _primaryKeyMappingContext.MapFromSourceNonRequired<KX13.Models.CmsSite>(s => s.SiteId, source.SiteId);
+        target.SiteId = _primaryKeyMappingContext.MapFromSource<KX13.Models.CmsSite>(s => s.SiteId, source.SiteId);
         target.KeyGuid = source.KeyGuid;
         target.KeyLastModified = source.KeyLastModified;
         target.KeyOrder = source.KeyOrder;

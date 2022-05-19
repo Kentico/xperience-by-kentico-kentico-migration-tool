@@ -136,7 +136,7 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
 
                     if (kx13CmsSettingsCategory.CategoryResourceId is int categoryResourceId)
                     {
-                        result.CategoryResourceId = _primaryKeyMappingContext.MapFromSource<KX13.Models.CmsResource>(r => r.ResourceId, categoryResourceId);
+                        result.CategoryResourceId = _primaryKeyMappingContext.RequireMapFromSource<KX13.Models.CmsResource>(r => r.ResourceId, categoryResourceId);
                     }
                     
                     if (newInstance)
@@ -188,7 +188,7 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
                     
                     if (kx13CmsSettingsKey.KeyCategoryId is int sourceCategoryId)
                     {
-                        mapped.Item!.KeyCategoryId = _primaryKeyMappingContext.MapFromSource<KX13.Models.CmsCategory>(c => c.CategoryId, sourceCategoryId);
+                        mapped.Item!.KeyCategoryId = _primaryKeyMappingContext.RequireMapFromSource<KX13.Models.CmsCategory>(c => c.CategoryId, sourceCategoryId);
                     }
                     
                     if (newInstance)
