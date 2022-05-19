@@ -86,7 +86,6 @@ public class MigrateWebFarmsCommandHandler: IRequestHandler<MigrateWebFarmsComma
                     )
                     {
                         await _kxoContext.DisposeAsync();
-                        // TODO tk: 2022-05-18 protocol - request manual migration
                         _logger.LogError("Failed to migrate web farm server - server guid: {srverGuid}. Use needs manual migration. Server name: {serverName}", kx13WebFarm.ServerGuid, kx13WebFarm.ServerName);
                         _kxoContext = await _kxoContextFactory.CreateDbContextAsync(cancellationToken);
 
