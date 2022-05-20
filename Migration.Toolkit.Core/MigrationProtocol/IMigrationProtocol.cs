@@ -1,4 +1,5 @@
-﻿using Migration.Toolkit.Core.Abstractions;
+﻿using MediatR;
+using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.KX13.Models;
 
 namespace Migration.Toolkit.Core.MigrationProtocol;
@@ -14,4 +15,8 @@ public interface IMigrationProtocol
     void Warning<T>(HandbookReference handbookRef, T? entity);
     void Warning<TSource, TTarget>(HandbookReference handbookRef, TSource? source, TTarget? target);
     void Fatal<T>(HandbookReference handbookRef, T? entity);
+    
+    void CommandRequest<TRequest, TResponse>(TRequest request) where TRequest : IRequest<TResponse>;
+    void CommandFinished<TRequest, TResponse>(TRequest request, TResponse response) where TRequest : IRequest<TResponse> where TResponse : CommandResult;
+    void CommandError<TRequest, TResponse>(Exception exception, TRequest request) where TRequest : IRequest<TResponse>;
 }

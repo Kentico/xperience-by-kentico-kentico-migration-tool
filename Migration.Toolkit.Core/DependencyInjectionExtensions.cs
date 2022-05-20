@@ -1,7 +1,9 @@
 using MediatR;
+using MediatR.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Core.Abstractions;
+using Migration.Toolkit.Core.Behaviors;
 using Migration.Toolkit.Core.CmsResource;
 using Migration.Toolkit.Core.CmsSettingsKey;
 using Migration.Toolkit.Core.CmsSite;
@@ -68,7 +70,9 @@ public static class DependencyInjectionExtensions
         services.AddTransient<IEntityMapper<KX13.Models.CmsPageUrlPath, KXO.Models.CmsPageUrlPath>, CmsPageUrlPathMapper>();
 
         services.AddMediatR(typeof(DependencyInjectionExtensions));
-            
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestHandlingBehavior<,>));
+        
+        // IPipelineBehavior 
         return services;
     }
 }

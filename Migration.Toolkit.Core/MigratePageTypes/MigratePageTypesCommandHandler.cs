@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Migration.Toolkit.Common;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Configuration;
 using Migration.Toolkit.Core.MigrationProtocol;

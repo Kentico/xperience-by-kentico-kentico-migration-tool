@@ -1,4 +1,5 @@
-﻿using Migration.Toolkit.Core.Abstractions;
+﻿using MediatR;
+using Migration.Toolkit.Core.Abstractions;
 
 namespace Migration.Toolkit.Core.MigrationProtocol;
 
@@ -24,6 +25,21 @@ public class NullMigrationProtocol: IMigrationProtocol
     public void Fatal<T>(HandbookReference handbookRef, T? entity)
     {
         // TODO tk: 2022-05-19 cannot continue
+    }
+
+    public void CommandRequest<TRequest, TResponse>(TRequest request) where TRequest : IRequest<TResponse>
+    {
+        
+    }
+
+    public void CommandFinished<TRequest, TResponse>(TRequest request, TResponse response) where TRequest : IRequest<TResponse> where TResponse : CommandResult
+    {
+        
+    }
+
+    public void CommandError<TRequest, TResponse>(Exception exception, TRequest request) where TRequest : IRequest<TResponse>
+    {
+        
     }
 
     public void MappedTarget<TTarget>(ModelMappingResult<TTarget> mapped)

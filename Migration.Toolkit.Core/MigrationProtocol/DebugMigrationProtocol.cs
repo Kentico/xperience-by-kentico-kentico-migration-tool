@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Core.Abstractions;
 
 namespace Migration.Toolkit.Core.MigrationProtocol;
@@ -61,5 +62,20 @@ public class DebugMigrationProtocol: IMigrationProtocol
     public void Fatal<T>(HandbookReference handbookRef, T? entity)
     {
         
+    }
+
+    public void CommandRequest<TRequest, TResponse>(TRequest request) where TRequest : IRequest<TResponse>
+    {
+        _logger.LogDebug("CommandRequest {request}", request);
+    }
+
+    public void CommandFinished<TRequest, TResponse>(TRequest request, TResponse response) where TRequest : IRequest<TResponse> where TResponse : CommandResult
+    {
+        _logger.LogDebug("CommandFinished {request} => {response}", request, response);
+    }
+
+    public void CommandError<TRequest, TResponse>(Exception exception, TRequest request) where TRequest : IRequest<TResponse>
+    {
+        _logger.LogDebug("CommandError {request} => {exception}", request, exception);
     }
 }

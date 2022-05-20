@@ -38,13 +38,15 @@ services
 
 services.UseKx13DbContext(settings);
 services.UseKxoDbContext(settings);
+services.AddSingleton(settings);
 services.UseToolkitCore();
 
-
-services.AddSingleton(new EntityConfigurations
-{
-    {"CMS_Site", new EntityConfiguration(false) }
-});
+//
+// services.AddSingleton(new EntityConfigurations
+// {
+//     {"CMS_Site", new EntityConfiguration(Array.Empty<string>()) },
+//     {"CMS_SettingsKey", new EntityConfiguration(Array.Empty<string>())}
+// });
 
 services.AddSingleton(new GlobalConfiguration
 {
@@ -227,3 +229,6 @@ switch (args.Length)
         break;
     }
 };
+
+Console.WriteLine("Press any key to exit...");
+Console.ReadKey();

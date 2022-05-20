@@ -9,7 +9,8 @@ public static class HandbookReferences
     public static HandbookReference CmsUserPublicUserSkip => new("CmsUser_SkipPublicUser");
     public static HandbookReference CmsWebFarmServerSkip => new("CmsWebFarm_SkipPublicWebFarm");
     public static HandbookReference CmsTreeTreeRootSkip => new("CmsTree_TreeRootSkipped");
-
+    public static HandbookReference CmsSettingsKeyExclusionListSkip => new("CmsSettingsKey_SkipExclusionList");
+    
     #endregion
 
 
