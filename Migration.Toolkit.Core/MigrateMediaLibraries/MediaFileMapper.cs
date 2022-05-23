@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
+using Migration.Toolkit.Core.MigrationProtocol;
 
 namespace Migration.Toolkit.Core.MigrateMediaLibraries;
 
@@ -8,14 +9,17 @@ public class MediaFileMapper: IEntityMapper<KX13.Models.MediaFile, KXO.Models.Me
 {
     private readonly ILogger<MediaFileMapper> _logger;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
+    private readonly IMigrationProtocol _migrationProtocol;
 
     public MediaFileMapper(
         ILogger<MediaFileMapper> logger,
-        PrimaryKeyMappingContext primaryKeyMappingContext
+        PrimaryKeyMappingContext primaryKeyMappingContext,
+        IMigrationProtocol migrationProtocol
         )
     {
         _logger = logger;
         _primaryKeyMappingContext = primaryKeyMappingContext;
+        _migrationProtocol = migrationProtocol;
     }
     
     public ModelMappingResult<KXO.Models.MediaFile> Map(KX13.Models.MediaFile? source, KXO.Models.MediaFile? target)
@@ -40,7 +44,7 @@ public class MediaFileMapper: IEntityMapper<KX13.Models.MediaFile, KXO.Models.Me
             return new ModelMappingFailedKeyMismatch<KXO.Models.MediaFile>();
         }
 
-        target.FileId = source.FileId;
+        // target.FileId = source.FileId;
         target.FileName = source.FileName;
         target.FileTitle = source.FileTitle;
         target.FileDescription = source.FileDescription;
@@ -49,7 +53,7 @@ public class MediaFileMapper: IEntityMapper<KX13.Models.MediaFile, KXO.Models.Me
         target.FileSize = source.FileSize;
         target.FileImageWidth = source.FileImageWidth;
         target.FileImageHeight = source.FileImageHeight;
-        // target.FileGuid = source.FileGuid;
+        target.FileGuid = source.FileGuid;
         target.FileCreatedWhen = source.FileCreatedWhen;
         target.FileModifiedWhen = source.FileModifiedWhen;
         target.FileCustomData = source.FileCustomData;
@@ -61,6 +65,8 @@ public class MediaFileMapper: IEntityMapper<KX13.Models.MediaFile, KXO.Models.Me
 
         // TODO tk: 2022-05-20 foreign binary dep => ref to handbook
         target.FilePath = source.FilePath;
+        
+        _migrationProtocol.NeedsManualAction(HandbookReferences.MediaFileMigrateFileManually, "Document must be migrated manually", source, target);
         
         // [ForeignKey("FileCreatedByUserId")]
         // [InverseProperty("MediaFileFileCreatedByUsers")]

@@ -8,6 +8,7 @@ using Migration.Toolkit.Core.CmsResource;
 using Migration.Toolkit.Core.CmsSettingsKey;
 using Migration.Toolkit.Core.CmsSite;
 using Migration.Toolkit.Core.Contexts;
+using Migration.Toolkit.Core.MigrateMediaLibraries;
 using Migration.Toolkit.Core.MigratePages;
 using Migration.Toolkit.Core.MigratePageTypes;
 using Migration.Toolkit.Core.MigrateSettingKeys;
@@ -22,8 +23,8 @@ public static class DependencyInjectionExtensions
 {
     public static IServiceCollection UseToolkitCore(this IServiceCollection services)
     {
-        // services.AddSingleton<IMigrationProtocol, DebugMigrationProtocol>();
-        services.AddSingleton<IMigrationProtocol, NullMigrationProtocol>();
+        services.AddSingleton<IMigrationProtocol, DebugMigrationProtocol>();
+        // services.AddSingleton<IMigrationProtocol, NullMigrationProtocol>();
         services.AddScoped<IPrimaryKeyLocatorService, PrimaryKeyLocatorService>();
         
         // TODO tk: 2022-05-17 rem
@@ -69,6 +70,10 @@ public static class DependencyInjectionExtensions
         services.AddTransient<IEntityMapper<KX13.Models.CmsAcl, KXO.Models.CmsAcl>, CmsAclMapper>();
         services.AddTransient<IEntityMapper<KX13.Models.CmsPageUrlPath, KXO.Models.CmsPageUrlPath>, CmsPageUrlPathMapper>();
 
+        // media libraries
+        services.AddTransient<IEntityMapper<KX13.Models.MediaFile, KXO.Models.MediaFile>, MediaFileMapper>();
+        services.AddTransient<IEntityMapper<KX13.Models.MediaLibrary, KXO.Models.MediaLibrary>, MediaLibraryMapper>();
+        
         services.AddMediatR(typeof(DependencyInjectionExtensions));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestHandlingBehavior<,>));
         

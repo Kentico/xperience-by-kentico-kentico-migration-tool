@@ -12,6 +12,11 @@ public class NullMigrationProtocol: IMigrationProtocol
         // TODO tk: 2022-05-18 write to protocol that manual action needs to be done - HandbookReference is used to point into user handbook for further instructions
     }
     
+    public void NeedsManualAction<TSource, TTarget>(HandbookReference handbookRef, string whatNeedsToBeDoneOrWhatHappened, TSource source, TTarget? target)
+    {
+        // TODO tk: 2022-05-18 write to protocol that manual action needs to be done - HandbookReference is used to point into user handbook for further instructions
+    }
+    
     public void Warning<T>(HandbookReference handbookRef, T? entity)
     {
         // TODO tk: 2022-05-18 impl

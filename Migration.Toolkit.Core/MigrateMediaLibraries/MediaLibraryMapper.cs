@@ -46,7 +46,7 @@ public class MediaLibraryMapper: IEntityMapper<KX13.Models.MediaLibrary, KXO.Mod
         target.LibraryDescription = source.LibraryDescription;
         target.LibraryFolder = source.LibraryFolder;
         target.LibraryAccess = source.LibraryAccess;
-        // target.LibraryGuid = source.LibraryGuid;
+        target.LibraryGuid = source.LibraryGuid;
         target.LibraryLastModified = source.LibraryLastModified;
         target.LibraryTeaserPath = source.LibraryTeaserPath;
         target.LibraryTeaserGuid = source.LibraryTeaserGuid;
