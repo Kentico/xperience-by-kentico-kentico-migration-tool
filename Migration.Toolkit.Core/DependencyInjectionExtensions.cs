@@ -6,6 +6,7 @@ using Migration.Toolkit.Core.CmsResource;
 using Migration.Toolkit.Core.CmsSettingsKey;
 using Migration.Toolkit.Core.CmsSite;
 using Migration.Toolkit.Core.Contexts;
+using Migration.Toolkit.Core.MigrateDataProtection;
 using Migration.Toolkit.Core.MigratePageTypes;
 using Migration.Toolkit.Core.MigrateSettingKeys;
 using Migration.Toolkit.Core.MigrateUsers;
@@ -54,6 +55,12 @@ public static class DependencyInjectionExtensions
         // cms web farm
         services.AddTransient<IEntityMapper<KX13.Models.CmsWebFarmServer, KXO.Models.CmsWebFarmServer>, CmsWebFarmMapper>();
         services.AddTransient<MigrateWebFarmsCommandHandler>();
+
+        // cms data protection
+        services.AddTransient<IEntityMapper<KX13.Models.CmsConsent, KXO.Models.CmsConsent>, CmsConsentMapper>();
+        services.AddTransient<IEntityMapper<KX13.Models.CmsConsentArchive, KXO.Models.CmsConsentArchive>, CmsConsentArchiveMapper>();
+        services.AddTransient<IEntityMapper<KX13.Models.CmsConsentAgreement, KXO.Models.CmsConsentAgreement>, CmsConsentAgreementMapper>();
+        services.AddTransient<MigrateDataProtectionCommandHandler>();
 
 
         services.AddMediatR(typeof(DependencyInjectionExtensions));
