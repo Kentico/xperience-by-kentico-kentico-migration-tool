@@ -52,7 +52,7 @@ services.AddSingleton(new GlobalConfiguration
 {
     SiteIdMapping = new()
     {
-        { 1, 1 }
+        { 1, 1 } // TODO tk: 2022-05-19 check by site GUID if site exists in target
     }
 });
 

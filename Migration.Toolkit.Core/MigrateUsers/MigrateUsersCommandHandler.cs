@@ -115,7 +115,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
                     {
                         await _kxoContext.SaveChangesAsync(cancellationToken);
 
-                        _migrationProtocol.Success<KX13.Models.CmsUser, KXO.Models.CmsUser>(kx13User, cmsUser, mapped);
+                        _migrationProtocol.Success(kx13User, cmsUser, mapped);
                         _logger.LogInformation(newInstance
                             ? $"CmsUser: {cmsUser.UserName} with UserGuid '{cmsUser.UserGuid}' was inserted."
                             : $"CmsUser: {cmsUser.UserName} with UserGuid '{cmsUser.UserGuid}' was updated.");
