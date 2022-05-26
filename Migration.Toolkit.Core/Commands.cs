@@ -25,6 +25,7 @@ public record MigrateContactManagementCommand(): IRequest<GenericCommandResult>,
 }
 
 public record MigrateDataProtectionCommand(): IRequest<GenericCommandResult>, ICommand
+public record MigrateDataProtectionCommand(bool Dry, int? BatchSize) : IRequest<GenericCommandResult>
 {
     public static string Moniker => "data-protection";
     public static string MonikerFriendly => "Data protection";
