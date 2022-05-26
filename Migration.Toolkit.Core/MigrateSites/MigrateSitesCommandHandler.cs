@@ -10,7 +10,7 @@ using Migration.Toolkit.KXO.Context;
 namespace Migration.Toolkit.Core.MigrateSites;
 
 // ReSharper disable once UnusedType.Global
-public class MigrateSitesCommandHandler: IRequestHandler<MigrateUsersCommand, GenericCommandResult>, IDisposable
+public class MigrateSitesCommandHandler: IRequestHandler<MigrateSitesCommand, GenericCommandResult>, IDisposable
 {
     private readonly ILogger<MigrateSitesCommandHandler> _logger;
     private readonly IDbContextFactory<KxoContext> _kxoContextFactory;
@@ -39,7 +39,7 @@ public class MigrateSitesCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
         _kxoContext = _kxoContextFactory.CreateDbContext();
     }
     
-    public async Task<GenericCommandResult> Handle(MigrateUsersCommand request, CancellationToken cancellationToken)
+    public async Task<GenericCommandResult> Handle(MigrateSitesCommand request, CancellationToken cancellationToken)
     {
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
@@ -47,8 +47,16 @@ public class MigrateSitesCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
         {
             _migrationProtocol.FetchedSource(kx13CmsSite);
             _logger.LogTrace("Migrating site {siteName} with UserGuid {siteGuid}", kx13CmsSite.SiteName, kx13CmsSite.SiteGuid);
+
+            var targetSiteId = _primaryKeyMappingContext.MapFromSourceOrNull<KX13.Models.CmsSite>(s => s.SiteId, kx13CmsSite.SiteId);
+            if (targetSiteId is null)
+            {
+                // TODO tk: 2022-05-26 add site guid mapping
+                _logger.LogWarning("Site '{siteName}' with Guid {guid} migration skipped", kx13CmsSite.SiteName, kx13CmsSite.SiteGuid);
+                continue;
+            }
             
-            var kxoCmsSite = await _kxoContext.CmsSites.FirstOrDefaultAsync(u => u.SiteGuid == kx13CmsSite.SiteGuid, cancellationToken);
+            var kxoCmsSite = await _kxoContext.CmsSites.FirstOrDefaultAsync(u => u.SiteId == targetSiteId, cancellationToken);
             _migrationProtocol.FetchedTarget(kxoCmsSite);
 
             var mapped = _cmsSiteMapper.Map(kx13CmsSite, kxoCmsSite);

@@ -57,7 +57,7 @@ public class CmsFormMapper: IEntityMapper<KX13.Models.CmsForm, KXO.Models.CmsFor
         target.FormConfirmationEmailSubject = source.FormConfirmationEmailSubject;
         target.FormAccess = source.FormAccess;
         target.FormSubmitButtonImage = source.FormSubmitButtonImage;
-        // target.FormGuid = source.FormGuid;
+        target.FormGuid = source.FormGuid;
         target.FormLastModified = source.FormLastModified;
         target.FormLogActivity = source.FormLogActivity;
         target.FormBuilderLayout = source.FormBuilderLayout;

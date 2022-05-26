@@ -1,14 +1,14 @@
 ﻿using System.Globalization;
+using System.Reflection;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Core;
-using Migration.Toolkit.Core.Configuration;
 using Migration.Toolkit.Core.Contexts;
+using Migration.Toolkit.Core.Services;
 using Migration.Toolkit.KX13;
-using Migration.Toolkit.KX13.Models;
 using Migration.Toolkit.KXO;
 
 // https://docs.microsoft.com/en-us/dotnet/core/extensions/configuration
@@ -48,13 +48,13 @@ services.UseToolkitCore();
 //     {"CMS_SettingsKey", new EntityConfiguration(Array.Empty<string>())}
 // });
 
-services.AddSingleton(new GlobalConfiguration
-{
-    SiteIdMapping = new()
-    {
-        { 1, 1 } // TODO tk: 2022-05-19 check by site GUID if site exists in target
-    }
-});
+// services.AddSingleton(new GlobalConfiguration
+// {
+//     SiteIdMapping = new()
+//     {
+//         { 1, 1 } // TODO tk: 2022-05-19 check by site GUID if site exists in target
+//     }
+// });
 
 await using var serviceProvider = services.BuildServiceProvider();
 using var scope = serviceProvider.CreateScope();
@@ -63,7 +63,9 @@ var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 string Yellow(string ctext) => $"\x1b[33m{ctext}\x1b[0m";
 string Green(string ctext) => $"\x1b[32m{ctext}\x1b[0m";
 string Red(string ctext) => $"\x1b[31m{ctext}\x1b[0m";
-void WriteCommandDesc(string desc, string commandMoniker) {
+
+void WriteCommandDesc(string desc, string commandMoniker)
+{
     Console.WriteLine($"{Yellow(commandMoniker)}: {desc}");
 }
 
@@ -82,14 +84,25 @@ bool RequireParameter(string paramName, out string paramValue)
 
 
 var mappingContext = scope.ServiceProvider.GetRequiredService<PrimaryKeyMappingContext>();
-var globalConfiguration = scope.ServiceProvider.GetRequiredService<GlobalConfiguration>();
-foreach (var (k, v) in globalConfiguration.SiteIdMapping)
+var toolkitConfiguration = scope.ServiceProvider.GetRequiredService<ToolkitConfiguration>();
+var tableTypeLookupService = scope.ServiceProvider.GetRequiredService<TableReflectionService>();
+foreach (var (k, ek) in toolkitConfiguration.EntityConfigurations)
 {
-    if (k.HasValue && v.HasValue)
+    var tableType = tableTypeLookupService.GetSourceTableTypeByTableName(k);
+    
+    foreach (var (kPkName, mappings) in ek.ExplicitPrimaryKeyMapping)
     {
-        mappingContext.SetMapping<CmsSite>(s => s.SiteId, k.Value, v.Value);
-    }
+        foreach (var (kPk, vPk) in mappings)
+        {
+            // TODO tk: 2022-05-26 report incorrect property setting
+            if (int.TryParse(kPk, out var kPkParsed) && vPk.HasValue)
+            {
+                mappingContext.SetMapping(tableType, kPkName, kPkParsed, vPk.Value);
+            }    
+        }
+    }    
 }
+
 
 void PrintCommandDescriptions()
 {
@@ -109,126 +122,269 @@ void PrintCommandDescriptions()
 
 var mediatr = scope.ServiceProvider.GetRequiredService<IMediator>();
 
-switch (args.Length)
+var argsQ = new Queue<string>(args);
+var commands = new List<ICommand>();
+bool firstHaveToBeMigrate = true;
+while (argsQ.TryDequeue(out var arg))
 {
-    case 1 when args[0].IsIn("help", "h"):
+    var cultureCode = "";
+
+    if (arg == "migrate" && firstHaveToBeMigrate)
     {
+        firstHaveToBeMigrate = false;
+        continue;
+    }
+
+    if (arg == "--culture")
+    {
+        continue;
+    }
+
+    if (firstHaveToBeMigrate)
+    {
+        Console.WriteLine($"First must be command, for example {Green("migrate")}");
         PrintCommandDescriptions();
         break;
     }
 
-    case 0:
+    if (arg == $"--{MigrateContactGroupsCommand.Moniker}")
     {
-        Console.WriteLine($"Invalid arguments, for help call with command {Yellow("help")}, usable commands:");
-        PrintCommandDescriptions();
-        break;
+        commands.Add(new MigrateContactGroupsCommand());
+        continue;
     }
 
-    default:
+    if (arg == $"--{MigrateContactManagementCommand.Moniker}")
     {
-        var dry = args.Contains("--dry");
-        var cultureCode = "";
+        commands.Add(new MigrateContactManagementCommand());
+        continue;
+    }
 
-        if (args[0] == "migrate" && args[1] == $"--{MigrateContactGroupsCommand.Moniker}")
-        {
-            await mediatr.Send(new MigrateContactGroupsCommand(dry));
-            logger.LogInformation("Finished!");
-        }
+    if (arg == $"--{MigrateDataProtectionCommand.Moniker}")
+    {
+        commands.Add(new MigrateDataProtectionCommand());
+        continue;
+    }
 
-        if (args[0] == "migrate" && args[1] == $"--{MigrateContactManagementCommand.Moniker}")
-        {
-            await mediatr.Send(new MigrateContactManagementCommand(dry));
-            logger.LogInformation("Finished!");
-            break;
-        }
+    if (arg == $"--{MigrateFormsCommand.Moniker}")
+    {
+        commands.Add(new MigrateFormsCommand());
+        continue;
+    }
 
-        if (args[0] == "migrate" && args[1] == $"--{MigrateDataProtectionCommand.Moniker}")
-        {
-            await mediatr.Send(new MigrateDataProtectionCommand(dry));
-            logger.LogInformation("Finished!");
-            break;
-        }
+    if (arg == $"--{MigrateMediaLibrariesCommand.Moniker}")
+    {
+        commands.Add(new MigrateMediaLibrariesCommand());
+        continue;
+    }
 
-        if (args[0] == "migrate" && args[1] == $"--{MigrateFormsCommand.Moniker}")
-        {
-            await mediatr.Send(new MigrateFormsCommand(dry));
-            logger.LogInformation("Finished!");
-            break;
-        }
+    if (arg == $"--{MigratePageTypesCommand.Moniker}")
+    {
+        commands.Add(new MigratePageTypesCommand());
+        continue;
+    }
 
-        if (args[0] == "migrate" && args[1] == $"--{MigrateMediaLibrariesCommand.Moniker}")
+    if (arg == $"--{MigratePagesCommand.Moniker}")
+    {
+        if (RequireParameter("--culture", out var culture))
         {
-            await mediatr.Send(new MigrateMediaLibrariesCommand(dry));
-            logger.LogInformation("Finished!");
-            break;
-        }
-
-        if (args[0] == "migrate" && args[1] == $"--{MigratePageTypesCommand.Moniker}")
-        {
-            await mediatr.Send(new MigratePageTypesCommand(dry));
-            logger.LogInformation("Finished!");
-            break;
-        }
-        
-        if (args[0] == "migrate" && args[1] == $"--{MigratePagesCommand.Moniker}")
-        {
-            if (RequireParameter("--culture", out var culture))
+            try
             {
-                try
+                if (CultureInfo.GetCultureInfo(culture) is CultureInfo cultureInfo) // TODO tk: 2022-05-18 also check in kentico db for validity
                 {
-                    if (CultureInfo.GetCultureInfo(culture) is CultureInfo cultureInfo) // TODO tk: 2022-05-18 also check in kentico db for validity
-                    {
-                        cultureCode = cultureInfo.Name;
-                    }
+                    cultureCode = cultureInfo.Name;
                 }
-                catch (CultureNotFoundException cnfex)
-                {
-                    Console.WriteLine($"{Red($"Culture '{culture}' not found!")}");
-                    break;
-                }
-                
-                await mediatr.Send(new MigratePagesCommand(dry, cultureCode));
-                logger.LogInformation("Finished!");
+            }
+            catch (CultureNotFoundException cnfex)
+            {
+                Console.WriteLine($"{Red($"Culture '{culture}' not found!")}");
                 break;
             }
 
-            break;
+            commands.Add(new MigratePagesCommand(cultureCode));
+            continue;
         }
-
-        if (args[0] == "migrate" && args[1] == $"--{MigrateSettingKeysCommand.Moniker}")
-        {
-            await mediatr.Send(new MigrateSettingKeysCommand(dry));
-            logger.LogInformation("Finished!");
-            break;
-        }
-
-        if (args[0] == "migrate" && args[1] == $"--{MigrateSitesCommand.Moniker}")
-        {
-            await mediatr.Send(new MigrateSitesCommand(dry));
-            logger.LogInformation("Finished!");
-            break;
-        }
-
-        if (args[0] == "migrate" && args[1] == $"--{MigrateUsersCommand.Moniker}")
-        {
-            await mediatr.Send(new MigrateUsersCommand(dry));
-            logger.LogInformation("Finished!");
-            break;
-        }
-
-        if (args[0] == "migrate" && args[1] == $"--{MigrateWebFarmsCommand.Moniker}")
-        {
-            await mediatr.Send(new MigrateWebFarmsCommand(dry));
-            logger.LogInformation("Finished!");
-            break;
-        }
-        
-        Console.WriteLine($"Invalid arguments, for help call with command {Yellow("help")}, usable commands:");
-        PrintCommandDescriptions();
-
-        break;
     }
-};
+
+    if (arg == $"--{MigrateSettingKeysCommand.Moniker}")
+    {
+        commands.Add(new MigrateSettingKeysCommand());
+        continue;
+    }
+
+    if (arg == $"--{MigrateSitesCommand.Moniker}")
+    {
+        commands.Add(new MigrateSitesCommand());
+        continue;
+    }
+
+    if (arg == $"--{MigrateUsersCommand.Moniker}")
+    {
+        commands.Add(new MigrateUsersCommand());
+        continue;
+    }
+
+    if (arg == $"--{MigrateWebFarmsCommand.Moniker}")
+    {
+        commands.Add(new MigrateWebFarmsCommand());
+        continue;
+    }
+
+    // Console.WriteLine($"Invalid arguments, for help call with command {Yellow("help")}, usable commands:");
+    // PrintCommandDescriptions();
+}
+
+var satisfiedDependencies = new HashSet<Type>();
+var dependenciesSatisfied = true;
+foreach (var command in commands)
+{
+    var commandType = command.GetType();
+    satisfiedDependencies.Add(commandType);
+    foreach (var commandDependency in command.Dependencies)
+    {
+        if (!satisfiedDependencies.Contains(commandDependency))
+        {
+            var cmdMoniker = commandType.GetProperty("Moniker", BindingFlags.Static | BindingFlags.Public)?.GetValue(null);
+            var cmdMonikerNeeded = commandDependency.GetProperty("Moniker", BindingFlags.Static | BindingFlags.Public)?.GetValue(null);
+            
+            dependenciesSatisfied = false;
+            
+            Console.WriteLine($"Migration {Yellow($"--{cmdMoniker}")} needs to run migration {Red($"--{cmdMonikerNeeded}")} before.");
+        }
+    }
+}
+
+if (!dependenciesSatisfied)
+{
+    return;
+}
+
+foreach (var command in commands)
+{
+    await mediatr.Send(command);
+    Console.WriteLine($"Command {command.GetType().Name} with {command} completed");
+}
+
+// switch (args.Length)
+// {
+//     case 1 when args[0].IsIn("help", "h"):
+//     {
+//         PrintCommandDescriptions();
+//         break;
+//     }
+//
+//     case 0:
+//     {
+//         Console.WriteLine($"Invalid arguments, for help call with command {Yellow("help")}, usable commands:");
+//         PrintCommandDescriptions();
+//         break;
+//     }
+//
+//     default:
+//     {
+//         var dry = args.Contains("--dry");
+//         var cultureCode = "";
+//
+//         if (args[0] == "migrate" && args[1] == $"--{MigrateContactGroupsCommand.Moniker}")
+//         {
+//             await mediatr.Send(new MigrateContactGroupsCommand(dry));
+//             logger.LogInformation("Finished!");
+//         }
+//
+//         if (args[0] == "migrate" && args[1] == $"--{MigrateContactManagementCommand.Moniker}")
+//         {
+//             await mediatr.Send(new MigrateContactManagementCommand(dry));
+//             logger.LogInformation("Finished!");
+//             break;
+//         }
+//
+//         if (args[0] == "migrate" && args[1] == $"--{MigrateDataProtectionCommand.Moniker}")
+//         {
+//             await mediatr.Send(new MigrateDataProtectionCommand(dry));
+//             logger.LogInformation("Finished!");
+//             break;
+//         }
+//
+//         if (args[0] == "migrate" && args[1] == $"--{MigrateFormsCommand.Moniker}")
+//         {
+//             await mediatr.Send(new MigrateFormsCommand(dry));
+//             logger.LogInformation("Finished!");
+//             break;
+//         }
+//
+//         if (args[0] == "migrate" && args[1] == $"--{MigrateMediaLibrariesCommand.Moniker}")
+//         {
+//             await mediatr.Send(new MigrateMediaLibrariesCommand(dry));
+//             logger.LogInformation("Finished!");
+//             break;
+//         }
+//
+//         if (args[0] == "migrate" && args[1] == $"--{MigratePageTypesCommand.Moniker}")
+//         {
+//             await mediatr.Send(new MigratePageTypesCommand(dry));
+//             logger.LogInformation("Finished!");
+//             break;
+//         }
+//
+//         if (args[0] == "migrate" && args[1] == $"--{MigratePagesCommand.Moniker}")
+//         {
+//             if (RequireParameter("--culture", out var culture))
+//             {
+//                 try
+//                 {
+//                     if (CultureInfo.GetCultureInfo(
+//                             culture) is CultureInfo cultureInfo) // TODO tk: 2022-05-18 also check in kentico db for validity
+//                     {
+//                         cultureCode = cultureInfo.Name;
+//                     }
+//                 }
+//                 catch (CultureNotFoundException cnfex)
+//                 {
+//                     Console.WriteLine($"{Red($"Culture '{culture}' not found!")}");
+//                     break;
+//                 }
+//
+//                 await mediatr.Send(new MigratePagesCommand(dry, cultureCode));
+//                 logger.LogInformation("Finished!");
+//                 break;
+//             }
+//
+//             break;
+//         }
+//
+//         if (args[0] == "migrate" && args[1] == $"--{MigrateSettingKeysCommand.Moniker}")
+//         {
+//             await mediatr.Send(new MigrateSettingKeysCommand(dry));
+//             logger.LogInformation("Finished!");
+//             break;
+//         }
+//
+//         if (args[0] == "migrate" && args[1] == $"--{MigrateSitesCommand.Moniker}")
+//         {
+//             await mediatr.Send(new MigrateSitesCommand(dry));
+//             logger.LogInformation("Finished!");
+//             break;
+//         }
+//
+//         if (args[0] == "migrate" && args[1] == $"--{MigrateUsersCommand.Moniker}")
+//         {
+//             await mediatr.Send(new MigrateUsersCommand(dry));
+//             logger.LogInformation("Finished!");
+//             break;
+//         }
+//
+//         if (args[0] == "migrate" && args[1] == $"--{MigrateWebFarmsCommand.Moniker}")
+//         {
+//             await mediatr.Send(new MigrateWebFarmsCommand(dry));
+//             logger.LogInformation("Finished!");
+//             break;
+//         }
+//
+//         Console.WriteLine($"Invalid arguments, for help call with command {Yellow("help")}, usable commands:");
+//         PrintCommandDescriptions();
+//
+//         break;
+//     }
+// }
 
 Console.WriteLine("Press any key to exit...");
 Console.ReadKey();

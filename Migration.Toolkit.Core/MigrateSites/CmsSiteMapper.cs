@@ -31,12 +31,13 @@ public class CmsSiteMapper: IEntityMapper<KX13.Models.CmsSite, KXO.Models.CmsSit
             target = new Migration.Toolkit.KXO.Models.CmsSite();
             newInstance = true;
         }
-        else if (source.SiteGuid != target.SiteGuid)
-        {
-            // assertion failed
-            _logger.LogTrace("Assertion failed, entity key mismatch.");
-            return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXO.Models.CmsSite>();
-        }
+        // For site guid math is not required!
+        // else if (source.SiteGuid != target.SiteGuid)
+        // {
+        //     // assertion failed
+        //     _logger.LogTrace("Assertion failed, entity key mismatch.");
+        //     return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXO.Models.CmsSite>();
+        // }
         
         // target.SiteId = source.SiteId;
         target.SiteName = source.SiteName;
@@ -45,7 +46,7 @@ public class CmsSiteMapper: IEntityMapper<KX13.Models.CmsSite, KXO.Models.CmsSit
         target.SiteStatus = source.SiteStatus;
         target.SiteDomainName = source.SiteDomainName;
         target.SiteDefaultVisitorCulture = source.SiteDefaultVisitorCulture;
-        // target.SiteGuid = source.SiteGuid;
+        // target.SiteGuid = source.SiteGuid; // TODO tk: 2022-05-26 do not rewrite, instead add siteguid to mapping
         target.SiteLastModified = source.SiteLastModified;
 
         // [InverseProperty("CampaignSite")]

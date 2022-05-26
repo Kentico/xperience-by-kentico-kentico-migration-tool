@@ -2,8 +2,8 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Migration.Toolkit.Common;
 using Migration.Toolkit.Core.Abstractions;
-using Migration.Toolkit.Core.Configuration;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
@@ -18,7 +18,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
     private readonly IEntityMapper<KX13.Models.CmsUser, KXO.Models.CmsUser> _userMapper;
     private readonly IEntityMapper<KX13.Models.CmsRole, KXO.Models.CmsRole> _roleMapper;
-    private readonly GlobalConfiguration _globalConfiguration;
+    private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IMigrationProtocol _migrationProtocol;
 
@@ -30,7 +30,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
         IDbContextFactory<KX13.Context.KX13Context> kx13ContextFactory,
         IEntityMapper<KX13.Models.CmsUser, KXO.Models.CmsUser> userMapper,
         IEntityMapper<KX13.Models.CmsRole, KXO.Models.CmsRole> roleMapper,
-        GlobalConfiguration globalConfiguration,
+        ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IMigrationProtocol migrationProtocol
     )
@@ -40,7 +40,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
         _kx13ContextFactory = kx13ContextFactory;
         _userMapper = userMapper;
         _roleMapper = roleMapper;
-        _globalConfiguration = globalConfiguration;
+        _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _migrationProtocol = migrationProtocol;
         _kxoContext = _kxoContextFactory.CreateDbContext();
@@ -49,15 +49,14 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
     public async Task<GenericCommandResult> Handle(MigrateUsersCommand request, CancellationToken cancellationToken)
     {
         // using var protocolScope = _migrationProtocol.CreateScope<MigrateUsersCommandHandler>();  
+        var explicitSiteIdMapping = _toolkitConfiguration.RequireSiteIdExplicitMapping<KX13.Models.CmsSite>(s => s.SiteId).Keys.ToList();
         
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
-        var selectedSites = _globalConfiguration.SiteIdMapping.Keys;
-        
-        await RequireMigratedCmsRoles(kx13Context, cancellationToken);
+        await RequireMigratedCmsRoles(kx13Context, cancellationToken, explicitSiteIdMapping);
 
         var kx13CmsUsers = kx13Context.CmsUsers
-                .Include(u => u.CmsUserRoles.Where(x => selectedSites.Contains(x.Role.SiteId) || x.Role.SiteId == null))
+                .Include(u => u.CmsUserRoles.Where(x => explicitSiteIdMapping.Contains(x.Role.SiteId) || x.Role.SiteId == null))
                 .ThenInclude(ur => ur.Role)
             ;
 
@@ -178,10 +177,10 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
         return new GenericCommandResult();
     }
 
-    private async Task RequireMigratedCmsRoles(KX13Context kx13Context, CancellationToken cancellationToken)
+    private async Task RequireMigratedCmsRoles(KX13Context kx13Context, CancellationToken cancellationToken, List<int?> explicitSiteIdMapping)
     {
         var kx13CmsRoles = kx13Context.CmsRoles
-            .Where(x => _globalConfiguration.SiteIdMapping.Keys.Contains(x.SiteId) || x.SiteId == null);
+            .Where(x => explicitSiteIdMapping.Contains(x.SiteId) || x.SiteId == null);
 
         foreach (var kx13CmsRole in kx13CmsRoles)
         {

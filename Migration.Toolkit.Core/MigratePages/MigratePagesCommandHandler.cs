@@ -1,8 +1,8 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Migration.Toolkit.Common;
 using Migration.Toolkit.Core.Abstractions;
-using Migration.Toolkit.Core.Configuration;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
@@ -18,7 +18,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, G
     private readonly IEntityMapper<KX13.Models.CmsTree, KXO.Models.CmsTree> _treeMapper;
     private readonly IEntityMapper<KX13.Models.CmsAcl, KXO.Models.CmsAcl> _aclMapper;
     private readonly IEntityMapper<KX13.Models.CmsPageUrlPath, KXO.Models.CmsPageUrlPath> _pageUrlPathMapper;
-    private readonly GlobalConfiguration _globalConfiguration;
+    private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IMigrationProtocol _migrationProtocol;
 
@@ -31,7 +31,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, G
         IEntityMapper<KX13.Models.CmsTree, KXO.Models.CmsTree> treeMapper,
         IEntityMapper<KX13.Models.CmsAcl, KXO.Models.CmsAcl> aclMapper,
         IEntityMapper<KX13.Models.CmsPageUrlPath, KXO.Models.CmsPageUrlPath> pageUrlPathMapper,
-        GlobalConfiguration globalConfiguration,
+        ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IMigrationProtocol migrationProtocol
     )
@@ -42,7 +42,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, G
         _treeMapper = treeMapper;
         _aclMapper = aclMapper;
         _pageUrlPathMapper = pageUrlPathMapper;
-        _globalConfiguration = globalConfiguration;
+        _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _migrationProtocol = migrationProtocol;
         _kxoContext = kxoContextFactory.CreateDbContext();
@@ -50,17 +50,19 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, G
 
     public async Task<GenericCommandResult> Handle(MigratePagesCommand request, CancellationToken cancellationToken)
     {
-        var (dry, cultureCode) = request;
+        var cultureCode = request.CultureCode;
+
+        var explicitSiteIdMapping = _toolkitConfiguration.RequireSiteIdExplicitMapping<KX13.Models.CmsSite>(s => s.SiteId).Keys.ToList();
         
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
         // TODO tk: 2022-05-19 reorder method arguments
-        await RequireMigratedCmsAcls(cancellationToken, kx13Context);
+        await RequireMigratedCmsAcls(cancellationToken, kx13Context, explicitSiteIdMapping);
 
         var kx13CmsTrees = kx13Context.CmsTrees
                 .Include(t => t.CmsDocuments.Where(x => x.DocumentCulture == cultureCode))
                 .Include(t => t.NodeClass)
-                .Where(x => _globalConfiguration.SiteIdMapping.Keys.Contains(x.NodeSiteId))
+                .Where(x => explicitSiteIdMapping.Contains(x.NodeSiteId))
                 .OrderBy(t => t.NodeLevel)
                 .ThenBy(t => t.NodeParentId)
                 .ThenBy(t => t.NodeId)
@@ -163,15 +165,15 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, G
         }
         
         // TODO tk: 2022-05-19 reorder method arguments
-        await RequireMigratedCmsPageUrlPaths(cancellationToken, kx13Context);
+        await RequireMigratedCmsPageUrlPaths(cancellationToken, kx13Context, explicitSiteIdMapping);
         
         return new GenericCommandResult();
     }
 
-    private async Task RequireMigratedCmsAcls(CancellationToken cancellationToken, KX13Context kx13Context)
+    private async Task RequireMigratedCmsAcls(CancellationToken cancellationToken, KX13Context kx13Context, List<int?> explicitSiteIdMapping)
     {
         var kx13CmsAcls = kx13Context.CmsAcls
-            .Where(x => _globalConfiguration.SiteIdMapping.Keys.Contains(x.AclsiteId));
+            .Where(x => explicitSiteIdMapping.Contains(x.AclsiteId));
 
         foreach (var kx13CmsAcl in kx13CmsAcls)
         {
@@ -228,10 +230,10 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, G
     }
 
     // TODO tk: 2022-05-19 might be better to migrate after each cmsTree in case migration get interrupted
-    private async Task RequireMigratedCmsPageUrlPaths(CancellationToken cancellationToken, KX13Context kx13Context)
+    private async Task RequireMigratedCmsPageUrlPaths(CancellationToken cancellationToken, KX13Context kx13Context, List<int?> explicitSiteIdMapping)
     {
         var kx13CmsPageUrlPaths = kx13Context.CmsPageUrlPaths
-            .Where(x => _globalConfiguration.SiteIdMapping.Keys.Contains(x.PageUrlPathSiteId));
+            .Where(x => explicitSiteIdMapping.Contains(x.PageUrlPathSiteId));
 
         foreach (var kx13CmsPageUrlPath in kx13CmsPageUrlPaths)
         {
@@ -266,8 +268,8 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, G
 
                         _migrationProtocol.Success(kx13CmsPageUrlPath, cmsPageUrlPath, mapped);
                         _logger.LogInformation(newInstance
-                            ? $"CmsPageUrlPath: {cmsPageUrlPath.PageUrlPathGuid} was inserted."
-                            : $"CmsPageUrlPath: {cmsPageUrlPath.PageUrlPathGuid} was updated.");
+                            ? $"CmsPageUrlPath: {cmsPageUrlPath.PageUrlPathUrlPath} with Guid {cmsPageUrlPath.PageUrlPathGuid} was inserted."
+                            : $"CmsPageUrlPath: {cmsPageUrlPath.PageUrlPathUrlPath} with Guid {cmsPageUrlPath.PageUrlPathGuid} was updated.");
                     }
                     catch (Exception ex) // TODO tk: 2022-05-18 handle exceptions
                     {

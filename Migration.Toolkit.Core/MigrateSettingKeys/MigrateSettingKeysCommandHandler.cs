@@ -1,12 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics;
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
-using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.Core.Abstractions;
-using Migration.Toolkit.Core.Configuration;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
@@ -21,7 +17,6 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
     private readonly IDbContextFactory<KxoContext> _kxoContextFactory;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
-    private readonly GlobalConfiguration _globalConfiguration;
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly IMigrationProtocol _migrationProtocol;
     private readonly IEntityMapper<KX13.Models.CmsSettingsKey, KXO.Models.CmsSettingsKey> _mapper;
@@ -38,7 +33,6 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
         IDbContextFactory<KXO.Context.KxoContext> kxoContextFactory,
         IDbContextFactory<KX13.Context.KX13Context> kx13ContextFactory,
         PrimaryKeyMappingContext primaryKeyMappingContext,
-        GlobalConfiguration globalConfiguration,
         ToolkitConfiguration toolkitConfiguration,
         IMigrationProtocol migrationProtocol
         )
@@ -50,7 +44,6 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
         _kxoContextFactory = kxoContextFactory;
         _kx13ContextFactory = kx13ContextFactory;
         _primaryKeyMappingContext = primaryKeyMappingContext;
-        _globalConfiguration = globalConfiguration;
         _toolkitConfiguration = toolkitConfiguration;
         _migrationProtocol = migrationProtocol;
         _kxoContext = _kxoContextFactory.CreateDbContext();
@@ -163,6 +156,7 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
     public async Task<MigrateSettingsKeysResult> Handle(MigrateSettingKeysCommand request, CancellationToken cancellationToken)
     {
         var entityConfiguration = _toolkitConfiguration.EntityConfigurations.GetEntityConfiguration<KX13.Models.CmsSettingsKey>();
+        var explicitSiteIdMapping = _toolkitConfiguration.RequireSiteIdExplicitMapping<KX13.Models.CmsSite>(s => s.SiteId).Keys.ToList();
         
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
@@ -170,7 +164,7 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
 
         _logger.LogInformation($"CmsSettingsKey synchronization starting");
         var cmsSettingsKeys = kx13Context.CmsSettingsKeys
-                .Where(csk=> _globalConfiguration.SiteIdMapping.Keys.Contains(csk.SiteId) || csk.SiteId == null)
+                .Where(csk=> explicitSiteIdMapping.Contains(csk.SiteId) || csk.SiteId == null)
             // .Where(k => k.KeyIsCustom == true)
             ;
         

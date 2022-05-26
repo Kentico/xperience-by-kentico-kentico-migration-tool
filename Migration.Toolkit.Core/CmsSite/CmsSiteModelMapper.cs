@@ -29,15 +29,16 @@ public class CmsSiteModelMapper : IEntityMapper<Migration.Toolkit.KX13.Models.Cm
             target = new K14M.CmsSite();
             newInstance = true;
         }
-        else if (source.SiteGuid != target.SiteGuid)
-        {
-            // assertion failed
-            _logger.LogTrace("Assertion failed, entity Guid mismatch.");
-            return new ModelMappingFailedKeyMismatch<K14M.CmsSite>();
-        }
+        // For site Guid match is not required!
+        // else if (source.SiteGuid != target.SiteGuid)
+        // {
+        //     // assertion failed
+        //     _logger.LogTrace("Assertion failed, entity Guid mismatch.");
+        //     return new ModelMappingFailedKeyMismatch<K14M.CmsSite>();
+        // }
 
         // map entity
-        target.SiteGuid = source.SiteGuid;
+        // target.SiteGuid = source.SiteGuid;
         target.SiteName = source.SiteName;
         target.SiteStatus = source.SiteStatus;
         target.SiteDisplayName = source.SiteDisplayName;

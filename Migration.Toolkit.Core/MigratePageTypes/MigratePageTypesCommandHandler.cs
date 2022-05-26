@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Core.Abstractions;
-using Migration.Toolkit.Core.Configuration;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KX13.Models;
@@ -16,7 +15,6 @@ public class MigratePageTypesCommandHandler: IRequestHandler<MigratePageTypesCom
 {
     private readonly ILogger<MigratePageTypesCommandHandler> _logger;
     private readonly IEntityMapper<CmsClass, KXO.Models.CmsClass> _mapper;
-    private readonly EntityConfigurations _entityConfigurations;
     private readonly IDbContextFactory<KxoContext> _kxoContextFactory;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
     private readonly IMigrationProtocol _migrationProtocol;
@@ -24,7 +22,6 @@ public class MigratePageTypesCommandHandler: IRequestHandler<MigratePageTypesCom
     public MigratePageTypesCommandHandler(
         ILogger<MigratePageTypesCommandHandler> logger,
         IEntityMapper<KX13.Models.CmsClass, KXO.Models.CmsClass> mapper,
-        EntityConfigurations entityConfigurations,
         IDbContextFactory<KXO.Context.KxoContext> kxoContextFactory,
         IDbContextFactory<KX13.Context.KX13Context> kx13ContextFactory,
         IMigrationProtocol migrationProtocol
@@ -32,7 +29,6 @@ public class MigratePageTypesCommandHandler: IRequestHandler<MigratePageTypesCom
     {
         _logger = logger;
         _mapper = mapper;
-        _entityConfigurations = entityConfigurations;
         _kxoContextFactory = kxoContextFactory;
         _kx13ContextFactory = kx13ContextFactory;
         _migrationProtocol = migrationProtocol;

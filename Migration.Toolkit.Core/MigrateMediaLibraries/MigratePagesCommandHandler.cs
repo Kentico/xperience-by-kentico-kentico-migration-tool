@@ -1,8 +1,8 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Migration.Toolkit.Common;
 using Migration.Toolkit.Core.Abstractions;
-using Migration.Toolkit.Core.Configuration;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
@@ -17,7 +17,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
     private readonly IEntityMapper<KX13.Models.MediaLibrary, KXO.Models.MediaLibrary> _mediaLibraryMapper;
     private readonly IEntityMapper<KX13.Models.MediaFile, KXO.Models.MediaFile> _mediaFileMapper;
-    private readonly GlobalConfiguration _globalConfiguration;
+    private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IMigrationProtocol _migrationProtocol;
 
@@ -29,7 +29,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
         IDbContextFactory<KX13.Context.KX13Context> kx13ContextFactory,
         IEntityMapper<KX13.Models.MediaLibrary, KXO.Models.MediaLibrary> mediaLibraryMapper,
         IEntityMapper<KX13.Models.MediaFile, KXO.Models.MediaFile> mediaFileMapper,
-        GlobalConfiguration globalConfiguration,
+        ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IMigrationProtocol migrationProtocol
     )
@@ -39,7 +39,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
         _kx13ContextFactory = kx13ContextFactory;
         _mediaLibraryMapper = mediaLibraryMapper;
         _mediaFileMapper = mediaFileMapper;
-        _globalConfiguration = globalConfiguration;
+        _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _migrationProtocol = migrationProtocol;
         _kxoContext = kxoContextFactory.CreateDbContext();
@@ -50,12 +50,13 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
         // var (dry, cultureCode) = request;
         
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
-
+        
+        var explicitSiteIdMapping = _toolkitConfiguration.RequireSiteIdExplicitMapping<KX13.Models.CmsSite>(s => s.SiteId).Keys.ToList();
         // TODO tk: 2022-05-19 reorder method arguments
         // await RequireMigratedCmsAcls(cancellationToken, kx13Context);
 
         var kx13MediaLibraries = kx13Context.MediaLibraries
-                .Where(x => _globalConfiguration.SiteIdMapping.Keys.Contains(x.LibrarySiteId))
+                .Where(x => explicitSiteIdMapping.Contains(x.LibrarySiteId))
                 .OrderBy(t => t.LibraryId)
             ;
 
@@ -115,16 +116,16 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
         }
         
         // TODO tk: 2022-05-19 reorder method arguments
-        await RequireMigratedMediaFiles(cancellationToken, kx13Context);
+        await RequireMigratedMediaFiles(cancellationToken, kx13Context, explicitSiteIdMapping);
         
         
         return new GenericCommandResult();
     }
 
-    private async Task RequireMigratedMediaFiles(CancellationToken cancellationToken, KX13Context kx13Context)
+    private async Task RequireMigratedMediaFiles(CancellationToken cancellationToken, KX13Context kx13Context, List<int?> explicitSiteIdMapping)
     {
         var kx13MediaFiles = kx13Context.MediaFiles
-            .Where(x => _globalConfiguration.SiteIdMapping.Keys.Contains(x.FileSiteId));
+            .Where(x => explicitSiteIdMapping.Contains(x.FileSiteId));
 
         foreach (var kx13MediaFile in kx13MediaFiles)
         {

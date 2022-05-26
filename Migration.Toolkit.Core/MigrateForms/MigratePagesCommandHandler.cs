@@ -1,8 +1,8 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Migration.Toolkit.Common;
 using Migration.Toolkit.Core.Abstractions;
-using Migration.Toolkit.Core.Configuration;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
@@ -17,9 +17,11 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, G
     private readonly IDbContextFactory<KxoContext> _kxoContextFactory;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
     private readonly IEntityMapper<CmsForm, KXO.Models.CmsForm> _cmsFormsMapper;
+
+    private readonly ToolkitConfiguration _toolkitConfiguration;
+
     // private readonly IEntityMapper<KX13.Models.CmsAcl, KXO.Models.CmsAcl> _aclMapper;
     // private readonly IEntityMapper<KX13.Models.CmsPageUrlPath, KXO.Models.CmsPageUrlPath> _pageUrlPathMapper;
-    private readonly GlobalConfiguration _globalConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IMigrationProtocol _migrationProtocol;
 
@@ -32,7 +34,7 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, G
         IEntityMapper<KX13.Models.CmsForm, KXO.Models.CmsForm> cmsFormsMapper,
         // IEntityMapper<KX13.Models.CmsAcl, KXO.Models.CmsAcl> aclMapper,
         // IEntityMapper<KX13.Models.CmsPageUrlPath, KXO.Models.CmsPageUrlPath> pageUrlPathMapper,
-        GlobalConfiguration globalConfiguration,
+        ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IMigrationProtocol migrationProtocol
     )
@@ -41,9 +43,9 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, G
         _kxoContextFactory = kxoContextFactory;
         _kx13ContextFactory = kx13ContextFactory;
         _cmsFormsMapper = cmsFormsMapper;
+        _toolkitConfiguration = toolkitConfiguration;
         // _aclMapper = aclMapper;
         // _pageUrlPathMapper = pageUrlPathMapper;
-        _globalConfiguration = globalConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _migrationProtocol = migrationProtocol;
         _kxoContext = kxoContextFactory.CreateDbContext();
@@ -55,9 +57,11 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, G
 
         // TODO tk: 2022-05-19 reorder method arguments
         // await RequireMigratedCmsAcls(cancellationToken, kx13Context);
-
+        
+        var explicitSiteIdMapping = _toolkitConfiguration.RequireSiteIdExplicitMapping<KX13.Models.CmsSite>(s => s.SiteId).Keys.ToList();
+        
         var kx13CmsForms = kx13Context.CmsForms
-                .Where(x => _globalConfiguration.SiteIdMapping.Keys.Contains(x.FormSiteId))
+                .Where(x => explicitSiteIdMapping.Contains(x.FormSiteId))
                 .OrderBy(t => t.FormId)
             ;
 

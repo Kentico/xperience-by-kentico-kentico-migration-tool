@@ -1,6 +1,7 @@
 using MediatR;
 using MediatR.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Behaviors;
@@ -8,10 +9,12 @@ using Migration.Toolkit.Core.CmsResource;
 using Migration.Toolkit.Core.CmsSettingsKey;
 using Migration.Toolkit.Core.CmsSite;
 using Migration.Toolkit.Core.Contexts;
+using Migration.Toolkit.Core.MigrateForms;
 using Migration.Toolkit.Core.MigrateMediaLibraries;
 using Migration.Toolkit.Core.MigratePages;
 using Migration.Toolkit.Core.MigratePageTypes;
 using Migration.Toolkit.Core.MigrateSettingKeys;
+using Migration.Toolkit.Core.MigrateSites;
 using Migration.Toolkit.Core.MigrateUsers;
 using Migration.Toolkit.Core.MigrateWebFarms;
 using Migration.Toolkit.Core.MigrationProtocol;
@@ -26,6 +29,8 @@ public static class DependencyInjectionExtensions
         services.AddSingleton<IMigrationProtocol, DebugMigrationProtocol>();
         // services.AddSingleton<IMigrationProtocol, NullMigrationProtocol>();
         services.AddScoped<IPrimaryKeyLocatorService, PrimaryKeyLocatorService>();
+
+        services.AddSingleton(s => new TableReflectionService(s.GetRequiredService<ILogger<TableReflectionService>>()));
         
         // TODO tk: 2022-05-17 rem
         // services.AddTransient<IPkMappingService, PkMappingService>();
@@ -74,9 +79,17 @@ public static class DependencyInjectionExtensions
         services.AddTransient<IEntityMapper<KX13.Models.MediaFile, KXO.Models.MediaFile>, MediaFileMapper>();
         services.AddTransient<IEntityMapper<KX13.Models.MediaLibrary, KXO.Models.MediaLibrary>, MediaLibraryMapper>();
         
+        // sites
+        services.AddTransient<IEntityMapper<KX13.Models.CmsSite, KXO.Models.CmsSite>, CmsSiteMapper>();
+        services.AddTransient<IRequestHandler<MigrateSitesCommand, GenericCommandResult>, MigrateSitesCommandHandler>();
+        
+        // cms forms
+        services.AddTransient<IEntityMapper<KX13.Models.CmsForm, KXO.Models.CmsForm>, CmsFormMapper>();
+        services.AddTransient<MigrateFormsCommandHandler>();
+        
         services.AddMediatR(typeof(DependencyInjectionExtensions));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestHandlingBehavior<,>));
-        
+
         // IPipelineBehavior 
         return services;
     }
