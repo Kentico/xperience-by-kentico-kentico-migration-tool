@@ -14,6 +14,12 @@ public static class HandbookReferences
     #endregion
 
 
+    #region "Not supported right now"
+
+    public static HandbookReference MediaFileMigrateFileManually => new("MediaFile_MigrateFileManually");
+
+    #endregion
+
     #region "Errors - something need to be done"
 
     public static HandbookReference CmsUserEmailConstraintBroken => new("CmsUser_EmailConstraintBroken");
