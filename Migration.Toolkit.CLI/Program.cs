@@ -129,6 +129,12 @@ while (argsQ.TryDequeue(out var arg))
 {
     var cultureCode = "";
 
+    if (arg.IsIn("help", "h"))
+    {
+        PrintCommandDescriptions();
+        break;
+    }
+
     if (arg == "migrate" && firstHaveToBeMigrate)
     {
         firstHaveToBeMigrate = false;
@@ -261,7 +267,7 @@ if (!dependenciesSatisfied)
 foreach (var command in commands)
 {
     await mediatr.Send(command);
-    Console.WriteLine($"Command {command.GetType().Name} with {command} completed");
+    Console.WriteLine($"Command {command.GetType().Name} is completed");
 }
 
 // switch (args.Length)
