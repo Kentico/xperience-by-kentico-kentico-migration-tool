@@ -46,7 +46,7 @@ public class CmsConsentAgreementMapper : IEntityMapper<KX13.Models.CmsConsentAgr
         //    return new ModelMappingFailed<Migration.Toolkit.KXO.Models.CmsConsentAgreement>($"Contact: {source.ConsentAgreementContactId} for entity not found");
         //}
 
-        var consentId = _primaryKeyMappingContext.MapFromSourceNonRequired<KX13.Models.CmsConsent>(r => r.ConsentId, source.ConsentAgreementConsentId);
+        var consentId = _primaryKeyMappingContext.MapFromSource<KX13.Models.CmsConsent>(r => r.ConsentId, source.ConsentAgreementConsentId);
 
         if (!consentId.HasValue)
         {

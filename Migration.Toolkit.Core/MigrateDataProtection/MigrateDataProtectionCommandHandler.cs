@@ -49,7 +49,7 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
     
     public async Task<GenericCommandResult> Handle(MigrateDataProtectionCommand request, CancellationToken cancellationToken)
     {
-        var (dry, batchSize) = request;
+        var batchSize = request.BatchSize;
         using var protocolScope = _migrationProtocol.CreateScope<MigrateDataProtectionCommandHandler>();
         
         await MigrateConsent(cancellationToken);

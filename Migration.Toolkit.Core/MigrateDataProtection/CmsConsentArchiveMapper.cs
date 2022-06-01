@@ -37,7 +37,7 @@ public class CmsConsentArchiveMapper : IEntityMapper<KX13.Models.CmsConsentArchi
             return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXO.Models.CmsConsentArchive>();
         }
 
-        var consentId = _primaryKeyMappingContext.MapFromSourceNonRequired<KX13.Models.CmsConsent>(r => r.ConsentId, source.ConsentArchiveConsentId);
+        var consentId = _primaryKeyMappingContext.MapFromSource<KX13.Models.CmsConsent>(r => r.ConsentId, source.ConsentArchiveConsentId);
 
         if (!consentId.HasValue)
         {
