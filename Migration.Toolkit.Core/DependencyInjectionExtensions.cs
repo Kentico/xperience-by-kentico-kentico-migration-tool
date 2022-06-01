@@ -15,7 +15,6 @@ using Migration.Toolkit.Core.MigratePageTypes;
 using Migration.Toolkit.Core.MigrateSettingKeys;
 using Migration.Toolkit.Core.MigrateSites;
 using Migration.Toolkit.Core.MigrateUsers;
-using Migration.Toolkit.Core.MigrateWebFarms;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.Core.Services;
 using Migration.Toolkit.Core.Services.BulkCopy;
@@ -57,8 +56,8 @@ public static class DependencyInjectionExtensions
         services.AddTransient<MigrateUsersCommandHandler>();
 
         // cms web farm
-        services.AddTransient<IEntityMapper<KX13.Models.CmsWebFarmServer, KXO.Models.CmsWebFarmServer>, CmsWebFarmMapper>();
-        services.AddTransient<MigrateWebFarmsCommandHandler>();
+        // services.AddTransient<IEntityMapper<KX13.Models.CmsWebFarmServer, KXO.Models.CmsWebFarmServer>, CmsWebFarmMapper>();
+        // services.AddTransient<MigrateWebFarmsCommandHandler>();
         
         // pages
         services.AddTransient<MigratePagesCommand>();

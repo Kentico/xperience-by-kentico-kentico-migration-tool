@@ -92,10 +92,10 @@ public record MigrateUsersCommand(): IRequest<GenericCommandResult>, ICommand
     public Type[] Dependencies => new[] { typeof(MigrateSitesCommand) };
 }
 
-public record MigrateWebFarmsCommand(): IRequest<GenericCommandResult>, ICommand
-{
-    public static string Moniker => "web-farms";
-    public static string MonikerFriendly => "Web farms";
-    
-    public Type[] Dependencies => new[] { typeof(MigrateSitesCommand) };
-}
+// public record MigrateWebFarmsCommand(): IRequest<GenericCommandResult>, ICommand
+// {
+//     public static string Moniker => "web-farms";
+//     public static string MonikerFriendly => "Web farms";
+//     
+//     public Type[] Dependencies => new[] { typeof(MigrateSitesCommand) };
+// }

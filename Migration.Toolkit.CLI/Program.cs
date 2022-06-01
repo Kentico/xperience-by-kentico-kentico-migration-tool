@@ -118,7 +118,7 @@ void PrintCommandDescriptions()
     WriteCommandDesc($"starts migration of {Green(MigrateMediaLibrariesCommand.MonikerFriendly)}", $"migrate --{MigrateMediaLibrariesCommand.Moniker}");
     WriteCommandDesc($"starts migration of {Green(MigrateSitesCommand.MonikerFriendly)}", $"migrate --{MigrateSitesCommand.Moniker}");
     WriteCommandDesc($"starts migration of {Green(MigrateUsersCommand.MonikerFriendly)}", $"migrate --{MigrateUsersCommand.Moniker}");
-    WriteCommandDesc($"starts migration of {Green(MigrateWebFarmsCommand.MonikerFriendly)}", $"migrate --{MigrateWebFarmsCommand.Moniker}");
+    // WriteCommandDesc($"starts migration of {Green(MigrateWebFarmsCommand.MonikerFriendly)}", $"migrate --{MigrateWebFarmsCommand.Moniker}");
     // Console.WriteLine($"Run with option {Yellow("--dry")} to execute command without persistence");
 }
 
@@ -238,11 +238,11 @@ while (argsQ.TryDequeue(out var arg))
         continue;
     }
 
-    if (arg == $"--{MigrateWebFarmsCommand.Moniker}")
-    {
-        commands.Add(new MigrateWebFarmsCommand());
-        continue;
-    }
+    // if (arg == $"--{MigrateWebFarmsCommand.Moniker}")
+    // {
+    //     commands.Add(new MigrateWebFarmsCommand());
+    //     continue;
+    // }
 
     // Console.WriteLine($"Invalid arguments, for help call with command {Yellow("help")}, usable commands:");
     // PrintCommandDescriptions();
