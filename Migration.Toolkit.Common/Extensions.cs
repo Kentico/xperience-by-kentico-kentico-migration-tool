@@ -25,4 +25,13 @@ public static class Extensions
         
         return string.Join(".", stack.ToArray());
     }
+
+    public static bool UseKenticoDefault(this bool? value) => value ?? false;
+    public static int UseKenticoDefault(this int? value) => value ?? 0;
+
+    public static TEnum AsEnum<TEnum>(this int? value) where TEnum : Enum
+        => (TEnum)Enum.ToObject(typeof(TEnum), value ?? 0);
+    
+    public static TEnum AsEnum<TEnum>(this string? value) where TEnum : struct, Enum
+        => Enum.TryParse<TEnum>(value, out var val) ? val : default(TEnum);
 }

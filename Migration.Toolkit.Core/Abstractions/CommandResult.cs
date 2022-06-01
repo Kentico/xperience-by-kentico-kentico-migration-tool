@@ -7,3 +7,6 @@ public record GenericCommandResult(): CommandResult;
 
 public record MigratePageTypesResult(): CommandResult();
 public record MigrateSettingsKeysResult(): CommandResult();
+
+
+public record CommandFailureResult(): CommandResult;

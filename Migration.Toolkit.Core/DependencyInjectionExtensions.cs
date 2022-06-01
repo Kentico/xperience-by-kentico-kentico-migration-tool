@@ -1,5 +1,5 @@
+using CMS.DataEngine;
 using MediatR;
-using MediatR.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
@@ -7,7 +7,6 @@ using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Behaviors;
 using Migration.Toolkit.Core.CmsResource;
 using Migration.Toolkit.Core.CmsSettingsKey;
-using Migration.Toolkit.Core.CmsSite;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrateForms;
 using Migration.Toolkit.Core.MigrateMediaLibraries;
@@ -19,6 +18,7 @@ using Migration.Toolkit.Core.MigrateUsers;
 using Migration.Toolkit.Core.MigrateWebFarms;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.Core.Services;
+using Migration.Toolkit.Core.Services.BulkCopy;
 
 namespace Migration.Toolkit.Core;
 
@@ -29,19 +29,12 @@ public static class DependencyInjectionExtensions
         services.AddSingleton<IMigrationProtocol, DebugMigrationProtocol>();
         // services.AddSingleton<IMigrationProtocol, NullMigrationProtocol>();
         services.AddScoped<IPrimaryKeyLocatorService, PrimaryKeyLocatorService>();
+        services.AddTransient<BulkDataCopyService>();
 
         services.AddSingleton(s => new TableReflectionService(s.GetRequiredService<ILogger<TableReflectionService>>()));
         
-        // TODO tk: 2022-05-17 rem
-        // services.AddTransient<IPkMappingService, PkMappingService>();
         services.AddScoped<PrimaryKeyMappingContext>();
-        
-        services.AddTransient<IDataEqualityComparer<KX13.Models.CmsSite, KXO.Models.CmsSite>, CmsSiteEqualityComparer>();
-        services.AddTransient<IEntityMapper<Migration.Toolkit.KX13.Models.CmsSite, Migration.Toolkit.KXO.Models.CmsSite>, CmsSiteModelMapper>();
 
-        // TODO tk: 2022-05-17 rem
-        //services.AddTransient<ISynchronizer<Migration.Toolkit.KX13.Models.CmsSettingsKey, Migration.Toolkit.KXO.Models.CmsSettingsKey>, CmsSettingsKeySynchronizer>();
-        
         services.AddTransient<IDataEqualityComparer<Migration.Toolkit.KX13.Models.CmsSettingsKey, Migration.Toolkit.KXO.Models.CmsSettingsKey>, CmsSettingsKeyComparer>();
         services.AddTransient<IEntityMapper<Migration.Toolkit.KX13.Models.CmsSettingsKey, Migration.Toolkit.KXO.Models.CmsSettingsKey>, CmsSettingsKeyMapper>();
 
@@ -49,8 +42,7 @@ public static class DependencyInjectionExtensions
         // page type synchronizer
         services.AddTransient<MigratePageTypesCommandHandler>();
         services.AddTransient<IEntityMapper<KX13.Models.CmsClass, KXO.Models.CmsClass>, CmsClassMapper>();
-        // TODO tk: 2022-05-17 rem
-        // services.AddTransient<ISynchronizer<Migration.Toolkit.KX13.Models.CmsClass, Migration.Toolkit.KXO.Models.CmsClass>, PageTypeSynchronizer>();
+        services.AddTransient<IEntityMapper<KX13.Models.CmsClass, DataClassInfo>, CmsClassMapper>();
         
         // setting keys migrate command
         services.AddTransient<MigrateSettingKeysCommandHandler>();

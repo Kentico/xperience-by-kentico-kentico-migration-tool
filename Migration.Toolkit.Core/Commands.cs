@@ -60,7 +60,7 @@ public record MigratePageTypesCommand(): IRequest<MigratePageTypesResult>, IComm
     public Type[] Dependencies => new[] { typeof(MigrateSitesCommand) };
 }
 
-public record MigratePagesCommand(string CultureCode): IRequest<GenericCommandResult>, ICommand
+public record MigratePagesCommand(string CultureCode): IRequest<CommandResult>, ICommand
 {
     public static string Moniker => "pages";
     public static string MonikerFriendly => "Pages";

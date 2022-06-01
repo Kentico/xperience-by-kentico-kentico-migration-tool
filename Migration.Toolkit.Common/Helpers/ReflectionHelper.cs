@@ -1,3 +1,5 @@
+using System.Reflection;
+
 namespace Migration.Toolkit.Common.Helpers;
 
 public class ReflectionHelper<T>
@@ -21,6 +23,27 @@ public class ReflectionHelper<T>
         });
 
     public static TAttribute? GetFirstAttributeOrNull<TAttribute>() where TAttribute : Attribute => GetAttributes<TAttribute>().FirstOrDefault();
+
+    public static IEnumerable<ObjectPropertyGetterMap> GetPropertyGetterMaps()
+    {
+        var i = 0;
+        foreach (var propertyInfo in CurrentType.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+        {
+            yield return new ObjectPropertyGetterMap
+            {
+                PropertyName = propertyInfo.Name,
+                PropertyGetMethod = propertyInfo.GetMethod,
+                PropertyIndex = i++,
+            };
+        }
+    }
+}
+
+public class ObjectPropertyGetterMap
+{
+    public string PropertyName { get; set; }
+    public MethodInfo? PropertyGetMethod { get; set; }
+    public int PropertyIndex { get; set; }
 }
 
 public class ReflectionHelper

@@ -40,7 +40,7 @@ public class CmsDocumentMapper : IEntityMapper<KX13.Models.CmsDocument, KXO.Mode
         // target.DocumentId = source.DocumentId;
         target.DocumentName = source.DocumentName;
         target.DocumentModifiedWhen = source.DocumentModifiedWhen;
-        target.DocumentForeignKeyValue = source.DocumentForeignKeyValue;
+        target.DocumentForeignKeyValue = source.DocumentForeignKeyValue; // destination key is preserved!
         target.DocumentCreatedWhen = source.DocumentCreatedWhen;
         target.DocumentCheckedOutWhen = source.DocumentCheckedOutWhen;
         target.DocumentPublishFrom = source.DocumentPublishFrom;
