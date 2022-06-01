@@ -74,8 +74,6 @@ public class PrimaryKeyMappingContext
     {
         if (sourceId == null) return null;
         
-        Debug.Assert(sourceId > 0, "sourceId > 0");
-        
         var fullKeyName = $"{typeof(T).FullName}.{keyNameSelector.GetMemberName()}.{sourceId}";
         if (sourceId == 0)
         {
@@ -108,8 +106,6 @@ public class PrimaryKeyMappingContext
     public int? MapFromSourceOrNull<T>(Expression<Func<T, object>> keyNameSelector, int? sourceId)
     {
         if (sourceId == null) return null;
-        
-        Debug.Assert(sourceId > 0, "sourceId > 0");
         
         var fullKeyName = $"{typeof(T).FullName}.{keyNameSelector.GetMemberName()}.{sourceId}";
         if (sourceId == 0)

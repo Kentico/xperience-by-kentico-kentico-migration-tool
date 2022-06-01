@@ -45,8 +45,10 @@ public class BulkDataCopyService
         using var command = targetConnection.CreateCommand();
         var query = $"SELECT COUNT(*) FROM {tableName}";
         command.CommandText = query;
-
-        return ((int)command.ExecuteScalar()) == 0;
+        
+        
+        targetConnection.Open();
+        return ((int)command.ExecuteScalar()) > 0;
     }
 
     public void CopyTableToTable(BulkCopyRequest request)

@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using System.Collections.Immutable;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
@@ -10,6 +11,8 @@ using Migration.Toolkit.KX13.Models;
 using Migration.Toolkit.KXO.Context;
 
 namespace Migration.Toolkit.Core.MigrateSettingKeys;
+
+// TODO tk: 2022-06-01 Q - dle jakého klíče přenášet kategorie settings? jen pro klíče, které budou přeneseny do cílové instance?
 
 public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKeysCommand, MigrateSettingsKeysResult>, IDisposable
 {
@@ -167,9 +170,18 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
                 .Where(csk=> explicitSiteIdMapping.Contains(csk.SiteId) || csk.SiteId == null)
             // .Where(k => k.KeyIsCustom == true)
             ;
+
+        var presentSettingsKeyNames = _kxoContext.CmsSettingsKeys.Select(x => x.KeyName).ToImmutableHashSet();
         
         foreach (var kx13CmsSettingsKey in cmsSettingsKeys)
         {
+            if (!presentSettingsKeyNames.Contains(kx13CmsSettingsKey.KeyName) && kx13CmsSettingsKey.KeyIsCustom == false)
+            {
+                _logger.LogWarning("Setting with key '{key}' is no longer supported.", kx13CmsSettingsKey.KeyName);
+                // TODO tk: 2022-06-01 protocol needs attention?
+                continue;
+            }
+            
             _migrationProtocol.FetchedSource(kx13CmsSettingsKey);
             
             var kxoCmsSettingsKey = _kxoContext.CmsSettingsKeys.FirstOrDefault(k => k.KeyName == kx13CmsSettingsKey.KeyName && k.SiteId == kx13CmsSettingsKey.SiteId);
