@@ -47,9 +47,11 @@ public class PrimaryKeyMappingContext
     
     public int RequireMapFromSource<T>(Expression<Func<T, object>> keyNameSelector, int sourceId)
     {
-        Debug.Assert(sourceId > 0, "sourceId > 0");
-        
         var fullKeyName = $"{typeof(T).FullName}.{keyNameSelector.GetMemberName()}.{sourceId}";
+        if (sourceId == 0)
+        {
+            throw new ArgumentException($"Cannot satisfy required mapping {fullKeyName} - source Id cannot be 0.");
+        }
 
         if (_mappings.TryGetValue(fullKeyName, out var resultId))
         {
@@ -75,6 +77,13 @@ public class PrimaryKeyMappingContext
         Debug.Assert(sourceId > 0, "sourceId > 0");
         
         var fullKeyName = $"{typeof(T).FullName}.{keyNameSelector.GetMemberName()}.{sourceId}";
+        if (sourceId == 0)
+        {
+            // TODO tk: 2022-05-31 source data autofix applied
+            _logger.LogWarning("{key} Key locator invalid argument, cannot supply 0 as argument", fullKeyName);
+            return null;
+        }
+
         if (_mappings.TryGetValue(fullKeyName, out var resultId))
         {
             _logger.LogTrace("{key} resolved as {value}", fullKeyName, resultId);
@@ -103,6 +112,13 @@ public class PrimaryKeyMappingContext
         Debug.Assert(sourceId > 0, "sourceId > 0");
         
         var fullKeyName = $"{typeof(T).FullName}.{keyNameSelector.GetMemberName()}.{sourceId}";
+        if (sourceId == 0)
+        {
+            // TODO tk: 2022-05-31 source data autofix applied
+            _logger.LogWarning("{key} Key locator invalid argument, cannot supply 0 as argument", fullKeyName);
+            return null;
+        }
+        
         if (_mappings.TryGetValue(fullKeyName, out var resultId))
         {
             _logger.LogTrace("{key} resolved as {value}", fullKeyName, resultId);

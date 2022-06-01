@@ -1,16 +1,20 @@
-﻿using MediatR;
+﻿using System.Collections.Immutable;
+using System.Data;
+using System.Xml.Linq;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrationProtocol;
+using Migration.Toolkit.Core.Services.BulkCopy;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KXO.Context;
 
 namespace Migration.Toolkit.Core.MigratePages;
 
-public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, GenericCommandResult>, IDisposable
+public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, CommandResult>, IDisposable
 {
     private readonly ILogger<MigratePagesCommandHandler> _logger;
     private readonly IDbContextFactory<KxoContext> _kxoContextFactory;
@@ -18,6 +22,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, G
     private readonly IEntityMapper<KX13.Models.CmsTree, KXO.Models.CmsTree> _treeMapper;
     private readonly IEntityMapper<KX13.Models.CmsAcl, KXO.Models.CmsAcl> _aclMapper;
     private readonly IEntityMapper<KX13.Models.CmsPageUrlPath, KXO.Models.CmsPageUrlPath> _pageUrlPathMapper;
+    private readonly BulkDataCopyService _bulkDataCopyService;
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IMigrationProtocol _migrationProtocol;
@@ -31,6 +36,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, G
         IEntityMapper<KX13.Models.CmsTree, KXO.Models.CmsTree> treeMapper,
         IEntityMapper<KX13.Models.CmsAcl, KXO.Models.CmsAcl> aclMapper,
         IEntityMapper<KX13.Models.CmsPageUrlPath, KXO.Models.CmsPageUrlPath> pageUrlPathMapper,
+        BulkDataCopyService bulkDataCopyService,
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IMigrationProtocol migrationProtocol
@@ -42,13 +48,14 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, G
         _treeMapper = treeMapper;
         _aclMapper = aclMapper;
         _pageUrlPathMapper = pageUrlPathMapper;
+        _bulkDataCopyService = bulkDataCopyService;
         _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _migrationProtocol = migrationProtocol;
         _kxoContext = kxoContextFactory.CreateDbContext();
     }
 
-    public async Task<GenericCommandResult> Handle(MigratePagesCommand request, CancellationToken cancellationToken)
+    public async Task<CommandResult> Handle(MigratePagesCommand request, CancellationToken cancellationToken)
     {
         var cultureCode = request.CultureCode;
 
@@ -56,9 +63,73 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, G
         
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
-        // TODO tk: 2022-05-19 reorder method arguments
-        await RequireMigratedCmsAcls(cancellationToken, kx13Context, explicitSiteIdMapping);
+        _logger.LogTrace("Selecting existing documents");
+        // assuming coupled data were migrated too in previous attempts
+        var alreadyExistingDocuments = _kxoContext.CmsDocuments
+            .Include(d => d.DocumentNode)
+            .ThenInclude(t => t.NodeClass)
+            .Select(x => new { x.DocumentForeignKeyValue, x.DocumentNode.NodeClass.ClassId, x.DocumentNode.NodeClass.ClassGuid })
+            .ToLookup(k => k.ClassGuid, v => v.DocumentForeignKeyValue);
+        
 
+        _logger.LogTrace("Selecting classes to migrate");
+        var classesToMigrate = kx13Context.CmsClasses
+            .Where(c => c.ClassIsDocumentType && c.ClassIsCoupledClass)
+            .Select(x => new {x.ClassXmlSchema, x.ClassTableName, x.ClassId, x.ClassGuid})
+            ;
+
+        XNamespace nsSchema = "http://www.w3.org/2001/XMLSchema";
+        XNamespace msSchema = "urn:schemas-microsoft-com:xml-msdata";
+        var coupledDataToMigrate = classesToMigrate.AsEnumerable().Select(x =>
+        {
+            var xDoc = XDocument.Parse(x.ClassXmlSchema);
+            var autoIncrementColumns = xDoc.Descendants(nsSchema + "element").Where(x => x.Attribute(msSchema + "AutoIncrement")?.Value == "true")
+                .Select(x => x.Attribute("name").Value).ToImmutableHashSet();
+
+
+            var result = (x.ClassTableName, x.ClassGuid, autoIncrementColumns);
+            _logger.LogTrace("Class '{classGuild}' Resolved as: {result}", x.ClassGuid, result);
+            
+            return result;
+        });
+
+        // check if data is present in target tables
+        var anyDataPresent = false;
+        foreach (var (tableName, classGuid, autoIncrementColumns) in coupledDataToMigrate)
+        {
+            if (_bulkDataCopyService.CheckIfDataExistsInTargetTable(tableName))
+            {
+                _logger.LogError("Data exists in target coupled data table '{tableName}' - cannot migrate.", tableName);
+                anyDataPresent = true;
+            }
+        }
+
+        if (anyDataPresent)
+        {
+            // TODO tk: 2022-06-01 command fatal
+            _logger.LogError("Command failed.");
+            return new CommandFailureResult();
+        }
+
+        foreach (var (tableName, classGuid, autoIncrementColumns) in coupledDataToMigrate)
+        {
+            var lookup = alreadyExistingDocuments[classGuid];
+            var bulkCopyRequest = new BulkCopyRequest(
+                tableName, s => !autoIncrementColumns.Contains(s), reader => lookup.Contains(reader.GetInt32(autoIncrementColumns.Single())), 1500
+            );
+            if (_bulkDataCopyService.CheckIfDataExistsInTargetTable(tableName))
+            {
+                _logger.LogError("Data exists in target coupled data table '{tableName}' - cannot migrate.", tableName);
+                
+                continue;
+            }
+            
+            _logger.LogTrace("Bulk data copy request: {request}", bulkCopyRequest);
+            _bulkDataCopyService.CopyTableToTable(bulkCopyRequest);
+        }
+        
+        await RequireMigratedCmsAcls(kx13Context, explicitSiteIdMapping, cancellationToken);
+        
         var kx13CmsTrees = kx13Context.CmsTrees
                 .Include(t => t.CmsDocuments.Where(x => x.DocumentCulture == cultureCode))
                 .Include(t => t.NodeClass)
@@ -170,7 +241,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, G
         return new GenericCommandResult();
     }
 
-    private async Task RequireMigratedCmsAcls(CancellationToken cancellationToken, KX13Context kx13Context, List<int?> explicitSiteIdMapping)
+    private async Task RequireMigratedCmsAcls(KX13Context kx13Context, List<int?> explicitSiteIdMapping, CancellationToken cancellationToken)
     {
         var kx13CmsAcls = kx13Context.CmsAcls
             .Where(x => explicitSiteIdMapping.Contains(x.AclsiteId));

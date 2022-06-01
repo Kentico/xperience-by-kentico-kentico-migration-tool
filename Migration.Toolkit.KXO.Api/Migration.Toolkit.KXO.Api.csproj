@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Kentico.Xperience.Libraries" Version="14.0.0-build-b109224" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Migration.Toolkit.Common\Migration.Toolkit.Common.csproj" />      
+    </ItemGroup>
+
+</Project>

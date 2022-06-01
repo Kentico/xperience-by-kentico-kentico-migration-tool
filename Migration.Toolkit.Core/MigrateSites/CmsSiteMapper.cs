@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Core.Abstractions;
-using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigratePages;
 
 namespace Migration.Toolkit.Core.MigrateSites;
 
@@ -31,7 +29,7 @@ public class CmsSiteMapper: IEntityMapper<KX13.Models.CmsSite, KXO.Models.CmsSit
             target = new Migration.Toolkit.KXO.Models.CmsSite();
             newInstance = true;
         }
-        // For site guid math is not required!
+        // For site guid match is not required!
         // else if (source.SiteGuid != target.SiteGuid)
         // {
         //     // assertion failed
@@ -44,7 +42,7 @@ public class CmsSiteMapper: IEntityMapper<KX13.Models.CmsSite, KXO.Models.CmsSit
         target.SiteDisplayName = source.SiteDisplayName;
         target.SiteDescription = source.SiteDescription;
         target.SiteStatus = source.SiteStatus;
-        target.SiteDomainName = source.SiteDomainName;
+        // target.SiteDomainName = source.SiteDomainName; // TODO tk: 2022-06-01 check
         target.SiteDefaultVisitorCulture = source.SiteDefaultVisitorCulture;
         // target.SiteGuid = source.SiteGuid; // TODO tk: 2022-05-26 do not rewrite, instead add siteguid to mapping
         target.SiteLastModified = source.SiteLastModified;
