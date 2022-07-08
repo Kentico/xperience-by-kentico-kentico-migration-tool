@@ -266,4 +266,38 @@ public class PrimaryKeyMappingContext
             SetMapping(keyNameSelector, sourceId, targetId);    
         }
     }
+
+    public bool HasMapping<T>(Expression<Func<T, object>> keyNameSelector, int? sourceId, bool useLocator = true)
+    {
+        if (sourceId == null) return true;
+
+        var memberName = keyNameSelector.GetMemberName();
+        var fullKeyName = $"{typeof(T).FullName}.{memberName}.{sourceId}";
+        if (sourceId == 0)
+        {
+            return true;
+        }
+        
+        if (GetExplicitMapping<T>(memberName, sourceId) is { })
+        {
+            return true;
+        }
+
+        if (_mappings.TryGetValue(fullKeyName, out _))
+        {
+            return true;
+        }
+        
+        if (sourceId is not { } sid)
+        {
+            return true;
+        }
+
+        if(useLocator && _primaryKeyLocatorService.TryLocate(keyNameSelector, sid, out _))
+        {
+            return true;
+        }
+
+        return false;
+    }
 }
