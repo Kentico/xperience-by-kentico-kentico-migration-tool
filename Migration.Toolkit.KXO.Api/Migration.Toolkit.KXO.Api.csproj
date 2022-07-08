@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Migration.Toolkit.Common\Migration.Toolkit.Common.csproj" />      
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Kentico.Xperience.Core" Version="22.0.0" />
+    </ItemGroup>
+
+</Project>
