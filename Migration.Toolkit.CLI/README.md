@@ -19,7 +19,7 @@
 
 > warning: only empty sites are currently fully supported.
 
-Command usage `migrate --sites --users`
+Command usage `migrate --siteId 1 --sites --users`
 
 | Parameter                   | Description                                              | Required parameters                      | Dependencies                         |
 |-----------------------------|----------------------------------------------------------|------------------------------------------|--------------------------------------|
