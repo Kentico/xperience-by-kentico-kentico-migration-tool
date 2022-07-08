@@ -39,8 +39,8 @@ Command usage `migrate --sites --users`
 
 ### Examples
 
-1. `Migration.Toolkit.CLI.exe migrate --sites --users --settings-keys --media-libraries --page-types --pages --culture en-US`
-2. `Migration.Toolkit.CLI.exe migrate --page-types --pages --culture en-US --bypass-dependency-check` - if you want to retry pages migration
+1. `Migration.Toolkit.CLI.exe migrate --siteId 1 --sites --users --settings-keys --media-libraries --page-types --pages --culture en-US`
+2. `Migration.Toolkit.CLI.exe migrate --siteId 1 --page-types --pages --culture en-US --bypass-dependency-check` - if you want to retry pages migration
    when `--sites` and `--users` migration was already performed
 
 ### Common behavior and errors during migration
@@ -54,7 +54,7 @@ Command usage `migrate --sites --users`
 
 #### --sites
 
-*
+
 
 ## Configuration
 
@@ -112,36 +112,7 @@ To run tool, configure `appsettings.json` file:
       },
       "CMS_SettingsKey": {
         "ExcludeCodeNames": [
-          "CMSDataVersion",
-          "CMSDBVersion",
-          "CMSStoreAllowAnonymousCustomers",
-          "CMSStoreInvoiceTemplate",
-          "CMSStoreShowTaxRegistrationID",
-          "CMSStoreShowOrganizationID",
-          "CMSStoreUseExtraCompanyAddress",
-          "CMSStoreCheckoutProcess",
-          "CMSStoreRequireCompanyInfo",
-          "CMSNewsletterUseExternalService",
-          "CMSApplicationState",
-          "CMSTranslationsLastStatusCheck",
-          "CMSSalesForceLeadReplicationMappingDateTime",
-          "CMSDBSeparationStartedByServer",
-          "CMSStoreTransformationsInFS",
-          "CMSStoreLayoutsInFS",
-          "CMSStorePageTemplatesInFS",
-          "CMSStoreWebPartLayoutsInFS",
-          "CMSDeploymentMode",
-          "CMSStoreWebpartContainersInFS",
-          "CMSStoreAltFormLayoutsInFS",
-          "CMSStoreFormLayoutsInFS",
-          "CMSModuleUsageTrackingIdentity",
-          "CMSEnableCI",
-          "CMSAllowDynamicNewsletters",
-          "CMSHotfixDataVersion",
-          "CMSHotfixProcedureInProgress",
-          "CMSRichTextEditorLicense",
-          "CMSRESTUrlHashSalt",
-          "CMSJwtTokenEncryptionKey"
+          
         ]
       }
     }

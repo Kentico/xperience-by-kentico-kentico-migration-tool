@@ -118,7 +118,7 @@ public class BulkDataCopyService
         sqlBulkCopy.NotifyAfter = 100000;
         sqlBulkCopy.SqlRowsCopied += (sender, args) =>
         {
-            _logger.LogTrace("Copy '{TableName}': Rows copied={Rows}", tableName, args.RowsCopied);
+            _logger.LogInformation("Copy '{TableName}': Rows copied={Rows}", tableName, args.RowsCopied);
         };
         
         

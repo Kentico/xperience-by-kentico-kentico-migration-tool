@@ -108,8 +108,7 @@ public static class DependencyInjectionExtensions
         // attachments
         services.AddTransient<MigrateAttachmentsCommandHandler>();
         services.AddTransient<IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo>, CmsAttachmentMapper>();
-        services.AddTransient<AttachmentConvertor>();
-        
+
         // IPipelineBehavior 
         return services;
     }
