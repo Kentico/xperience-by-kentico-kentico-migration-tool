@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Migration.Toolkit.Common\Migration.Toolkit.Common.csproj" />
+      <ProjectReference Include="..\Migration.Toolkit.KX13\Migration.Toolkit.KX13.csproj" />
+      <ProjectReference Include="..\Migration.Toolkit.KXO.Api\Migration.Toolkit.KXO.Api.csproj" />
+      <ProjectReference Include="..\Migration.Toolkit.KXO\Migration.Toolkit.KXO.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MediatR" Version="10.0.1" />
+      <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.1" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    </ItemGroup>
+
+</Project>
