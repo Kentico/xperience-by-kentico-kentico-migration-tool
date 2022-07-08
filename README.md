@@ -60,8 +60,9 @@ To get a local copy up and running follow these simple example steps.
         * `--data-protection` - Data protection object migration
         * `--bypass-dependency-check` - to skip command dependency check, if you know you migrated `--sites` already, then you can skip it using this override
 
-8) all set - command line argument should look like this for complete migration `migrate --siteId 4 --culture en-US --sites --users --settings-keys --page-types --pages --attachments --contact-management --forms --media-libraries --data-protection`
-9) run launch profile an observe cmd output (should be also stored in `$ProjectOut\logs\log*.txt` with default settings)
+8) **recommanded** backup target instance filesystem and database
+9) all set - command line argument should look like this for complete migration `migrate --siteId 4 --culture en-US --sites --users --settings-keys --page-types --pages --attachments --contact-management --forms --media-libraries --data-protection`
+10) run launch profile an observe cmd output (should be also stored in `$ProjectOut\logs\log*.txt` with default settings)
 
 ### Prerequisites
 
