@@ -5,7 +5,7 @@ using Migration.Toolkit.Common.Helpers;
 
 namespace Migration.Toolkit.Core.Helpers;
 
-public static class EntityPrinter
+public static class Printer
 {
     public static string PrintKxoModelInfo<T>(T model)
     {
@@ -55,5 +55,10 @@ public static class EntityPrinter
         };
         
         // throw new NotImplementedException($"No entity identity print defined for type '{ReflectionHelper<T>.CurrentType.FullName}'");
+    }
+
+    public static string PrintEnumValues<TEnum>(string separator) where TEnum: struct, Enum
+    {
+        return string.Join(separator, Enum.GetValues<TEnum>());
     }
 }

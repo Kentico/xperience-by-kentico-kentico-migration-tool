@@ -99,7 +99,7 @@ public class HandbookReference
     public HandbookReference WithIdentityPrint<T>(T model)
     {
         this.Data ??= new();
-        this.Data.Add("Entity", EntityPrinter.GetEntityIdentityPrint(model));
+        this.Data.Add("Entity", Printer.GetEntityIdentityPrint(model));
         return this;
     }
 

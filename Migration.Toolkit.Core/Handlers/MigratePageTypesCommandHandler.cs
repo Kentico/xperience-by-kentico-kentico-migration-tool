@@ -74,7 +74,7 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
                 // defer migration to later stage 
                 if (kx13Classes.TryDeferItem(di))
                 {
-                    _logger.LogTrace("Class {Class} inheritance parent not found, deferring migration to end. Attempt {Attempt}", EntityPrinter.GetEntityIdentityPrint(kx13Class), di.Recurrence);
+                    _logger.LogTrace("Class {Class} inheritance parent not found, deferring migration to end. Attempt {Attempt}", Printer.GetEntityIdentityPrint(kx13Class), di.Recurrence);
                 }
                 else
                 {
