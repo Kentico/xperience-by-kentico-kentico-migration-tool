@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Migration.Toolkit.CLI;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Core;
 using Migration.Toolkit.Core.Contexts;
@@ -13,6 +14,17 @@ using Migration.Toolkit.KX13;
 using Migration.Toolkit.KXO;
 using Migration.Toolkit.KXO.Api;
 using Migration.Toolkit.KXO.Context;
+
+const string red = "\x1b[31m";
+const string yellow = "\x1b[33m";
+const string green = "\x1b[32m";
+const string reset = "\x1b[0m";
+
+string Yellow(string ctext) => $"{yellow}{ctext}{reset}";
+string Green(string ctext) => $"{green}{ctext}{reset}";
+string Red(string ctext) => $"{red}{ctext}{reset}";
+
+ConsoleHelper.EnableVirtualTerminalProcessing();
 
 // https://docs.microsoft.com/en-us/dotnet/core/extensions/configuration
 
@@ -23,6 +35,48 @@ var config = new ConfigurationBuilder()
         // .AddEnvironmentVariables()
         .Build()
     ;
+
+var validationErrors = ConfigurationValidator.GetValidationErrors(config);
+var anyValidationErrors = false;
+foreach (var (validationMessageType, message, recommendedFix) in validationErrors)
+{
+    switch (validationMessageType)
+    {
+        case ValidationMessageType.Error:
+            if (!string.IsNullOrWhiteSpace(message))
+            {
+                Console.Write($"{red}Configuration error{reset}: {message}");
+                if (!string.IsNullOrWhiteSpace(recommendedFix))
+                {
+                    Console.Write($" {yellow}Possible fix{reset}: {recommendedFix}");
+                }
+                anyValidationErrors = true;
+                Console.WriteLine();
+            }
+            break;
+        case ValidationMessageType.Warning:
+            if (!string.IsNullOrWhiteSpace(message))
+            {
+                Console.Write($"{yellow}Configuration warning{reset}: {message}");
+                if (!string.IsNullOrWhiteSpace(recommendedFix))
+                {
+                    Console.Write($" {yellow}Possible fix{reset}: {recommendedFix}");
+                }
+
+                Console.WriteLine();
+            }
+
+            break;
+    }
+}
+
+if (anyValidationErrors)
+{
+    Console.WriteLine($"Press any key to exit program...");
+    Console.ReadKey();
+    return;
+}
+
 
 var settings = config.GetRequiredSection("Settings").Get<ToolkitConfiguration>();
 
@@ -50,10 +104,6 @@ services.UseToolkitCore();
 await using var serviceProvider = services.BuildServiceProvider();
 using var scope = serviceProvider.CreateScope();
 var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-
-string Yellow(string ctext) => $"\x1b[33m{ctext}\x1b[0m";
-string Green(string ctext) => $"\x1b[32m{ctext}\x1b[0m";
-string Red(string ctext) => $"\x1b[31m{ctext}\x1b[0m";
 
 void WriteCommandDesc(string desc, string commandMoniker)
 {
