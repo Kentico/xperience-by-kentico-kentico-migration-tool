@@ -83,7 +83,7 @@ public static class ConfigurationValidator
             );
         }
 
-        if (CheckCfgValue(connectionStrings?.GetValue<string>("TargetAttachmentMediaLibraryName")))
+        if (CheckCfgValue(settings?.GetValue<string>("TargetAttachmentMediaLibraryName")))
         {
             yield return new ValidationMessage(ValidationMessageType.Error,
                 $"Configuration value in path 'Settings.TargetAttachmentMediaLibraryName' is required.",

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Migration.Toolkit.Common.Helpers;
 
 namespace Migration.Toolkit.Common;
@@ -42,6 +43,9 @@ public class EntityConfigurations : Dictionary<string, EntityConfiguration>
 
 public class EntityConfiguration
 {
+    [JsonPropertyName("ExcludeCodeNames")]
     public string[] ExcludeCodeNames { get; set; } = Array.Empty<string>();
+    
+    [JsonPropertyName("ExplicitPrimaryKeyMapping")]
     public Dictionary<string, Dictionary<string, int?>> ExplicitPrimaryKeyMapping { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }

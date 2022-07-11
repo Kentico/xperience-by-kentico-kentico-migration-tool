@@ -1,7 +1,12 @@
 using System.Linq.Expressions;
+using System.Text.Json.Serialization;
 
 namespace Migration.Toolkit.Common;
 
+/// <summary>
+/// Autofix enum 
+/// </summary>
+/// <remarks>do not update value names, they are used in json configuration</remarks>
 public enum AutofixEnum
 {
     DiscardData,
@@ -11,17 +16,31 @@ public enum AutofixEnum
 
 public class ToolkitConfiguration
 {
+    [JsonPropertyName("SourceConnectionString")]
     public string? SourceConnectionString { get; set; }
+    
+    [JsonPropertyName("SourceCmsDirPath")]
     public string? SourceCmsDirPath { get; set; }
     
+    [JsonPropertyName("TargetConnectionString")]
     public string? TargetConnectionString { get; set; }
+    
+    [JsonPropertyName("TargetCmsDirPath")]
     public string? TargetCmsDirPath { get; set; }
     
+    [JsonPropertyName("EntityConfigurations")]
     public EntityConfigurations? EntityConfigurations { get; set; }
+    
+    [JsonPropertyName("TargetAttachmentMediaLibraryName")]
     public string? TargetAttachmentMediaLibraryName { get; set; }
+    
+    [JsonPropertyName("MigrateOnlyMediaFileInfo")]
     public bool? MigrateOnlyMediaFileInfo { get; set; } = true;
 
+    [JsonPropertyName("UseOmActivityNodeRelationAutofix")]
     public AutofixEnum? UseOmActivityNodeRelationAutofix { get; set; } = AutofixEnum.Error;
+    
+    [JsonPropertyName("UseOmActivitySiteRelationAutofix")]
     public AutofixEnum? UseOmActivitySiteRelationAutofix { get; set; } = AutofixEnum.Error;
 
     public Dictionary<int?, int?> RequireExplicitMapping<TEntityType>(Expression<Func<TEntityType, object>> keyNameSelector)
