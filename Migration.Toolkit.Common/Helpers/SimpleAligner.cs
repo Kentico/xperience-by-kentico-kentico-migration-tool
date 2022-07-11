@@ -3,13 +3,6 @@ using System.Diagnostics;
 
 namespace Migration.Toolkit.Common.Helpers;
 
-public static class EnumerableHelper
-{
-    public static SimpleAligner<TA, TB, TKey> CreateAligner<TA, TB, TKey>(IEnumerable<TA> eA, IEnumerable<TB> eB, IEnumerable<TKey> eK,
-        SimpleAligner<TA, TB, TKey>.SelectKey<TA> selectKeyA, SimpleAligner<TA, TB, TKey>.SelectKey<TB> selectKeyB, bool disposeEnumerators)
-        where TA : class where TB : class => SimpleAligner<TA, TB, TKey>.Create(eA.GetEnumerator(), eB.GetEnumerator(), eK.GetEnumerator(), selectKeyA, selectKeyB, disposeEnumerators);
-}
-
 public class Aligner<TA, TB, TKey>: IEnumerable<SimpleAlignResult<TA, TB, TKey>> where TA : class where TB : class {
     private readonly IEnumerator<TA> _eA;
     private readonly IEnumerator<TB> _eB;
@@ -71,9 +64,6 @@ public class SimpleAligner<TA, TB, TKey> : IEnumerator<SimpleAlignResult<TA, TB,
             _eA = eA;
             _eB = eB;
             _eK = eK;
-            
-            
-            // this._streamWriter = new StreamWriter("/home/admin77/RiderProjects/Kensync/Output/pairing.txt");
         }
 
         public static SimpleAligner<TA, TB, TKey> Create(
@@ -160,7 +150,6 @@ public class SimpleAligner<TA, TB, TKey> : IEnumerator<SimpleAlignResult<TA, TB,
                     
                     Ordinal++;
                     return _hasK;
-                    // throw new InvalidOperationException($"AB.NOMATCH: possibly error / wrongly sorted, selected source enumerators. Key: {CurrentKey}");
                 }
             } while (_hasA || _hasB);
 

@@ -5,8 +5,10 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
+using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
+using Migration.Toolkit.Core.Helpers;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KX13.Models;
@@ -61,8 +63,31 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
                 .Where(x => x.ClassIsDocumentType).OrderBy(x => x.ClassId).AsEnumerable()
             ;
 
-        foreach (var kx13Class in cmsClassesDocumentTypes)
+        using var kx13Classes = EnumerableHelper.CreateDeferrableItemWrapper(cmsClassesDocumentTypes);
+        
+        while(kx13Classes.GetNext(out var di))
         {
+            var (_, kx13Class) = di;
+            
+            if (kx13Class.ClassInheritsFromClassId is int classInheritsFromClassId && !_primaryKeyMappingContext.HasMapping<KX13M.CmsClass>(c=> c.ClassId, classInheritsFromClassId))
+            {
+                // defer migration to later stage 
+                if (kx13Classes.TryDeferItem(di))
+                {
+                    _logger.LogTrace("Class {Class} inheritance parent not found, deferring migration to end. Attempt {Attempt}", EntityPrinter.GetEntityIdentityPrint(kx13Class), di.Recurrence);
+                }
+                else
+                {
+                    _logger.LogErrorMissingDependency(kx13Class, nameof(kx13Class.ClassInheritsFromClassId), kx13Class.ClassInheritsFromClassId, typeof(DataClassInfo));
+                    _migrationProtocol.Append(HandbookReferences
+                        .MissingRequiredDependency<KX13M.CmsClass>(nameof(KX13M.CmsClass.ClassId), classInheritsFromClassId)
+                        .NeedsManualAction()
+                    );
+                }
+
+                continue;
+            }
+
             if (!kx13Class.Sites.Any(s => migratedSiteIds.Contains(s.SiteId)))
             {
                 // skip classes not included in current site

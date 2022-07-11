@@ -44,10 +44,11 @@ public static class EntityPrinter
             DataClassInfo dci => $"ID={dci.ClassID}, GUID={dci.ClassGUID}, Name={dci.ClassName}",
             PageUrlPathInfo pupi => $"ID={pupi.PageUrlPathID}, GUID={pupi.PageUrlPathGUID}, UrlPath={pupi.PageUrlPathUrlPath}",
             TreeNode tn => $"NodeID={tn.NodeID}, DocumentID={tn.DocumentID}, NodeGUID={tn.NodeGUID}, DocumentGUID={tn.DocumentGUID}, DocumentCulture={tn.DocumentCulture}, DocumentName={tn.DocumentName}",
-                
+            
             KXOM.CmsForm cf => $"ID={cf.FormId}, GUID={cf.FormGuid}, Name={cf.FormName}",
             
             KX13M.CmsAttachment ca13 => $"ID={ca13.AttachmentId}, GUID={ca13.AttachmentGuid}, Name={ca13.AttachmentName}",
+            KX13M.CmsClass cc13 => $"ID={cc13.ClassId}, GUID={cc13.ClassGuid}, Name={cc13.ClassName}",
             
             null => $"<null> of {currentTypeName}",
             _ => $"TODO: {ReflectionHelper<T>.CurrentType.FullName}"
