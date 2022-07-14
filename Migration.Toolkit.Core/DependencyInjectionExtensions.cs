@@ -16,6 +16,8 @@ using Migration.Toolkit.Core.Mappers;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.Core.Services;
 using Migration.Toolkit.Core.Services.BulkCopy;
+using Migration.Toolkit.Core.Services.CmsClass;
+using Migration.Toolkit.Core.Services.CmsRelationship;
 
 namespace Migration.Toolkit.Core;
 
@@ -23,12 +25,15 @@ public static class DependencyInjectionExtensions
 {
     public static IServiceCollection UseToolkitCore(this IServiceCollection services)
     {
-        services.AddSingleton<IMigrationProtocol, MigrationProtocolInHtml>();
+        services.AddSingleton<IMigrationProtocol, TextMigrationProtocol>();
         // services.AddSingleton<IMigrationProtocol, NullMigrationProtocol>();
         services.AddScoped<IPrimaryKeyLocatorService, PrimaryKeyLocatorService>();
+        services.AddScoped<AttachmentMigrator>();
         services.AddTransient<BulkDataCopyService>();
         services.AddTransient<CoupledDataService>();
         services.AddTransient<FormInfoDefinitionConvertor>();
+        services.AddTransient<CmsRelationshipService>();
+        services.AddScoped<ClassService>();
 
         services.AddSingleton(s => new TableReflectionService(s.GetRequiredService<ILogger<TableReflectionService>>()));
 

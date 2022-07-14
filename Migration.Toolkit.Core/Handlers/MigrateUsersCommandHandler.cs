@@ -74,7 +74,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
 
             if (kx13User.UserPrivilegeLevel == 3 && kxoUser != null)
             {
-                _migrationProtocol.Warning(HandbookReferences.CmsUserAdminUserSkip, kx13User, kxoUser);
+                _migrationProtocol.Append(HandbookReferences.CmsUserAdminUserSkip.WithIdentityPrint(kxoUser));
                 _logger.LogInformation("User with guid {Guid} is administrator, you need to update administrators manually => skipping", kx13User.UserGuid);
                 _primaryKeyMappingContext.SetMapping<KX13.Models.CmsUser>(r => r.UserId, kx13User.UserId, kxoUser.UserId);
                 continue;
@@ -82,7 +82,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
             
             if (kxoUser?.UserName == "public" || kx13User.UserName == "public")
             {
-                _migrationProtocol.Warning(HandbookReferences.CmsUserPublicUserSkip, kx13User, kxoUser);
+                _migrationProtocol.Append(HandbookReferences.CmsUserPublicUserSkip.WithIdentityPrint(kxoUser));
                 _logger.LogInformation("User with guid {Guid} is public user, special case that can't be migrated => skipping", kxoUser?.UserGuid ?? kx13User.UserGuid);
                 if (kxoUser != null)
                 {
@@ -112,54 +112,24 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
                     await _kxoContext.SaveChangesAsync(cancellationToken);
 
                     _migrationProtocol.Success(kx13User, cmsUser, mapped);
-                    _logger.LogInformation(newInstance
-                        ? $"CmsUser: {cmsUser.UserName} with UserGuid '{cmsUser.UserGuid}' was inserted."
-                        : $"CmsUser: {cmsUser.UserName} with UserGuid '{cmsUser.UserGuid}' was updated.");
+                    _logger.LogEntitySetAction(newInstance, cmsUser);
                 }
-                catch (DbUpdateException dbUpdateException) when (
-                    dbUpdateException.InnerException is SqlException sqlException &&
-                    sqlException.Message.Contains("Cannot insert duplicate key row in object") &&
-                    sqlException.Message.Contains("IX_CMS_User_UserName") &&
-                    sqlException.Message.Contains("CMS_User")
-                )
+                /*Violation in unique index or Violation in unique constraint */ 
+                catch (DbUpdateException dbUpdateException) when (dbUpdateException.InnerException is SqlException { Number: 2601 or 2627 } sqlException)
                 {
-                    await _kxoContext.DisposeAsync();
-                    // TODO tk: 2022-05-18 protocol - request manual migration
-                    _logger.LogError(
-                        "Failed to migrate user, possibly due to duplicated userName - user guid: {UserGuid}. Use needs manual migration. Email: {Email} - it is recommended to fix source data before proceeding",
-                        kx13User.UserGuid, kx13User.Email);
-                    _kxoContext = await _kxoContextFactory.CreateDbContextAsync(cancellationToken);
-
-                    _migrationProtocol.NeedsManualAction(
-                        HandbookReferences.CmsUserUserNameConstraintBroken,
-                        $"Failed to migrate user, possibly due to duplicated userName - user guid: {kx13User.UserGuid}. Use needs manual migration. Email: {kx13User.Email}",
-                        kx13User,
-                        cmsUser,
-                        mapped
+                    _logger.LogEntitySetError(sqlException, newInstance, cmsUser);
+                    _migrationProtocol.Append(HandbookReferences.DbConstraintBroken(sqlException, kx13User)
+                        .WithData(new
+                        {
+                            kx13User.UserName,
+                            kx13User.UserGuid,
+                            kx13User.UserId,
+                        })
+                        .WithMessage($"Failed to migrate user, target database broken.")
                     );
-                    continue;
-                }
-                catch (DbUpdateException dbUpdateException) when (
-                    dbUpdateException.InnerException is SqlException sqlException &&
-                    sqlException.Message.Contains("Cannot insert duplicate key row in object") &&
-                    sqlException.Message.Contains("IX_CMS_User_Email") &&
-                    sqlException.Message.Contains("CMS_User")
-                )
-                {
+                    
                     await _kxoContext.DisposeAsync();
-                    _logger.LogError(
-                        "Failed to migrate user, possibly due to duplicated email - user guid: {UserGuid}. Use needs manual migration. Email: {Email}",
-                        kx13User.UserGuid, kx13User.Email);
                     _kxoContext = await _kxoContextFactory.CreateDbContextAsync(cancellationToken);
-
-                    _migrationProtocol.NeedsManualAction(
-                        HandbookReferences.CmsUserEmailConstraintBroken,
-                        $"Failed to migrate user, possibly due to duplicated email - user guid: {kx13User.UserGuid}. Use needs manual migration. Email: {kx13User.Email}",
-                        kx13User,
-                        cmsUser,
-                        mapped
-                    );
-                    continue;
                 }
 
                 _primaryKeyMappingContext.SetMapping<KX13.Models.CmsUser>(r => r.UserId, kx13User.UserId, cmsUser.UserId);

@@ -7,7 +7,6 @@ using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.Core.Abstractions;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
 namespace Migration.Toolkit.Core.MigrationProtocol;

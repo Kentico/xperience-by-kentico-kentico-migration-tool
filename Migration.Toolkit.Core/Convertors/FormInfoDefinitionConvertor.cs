@@ -1,8 +1,10 @@
-using CMS.DataEngine;
+using System.Collections.Concurrent;
 using CMS.FormEngine;
-using CMS.OnlineForms;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Core.MigrationProtocol;
+using Migration.Toolkit.KX13.Context;
+using Migration.Toolkit.KX13.Models;
 
 namespace Migration.Toolkit.Core.Convertors;
 
@@ -10,11 +12,23 @@ public class FormInfoDefinitionConvertor
 {
     private readonly IMigrationProtocol _protocol;
     private readonly ILogger<FormInfoDefinitionConvertor> _logger;
+    private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
 
-    public FormInfoDefinitionConvertor(IMigrationProtocol protocol, ILogger<FormInfoDefinitionConvertor> logger)
+    public FormInfoDefinitionConvertor(IMigrationProtocol protocol, ILogger<FormInfoDefinitionConvertor> logger, IDbContextFactory<KX13.Context.KX13Context> kx13ContextFactory)
     {
         _protocol = protocol;
         _logger = logger;
+        _kx13ContextFactory = kx13ContextFactory;
+    }
+
+    private ConcurrentDictionary<string, KX13M.CmsFormUserControl?> _userControlsCache = new(StringComparer.InvariantCultureIgnoreCase);
+    private CmsFormUserControl? GetFormControlDefinition(string userControlCodeName)
+    {
+        var kx13Context = _kx13ContextFactory.CreateDbContext();
+        return _userControlsCache.GetOrAdd(userControlCodeName, s =>
+        {
+            return kx13Context.CmsFormUserControls.FirstOrDefault(x => x.UserControlCodeName == userControlCodeName);
+        });
     }
     
     public string ConvertToKxo(string formDefinitionXml)
@@ -26,6 +40,12 @@ public class FormInfoDefinitionConvertor
         {
             var field = formInfo.GetFormField(columnName);
             var controlName = field.Settings["controlname"]?.ToString()?.ToLowerInvariant();
+
+            var formControlDefinition = GetFormControlDefinition(controlName);
+            
+            
+            
+            
             // TODO tk: 2022-06-28 refresh check... check is dead with recent K-API change 
             // switch (controlName)
             // {

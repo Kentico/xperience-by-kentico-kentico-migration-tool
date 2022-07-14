@@ -1,5 +1,4 @@
 using System.Data;
-using System.Data.Common;
 
 namespace Migration.Toolkit.Core.Services.BulkCopy;
 

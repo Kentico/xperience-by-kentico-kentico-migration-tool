@@ -1,14 +1,17 @@
 using System.Diagnostics;
+using System.Text;
+using CMS.DataEngine;
 using CMS.DocumentEngine;
 using CMS.DocumentEngine.Internal;
-using CMS.Helpers;
+using CMS.FormEngine;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.Helpers;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.Core.Services;
-using Migration.Toolkit.KX13.Models;
+using Migration.Toolkit.Core.Services.CmsClass;
+using Migration.Toolkit.Core.Services.CmsRelationship;
 
 namespace Migration.Toolkit.Core.Mappers;
 
@@ -18,11 +21,25 @@ public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
 {
     private readonly ILogger<TreeNodeMapper> _logger;
     private readonly CoupledDataService _coupledDataService;
+    private readonly ClassService _classService;
+    private readonly AttachmentMigrator _attachmentMigrator;
+    private readonly CmsRelationshipService _relationshipService;
 
-    public TreeNodeMapper(ILogger<TreeNodeMapper> logger, PrimaryKeyMappingContext pkContext, CoupledDataService coupledDataService, IMigrationProtocol protocol) : base(logger, pkContext, protocol)
+    public TreeNodeMapper(
+        ILogger<TreeNodeMapper> logger, 
+        PrimaryKeyMappingContext pkContext, 
+        CoupledDataService coupledDataService, 
+        IMigrationProtocol protocol, 
+        ClassService classService,
+        AttachmentMigrator attachmentMigrator,
+        CmsRelationshipService relationshipService
+        ) : base(logger, pkContext, protocol)
     {
         _logger = logger;
         _coupledDataService = coupledDataService;
+        _classService = classService;
+        _attachmentMigrator = attachmentMigrator;
+        _relationshipService = relationshipService;
     }
 
     protected override TreeNode? CreateNewInstance(CmsTreeMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) 
@@ -122,30 +139,167 @@ public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
         // target.CoupledClassIDColumn = 
 
         // Set coupled data
+        // var fieldsInfo = new DocumentFieldsInfo(cmsTree.NodeClass.ClassName);
+        // if (cmsTree.NodeClass.ClassIsCoupledClass)
+        // {
+        //     Debug.Assert(cmsTree.NodeClass.ClassTableName != null, "cmsTree.NodeClass.ClassTableName != null");
+        //     
+        //     var coupledDataRow = _coupledDataService.GetSourceCoupledDataRow(cmsTree.NodeClass.ClassTableName, fieldsInfo.TypeInfo.IDColumn, sourceDocument.DocumentForeignKeyValue);
+        //     if (coupledDataRow != null)
+        //     {
+        //         var fields = _classService.GetClassFields(cmsTree.NodeClass.ClassGuid);
+        //         foreach (var classColumnModel in fields)
+        //         {
+        //             ProcessCoupledDataColumn(target, classColumnModel, coupledDataRow, fieldsInfo);
+        //         }
+        //         // foreach (var (key, value) in coupledDataRow)
+        //         // {
+        //         //     if (key != fieldsInfo.TypeInfo.IDColumn)
+        //         //     {
+        //         //         target.SetValue(key, value);
+        //         //     }
+        //         // }
+        //     }
+        //     else
+        //     {
+        //         _logger.LogWarning("Coupled data is missing for source document {documentId} of class {className}", sourceDocument.DocumentId, cmsTree.NodeClass.ClassName);
+        //     }
+        // }
+        
+        var classStructureInfo = new ClassStructureInfo(cmsTree.NodeClass.ClassName, cmsTree.NodeClass.ClassXmlSchema, cmsTree.NodeClass.ClassTableName);
+        var formInfo = new FormInfo(cmsTree.NodeClass.ClassFormDefinition);
         var fieldsInfo = new DocumentFieldsInfo(cmsTree.NodeClass.ClassName);
+        var columnNames = formInfo.GetColumnNames();
+
         if (cmsTree.NodeClass.ClassIsCoupledClass)
         {
+            // Debug.Assert(columnNames.Count == classStructureInfo.ColumnsCount, "columnNames.Count == classStructureInfo.ColumnsCount");
             Debug.Assert(cmsTree.NodeClass.ClassTableName != null, "cmsTree.NodeClass.ClassTableName != null");
             
             var coupledDataRow = _coupledDataService.GetSourceCoupledDataRow(cmsTree.NodeClass.ClassTableName, fieldsInfo.TypeInfo.IDColumn, sourceDocument.DocumentForeignKeyValue);
-            if (coupledDataRow != null)
+            
+            foreach (var columnName in columnNames)
             {
-                foreach (var (key, value) in coupledDataRow)
+                var field = formInfo.GetFormField(columnName);
+                var controlName = field.Settings["controlname"]?.ToString()?.ToLowerInvariant();
+
+                Debug.Assert(coupledDataRow != null, nameof(coupledDataRow) + " != null");
+                
+                if (coupledDataRow.TryGetValue(columnName, out var value))
                 {
-                    if (key != fieldsInfo.TypeInfo.IDColumn)
+                    if (controlName != null)
                     {
-                        target.SetValue(key, value);
+                        // Debug.Assert(ClassHelper.KnownControlNames.Contains(controlName), "ClassHelper.KnownControlNames.Contains(controlName)");
+                    
+                        switch (_classService.GetFormControlDefinition(controlName))
+                        {
+                            case { UserControlForFile: true } control: 
+                            {
+                                // attachment - migrate attachment from field and leave link to it
+                                if (value is Guid attachmentGuid)
+                                {
+                                    var (success, canContinue, mediaFileInfo, mediaLibraryInfo) = _attachmentMigrator.MigrateAttachment(attachmentGuid);
+                                    if (success)
+                                    {
+                                        target.SetValue(columnName, $"Attachment moved to media library, media file path: ({mediaLibraryInfo?.LibraryFolder}/{mediaFileInfo?.FilePath})");    
+                                    }
+                                }
+                                else if (value is string attachmentGuidStr && Guid.TryParse(attachmentGuidStr, out attachmentGuid))
+                                {
+                                    var (success, canContinue, mediaFileInfo, mediaLibraryInfo) = _attachmentMigrator.MigrateAttachment(attachmentGuid);
+                                    if (success)
+                                    {
+                                        target.SetValue(columnName, $"Attachment moved to media library, media file path: ({mediaLibraryInfo?.LibraryFolder}/{mediaFileInfo?.FilePath})");    
+                                    }
+                                }
+
+                                break;
+                            }
+                            case { UserControlForDocAttachments: true } control:
+                            {
+                                // attachment - migrate attachment from field and leave link to it
+                                var result = new StringBuilder();
+                                foreach (var (success, canContinue, mediaFileInfo, mediaLibraryInfo) in _attachmentMigrator.MigrateGroupedAttachments(sourceDocument.DocumentId, field.Guid, field.Name))
+                                {
+                                    if (!canContinue) break;
+                                    if (success)
+                                    {
+                                        result.AppendLine($"Grouped attachment moved to media library, media file path: ({mediaLibraryInfo?.LibraryFolder}/{mediaFileInfo?.FilePath})");
+                                    }
+                                }
+                                target.SetValue(columnName, result.ToString());
+                                break;
+                            }
+                            case { UserControlForDocRelationships: true } control:
+                            {
+                                // relation to other document
+                                var result = new StringBuilder();
+                                foreach (var nodeRelationship in _relationshipService.GetNodeRelationships(cmsTree.NodeId))
+                                {
+                                    result.AppendLine($"Document relationship is currently not supported - related to: {nodeRelationship.RightNode?.NodeAliasPath}");
+                                }
+                                
+                                target.SetValue(columnName, result.ToString());
+                                break;
+                            }
+                            default:
+                                // leave as is
+                                target.SetValue(columnName, value);
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        target.SetValue(columnName, value);
                     }
                 }
-            }
-            else
-            {
-                _logger.LogWarning("Coupled data is missing for source document {documentId} of class {className}", sourceDocument.DocumentId, cmsTree.NodeClass.ClassName);
+                else
+                {
+                    _logger.LogWarning("Coupled data is missing for source document {DocumentId} of class {ClassName}", sourceDocument.DocumentId, cmsTree.NodeClass.ClassName);
+                }
             }
         }
+        
+        
 
         return target;
     }
 
-    
+    private static void ProcessCoupledDataColumn(TreeNode target, ClassColumnModel classColumnModel, Dictionary<string, object> coupledDataRow, DocumentFieldsInfo fieldsInfo)
+    {
+        Debug.Assert(classColumnModel.ColumnName != null, "classColumnModel.ColumnName != null");
+
+        if (coupledDataRow.TryGetValue(classColumnModel.ColumnName, out var value))
+        {
+            if (classColumnModel.ColumnName != fieldsInfo.TypeInfo.IDColumn)
+            {
+                Debug.Assert(classColumnModel.FormControl?.UserControlShowInDocumentTypes == true, "classColumnModel.FormControl?.UserControlShowInDocumentTypes == true");
+
+                if (classColumnModel.FormControl?.UserControlForFile == true)
+                {
+                    // TODO tk: 2022-07-13 check if guid is available
+
+
+                    // TODO tk: 2022-07-13 check grouped attachment
+                }
+
+                switch (classColumnModel.FormControlCodeName)
+                {
+                    case "DirectUploadControl" when classColumnModel.ColumnType == typeof(Guid):
+                        target.SetValue(classColumnModel.ColumnName, value);
+                        break;
+                    case "DocumentAttachmentsControl":
+                        target.SetValue(classColumnModel.ColumnName, value);
+                        break;
+                    default:
+                        target.SetValue(classColumnModel.ColumnName, value);
+                        break;
+                }
+            }
+        }
+        else
+        {
+            // TODO tk: 2022-07-13 column data expected   
+        }
+    }
 }

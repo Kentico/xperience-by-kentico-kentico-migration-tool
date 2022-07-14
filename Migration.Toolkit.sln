@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.Core", "M
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.KXO.Api", "Migration.Toolkit.KXO.Api\Migration.Toolkit.KXO.Api.csproj", "{8E806DDF-6405-4386-B69E-B6FAA672A188}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.TestConsole", "Migration.Toolkit.TestConsole\Migration.Toolkit.TestConsole.csproj", "{DD3C628C-A38F-423F-B930-3A0F7270BF92}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +44,9 @@ Global
 		{8E806DDF-6405-4386-B69E-B6FAA672A188}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8E806DDF-6405-4386-B69E-B6FAA672A188}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8E806DDF-6405-4386-B69E-B6FAA672A188}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD3C628C-A38F-423F-B930-3A0F7270BF92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD3C628C-A38F-423F-B930-3A0F7270BF92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD3C628C-A38F-423F-B930-3A0F7270BF92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD3C628C-A38F-423F-B930-3A0F7270BF92}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,6 +1,4 @@
 using System.Data;
-using System.Data.Common;
-using System.Diagnostics;
 
 namespace Migration.Toolkit.Core.Services.BulkCopy;
 

@@ -1,4 +1,5 @@
-﻿using Migration.Toolkit.Common.Helpers;
+﻿using Microsoft.Data.SqlClient;
+using Migration.Toolkit.Common.Helpers;
 
 namespace Migration.Toolkit.Core.MigrationProtocol;
 
@@ -90,6 +91,15 @@ public static class HandbookReferences
     
     public static HandbookReference CmsUserEmailConstraintBroken => new("CmsUser_EmailConstraintBroken");
     public static HandbookReference CmsUserUserNameConstraintBroken => new("CmsUser_UserNameConstraintBroken");
+    public static HandbookReference DbConstraintBroken(string constraintName) => new HandbookReference("DbConstraintBroken")
+        .NeedsManualAction()
+        .WithMessage($"Database constraint '{constraintName}' broken");
+    
+    public static HandbookReference DbConstraintBroken<TEntity>(SqlException ex, TEntity entity) => new HandbookReference("DbConstraintBroken")
+        .NeedsManualAction()
+        .WithIdentityPrint(entity)
+        .WithMessage(ex.Message);
+    
     public static HandbookReference CmsTreeTreeRootIsMissing => new("CmsTree_TreeRootIsMissing");
     public static HandbookReference CmsTreeUserIsMissingInTargetInstance => new("CmsTree_UserIsMissingInTargetInstance");
     public static HandbookReference CmsTreeTreeParentIsMissing => new("CmsTree_TreeParentIsMissing");

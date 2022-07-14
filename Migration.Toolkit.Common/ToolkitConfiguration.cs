@@ -42,6 +42,9 @@ public class ToolkitConfiguration
     
     [JsonPropertyName("UseOmActivitySiteRelationAutofix")]
     public AutofixEnum? UseOmActivitySiteRelationAutofix { get; set; } = AutofixEnum.Error;
+    
+    [JsonPropertyName("MigrationProtocolPath")]
+    public string? MigrationProtocolPath { get; set; }
 
     public Dictionary<int?, int?> RequireExplicitMapping<TEntityType>(Expression<Func<TEntityType, object>> keyNameSelector)
     {
@@ -58,7 +61,7 @@ public class ToolkitConfiguration
     public void AddExplicitMapping<TEntityType>(Expression<Func<TEntityType, object>> keyNameSelector, int sourceId, int targetId)
     {
         var memberName = keyNameSelector.GetMemberName();
-        if (EntityConfigurations == null) throw new InvalidOperationException();
+        if (EntityConfigurations == null) EntityConfigurations = new EntityConfigurations();
         var entityConfiguration = EntityConfigurations.GetEntityConfiguration<TEntityType>();
         var explicitPrimaryKeyMapping = entityConfiguration.ExplicitPrimaryKeyMapping;
         if (!explicitPrimaryKeyMapping.ContainsKey(memberName))
