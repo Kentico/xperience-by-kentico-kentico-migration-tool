@@ -149,22 +149,23 @@ bool RequireNumberParameter(string paramName, out int? paramValue)
 var mappingContext = scope.ServiceProvider.GetRequiredService<PrimaryKeyMappingContext>();
 var toolkitConfiguration = scope.ServiceProvider.GetRequiredService<ToolkitConfiguration>();
 var tableTypeLookupService = scope.ServiceProvider.GetRequiredService<TableReflectionService>();
-foreach (var (k, ek) in toolkitConfiguration.EntityConfigurations)
-{
-    var tableType = tableTypeLookupService.GetSourceTableTypeByTableName(k);
-    
-    foreach (var (kPkName, mappings) in ek.ExplicitPrimaryKeyMapping)
+if (toolkitConfiguration.EntityConfigurations != null)
+    foreach (var (k, ek) in toolkitConfiguration.EntityConfigurations)
     {
-        foreach (var (kPk, vPk) in mappings)
+        var tableType = tableTypeLookupService.GetSourceTableTypeByTableName(k);
+
+        foreach (var (kPkName, mappings) in ek.ExplicitPrimaryKeyMapping)
         {
-            // TODO tk: 2022-05-26 report incorrect property setting
-            if (int.TryParse(kPk, out var kPkParsed) && vPk.HasValue)
+            foreach (var (kPk, vPk) in mappings)
             {
-                mappingContext.SetMapping(tableType, kPkName, kPkParsed, vPk.Value);
-            }    
+                // TODO tk: 2022-05-26 report incorrect property setting
+                if (int.TryParse(kPk, out var kPkParsed) && vPk.HasValue)
+                {
+                    mappingContext.SetMapping(tableType, kPkName, kPkParsed, vPk.Value);
+                }
+            }
         }
-    }    
-}
+    }
 
 
 void PrintCommandDescriptions()
@@ -197,7 +198,7 @@ while (argsQ.TryDequeue(out var arg))
     var cultureCode = "";
     
     // TODO tk: 2022-06-23 ! konfigurovat site přes SiteName (ponechat aktuální přístup)
-    if (RequireNumberParameter("--siteId", out var siteId) && siteId is int sid && kxoContext.CmsSites.FirstOrDefault()?.SiteId is int targetSiteId)
+    if (RequireNumberParameter("--siteId", out var siteId) && siteId is int sid && kxoContext.CmsSites.OrderBy(x => x.SiteId).FirstOrDefault()?.SiteId is int targetSiteId)
     {
         toolkitConfiguration.AddExplicitMapping<Migration.Toolkit.KX13.Models.CmsSite>(s => s.SiteId, sid, targetSiteId);
         // mappingContext.SetMapping<Migration.Toolkit.KX13.Models.CmsSite>(s => s.SiteId, sid, targetSiteId);

@@ -45,10 +45,15 @@ public static class Printer
             PageUrlPathInfo pupi => $"ID={pupi.PageUrlPathID}, GUID={pupi.PageUrlPathGUID}, UrlPath={pupi.PageUrlPathUrlPath}",
             TreeNode tn => $"NodeID={tn.NodeID}, DocumentID={tn.DocumentID}, NodeGUID={tn.NodeGUID}, DocumentGUID={tn.DocumentGUID}, DocumentCulture={tn.DocumentCulture}, DocumentName={tn.DocumentName}",
             
-            KXOM.CmsForm cf => $"ID={cf.FormId}, GUID={cf.FormGuid}, Name={cf.FormName}",
+            KXOM.CmsForm item => $"ID={item.FormId}, GUID={item.FormGuid}, Name={item.FormName}",
+            KXOM.CmsUser item => $"ID={item.UserId}, GUID={item.UserGuid}, Name={item.UserName}",
+            KXOM.CmsConsent item => $"ID={item.ConsentId}, GUID={item.ConsentGuid}, Name={item.ConsentName}",
+            KXOM.CmsConsentArchive item => $"ID={item.ConsentArchiveId}, GUID={item.ConsentArchiveGuid}",
             
-            KX13M.CmsAttachment ca13 => $"ID={ca13.AttachmentId}, GUID={ca13.AttachmentGuid}, Name={ca13.AttachmentName}",
-            KX13M.CmsClass cc13 => $"ID={cc13.ClassId}, GUID={cc13.ClassGuid}, Name={cc13.ClassName}",
+            KX13M.CmsAttachment item => $"ID={item.AttachmentId}, GUID={item.AttachmentGuid}, Name={item.AttachmentName}",
+            KX13M.CmsClass item => $"ID={item.ClassId}, GUID={item.ClassGuid}, Name={item.ClassName}",
+            KX13M.CmsConsent item => $"ID={item.ConsentId}, GUID={item.ConsentGuid}, Name={item.ConsentName}",
+            KX13M.CmsConsentArchive item => $"ID={item.ConsentArchiveId}, GUID={item.ConsentArchiveGuid}",
             
             null => $"<null> of {currentTypeName}",
             _ => $"TODO: {ReflectionHelper<T>.CurrentType.FullName}"

@@ -70,7 +70,7 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
         foreach (var kx13Consent in kx13Context.CmsConsents)
         {
             _migrationProtocol.FetchedSource(kx13Consent);
-            _logger.LogTrace("Migrating consent {consentName} with ConsentGuid {consentGuid}", kx13Consent.ConsentName, kx13Consent.ConsentGuid);
+            _logger.LogTrace("Migrating consent {ConsentName} with ConsentGuid {ConsentGuid}", kx13Consent.ConsentName, kx13Consent.ConsentGuid);
             
             var kxoConsent = await _kxoContext.CmsConsents.FirstOrDefaultAsync(consent => consent.ConsentGuid == kx13Consent.ConsentGuid, cancellationToken);
             _migrationProtocol.FetchedTarget(kxoConsent);
@@ -99,32 +99,20 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
                         await _kxoContext.SaveChangesAsync(cancellationToken);
 
                         _migrationProtocol.Success<KX13.Models.CmsConsent, KXO.Models.CmsConsent>(kx13Consent, cmsConsent, mapped);
-                        _logger.LogInformation(newInstance
-                            ? $"CmsConsent: {cmsConsent.ConsentName} with ConsentGuid '{cmsConsent.ConsentGuid}' was inserted."
-                            : $"CmsConsent: {cmsConsent.ConsentName} with ConsentGuid '{cmsConsent.ConsentGuid}' was updated.");
+                        _logger.LogEntitySetAction(newInstance, cmsConsent);
+                        _primaryKeyMappingContext.SetMapping<KX13.Models.CmsConsent>(r => r.ConsentId, kx13Consent.ConsentId, cmsConsent.ConsentId);
                     }
-                    catch (DbUpdateException dbUpdateException) when (
-                        dbUpdateException.InnerException is SqlException sqlException &&
-                        sqlException.Message.Contains("Cannot insert duplicate key row in object")
-                    )
+                    /*Violation in unique index or Violation in unique constraint */ 
+                    catch (DbUpdateException dbUpdateException) when (dbUpdateException.InnerException is SqlException { Number: 2601 or 2627 } sqlException)
                     {
-                        await _kxoContext.DisposeAsync();
-                        _logger.LogError(
-                            "Failed to migrate consent - consent guid: {consentGuid}. Consent needs manual migration. Consent name: {consentName}",
-                            kx13Consent.ConsentGuid, kx13Consent.ConsentName);
-                        _kxoContext = await _kxoContextFactory.CreateDbContextAsync(cancellationToken);
-
-                        _migrationProtocol.NeedsManualAction(
-                            HandbookReferences.CmsConsentSkip,
-                            $"Failed to migrate consent - server guid: {kx13Consent.ConsentGuid}. Use needs manual migration. Consent name: {kx13Consent.ConsentName}",
-                            kx13Consent,
-                            cmsConsent,
-                            mapped
+                        _logger.LogEntitySetError(sqlException, newInstance, kx13Consent);
+                        _migrationProtocol.Append(HandbookReferences.DbConstraintBroken(sqlException, kx13Consent)
+                            .WithMessage($"Failed to migrate consent, target database constraint broken.")
                         );
-                        continue;
-                    }
 
-                    _primaryKeyMappingContext.SetMapping<KX13.Models.CmsConsent>(r => r.ConsentId, kx13Consent.ConsentId, cmsConsent.ConsentId);
+                        await _kxoContext.DisposeAsync();
+                        _kxoContext = await _kxoContextFactory.CreateDbContextAsync(cancellationToken);
+                    }
 
                     break;
                 }
@@ -171,36 +159,21 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
                     {
                         await _kxoContext.SaveChangesAsync(cancellationToken);
 
-                        _migrationProtocol.Success<KX13.Models.CmsConsentArchive, KXO.Models.CmsConsentArchive>(kx13ArchiveConsent, cmsConsentArchive,
-                            mapped);
-                        _logger.LogInformation(newInstance
-                            ? $"CmsConsentArchive with ConsentArchiveGuid '{cmsConsentArchive.ConsentArchiveGuid}' was inserted."
-                            : $"CmsConsentArchive with ConsentArchiveGuid '{cmsConsentArchive.ConsentArchiveGuid}' was updated.");
+                        _migrationProtocol.Success<KX13.Models.CmsConsentArchive, KXO.Models.CmsConsentArchive>(kx13ArchiveConsent, cmsConsentArchive, mapped);
+                        _logger.LogEntitySetAction(newInstance, cmsConsentArchive);
+                        _primaryKeyMappingContext.SetMapping<KX13.Models.CmsConsentArchive>(r => r.ConsentArchiveGuid, kx13ArchiveConsent.ConsentArchiveId, cmsConsentArchive.ConsentArchiveId);
                     }
-                    catch (DbUpdateException dbUpdateException) when (
-                        dbUpdateException.InnerException is SqlException sqlException &&
-                        sqlException.Message.Contains("Cannot insert duplicate key row in object")
-                    )
+                    /*Violation in unique index or Violation in unique constraint */ 
+                    catch (DbUpdateException dbUpdateException) when (dbUpdateException.InnerException is SqlException { Number: 2601 or 2627 } sqlException)
                     {
-                        await _kxoContext.DisposeAsync();
-                        _logger.LogError(
-                            "Failed to migrate consent archive - consent archive guid: {consentArchiveGuid}. Use needs manual migration.",
-                            kx13ArchiveConsent.ConsentArchiveGuid);
-                        _kxoContext = await _kxoContextFactory.CreateDbContextAsync(cancellationToken);
-
-                        _migrationProtocol.NeedsManualAction(
-                            HandbookReferences.CmsConsentArchiveSkip,
-                            $"Failed to migrate consent archive - server guid: {kx13ArchiveConsent.ConsentArchiveGuid}. Use needs manual migration.",
-                            kx13ArchiveConsent,
-                            cmsConsentArchive,
-                            mapped
+                        _logger.LogEntitySetError(sqlException, newInstance, kx13ArchiveConsent);
+                        _migrationProtocol.Append(HandbookReferences.DbConstraintBroken(sqlException, kx13ArchiveConsent)
+                            .WithMessage($"Failed to migrate consent archive, target database constraint broken.")
                         );
-                        continue;
+
+                        await _kxoContext.DisposeAsync();
+                        _kxoContext = await _kxoContextFactory.CreateDbContextAsync(cancellationToken);
                     }
-
-                    _primaryKeyMappingContext.SetMapping<KX13.Models.CmsConsentArchive>(r => r.ConsentArchiveGuid,
-                        kx13ArchiveConsent.ConsentArchiveId, cmsConsentArchive.ConsentArchiveId);
-
                     break;
                 }
                 default:

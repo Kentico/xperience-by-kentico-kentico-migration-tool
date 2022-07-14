@@ -1,8 +1,6 @@
 using System.Diagnostics;
 using CMS.DataEngine;
-using CMS.OnlineForms;
 using Microsoft.Extensions.Logging;
-using TableManager = CMS.DataProviderSQL.TableManager;
 
 namespace Migration.Toolkit.KXO.Api;
 

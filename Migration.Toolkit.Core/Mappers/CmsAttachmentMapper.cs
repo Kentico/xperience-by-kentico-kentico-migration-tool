@@ -36,7 +36,7 @@ public class CmsAttachmentMapper: EntityMapperBase<CmsAttachmentMapperSource, Me
         // target.FileId = source.FileId;
         var (cmsAttachment, targetLibraryId, _, _) = args;
         
-        target.FileName = cmsAttachment.AttachmentName;
+        target.FileName = Path.GetFileNameWithoutExtension(cmsAttachment.AttachmentName);
         target.FileTitle = cmsAttachment.AttachmentTitle ?? cmsAttachment.AttachmentName;
         target.FileDescription = cmsAttachment.AttachmentDescription ?? string.Empty;
         target.FileExtension = cmsAttachment.AttachmentExtension;

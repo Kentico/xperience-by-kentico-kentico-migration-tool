@@ -1,14 +1,13 @@
-﻿using CMS.Core;
+﻿using System.Diagnostics;
 using CMS.DataEngine;
 using CMS.FormEngine;
-using CMS.OnlineForms;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.Convertors;
 using Migration.Toolkit.Core.MigrationProtocol;
-using Migration.Toolkit.KXO.Models;
+using Migration.Toolkit.Core.Services.CmsClass;
 
 namespace Migration.Toolkit.Core.Mappers;
 
@@ -16,15 +15,17 @@ public class CmsClassMapper :
     // IEntityMapper<KX13.Models.CmsClass, KXO.Models.CmsClass>, 
     EntityMapperBase<KX13.Models.CmsClass, DataClassInfo>
 {
-    private readonly ILogger<CmsClass> _logger;
+    private readonly ILogger<CmsClassMapper> _logger;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
+    private readonly ClassService _classService;
     private readonly FormInfoDefinitionConvertor _formInfoDefinitionConvertor;
 
-    public CmsClassMapper(ILogger<CmsClass> logger, PrimaryKeyMappingContext primaryKeyMappingContext,
+    public CmsClassMapper(ILogger<CmsClassMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext, ClassService classService,
         FormInfoDefinitionConvertor formInfoDefinitionConvertor, IMigrationProtocol protocol) : base(logger, primaryKeyMappingContext, protocol)
     {
         _logger = logger;
         _primaryKeyMappingContext = primaryKeyMappingContext;
+        _classService = classService;
         _formInfoDefinitionConvertor = formInfoDefinitionConvertor;
     }
 
@@ -47,15 +48,89 @@ public class CmsClassMapper :
         target.ClassUsesVersioning = source.ClassUsesVersioning;
         target.ClassIsDocumentType = source.ClassIsDocumentType;
         target.ClassIsCoupledClass = source.ClassIsCoupledClass;
-        target.ClassXmlSchema = _formInfoDefinitionConvertor.ConvertToKxo(source.ClassXmlSchema);
-        // new DataType()
-        // DataTypeManager.FieldTypes
-            // FormComponentsMetadataBuilder.
-            // Service.Resolve<IFormComponentDefinitionProvider>()
-            // ComponentDefinitionStore
-            // FormComponentDefinitionProvider
+        
+        // target.ClassXmlSchema = _formInfoDefinitionConvertor.ConvertToKxo(source.ClassXmlSchema);
+        // target.ClassFormDefinition = _formInfoDefinitionConvertor.ConvertToKxo(source.ClassFormDefinition);
+        var classStructureInfo = new ClassStructureInfo(source.ClassName, source.ClassXmlSchema, source.ClassTableName);
+        var formInfo = new FormInfo(source.ClassFormDefinition);
+        if (source.ClassIsCoupledClass)
+        {
+           
+            var columnNames = formInfo.GetColumnNames();
+            foreach (var columnName in columnNames)
+            {
+                var field = formInfo.GetFormField(columnName);
+                var controlName = field.Settings["controlname"]?.ToString()?.ToLowerInvariant();
+                
+                if (controlName != null)
+                {
+                    // might be custom control
+                    // Debug.Assert(ClassHelper.KnownControlNames.Contains(controlName), "ClassHelper.KnownControlNames.Contains(controlName)");
+                    
+                    switch (_classService.GetFormControlDefinition(controlName))
+                    {
+                        case { UserControlForFile: true } control: 
+                        {
+                            // attachment - migrate attachment from field and leave link to it
+                            field.Settings.Clear();
+                            field.SettingsMacroTable.Clear();
+                            field.Settings["controlname"] = "Kentico.Administration.TextArea";
+                            field.DataType = FieldDataType.LongText;
+                            field.Size = 0;
+                            formInfo.UpdateFormField(columnName, field);
+                            break;
+                        }
+                        case { UserControlForDocAttachments: true } control:
+                        {
+                            // attachment - migrate attachment from field and leave link to it
+                            field.Settings.Clear();
+                            field.SettingsMacroTable.Clear();
+                            field.Settings["controlname"] = "Kentico.Administration.TextArea";
+                            field.DataType = FieldDataType.LongText;
+                            field.Size = 0;
+                            formInfo.UpdateFormField(columnName, field);
+                            break;
+                        }
+                        case { UserControlForDocRelationships: true } control:
+                        {
+                            // relation to other document
+                            field.Settings.Clear();
+                            field.SettingsMacroTable.Clear();
+                            field.Settings["controlname"] = "Kentico.Administration.TextArea";
+                            field.DataType = FieldDataType.LongText;
+                            field.Size = 0;
+                            formInfo.UpdateFormField(columnName, field);
+
+                            Protocol.Append(HandbookReferences
+                                .NotCurrentlySupportedSkip<FormFieldInfo>()
+                                .NeedsManualAction()
+                                .WithMessage("Class field type is not supported right now")
+                                .WithData(new
+                                {
+                                    field.Name,
+                                    source.ClassName,
+                                    source.ClassGuid
+                                })
+                            );
+                            
+                            break;
+                        }
+                        default:
+                            // leave as is
+                            break;
+                    }
+                }
+            }
             
-        target.ClassFormDefinition = _formInfoDefinitionConvertor.ConvertToKxo(source.ClassFormDefinition);
+            
+        }
+        
+        
+        // Debug.Assert(columnNames.Count == classStructureInfo.ColumnsCount, "columnNames.Count == classStructureInfo.ColumnsCount");
+        target.ClassXmlSchema = classStructureInfo.GetXmlSchema();
+        target.ClassFormDefinition = formInfo.GetXmlDefinition();
+        
+        
         target.ClassNodeNameSource = source.ClassNodeNameSource;
         target.ClassTableName = source.ClassTableName;
         // TODO tk: 2022-06-07 check if convertible
@@ -128,7 +203,7 @@ public class CmsClassMapper :
         {
             if (resourceId.HasValue)
             {
-                target.ClassResourceID = resourceId.Value;    
+                target.ClassResourceID = resourceId.Value;
             }
         }
 

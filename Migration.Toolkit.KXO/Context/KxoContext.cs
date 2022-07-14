@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Migration.Toolkit.KXO.Models;
 
 namespace Migration.Toolkit.KXO.Context
