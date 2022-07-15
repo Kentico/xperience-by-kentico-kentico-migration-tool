@@ -113,7 +113,7 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
                 // .Include(sk => sk.KeyCategory.CategoryResource)
                 // .Include(sk => sk.KeyCategory.CategoryParent.CategoryResource)
                 // .Include(sk => sk.KeyCategory.CategoryParent.CategoryParent.CategoryResource)
-                .Where(csk => migratedSiteIds.Contains(csk.SiteId) || csk.SiteId == null)
+                .Where(csk => migratedSiteIds.Contains(csk.SiteId.Value) || csk.SiteId == null)
                 .AsNoTrackingWithIdentityResolution()
             // .Where(k => k.KeyIsCustom == true)
             ;

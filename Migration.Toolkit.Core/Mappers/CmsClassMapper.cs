@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.Convertors;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.Core.Services.CmsClass;
 
@@ -18,15 +17,12 @@ public class CmsClassMapper :
     private readonly ILogger<CmsClassMapper> _logger;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly ClassService _classService;
-    private readonly FormInfoDefinitionConvertor _formInfoDefinitionConvertor;
-
-    public CmsClassMapper(ILogger<CmsClassMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext, ClassService classService,
-        FormInfoDefinitionConvertor formInfoDefinitionConvertor, IMigrationProtocol protocol) : base(logger, primaryKeyMappingContext, protocol)
+    
+    public CmsClassMapper(ILogger<CmsClassMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext, ClassService classService, IMigrationProtocol protocol) : base(logger, primaryKeyMappingContext, protocol)
     {
         _logger = logger;
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _classService = classService;
-        _formInfoDefinitionConvertor = formInfoDefinitionConvertor;
     }
 
     protected override DataClassInfo? CreateNewInstance(KX13.Models.CmsClass source, MappingHelper mappingHelper, AddFailure addFailure) => DataClassInfo.New();

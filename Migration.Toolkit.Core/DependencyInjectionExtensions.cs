@@ -8,9 +8,7 @@ using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Behaviors;
-using Migration.Toolkit.Core.CmsSettingsKey;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.Convertors;
 using Migration.Toolkit.Core.Handlers;
 using Migration.Toolkit.Core.Mappers;
 using Migration.Toolkit.Core.MigrationProtocol;
@@ -31,16 +29,13 @@ public static class DependencyInjectionExtensions
         services.AddScoped<AttachmentMigrator>();
         services.AddTransient<BulkDataCopyService>();
         services.AddTransient<CoupledDataService>();
-        services.AddTransient<FormInfoDefinitionConvertor>();
         services.AddTransient<CmsRelationshipService>();
         services.AddScoped<ClassService>();
 
         services.AddSingleton(s => new TableReflectionService(s.GetRequiredService<ILogger<TableReflectionService>>()));
 
         services.AddScoped<PrimaryKeyMappingContext>();
-        services.AddSingleton<PageMigrationContext>();
 
-        services.AddTransient<IDataEqualityComparer<Migration.Toolkit.KX13.Models.CmsSettingsKey, Migration.Toolkit.KXO.Models.CmsSettingsKey>, CmsSettingsKeyComparer>();
         services.AddTransient<IEntityMapper<Migration.Toolkit.KX13.Models.CmsSettingsKey, Migration.Toolkit.KXO.Models.CmsSettingsKey>, CmsSettingsKeyMapper>();
 
         // forms

@@ -136,20 +136,15 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
         return new MigratePageTypesResult();
     }
 
-    private void MigrateClassSiteMappings(Dictionary<int?, int?> siteIdExplicitMapping, int dcId, [DisallowNull] int? dataClassId, CmsClass kx13Class)
+    private void MigrateClassSiteMappings(Dictionary<int, int> siteIdMapping, int dcId, [DisallowNull] int? dataClassId, CmsClass kx13Class)
     {
-        foreach (var (sourceSiteId, targetSiteId) in siteIdExplicitMapping)
+        foreach (var (sourceSiteId, targetSiteId) in siteIdMapping)
         {
-            if (targetSiteId is not int tsId)
-            {
-                continue;
-            }
-
             try
             {
                 var classSiteInfo = ClassSiteInfo.New();
                 classSiteInfo.ClassID = dcId;
-                classSiteInfo.SiteID = tsId;
+                classSiteInfo.SiteID = targetSiteId;
                 ClassSiteInfoProvider.ProviderObject.Set(classSiteInfo);
 
                 _migrationProtocol.Success(new { dataClassId, targetSiteId }, classSiteInfo, null);

@@ -118,7 +118,7 @@ public static class HandbookReferences
             Type = ReflectionHelper<TSource>.CurrentType.Name
         });
     
-    public static HandbookReference FaultyData<TSource>() => new HandbookReference("FaultyData")
+    public static HandbookReference InvalidSourceData<TSource>() => new HandbookReference("InvalidSourceData")
         .NeedsManualAction()
         .WithData(new
         {

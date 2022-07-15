@@ -55,7 +55,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
         await RequireMigratedCmsRoles(kx13Context, cancellationToken, migratedSiteIds);
 
         var kx13CmsUsers = kx13Context.CmsUsers
-                .Include(u => u.CmsUserRoles.Where(x => migratedSiteIds.Contains(x.Role.SiteId) || x.Role.SiteId == null))
+                .Include(u => u.CmsUserRoles.Where(x => migratedSiteIds.Contains(x.Role.SiteId.Value) || x.Role.SiteId == null))
                 .ThenInclude(ur => ur.Role)
             ;
 
@@ -139,10 +139,10 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
         return new GenericCommandResult();
     }
 
-    private async Task RequireMigratedCmsRoles(KX13Context kx13Context, CancellationToken cancellationToken, List<int?> migratedSiteIds)
+    private async Task RequireMigratedCmsRoles(KX13Context kx13Context, CancellationToken cancellationToken, List<int> migratedSiteIds)
     {
         var kx13CmsRoles = kx13Context.CmsRoles
-            .Where(x => migratedSiteIds.Contains(x.SiteId) || x.SiteId == null);
+            .Where(x => migratedSiteIds.Contains(x.SiteId.Value) || x.SiteId == null);
 
         foreach (var kx13CmsRole in kx13CmsRoles)
         {

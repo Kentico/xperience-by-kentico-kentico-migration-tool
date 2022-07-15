@@ -74,7 +74,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
 
             if (!(kx13MediaLibrary.LibraryGuid is Guid mediaLibraryGuid))
             {
-                _migrationProtocol.Append(HandbookReferences.FaultyData<KX13M.MediaLibrary>()
+                _migrationProtocol.Append(HandbookReferences.InvalidSourceData<KX13M.MediaLibrary>()
                     .WithId(nameof(KX13M.MediaLibrary.LibraryId), kx13MediaLibrary.LibraryId)
                     .WithMessage($"Media library has missing MediaLibraryGUID")
                 );
@@ -148,7 +148,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
         return new LoadMediaFileResult(false, null);
     }
 
-    private async Task RequireMigratedMediaFiles(List<int?> migratedSiteIds,
+    private async Task RequireMigratedMediaFiles(List<int> migratedSiteIds,
         List<(MediaLibrary sourceLibrary, MediaLibraryInfo targetLibrary)> migratedMediaLibraries,
         KX13Context kx13Context, CancellationToken cancellationToken)
     {

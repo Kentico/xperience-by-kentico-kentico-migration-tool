@@ -33,7 +33,6 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IMigrationProtocol _migrationProtocol;
     private readonly KxoPageFacade _pageFacade;
-    private readonly PageMigrationContext _pageMigrationContext;
 
     private KxoContext _kxoContext;
 
@@ -47,8 +46,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IMigrationProtocol migrationProtocol,
-        KxoPageFacade pageFacade,
-        PageMigrationContext pageMigrationContext
+        KxoPageFacade pageFacade
     )
     {
         _logger = logger;
@@ -61,7 +59,6 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _migrationProtocol = migrationProtocol;
         _pageFacade = pageFacade;
-        _pageMigrationContext = pageMigrationContext;
         _kxoContext = kxoContextFactory.CreateDbContext();
     }
 
@@ -176,15 +173,18 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
             {
                 _migrationProtocol.Warning(HandbookReferences.EntityExplicitlyExcludedByCodeName(kx13CmsTree.NodeClass.ClassName, "PageType"), kx13CmsTree);
                 _logger.LogWarning("Page: page of class {ClassName} was skipped => it is explicitly excluded in configuration", kx13CmsTree.NodeClass.ClassName);
-                _pageMigrationContext.AddSkippedPage(kx13CmsDocument);
                 continue;    
             }
             
             int? mappedParentNodeId;
             if (kx13CmsTree.NodeClass.ClassName == "CMS.Root")
             {
-                var targetSiteId = siteMappings[kx13CmsTree.NodeSiteId] ?? 0; // TODO tk: 2022-06-30 report error
-                
+                if(!siteMappings.TryGetValue(kx13CmsTree.NodeSiteId, out var targetSiteId))
+                {
+                    continue;
+                }
+
+                // TODO tk: 2022-07-15 cache parent
                 mappedParentNodeId = new DocumentQuery("CMS.Root")
                     .OnSite(new SiteInfoIdentifier(targetSiteId))
                     .Culture(cultureCode)
@@ -213,7 +213,6 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                     kx13CmsTree.NodeId,
                     mappedParentNodeId.Value
                 );
-                _pageMigrationContext.AddSuccessfullyMigratedPage(kx13CmsDocument);
 
                 continue;
             }
@@ -230,7 +229,6 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
             {
                 _logger.LogWarning("Source page {PageGuid} is not published => skipping", kx13CmsDocument.DocumentGuid);
                 _migrationProtocol.Warning(HandbookReferences.SourcePageIsNotPublished(kx13CmsDocument.DocumentGuid ?? Guid.Empty), kx13CmsDocument);
-                _pageMigrationContext.AddSkippedPage(kx13CmsDocument);
                 continue;
             }
             

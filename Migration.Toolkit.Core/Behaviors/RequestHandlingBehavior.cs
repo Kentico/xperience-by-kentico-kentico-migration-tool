@@ -25,7 +25,7 @@ public class RequestHandlingBehavior<TRequest, TResponse>: IPipelineBehavior<TRe
     public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
     {
         var sw = Stopwatch.StartNew();
-        _logger.LogInformation($"Handling {typeof(TRequest).Name}");
+        _logger.LogInformation("Handling {CommandName}", typeof(TRequest).Name);
         try
         {
             _migrationProtocol.CommandRequest<TRequest, TResponse>(request);
@@ -36,13 +36,12 @@ public class RequestHandlingBehavior<TRequest, TResponse>: IPipelineBehavior<TRe
         catch (Exception ex)
         {
             _migrationProtocol.CommandError<TRequest, TResponse>(ex, request);
-            // TODO tk: 2022-05-20 better error description
             _logger.LogError(ex, "Error occured");
             throw;
         }
         finally
         {
-            _logger.LogInformation("Handled {type} in elapsed: {elapsed}", typeof(TResponse).Name, sw.Elapsed);    
+            _logger.LogInformation("Handled {CommandName} in elapsed: {Elapsed}", typeof(TResponse).Name, sw.Elapsed);    
         }
     }
 }

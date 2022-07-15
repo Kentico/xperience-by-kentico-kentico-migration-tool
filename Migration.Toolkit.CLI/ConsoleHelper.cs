@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace Migration.Toolkit.CLI;
 
-public class ConsoleHelper
+public static class ConsoleHelper
 {
     const int STD_OUTPUT_HANDLE = -11;
     const uint ENABLE_VIRTUAL_TERMINAL_PROCESSING = 4;

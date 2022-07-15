@@ -196,7 +196,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
 
     #region "Migrate contact activities"
 
-    private CommandResult? MigrateContactActivities(List<int?> migratedSiteIds)
+    private CommandResult? MigrateContactActivities(List<int> migratedSiteIds)
     {
         var requiredColumnsForContactMigration = new Dictionary<string, string>
         {

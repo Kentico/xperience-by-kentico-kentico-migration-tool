@@ -32,7 +32,6 @@ var config = new ConfigurationBuilder()
         .SetBasePath(Environment.CurrentDirectory)
         .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
         .AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: false)
-        // .AddEnvironmentVariables()
         .Build()
     ;
 
@@ -45,10 +44,10 @@ foreach (var (validationMessageType, message, recommendedFix) in validationError
         case ValidationMessageType.Error:
             if (!string.IsNullOrWhiteSpace(message))
             {
-                Console.Write($"{red}Configuration error{reset}: {message}");
+                Console.Write(Resources.ConfigurationError, red, reset, message);
                 if (!string.IsNullOrWhiteSpace(recommendedFix))
                 {
-                    Console.Write($" {yellow}Possible fix{reset}: {recommendedFix}");
+                    Console.Write(Resources.ConfigurationRecommendedFix, yellow, reset, recommendedFix);
                 }
                 anyValidationErrors = true;
                 Console.WriteLine();
@@ -57,10 +56,10 @@ foreach (var (validationMessageType, message, recommendedFix) in validationError
         case ValidationMessageType.Warning:
             if (!string.IsNullOrWhiteSpace(message))
             {
-                Console.Write($"{yellow}Configuration warning{reset}: {message}");
+                Console.Write(Resources.ConfigurationWarning, yellow, reset, message);
                 if (!string.IsNullOrWhiteSpace(recommendedFix))
                 {
-                    Console.Write($" {yellow}Possible fix{reset}: {recommendedFix}");
+                    Console.Write(Resources.ConfigurationRecommendedFix, yellow, reset, recommendedFix);
                 }
 
                 Console.WriteLine();
@@ -72,38 +71,38 @@ foreach (var (validationMessageType, message, recommendedFix) in validationError
 
 if (anyValidationErrors)
 {
-    Console.WriteLine($"Press any key to exit program...");
+    Console.WriteLine(Resources.ProgramAwaitingExitMessage);
     Console.ReadKey();
     return;
 }
 
 
-var settings = config.GetRequiredSection("Settings").Get<ToolkitConfiguration>();
+var settings = config.GetRequiredSection(ConfigurationNames.Settings).Get<ToolkitConfiguration>();
 
 var services = new ServiceCollection();
 
 services
     .AddLogging(builder =>
     {
-        builder.AddConfiguration(config.GetSection("Logging"));
+        builder.AddConfiguration(config.GetSection(ConfigurationNames.Logging));
         builder.AddSimpleConsole(options =>
         {
             options.IncludeScopes = true;
             options.SingleLine = true;
             options.TimestampFormat = "hh:mm:ss.fff ";
         });
-        builder.AddFile(config.GetSection("Logging"));
+        builder.AddFile(config.GetSection(ConfigurationNames.Logging));
     });
 
 services.UseKx13DbContext(settings);
 services.UseKxoDbContext(settings);
-services.UseKxoApi(config.GetRequiredSection("Settings").GetRequiredSection("TargetKxoApiSettings"), settings.TargetCmsDirPath);
+services.UseKxoApi(config.GetRequiredSection(ConfigurationNames.Settings).GetRequiredSection(ConfigurationNames.TargetKxoApiSettings), settings.TargetCmsDirPath);
 services.AddSingleton(settings);
 services.UseToolkitCore();
 
 await using var serviceProvider = services.BuildServiceProvider();
 using var scope = serviceProvider.CreateScope();
-var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+// var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
 void WriteCommandDesc(string desc, string commandMoniker)
 {
@@ -201,7 +200,6 @@ while (argsQ.TryDequeue(out var arg))
     if (RequireNumberParameter("--siteId", out var siteId) && siteId is int sid && kxoContext.CmsSites.OrderBy(x => x.SiteId).FirstOrDefault()?.SiteId is int targetSiteId)
     {
         toolkitConfiguration.AddExplicitMapping<Migration.Toolkit.KX13.Models.CmsSite>(s => s.SiteId, sid, targetSiteId);
-        // mappingContext.SetMapping<Migration.Toolkit.KX13.Models.CmsSite>(s => s.SiteId, sid, targetSiteId);
     }
     else
     {
@@ -341,15 +339,6 @@ while (argsQ.TryDequeue(out var arg))
             continue;
         }
     }
-
-    // if (arg == $"--{MigrateWebFarmsCommand.Moniker}")
-    // {
-    //     commands.Add(new MigrateWebFarmsCommand());
-    //     continue;
-    // }
-
-    // Console.WriteLine($"Invalid arguments, for help call with command {Yellow("help")}, usable commands:");
-    // PrintCommandDescriptions();
 }
 
 kxoContext.Dispose();
@@ -388,5 +377,5 @@ foreach (var command in commands)
     Console.WriteLine($"Command {command.GetType().Name} is completed");
 }
 
-Console.WriteLine("Press any key to exit...");
+Console.WriteLine(Resources.ProgramAwaitingExitMessage);
 Console.ReadKey();

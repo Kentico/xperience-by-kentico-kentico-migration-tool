@@ -26,14 +26,14 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
         
         if (source is null)
         {
-            _logger.LogTrace("Source entity is not defined.");
+            _logger.LogTrace("Source entity is not defined");
             return HandbookReferences.SourceEntityIsNull<TSourceEntity>().AsFailure<TTargetEntity>().Log(_logger, Protocol);
         }
 
         var newInstance = false;
         if (target is null)
         {
-            _logger.LogTrace("Null target supplied, creating new instance.");
+            _logger.LogTrace("Null target supplied, creating new instance");
             target = CreateNewInstance(source, mappingHelper, failures.Add);
             if (target == null && object.Equals(target, default) && failures.Count > 0)
             {
@@ -42,14 +42,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
 
             newInstance = true;
         }
-        // else if (source.NodeGuid != target.NodeGUID)
-        // {
-        //     // assertion failed
-        //     _logger.LogTrace("Assertion failed, entity key mismatch.");
-        //     return new ModelMappingFailedKeyMismatch<TTargetEntity>().Log(_logger);
-        // }
-        
-        
+
         var mappedResult = MapInternal(source, target, newInstance, mappingHelper, failures.Add);
 
         return failures.Count > 0 
@@ -58,7 +51,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
     }
 
     protected abstract TTargetEntity? CreateNewInstance(TSourceEntity source, MappingHelper mappingHelper, AddFailure addFailure);
-    protected abstract TTargetEntity MapInternal(TSourceEntity source, TTargetEntity target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure);
+    protected abstract TTargetEntity MapInternal(TSourceEntity source, TTargetEntity? target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure);
 
     protected delegate void AddFailure(MapperResultFailure<TTargetEntity> failure);
 

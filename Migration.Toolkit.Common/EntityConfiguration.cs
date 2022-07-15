@@ -43,9 +43,9 @@ public class EntityConfigurations : Dictionary<string, EntityConfiguration>
 
 public class EntityConfiguration
 {
-    [JsonPropertyName("ExcludeCodeNames")]
+    [JsonPropertyName(ConfigurationNames.ExcludeCodeNames)]
     public string[] ExcludeCodeNames { get; set; } = Array.Empty<string>();
     
-    [JsonPropertyName("ExplicitPrimaryKeyMapping")]
+    [JsonPropertyName(ConfigurationNames.ExplicitPrimaryKeyMapping)]
     public Dictionary<string, Dictionary<string, int?>> ExplicitPrimaryKeyMapping { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }
