@@ -15,7 +15,7 @@ public class DebugMigrationProtocol: IMigrationProtocol
 
     public void NeedsManualAction<TData>(HandbookReference handbookRef, TData data)
     {
-        _logger.LogDebug("NeedsManualAction<{dataType}>: {handBookRef} - {data}", typeof(TData).FullName, handbookRef, data);
+        _logger.LogDebug("NeedsManualAction<{DataType}>: {HandBookRef} - {data}", typeof(TData).FullName, handbookRef, data);
     }
 
     public void NeedsManualAction<TSource, TTarget>(HandbookReference handbookRef, string whatNeedsToBeDoneOrWhatHappened, TSource source, TTarget? target, IModelMappingResult<TTarget> mapped)

@@ -30,21 +30,21 @@
 //         if (source is null)
 //         {
 //             _logger.LogTrace("Source entity is not defined.");
-//             return new ModelMappingFailedSourceNotDefined<Migration.Toolkit.KXO.Models.CmsTree>().Log(_logger);
+//             return new ModelMappingFailedSourceNotDefined<Migration.Toolkit.KXP.Models.CmsTree>().Log(_logger);
 //         }
 //
 //         var newInstance = false;
 //         if (target is null)
 //         {
 //             _logger.LogTrace("Null target supplied, creating new instance.");
-//             target = new Migration.Toolkit.KXO.Models.CmsTree();
+//             target = new Migration.Toolkit.KXP.Models.CmsTree();
 //             newInstance = true;
 //         }
 //         else if (source.NodeGuid != target.NodeGuid)
 //         {
 //             // assertion failed
 //             _logger.LogTrace("Assertion failed, entity key mismatch.");
-//             return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXO.Models.CmsTree>().Log(_logger);
+//             return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXP.Models.CmsTree>().Log(_logger);
 //         }
 //         
 //         // target.NodeId = source.NodeId;
@@ -71,7 +71,7 @@
 //             }
 //         }
 //         
-//         var aggregatedResult = new AggregatedResult<Migration.Toolkit.KXO.Models.CmsTree>(target, newInstance);
+//         var aggregatedResult = new AggregatedResult<Migration.Toolkit.KXP.Models.CmsTree>(target, newInstance);
 //         foreach (var sourceCmsPageUrlPath in source.CmsPageUrlPaths)
 //         {
 //             // x.PageUrlPathUrlPathHash == kx13CmsPageUrlPath.PageUrlPathUrlPathHash &&

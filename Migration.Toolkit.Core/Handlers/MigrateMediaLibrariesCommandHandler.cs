@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿namespace Migration.Toolkit.Core.Handlers;
+
+using System.Diagnostics;
 using CMS.Base;
 using CMS.MediaLibrary;
 using MediatR;
@@ -15,9 +17,7 @@ using Migration.Toolkit.KXO.Api;
 using Migration.Toolkit.KXO.Api.Auxiliary;
 using Migration.Toolkit.KXO.Context;
 
-namespace Migration.Toolkit.Core.Handlers;
-
-public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaLibrariesCommand, GenericCommandResult>, IDisposable
+public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaLibrariesCommand, CommandResult>, IDisposable
 {
     private readonly ILogger<MigrateMediaLibrariesCommandHandler> _logger;
     private readonly IDbContextFactory<KxoContext> _kxoContextFactory;
@@ -33,9 +33,9 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
 
     public MigrateMediaLibrariesCommandHandler(
         ILogger<MigrateMediaLibrariesCommandHandler> logger,
-        IDbContextFactory<KXO.Context.KxoContext> kxoContextFactory,
-        IDbContextFactory<KX13.Context.KX13Context> kx13ContextFactory,
-        IEntityMapper<KX13.Models.MediaLibrary, MediaLibraryInfo> mediaLibraryInfoMapper,
+        IDbContextFactory<KxoContext> kxoContextFactory,
+        IDbContextFactory<KX13Context> kx13ContextFactory,
+        IEntityMapper<MediaLibrary, MediaLibraryInfo> mediaLibraryInfoMapper,
         KxoMediaFileFacade mediaFileFacade,
         IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo> mediaFileInfoMapper, 
         ToolkitConfiguration toolkitConfiguration,
@@ -55,11 +55,11 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
         _kxoContext = kxoContextFactory.CreateDbContext();
     }
 
-    public async Task<GenericCommandResult> Handle(MigrateMediaLibrariesCommand request, CancellationToken cancellationToken)
+    public async Task<CommandResult> Handle(MigrateMediaLibrariesCommand request, CancellationToken cancellationToken)
     {
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
-        var migratedSiteIds = _toolkitConfiguration.RequireExplicitMapping<KX13.Models.CmsSite>(s => s.SiteId).Keys.ToList();
+        var migratedSiteIds = _toolkitConfiguration.RequireExplicitMapping<CmsSite>(s => s.SiteId).Keys.ToList();
 
         var kx13MediaLibraries = kx13Context.MediaLibraries
                 .Include(ml => ml.LibrarySite)
@@ -67,16 +67,17 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
                 .OrderBy(t => t.LibraryId)
             ;
 
-        var migratedMediaLibraries = new List<(KX13M.MediaLibrary sourceLibrary, MediaLibraryInfo targetLibrary)>();
+        var migratedMediaLibraries = new List<(MediaLibrary sourceLibrary, MediaLibraryInfo targetLibrary)>();
         foreach (var kx13MediaLibrary in kx13MediaLibraries)
         {
             _migrationProtocol.FetchedSource(kx13MediaLibrary);
 
-            if (!(kx13MediaLibrary.LibraryGuid is Guid mediaLibraryGuid))
+            if (kx13MediaLibrary.LibraryGuid is not { } mediaLibraryGuid)
             {
-                _migrationProtocol.Append(HandbookReferences.InvalidSourceData<KX13M.MediaLibrary>()
-                    .WithId(nameof(KX13M.MediaLibrary.LibraryId), kx13MediaLibrary.LibraryId)
-                    .WithMessage($"Media library has missing MediaLibraryGUID")
+                _migrationProtocol.Append(HandbookReferences
+                    .InvalidSourceData<MediaLibrary>()
+                    .WithId(nameof(MediaLibrary.LibraryId), kx13MediaLibrary.LibraryId)
+                    .WithMessage("Media library has missing MediaLibraryGUID")
                 );
                 continue;
             }
@@ -114,7 +115,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
                     continue;
                 }
 
-                _primaryKeyMappingContext.SetMapping<KX13.Models.MediaLibrary>(
+                _primaryKeyMappingContext.SetMapping<MediaLibrary>(
                     r => r.LibraryId,
                     kx13MediaLibrary.LibraryId,
                     mfi.LibraryID
@@ -198,49 +199,44 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
                     var mapped = _mediaFileInfoMapper.Map(source, kxoMediaFile);
                     _migrationProtocol.MappedTarget(mapped);
 
-                    switch (mapped)
+                    if (mapped is { Success : true } result)
                     {
-                        case { Success : true } result:
+                        var (mf, newInstance) = result;
+                        ArgumentNullException.ThrowIfNull(mf, nameof(mf));
+
+                        try
                         {
-                            var (mf, newInstance) = result;
-                            ArgumentNullException.ThrowIfNull(mf, nameof(mf));
-
-                            try
+                            if (newInstance)
                             {
-                                if (newInstance)
-                                {
-                                    Debug.Assert(targetSite != null, nameof(targetSite) + " != null");
-                                    _mediaFileFacade.EnsureMediaFilePathExistsInLibrary(mf, targetMediaLibrary.LibraryID, targetSite.SiteName);
-                                }
-
-                                _mediaFileFacade.SetMediaFile(mf, newInstance);
-                                await _kxoContext.SaveChangesAsync(cancellationToken);
-
-                                _migrationProtocol.Success(kx13MediaFile, mf, mapped);
-                                _logger.LogEntitySetAction(newInstance, mf);
-                            }
-                            catch (Exception ex) // TODO tk: 2022-05-18 handle exceptions
-                            {
-                                await kxoDbContext.DisposeAsync(); // reset context errors
-                                kxoDbContext = await _kxoContextFactory.CreateDbContextAsync(cancellationToken);
-
-                                _migrationProtocol.Append(HandbookReferences
-                                    .ErrorCreatingTargetInstance<MediaLibraryInfo>(ex)
-                                    .NeedsManualAction()
-                                    .WithIdentityPrint(mf)
-                                );
-                                _logger.LogEntitySetError(ex, newInstance, mf);
-                                continue;
+                                Debug.Assert(targetSite != null, nameof(targetSite) + " != null");
+                                _mediaFileFacade.EnsureMediaFilePathExistsInLibrary(mf, targetMediaLibrary.LibraryID, targetSite.SiteName);
                             }
 
-                            _primaryKeyMappingContext.SetMapping<KX13.Models.MediaFile>(
-                                r => r.FileId,
-                                kx13MediaFile.FileId,
-                                mf.FileID
-                            );
+                            _mediaFileFacade.SetMediaFile(mf, newInstance);
+                            await _kxoContext.SaveChangesAsync(cancellationToken);
 
-                            break;
+                            _migrationProtocol.Success(kx13MediaFile, mf, mapped);
+                            _logger.LogEntitySetAction(newInstance, mf);
                         }
+                        catch (Exception ex) // TODO tk: 2022-05-18 handle exceptions
+                        {
+                            await kxoDbContext.DisposeAsync(); // reset context errors
+                            kxoDbContext = await _kxoContextFactory.CreateDbContextAsync(cancellationToken);
+
+                            _migrationProtocol.Append(HandbookReferences
+                                .ErrorCreatingTargetInstance<MediaLibraryInfo>(ex)
+                                .NeedsManualAction()
+                                .WithIdentityPrint(mf)
+                            );
+                            _logger.LogEntitySetError(ex, newInstance, mf);
+                            continue;
+                        }
+
+                        _primaryKeyMappingContext.SetMapping<MediaFile>(
+                            r => r.FileId,
+                            kx13MediaFile.FileId,
+                            mf.FileID
+                        );
                     }
                 }
             }

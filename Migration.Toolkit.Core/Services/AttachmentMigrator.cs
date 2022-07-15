@@ -77,7 +77,7 @@ public class AttachmentMigrator
         return MigrateAttachment(attachment);
     } 
     
-    private readonly ConcurrentDictionary<int, KXOM.CmsSite> _targetSites = new();
+    private readonly ConcurrentDictionary<int, KXO.Models.CmsSite> _targetSites = new();
     
     public MigrateAttachmentResult MigrateAttachment(KX13M.CmsAttachment kx13CmsAttachment, string? additionalMedialPath = null)
     {

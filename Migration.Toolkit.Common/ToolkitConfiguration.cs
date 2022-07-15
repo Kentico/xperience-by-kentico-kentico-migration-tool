@@ -27,9 +27,9 @@ public class ToolkitConfiguration
     
     [JsonPropertyName(ConfigurationNames.TargetCmsDirPath)]
     public string? TargetCmsDirPath { get; set; }
-    
+
     [JsonPropertyName(ConfigurationNames.EntityConfigurations)]
-    public EntityConfigurations? EntityConfigurations { get; set; }
+    public EntityConfigurations EntityConfigurations { get; set; } = new();
     
     [JsonPropertyName(ConfigurationNames.TargetAttachmentMediaLibraryName)]
     public string? TargetAttachmentMediaLibraryName { get; set; }

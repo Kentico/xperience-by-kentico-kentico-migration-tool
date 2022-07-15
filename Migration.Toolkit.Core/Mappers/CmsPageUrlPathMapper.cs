@@ -28,7 +28,7 @@ public class CmsPageUrlPathMapper : EntityMapperBase<KX13.Models.CmsPageUrlPath,
         // {
         //     // assertion failed
         //     _logger.LogTrace("Assertion failed, entity key mismatch.");
-        //     return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXO.Models.CmsPageUrlPath>().Log(_logger);
+        //     return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXP.Models.CmsPageUrlPath>().Log(_logger);
         // }
 
         // target.PageUrlPathId = source.PageUrlPathId;

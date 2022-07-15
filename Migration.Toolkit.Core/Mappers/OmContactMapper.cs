@@ -25,7 +25,7 @@ public class OmContactMapper : EntityMapperBase<KX13.Models.OmContact, KXO.Model
 
     protected override OmContact? CreateNewInstance(KX13.Models.OmContact tSourceEntity, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
-    protected override KXOM.OmContact MapInternal(KX13.Models.OmContact source, KXOM.OmContact target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override KXO.Models.OmContact MapInternal(KX13.Models.OmContact source, KXO.Models.OmContact target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         if (!newInstance && source.ContactGuid != target.ContactGuid)
         {

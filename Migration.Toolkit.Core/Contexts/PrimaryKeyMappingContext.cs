@@ -11,89 +11,92 @@ public record MapSourceIdResult(bool Success, int? MappedId);
 
 public class PrimaryKeyMappingContext
 {
-    private Dictionary<string, int> _mappings = new(StringComparer.OrdinalIgnoreCase); 
+    private readonly Dictionary<string, int> _mappings = new(StringComparer.OrdinalIgnoreCase);
+    
     private readonly ILogger<PrimaryKeyMappingContext> _logger;
     private readonly IPrimaryKeyLocatorService _primaryKeyLocatorService;
     private readonly ToolkitConfiguration _toolkitConfiguration;
 
-    public PrimaryKeyMappingContext(ILogger<PrimaryKeyMappingContext> logger, IPrimaryKeyLocatorService primaryKeyLocatorService, ToolkitConfiguration toolkitConfiguration)
+    public PrimaryKeyMappingContext(
+        ILogger<PrimaryKeyMappingContext> logger,
+        IPrimaryKeyLocatorService primaryKeyLocatorService,
+        ToolkitConfiguration toolkitConfiguration
+    )
     {
         _logger = logger;
         _primaryKeyLocatorService = primaryKeyLocatorService;
         _toolkitConfiguration = toolkitConfiguration;
     }
 
-    private int? GetExplicitMapping<T>(string memberName, int? sourceId)
+    private int? GetExplicitMappingOrNull<T>(string memberName, int? sourceId)
     {
         if (sourceId == null) return null;
-        
-        var mappings = _toolkitConfiguration.EntityConfigurations.GetEntityConfiguration<T>().ExplicitPrimaryKeyMapping;
-        if (mappings.TryGetValue(memberName, out var memberMappings))
+
+        var mappings = _toolkitConfiguration.EntityConfigurations?.GetEntityConfiguration<T>().ExplicitPrimaryKeyMapping;
+        if (mappings?.TryGetValue(memberName, out var memberMappings) ?? false)
         {
-            if (memberMappings.TryGetValue($"{sourceId}", out var mappedId))
-            {
-                return mappedId;
-            }
+            return memberMappings.TryGetValue($"{sourceId}", out var mappedId) ? mappedId : null;
         }
 
         return null;
     }
+    
+    private static string CreateKey<T>(Expression<Func<T, object>> keyNameSelector, int sourceId)
+    {
+        return $"{typeof(T).FullName}.{keyNameSelector.GetMemberName()}.{sourceId}";
+    }
 
-    public void SetMapping(Type type, string keyName, int sourceId, int targetId) 
+    public void SetMapping(Type type, string keyName, int sourceId, int targetId)
     {
         Debug.Assert(sourceId > 0, "sourceId > 0");
         Debug.Assert(targetId > 0, "targetId > 0");
-        
-        var foundProp = type.GetProperties(BindingFlags.Instance | BindingFlags.Public).FirstOrDefault(p => p.Name.Equals(keyName, StringComparison.OrdinalIgnoreCase));
-        
+
+        var foundProp = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+            .FirstOrDefault(p => p.Name.Equals(keyName, StringComparison.OrdinalIgnoreCase));
+
         Debug.Assert(foundProp != null, "foundProp != null");
-        
+
         var fullKeyName = $"{type.FullName}.{foundProp.Name}.{sourceId}";
-        
+
         _mappings[fullKeyName] = targetId;
-        _logger.LogTrace("Primary key for {fullKeyName} stored. {sourceId} maps to {targetId}", fullKeyName, sourceId, targetId);
+        _logger.LogTrace("Primary key for {FullKeyName} stored. {SourceId} maps to {TargetId}", fullKeyName, sourceId, targetId);
     }
-    
-    public void SetMapping<T>(Expression<Func<T, object>> keyNameSelector, int sourceId, int targetId) 
+
+    public void SetMapping<T>(Expression<Func<T, object>> keyNameSelector, int sourceId, int targetId)
     {
-        // Debug.Assert(sourceId > 0, "sourceId > 0");
-        // Debug.Assert(targetId > 0, "targetId > 0");
-        
-        var fullKeyName = $"{typeof(T).FullName}.{keyNameSelector.GetMemberName()}.{sourceId}";
-        
+        var fullKeyName = CreateKey(keyNameSelector, sourceId);
         _mappings[fullKeyName] = targetId;
-        // _logger.LogTrace("Primary key for {fullKeyName} stored. {sourceId} maps to {targetId}", fullKeyName, sourceId, targetId);
     }
-    
+
     public int RequireMapFromSource<T>(Expression<Func<T, object>> keyNameSelector, int sourceId)
     {
         var memberName = keyNameSelector.GetMemberName();
-        var fullKeyName = $"{typeof(T).FullName}.{memberName}.{sourceId}";
+        var fullKeyName = CreateKey(keyNameSelector, sourceId);
         if (sourceId == 0)
         {
             throw new MappingFailureException(fullKeyName, $"Cannot satisfy required mapping {fullKeyName} - source Id cannot be 0.");
         }
 
-        if (GetExplicitMapping<T>(memberName, sourceId) is { } explicitlyMappedId)
+        if (GetExplicitMappingOrNull<T>(memberName, sourceId) is { } explicitlyMappedId)
         {
-            _logger.LogTrace("{key} resolved as {value} from explicit mapping", fullKeyName, explicitlyMappedId);
+            _logger.LogTrace("{Key} resolved as {Value} from explicit mapping", fullKeyName, explicitlyMappedId);
             return explicitlyMappedId;
         }
 
         if (_mappings.TryGetValue(fullKeyName, out var resultId))
         {
-            _logger.LogTrace("{key} resolved as {value}", fullKeyName, resultId);
+            _logger.LogTrace("{Key} resolved as {Value}", fullKeyName, resultId);
             return resultId;
         }
-        
-        _logger.LogTrace("TryLocate {key}", fullKeyName);
-        if(_primaryKeyLocatorService.TryLocate(keyNameSelector, sourceId, out var targetId))
+
+        _logger.LogTrace("TryLocate {Key}", fullKeyName);
+        if (_primaryKeyLocatorService.TryLocate(keyNameSelector, sourceId, out var targetId))
         {
             SetMapping(keyNameSelector, sourceId, targetId); // cache id
-            _logger.LogTrace("{key} located as {value}", fullKeyName, resultId);
+            _logger.LogTrace("{Key} located as {Value}", fullKeyName, resultId);
             return targetId;
         }
-        
+
         throw new MappingFailureException(fullKeyName, "Target entity is missing");
     }
 
@@ -106,31 +109,31 @@ public class PrimaryKeyMappingContext
         }
 
         var memberName = keyNameSelector.GetMemberName();
-        var fullKeyName = $"{typeof(T).FullName}.{memberName}.{sid}";
+        var fullKeyName = CreateKey(keyNameSelector, sid);
         if (sid == 0)
         {
             throw new MappingFailureException(fullKeyName, $"Cannot satisfy required mapping {fullKeyName} - source Id cannot be 0.");
         }
-        
-        if (GetExplicitMapping<T>(memberName, sourceId) is { } explicitlyMappedId)
+
+        if (GetExplicitMappingOrNull<T>(memberName, sourceId) is { } explicitlyMappedId)
         {
-            _logger.LogTrace("{key} resolved as {value} from explicit mapping", fullKeyName, explicitlyMappedId);
+            _logger.LogTrace("{Key} resolved as {Value} from explicit mapping", fullKeyName, explicitlyMappedId);
             targetIdResult = explicitlyMappedId;
             return true;
         }
 
         if (_mappings.TryGetValue(fullKeyName, out var resultId))
         {
-            _logger.LogTrace("{key} resolved as {value}", fullKeyName, resultId);
+            _logger.LogTrace("{Key} resolved as {Value}", fullKeyName, resultId);
             targetIdResult = resultId;
             return true;
         }
-        
-        _logger.LogTrace("TryLocate {key}", fullKeyName);
-        if(_primaryKeyLocatorService.TryLocate(keyNameSelector, sid, out var targetId))
+
+        _logger.LogTrace("TryLocate {Key}", fullKeyName);
+        if (_primaryKeyLocatorService.TryLocate(keyNameSelector, sid, out var targetId))
         {
             SetMapping(keyNameSelector, sid, targetId); // cache id
-            _logger.LogTrace("{key} located as {value}", fullKeyName, targetId);
+            _logger.LogTrace("{Key} located as {Value}", fullKeyName, targetId);
             targetIdResult = targetId;
             return true;
         }
@@ -140,38 +143,38 @@ public class PrimaryKeyMappingContext
 
     public int? MapFromSource<T>(Expression<Func<T, object>> keyNameSelector, int? sourceId)
     {
-        if (sourceId == null) return null;
-
-        var memberName = keyNameSelector.GetMemberName();
-        var fullKeyName = $"{typeof(T).FullName}.{memberName}.{sourceId}";
-        if (sourceId == 0)
-        {
-            // TODO tk: 2022-05-31 source data autofix applied
-            _logger.LogWarning("{key} Key locator invalid argument, cannot supply 0 as argument", fullKeyName);
-            return null;
-        }
-        
-        if (GetExplicitMapping<T>(memberName, sourceId) is { } explicitlyMappedId)
-        {
-            _logger.LogTrace("{key} resolved as {value} from explicit mapping", fullKeyName, explicitlyMappedId);
-            return explicitlyMappedId;
-        }
-
-        if (_mappings.TryGetValue(fullKeyName, out var resultId))
-        {
-            _logger.LogTrace("{key} resolved as {value}", fullKeyName, resultId);
-            return resultId;
-        }
         if (sourceId is not { } sid)
         {
             return null;
         }
         
-        _logger.LogTrace("TryLocate {key}", fullKeyName);
-        if(_primaryKeyLocatorService.TryLocate(keyNameSelector, sid, out var targetId))
+        var memberName = keyNameSelector.GetMemberName();
+        var fullKeyName = CreateKey(keyNameSelector, sid);
+        if (sid == 0)
+        {
+            _logger.LogWarning("{Key} Key locator invalid argument, cannot supply 0 as argument", fullKeyName);
+            return null;
+        }
+
+        if (GetExplicitMappingOrNull<T>(memberName, sid) is { } explicitlyMappedId)
+        {
+            _logger.LogTrace("{Key} resolved as {Value} from explicit mapping", fullKeyName, explicitlyMappedId);
+            return explicitlyMappedId;
+        }
+
+        if (_mappings.TryGetValue(fullKeyName, out var resultId))
+        {
+            _logger.LogTrace("{Key} resolved as {Value}", fullKeyName, resultId);
+            return resultId;
+        }
+
+       
+
+        _logger.LogTrace("TryLocate {Key}", fullKeyName);
+        if (_primaryKeyLocatorService.TryLocate(keyNameSelector, sid, out var targetId))
         {
             SetMapping(keyNameSelector, sid, targetId); // cache id
-            _logger.LogTrace("{key} located as {value}", fullKeyName, targetId);
+            _logger.LogTrace("{Key} located as {Value}", fullKeyName, targetId);
             return targetId;
         }
 
@@ -180,38 +183,38 @@ public class PrimaryKeyMappingContext
 
     public int? MapFromSourceOrNull<T>(Expression<Func<T, object>> keyNameSelector, int? sourceId)
     {
-        if (sourceId == null) return null;
-
-        var memberName = keyNameSelector.GetMemberName();
-        var fullKeyName = $"{typeof(T).FullName}.{memberName}.{sourceId}";
-        if (sourceId == 0)
-        {
-            // TODO tk: 2022-05-31 source data autofix applied
-            _logger.LogWarning("{key} Key locator invalid argument, cannot supply 0 as argument", fullKeyName);
-            return null;
-        }
-        
-        if (GetExplicitMapping<T>(memberName, sourceId) is { } explicitlyMappedId)
-        {
-            _logger.LogTrace("{key} resolved as {value} from explicit mapping", fullKeyName, explicitlyMappedId);
-            return explicitlyMappedId;
-        }
-        
-        if (_mappings.TryGetValue(fullKeyName, out var resultId))
-        {
-            _logger.LogTrace("{key} resolved as {value}", fullKeyName, resultId);
-            return resultId;
-        }
         if (sourceId is not { } sid)
         {
             return null;
         }
-        
-        _logger.LogTrace("TryLocate {key}", fullKeyName);
-        if(_primaryKeyLocatorService.TryLocate(keyNameSelector, sid, out var targetId))
+
+        var memberName = keyNameSelector.GetMemberName();
+        var fullKeyName = CreateKey(keyNameSelector, sid);
+        if (sid == 0)
+        {
+            _logger.LogWarning("{Key} Key locator invalid argument, cannot supply 0 as argument", fullKeyName);
+            return null;
+        }
+
+        if (GetExplicitMappingOrNull<T>(memberName, sid) is { } explicitlyMappedId)
+        {
+            _logger.LogTrace("{Key} resolved as {Value} from explicit mapping", fullKeyName, explicitlyMappedId);
+            return explicitlyMappedId;
+        }
+
+        if (_mappings.TryGetValue(fullKeyName, out var resultId))
+        {
+            _logger.LogTrace("{Key} resolved as {Value}", fullKeyName, resultId);
+            return resultId;
+        }
+
+
+
+        _logger.LogTrace("TryLocate {Key}", fullKeyName);
+        if (_primaryKeyLocatorService.TryLocate(keyNameSelector, sid, out var targetId))
         {
             SetMapping(keyNameSelector, sid, targetId); // cache id
-            _logger.LogTrace("{key} located as {value}", fullKeyName, targetId);
+            _logger.LogTrace("{Key} located as {Value}", fullKeyName, targetId);
             return targetId;
         }
 
@@ -220,39 +223,38 @@ public class PrimaryKeyMappingContext
 
     public MapSourceIdResult MapSourceId<T>(Expression<Func<T, object>> keyNameSelector, int? sourceId, bool useLocator = true)
     {
-        if (sourceId == null) return new MapSourceIdResult(true, null);
-
-        var memberName = keyNameSelector.GetMemberName();
-        var fullKeyName = $"{typeof(T).FullName}.{memberName}.{sourceId}";
-        if (sourceId == 0)
+        if (sourceId is not { } sid)
         {
-            // TODO tk: 2022-05-31 source data autofix applied
-            _logger.LogWarning("{key} Key locator invalid argument, cannot supply 0 as argument", fullKeyName);
             return new MapSourceIdResult(true, null);
         }
-        
-        if (GetExplicitMapping<T>(memberName, sourceId) is { } explicitlyMappedId)
+
+        var memberName = keyNameSelector.GetMemberName();
+        var fullKeyName = CreateKey(keyNameSelector, sid);
+        if (sid == 0)
         {
-            _logger.LogTrace("{key} resolved as {value} from explicit mapping", fullKeyName, explicitlyMappedId);
+            _logger.LogWarning("{Key} Key locator invalid argument, cannot supply 0 as argument", fullKeyName);
+            return new MapSourceIdResult(true, null);
+        }
+
+        if (GetExplicitMappingOrNull<T>(memberName, sid) is { } explicitlyMappedId)
+        {
+            _logger.LogTrace("{Key} resolved as {Value} from explicit mapping", fullKeyName, explicitlyMappedId);
             return new MapSourceIdResult(true, explicitlyMappedId);
         }
 
         if (_mappings.TryGetValue(fullKeyName, out var resultId))
         {
-            _logger.LogTrace("{key} resolved as {value}", fullKeyName, resultId);
+            _logger.LogTrace("{Key} resolved as {Value}", fullKeyName, resultId);
             return new MapSourceIdResult(true, resultId);
         }
+
         
-        if (sourceId is not { } sid)
-        {
-            return new MapSourceIdResult(true, null);
-        }
-        
-        _logger.LogTrace("TryLocate {key}", fullKeyName);
-        if(useLocator && _primaryKeyLocatorService.TryLocate(keyNameSelector, sid, out var targetId))
+
+        _logger.LogTrace("TryLocate {Key}", fullKeyName);
+        if (useLocator && _primaryKeyLocatorService.TryLocate(keyNameSelector, sid, out var targetId))
         {
             SetMapping(keyNameSelector, sid, targetId); // cache id
-            _logger.LogTrace("{key} located as {value}", fullKeyName, targetId);
+            _logger.LogTrace("{Key} located as {Value}", fullKeyName, targetId);
             return new MapSourceIdResult(true, targetId);
         }
 
@@ -263,22 +265,25 @@ public class PrimaryKeyMappingContext
     {
         foreach (var (sourceId, targetId) in _primaryKeyLocatorService.SelectAll(keyNameSelector))
         {
-            SetMapping(keyNameSelector, sourceId, targetId);    
+            SetMapping(keyNameSelector, sourceId, targetId);
         }
     }
 
     public bool HasMapping<T>(Expression<Func<T, object>> keyNameSelector, int? sourceId, bool useLocator = true)
     {
-        if (sourceId == null) return true;
-
-        var memberName = keyNameSelector.GetMemberName();
-        var fullKeyName = $"{typeof(T).FullName}.{memberName}.{sourceId}";
-        if (sourceId == 0)
+        if (sourceId is not { } sid)
         {
             return true;
         }
-        
-        if (GetExplicitMapping<T>(memberName, sourceId) is { })
+
+        var memberName = keyNameSelector.GetMemberName();
+        var fullKeyName = CreateKey(keyNameSelector, sid);
+        if (sid == 0)
+        {
+            return true;
+        }
+
+        if (GetExplicitMappingOrNull<T>(memberName, sid) is { })
         {
             return true;
         }
@@ -287,13 +292,8 @@ public class PrimaryKeyMappingContext
         {
             return true;
         }
-        
-        if (sourceId is not { } sid)
-        {
-            return true;
-        }
 
-        if(useLocator && _primaryKeyLocatorService.TryLocate(keyNameSelector, sid, out _))
+        if (useLocator && _primaryKeyLocatorService.TryLocate(keyNameSelector, sid, out _))
         {
             return true;
         }

@@ -26,7 +26,7 @@ public class CmsResourceMapper : EntityMapperBase<Migration.Toolkit.KX13.Models.
             _logger.LogTrace("Assertion failed, entity key mismatch on resources S={sourceGuild}, T={targetGuid}", source.ResourceGuid,
                 target.ResourceGuid);
             // allowing to run through, same resource is not required for target instance
-            // return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXO.Models.CmsResource>();
+            // return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXP.Models.CmsResource>();
         }
 
         // avoid updating resource

@@ -4,6 +4,8 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AssemblyName>Migration.Toolkit.KXP.Api</AssemblyName>
+        <RootNamespace>Migration.Toolkit.KXP.Api</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

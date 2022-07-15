@@ -22,7 +22,7 @@ public class CmsConsentArchiveMapper : EntityMapperBase<KX13.Models.CmsConsentAr
         // {
         //     // assertion failed
         //     _logger.LogTrace("Assertion failed, entity key mismatch.");
-        //     return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXO.Models.CmsConsentArchive>().Log(_logger);
+        //     return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXP.Models.CmsConsentArchive>().Log(_logger);
         // }
 
         // do not try to insert pk

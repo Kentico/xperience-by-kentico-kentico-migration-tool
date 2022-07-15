@@ -1,3 +1,5 @@
+namespace Migration.Toolkit.Core.Handlers;
+
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -8,8 +10,7 @@ using Migration.Toolkit.Core.Helpers;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.Core.Services.BulkCopy;
 using Migration.Toolkit.KX13.Models;
-
-namespace Migration.Toolkit.Core.Handlers;
+using Migration.Toolkit.KXO.Context;
 
 public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateContactManagementCommand, CommandResult>, IDisposable
 {
@@ -18,11 +19,11 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IMigrationProtocol _migrationProtocol;
-    private readonly KXO.Context.KxoContext _kxoContext;
+    private readonly KxoContext _kxoContext;
 
     public MigrateContactManagementCommandHandler(
         ILogger<MigrateContactManagementCommandHandler> logger,
-        IDbContextFactory<KXO.Context.KxoContext> kxoContextFactory,
+        IDbContextFactory<KxoContext> kxoContextFactory,
         BulkDataCopyService bulkDataCopyService,
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
@@ -84,7 +85,6 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
             // No support 2022-07-07  { nameof(OmContact.ContactSalesForceLeadReplicationRequired), nameof(KXO.Models.OmContact.ContactSalesForceLeadReplicationRequired) },
         };
 
-        // TODO tk: 2022-07-07 replace table data?
         // if (_bulkDataCopyService.CheckIfDataExistsInTargetTable("OM_Contact"))
         // {
         //     _migrationProtocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable("OM_Contact"));
@@ -108,7 +108,6 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         _primaryKeyMappingContext.PreloadDependencies<CmsUser>(u => u.UserId);
         _primaryKeyMappingContext.PreloadDependencies<CmsState>(u => u.StateId);
         _primaryKeyMappingContext.PreloadDependencies<CmsCountry>(u => u.CountryId);
-        
 
         var bulkCopyRequest = new BulkCopyRequest("OM_Contact",
             s => true,// s => s != "ContactID",

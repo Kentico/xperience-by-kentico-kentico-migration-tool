@@ -4,13 +4,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.CLI", "Mi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.KX13", "Migration.Toolkit.KX13\Migration.Toolkit.KX13.csproj", "{C834C407-683B-4251-A4CD-52C135DCA518}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.KXO", "Migration.Toolkit.KXO\Migration.Toolkit.KXO.csproj", "{5F3DCE58-E1ED-4190-B3DA-610AA4F166A0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.KXP", "Migration.Toolkit.KXP\Migration.Toolkit.KXP.csproj", "{5F3DCE58-E1ED-4190-B3DA-610AA4F166A0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.Common", "Migration.Toolkit.Common\Migration.Toolkit.Common.csproj", "{CE8ED7D2-DA7B-4106-BADA-A70E2DFCCAAF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.Core", "Migration.Toolkit.Core\Migration.Toolkit.Core.csproj", "{1F7DC18B-CF87-4AB2-A5CC-094125246954}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.KXO.Api", "Migration.Toolkit.KXO.Api\Migration.Toolkit.KXO.Api.csproj", "{8E806DDF-6405-4386-B69E-B6FAA672A188}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.KXP.Api", "Migration.Toolkit.KXP.Api\Migration.Toolkit.KXP.Api.csproj", "{8E806DDF-6405-4386-B69E-B6FAA672A188}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.TestConsole", "Migration.Toolkit.TestConsole\Migration.Toolkit.TestConsole.csproj", "{DD3C628C-A38F-423F-B930-3A0F7270BF92}"
 EndProject

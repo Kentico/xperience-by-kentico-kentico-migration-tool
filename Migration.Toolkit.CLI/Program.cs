@@ -78,6 +78,7 @@ if (anyValidationErrors)
 
 
 var settings = config.GetRequiredSection(ConfigurationNames.Settings).Get<ToolkitConfiguration>();
+settings.EntityConfigurations ??= new EntityConfigurations();
 
 var services = new ServiceCollection();
 
@@ -148,23 +149,22 @@ bool RequireNumberParameter(string paramName, out int? paramValue)
 var mappingContext = scope.ServiceProvider.GetRequiredService<PrimaryKeyMappingContext>();
 var toolkitConfiguration = scope.ServiceProvider.GetRequiredService<ToolkitConfiguration>();
 var tableTypeLookupService = scope.ServiceProvider.GetRequiredService<TableReflectionService>();
-if (toolkitConfiguration.EntityConfigurations != null)
-    foreach (var (k, ek) in toolkitConfiguration.EntityConfigurations)
-    {
-        var tableType = tableTypeLookupService.GetSourceTableTypeByTableName(k);
+foreach (var (k, ek) in toolkitConfiguration.EntityConfigurations)
+{
+    var tableType = tableTypeLookupService.GetSourceTableTypeByTableName(k);
 
-        foreach (var (kPkName, mappings) in ek.ExplicitPrimaryKeyMapping)
+    foreach (var (kPkName, mappings) in ek.ExplicitPrimaryKeyMapping)
+    {
+        foreach (var (kPk, vPk) in mappings)
         {
-            foreach (var (kPk, vPk) in mappings)
+            // TODO tk: 2022-05-26 report incorrect property setting
+            if (int.TryParse(kPk, out var kPkParsed) && vPk.HasValue)
             {
-                // TODO tk: 2022-05-26 report incorrect property setting
-                if (int.TryParse(kPk, out var kPkParsed) && vPk.HasValue)
-                {
-                    mappingContext.SetMapping(tableType, kPkName, kPkParsed, vPk.Value);
-                }
+                mappingContext.SetMapping(tableType, kPkName, kPkParsed, vPk.Value);
             }
         }
     }
+}
 
 
 void PrintCommandDescriptions()

@@ -1,4 +1,6 @@
-﻿using MediatR;
+﻿namespace Migration.Toolkit.Core.Handlers;
+
+using MediatR;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -9,15 +11,13 @@ using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KXO.Context;
 
-namespace Migration.Toolkit.Core.Handlers;
-
-public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, GenericCommandResult>, IDisposable
+public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, CommandResult>, IDisposable
 {
     private readonly ILogger<MigrateUsersCommandHandler> _logger;
     private readonly IDbContextFactory<KxoContext> _kxoContextFactory;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
-    private readonly IEntityMapper<KX13.Models.CmsUser, KXO.Models.CmsUser> _userMapper;
-    private readonly IEntityMapper<KX13.Models.CmsRole, KXO.Models.CmsRole> _roleMapper;
+    private readonly IEntityMapper<KX13M.CmsUser, KXO.Models.CmsUser> _userMapper;
+    private readonly IEntityMapper<KX13M.CmsRole, KXO.Models.CmsRole> _roleMapper;
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IMigrationProtocol _migrationProtocol;
@@ -26,10 +26,10 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
 
     public MigrateUsersCommandHandler(
         ILogger<MigrateUsersCommandHandler> logger,
-        IDbContextFactory<KXO.Context.KxoContext> kxoContextFactory,
-        IDbContextFactory<KX13.Context.KX13Context> kx13ContextFactory,
-        IEntityMapper<KX13.Models.CmsUser, KXO.Models.CmsUser> userMapper,
-        IEntityMapper<KX13.Models.CmsRole, KXO.Models.CmsRole> roleMapper,
+        IDbContextFactory<KxoContext> kxoContextFactory,
+        IDbContextFactory<KX13Context> kx13ContextFactory,
+        IEntityMapper<KX13M.CmsUser, KXO.Models.CmsUser> userMapper,
+        IEntityMapper<KX13M.CmsRole, KXO.Models.CmsRole> roleMapper,
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IMigrationProtocol migrationProtocol
@@ -46,16 +46,16 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
         _kxoContext = _kxoContextFactory.CreateDbContext();
     }
     
-    public async Task<GenericCommandResult> Handle(MigrateUsersCommand request, CancellationToken cancellationToken)
+    public async Task<CommandResult> Handle(MigrateUsersCommand request, CancellationToken cancellationToken)
     {
-        var migratedSiteIds = _toolkitConfiguration.RequireExplicitMapping<KX13.Models.CmsSite>(s => s.SiteId).Keys.ToList();
+        var migratedSiteIds = _toolkitConfiguration.RequireExplicitMapping<KX13M.CmsSite>(s => s.SiteId).Keys.ToList();
         
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
         await RequireMigratedCmsRoles(kx13Context, cancellationToken, migratedSiteIds);
 
         var kx13CmsUsers = kx13Context.CmsUsers
-                .Include(u => u.CmsUserRoles.Where(x => migratedSiteIds.Contains(x.Role.SiteId.Value) || x.Role.SiteId == null))
+                .Include(u => u.CmsUserRoles.Where(x => migratedSiteIds.Contains(x.Role.SiteId!.Value) || x.Role.SiteId == null))
                 .ThenInclude(ur => ur.Role)
             ;
 
@@ -75,18 +75,18 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
             if (kx13User.UserPrivilegeLevel == 3 && kxoUser != null)
             {
                 _migrationProtocol.Append(HandbookReferences.CmsUserAdminUserSkip.WithIdentityPrint(kxoUser));
-                _logger.LogInformation("User with guid {Guid} is administrator, you need to update administrators manually => skipping", kx13User.UserGuid);
-                _primaryKeyMappingContext.SetMapping<KX13.Models.CmsUser>(r => r.UserId, kx13User.UserId, kxoUser.UserId);
+                _logger.LogInformation("User with guid {UserGuid} is administrator, you need to update administrators manually => skipping", kx13User.UserGuid);
+                _primaryKeyMappingContext.SetMapping<KX13M.CmsUser>(r => r.UserId, kx13User.UserId, kxoUser.UserId);
                 continue;
             }
             
             if (kxoUser?.UserName == "public" || kx13User.UserName == "public")
             {
                 _migrationProtocol.Append(HandbookReferences.CmsUserPublicUserSkip.WithIdentityPrint(kxoUser));
-                _logger.LogInformation("User with guid {Guid} is public user, special case that can't be migrated => skipping", kxoUser?.UserGuid ?? kx13User.UserGuid);
+                _logger.LogInformation("User with guid {UserGuid} is public user, special case that can't be migrated => skipping", kxoUser?.UserGuid ?? kx13User.UserGuid);
                 if (kxoUser != null)
                 {
-                    _primaryKeyMappingContext.SetMapping<KX13.Models.CmsUser>(r => r.UserId, kx13User.UserId, kxoUser.UserId);    
+                    _primaryKeyMappingContext.SetMapping<KX13M.CmsUser>(r => r.UserId, kx13User.UserId, kxoUser.UserId);    
                 }
                 continue;
             }
@@ -97,6 +97,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
             if (mapped is { Success : true } result)
             {
                 var (cmsUser, newInstance) = result;
+                ArgumentNullException.ThrowIfNull(cmsUser);
 
                 if (newInstance)
                 {
@@ -125,14 +126,14 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
                             kx13User.UserGuid,
                             kx13User.UserId,
                         })
-                        .WithMessage($"Failed to migrate user, target database broken.")
+                        .WithMessage("Failed to migrate user, target database broken.")
                     );
                     
                     await _kxoContext.DisposeAsync();
                     _kxoContext = await _kxoContextFactory.CreateDbContextAsync(cancellationToken);
                 }
 
-                _primaryKeyMappingContext.SetMapping<KX13.Models.CmsUser>(r => r.UserId, kx13User.UserId, cmsUser.UserId);
+                _primaryKeyMappingContext.SetMapping<KX13M.CmsUser>(r => r.UserId, kx13User.UserId, cmsUser.UserId);
             }
         }
 
@@ -142,7 +143,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
     private async Task RequireMigratedCmsRoles(KX13Context kx13Context, CancellationToken cancellationToken, List<int> migratedSiteIds)
     {
         var kx13CmsRoles = kx13Context.CmsRoles
-            .Where(x => migratedSiteIds.Contains(x.SiteId.Value) || x.SiteId == null);
+            .Where(x => migratedSiteIds.Contains(x.SiteId!.Value) || x.SiteId == null);
 
         foreach (var kx13CmsRole in kx13CmsRoles)
         {
@@ -170,30 +171,18 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Ge
                     _kxoContext.CmsRoles.Update(cmsRole);
                 }
 
-                try
-                {
-                    await _kxoContext.SaveChangesAsync(cancellationToken);
+                await _kxoContext.SaveChangesAsync(cancellationToken);
 
-                    _migrationProtocol.Success(kx13CmsRole, cmsRole, mapped);
-                    _logger.LogInformation(newInstance
-                        ? $"CmsRole: {cmsRole.RoleGuid} was inserted."
-                        : $"CmsRole: {cmsRole.RoleGuid} was updated.");
-                }
-                catch (Exception ex) // TODO tk: 2022-05-18 handle exceptions
-                {
-                    throw;
-                }
+                _migrationProtocol.Success(kx13CmsRole, cmsRole, mapped);
+                _logger.LogEntitySetAction(newInstance, cmsRole);
 
-                _primaryKeyMappingContext.SetMapping<KX13.Models.CmsRole>(
+                _primaryKeyMappingContext.SetMapping<KX13M.CmsRole>(
                     r => r.RoleId,
                     kx13CmsRole.RoleId,
                     cmsRole.RoleId
                 );
             }
-            else
-            {
-                throw new ArgumentOutOfRangeException(nameof(mapped));
-            }
+            // TODO tk: 2022-07-15 handle error
         }
     }
 

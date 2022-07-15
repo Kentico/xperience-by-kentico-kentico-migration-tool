@@ -24,21 +24,21 @@ public class CmsSettingsKeyMapper : EntityMapperBase<Migration.Toolkit.KX13.Mode
         // if (source is null)
         // {
         //     _logger.LogTrace("Source entity is not defined.");
-        //     return new ModelMappingFailedSourceNotDefined<Migration.Toolkit.KXO.Models.CmsSettingsKey>().Log(_logger);
+        //     return new ModelMappingFailedSourceNotDefined<Migration.Toolkit.KXP.Models.CmsSettingsKey>().Log(_logger);
         // }
         //
         // var newInstance = false;
         // if (target is null)
         // {
         //     _logger.LogTrace("Null target supplied, creating new instance.");
-        //     target = new Migration.Toolkit.KXO.Models.CmsSettingsKey();
+        //     target = new Migration.Toolkit.KXP.Models.CmsSettingsKey();
         //     newInstance = true;
         // }
         // else if (CmsSettingsKeyKey.From(source.KeyName, _primaryKeyMappingContext.MapFromSource<KX13.Models.CmsSite>(s=>s.SiteId, source.SiteId)) != CmsSettingsKeyKey.From(target.KeyName, target.SiteId))
         // {
         //     // assertion failed
         //     _logger.LogTrace("Assertion failed, entity key mismatch.");
-        //     return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXO.Models.CmsSettingsKey>().Log(_logger);
+        //     return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXP.Models.CmsSettingsKey>().Log(_logger);
         // }
 
         // map entity

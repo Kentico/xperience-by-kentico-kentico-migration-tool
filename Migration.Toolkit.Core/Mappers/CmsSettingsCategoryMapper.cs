@@ -25,14 +25,14 @@ public class CmsSettingsCategoryMapper : EntityMapperBase<Migration.Toolkit.KX13
         AddFailure addFailure) => new();
     
 
-    protected override KXOM.CmsSettingsCategory MapInternal(KX13.Models.CmsSettingsCategory source, KXOM.CmsSettingsCategory target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override KXO.Models.CmsSettingsCategory MapInternal(KX13.Models.CmsSettingsCategory source, KXO.Models.CmsSettingsCategory target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         // no category guid to match on...
         // else if (source.CategoryName != target.CategoryName)
         // {
         //     // assertion failed
         //     _logger.LogTrace("Assertion failed, entity key mismatch.");
-        //     return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXO.Models.CmsSettingsCategory>();
+        //     return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXP.Models.CmsSettingsCategory>();
         // }
 
         // map entity
@@ -70,7 +70,7 @@ public class CmsSettingsCategoryMapper : EntityMapperBase<Migration.Toolkit.KX13
                     }
                     case { Success: false } result:
                     {
-                        addFailure(new MapperResultFailure<KXOM.CmsSettingsCategory>(result.HandbookReference));
+                        addFailure(new MapperResultFailure<KXO.Models.CmsSettingsCategory>(result.HandbookReference));
                         break;
                     }
                 }
@@ -92,7 +92,7 @@ public class CmsSettingsCategoryMapper : EntityMapperBase<Migration.Toolkit.KX13
                 }
                 case { Success: false } result:
                 {
-                    addFailure(new MapperResultFailure<KXOM.CmsSettingsCategory>(result.HandbookReference));
+                    addFailure(new MapperResultFailure<KXO.Models.CmsSettingsCategory>(result.HandbookReference));
                     break;
                 }
             }

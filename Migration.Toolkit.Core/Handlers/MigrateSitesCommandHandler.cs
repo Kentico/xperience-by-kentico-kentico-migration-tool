@@ -1,23 +1,22 @@
-﻿using MediatR;
+﻿namespace Migration.Toolkit.Core.Handlers;
+
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Common;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
+using Migration.Toolkit.KX13.Models;
 using Migration.Toolkit.KXO.Context;
 
-namespace Migration.Toolkit.Core.Handlers;
-
 // ReSharper disable once UnusedType.Global
-public class MigrateSitesCommandHandler: IRequestHandler<MigrateSitesCommand, GenericCommandResult>, IDisposable
+public class MigrateSitesCommandHandler: IRequestHandler<MigrateSitesCommand, CommandResult>, IDisposable
 {
     private readonly ILogger<MigrateSitesCommandHandler> _logger;
     private readonly IDbContextFactory<KxoContext> _kxoContextFactory;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
-    private readonly IEntityMapper<KX13.Models.CmsSite, KXO.Models.CmsSite> _cmsSiteMapper;
-    private readonly ToolkitConfiguration _toolkitConfiguration;
+    private readonly IEntityMapper<CmsSite, KXO.Models.CmsSite> _cmsSiteMapper;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IMigrationProtocol _migrationProtocol;
 
@@ -25,10 +24,9 @@ public class MigrateSitesCommandHandler: IRequestHandler<MigrateSitesCommand, Ge
 
     public MigrateSitesCommandHandler(
         ILogger<MigrateSitesCommandHandler> logger,
-        IDbContextFactory<KXO.Context.KxoContext> kxoContextFactory,
-        IDbContextFactory<KX13.Context.KX13Context> kx13ContextFactory,
-        IEntityMapper<KX13.Models.CmsSite, KXO.Models.CmsSite> cmsSiteMapper,
-        ToolkitConfiguration toolkitConfiguration,
+        IDbContextFactory<KxoContext> kxoContextFactory,
+        IDbContextFactory<KX13Context> kx13ContextFactory,
+        IEntityMapper<CmsSite, KXO.Models.CmsSite> cmsSiteMapper,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IMigrationProtocol migrationProtocol
     )
@@ -37,13 +35,12 @@ public class MigrateSitesCommandHandler: IRequestHandler<MigrateSitesCommand, Ge
         _kxoContextFactory = kxoContextFactory;
         _kx13ContextFactory = kx13ContextFactory;
         _cmsSiteMapper = cmsSiteMapper;
-        _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _migrationProtocol = migrationProtocol;
         _kxoContext = _kxoContextFactory.CreateDbContext();
     }
     
-    public async Task<GenericCommandResult> Handle(MigrateSitesCommand request, CancellationToken cancellationToken)
+    public async Task<CommandResult> Handle(MigrateSitesCommand request, CancellationToken cancellationToken)
     {
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
@@ -52,7 +49,7 @@ public class MigrateSitesCommandHandler: IRequestHandler<MigrateSitesCommand, Ge
             _migrationProtocol.FetchedSource(kx13CmsSite);
             _logger.LogTrace("Migrating site {SiteName} with UserGuid {SiteGuid}", kx13CmsSite.SiteName, kx13CmsSite.SiteGuid);
 
-            var targetSiteId = _primaryKeyMappingContext.MapFromSourceOrNull<KX13.Models.CmsSite>(s => s.SiteId, kx13CmsSite.SiteId);
+            var targetSiteId = _primaryKeyMappingContext.MapFromSourceOrNull<CmsSite>(s => s.SiteId, kx13CmsSite.SiteId);
             if (targetSiteId is null)
             {
                 // TODO tk: 2022-05-26 add site guid mapping
@@ -80,21 +77,12 @@ public class MigrateSitesCommandHandler: IRequestHandler<MigrateSitesCommand, Ge
                     _kxoContext.CmsSites.Update(cmsSite);
                 }
 
-                try
-                {
-                    await _kxoContext.SaveChangesAsync(cancellationToken);
+                await _kxoContext.SaveChangesAsync(cancellationToken);
 
-                    _migrationProtocol.Success(kx13CmsSite, cmsSite, mapped);
-                    _logger.LogInformation(newInstance
-                        ? $"CmsSite: {cmsSite.SiteName} with SiteGuid '{cmsSite.SiteGuid}' was inserted."
-                        : $"CmsSite: {cmsSite.SiteName} with SiteGuid '{cmsSite.SiteGuid}' was updated.");
-                }
-                catch (Exception ex)
-                {
-                    throw;
-                }
-
-                _primaryKeyMappingContext.SetMapping<KX13.Models.CmsSite>(r => r.SiteId, kx13CmsSite.SiteId, cmsSite.SiteId);
+                _migrationProtocol.Success(kx13CmsSite, cmsSite, mapped);
+                _logger.LogEntitySetAction(newInstance, cmsSite);
+                    
+                _primaryKeyMappingContext.SetMapping<CmsSite>(r => r.SiteId, kx13CmsSite.SiteId, cmsSite.SiteId);
             }
         }
 

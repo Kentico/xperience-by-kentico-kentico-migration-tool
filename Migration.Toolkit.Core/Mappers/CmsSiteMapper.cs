@@ -26,7 +26,7 @@ public class CmsSiteMapper : EntityMapperBase<KX13.Models.CmsSite, KXO.Models.Cm
         // {
         //     // assertion failed
         //     _logger.LogTrace("Assertion failed, entity key mismatch.");
-        //     return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXO.Models.CmsSite>();
+        //     return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXP.Models.CmsSite>();
         // }
 
         // target.SiteId = source.SiteId;

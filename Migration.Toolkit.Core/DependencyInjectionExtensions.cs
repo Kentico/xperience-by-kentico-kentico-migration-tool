@@ -5,7 +5,6 @@ using CMS.OnlineForms;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Common;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Behaviors;
 using Migration.Toolkit.Core.Contexts;
@@ -39,7 +38,7 @@ public static class DependencyInjectionExtensions
         services.AddTransient<IEntityMapper<Migration.Toolkit.KX13.Models.CmsSettingsKey, Migration.Toolkit.KXO.Models.CmsSettingsKey>, CmsSettingsKeyMapper>();
 
         // forms
-        services.AddTransient<IRequestHandler<MigrateFormsCommand, GenericCommandResult>, MigrateFormsCommandHandler>();
+        services.AddTransient<IRequestHandler<MigrateFormsCommand, CommandResult>, MigrateFormsCommandHandler>();
         services.AddTransient<IEntityMapper<KX13.Models.CmsForm, KXO.Models.CmsForm>, CmsFormMapperEf>();
         services.AddTransient<IEntityMapper<KX13.Models.CmsForm, BizFormInfo>, CmsFormMapper>();
 
@@ -82,7 +81,7 @@ public static class DependencyInjectionExtensions
 
         // sites
         services.AddTransient<IEntityMapper<KX13.Models.CmsSite, KXO.Models.CmsSite>, CmsSiteMapper>();
-        services.AddTransient<IRequestHandler<MigrateSitesCommand, GenericCommandResult>, MigrateSitesCommandHandler>();
+        services.AddTransient<IRequestHandler<MigrateSitesCommand, CommandResult>, MigrateSitesCommandHandler>();
 
         // cms forms
         // services.AddTransient<IEntityMapper<KX13.Models.CmsForm, KXO.Models.CmsForm>, CmsFormMapper>();

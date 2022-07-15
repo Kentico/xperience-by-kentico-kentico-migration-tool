@@ -20,7 +20,7 @@ public class CmsConsentMapper : EntityMapperBase<KX13.Models.CmsConsent, KXO.Mod
         // {
         //     // assertion failed
         //     _logger.LogTrace("Assertion failed, entity key mismatch.");
-        //     return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXO.Models.CmsConsent>().Log(_logger);
+        //     return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXP.Models.CmsConsent>().Log(_logger);
         // }
 
         // do not try to insert pk

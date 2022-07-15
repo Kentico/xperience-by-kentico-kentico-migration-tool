@@ -24,7 +24,7 @@ public class CmsRoleMapper : EntityMapperBase<KX13.Models.CmsRole, KXO.Models.Cm
         // {
         //     // assertion failed
         //     _logger.LogTrace("Assertion failed, entity key mismatch.");
-        //     return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXO.Models.CmsRole>().Log(_logger);
+        //     return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXP.Models.CmsRole>().Log(_logger);
         // }
 
         // target.RoleId = source.RoleId;
