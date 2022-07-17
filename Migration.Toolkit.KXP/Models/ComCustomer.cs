@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-
-namespace Migration.Toolkit.KXO.Models
+﻿namespace Migration.Toolkit.KXP.Models
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using Microsoft.EntityFrameworkCore;
+
     [Table("COM_Customer")]
     [Index("CustomerEmail", Name = "IX_COM_Customer_CustomerEmail")]
     [Index("CustomerFirstName", Name = "IX_COM_Customer_CustomerFirstName")]

@@ -1,6 +1,6 @@
-using CMS.Helpers;
+namespace Migration.Toolkit.KXP.Api;
 
-namespace Migration.Toolkit.KXO.Api;
+using CMS.Helpers;
 
 public record IsPublishedArgument(
     bool? DocumentCanBePublished,
@@ -12,9 +12,9 @@ public record IsPublishedArgument(
     DateTime? DocumentPublishTo
 );
 
-public class KxoPageFacade
+public class KxpPageFacade
 {
-    public KxoPageFacade()
+    public KxpPageFacade()
     {
         
     }

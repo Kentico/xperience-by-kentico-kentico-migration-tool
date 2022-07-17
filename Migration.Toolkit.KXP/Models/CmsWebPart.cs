@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-
-namespace Migration.Toolkit.KXO.Models
+﻿namespace Migration.Toolkit.KXP.Models
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using Microsoft.EntityFrameworkCore;
+
     [Table("CMS_WebPart")]
     [Index("WebPartCategoryId", Name = "IX_CMS_WebPart_WebPartCategoryID")]
     [Index("WebPartName", Name = "IX_CMS_WebPart_WebPartName")]

@@ -1,17 +1,17 @@
+namespace Migration.Toolkit.KXP.Api;
+
 using System.Diagnostics;
 using CMS.DataEngine;
 using CMS.MediaLibrary;
 using Microsoft.Extensions.Logging;
 
-namespace Migration.Toolkit.KXO.Api;
-
-public class KxoMediaFileFacade
+public class KxpMediaFileFacade
 {
-    private readonly ILogger<KxoMediaFileFacade> _logger;
-    public KxoMediaFileFacade(ILogger<KxoMediaFileFacade> logger, KxoApiInitializer kxoApiInitializer)
+    private readonly ILogger<KxpMediaFileFacade> _logger;
+    public KxpMediaFileFacade(ILogger<KxpMediaFileFacade> logger, KxpApiInitializer kxpApiInitializer)
     {
         _logger = logger;
-        kxoApiInitializer.EnsureApiIsInitialized();
+        kxpApiInitializer.EnsureApiIsInitialized();
     }
 
     public void SetMediaFile(MediaFileInfo mfi, bool newInstance)

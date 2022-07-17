@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-
-namespace Migration.Toolkit.KXO.Models
+﻿namespace Migration.Toolkit.KXP.Models
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using Microsoft.EntityFrameworkCore;
+
     [Table("Analytics_WeekHits")]
     [Index("HitsStatisticsId", Name = "IX_Analytics_WeekHits_HitsStatisticsID")]
     public partial class AnalyticsWeekHit

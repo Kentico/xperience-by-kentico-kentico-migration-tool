@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-
-namespace Migration.Toolkit.KXO.Models
+﻿namespace Migration.Toolkit.KXP.Models
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using Microsoft.EntityFrameworkCore;
+
     [Table("COM_Order")]
     [Index("OrderCreatedByUserId", Name = "IX_COM_Order_OrderCreatedByUserID")]
     [Index("OrderCurrencyId", Name = "IX_COM_Order_OrderCurrencyID")]

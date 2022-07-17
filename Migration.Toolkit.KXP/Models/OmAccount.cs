@@ -1,8 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Migration.Toolkit.KXO.Models
+namespace Migration.Toolkit.KXP.Models
 {
     [Table("OM_Account")]
     [Index("AccountCountryId", Name = "IX_OM_Account_AccountCountryID")]

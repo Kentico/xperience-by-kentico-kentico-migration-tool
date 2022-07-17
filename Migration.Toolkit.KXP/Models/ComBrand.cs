@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-
-namespace Migration.Toolkit.KXO.Models
+﻿namespace Migration.Toolkit.KXP.Models
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using Microsoft.EntityFrameworkCore;
+
     [Table("COM_Brand")]
     [Index("BrandDisplayName", Name = "IX_COM_Brand_BrandDisplayName")]
     [Index("BrandSiteId", "BrandEnabled", Name = "IX_COM_Brand_BrandSiteID_BrandEnabled")]

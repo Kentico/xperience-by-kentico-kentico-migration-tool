@@ -35,7 +35,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
         {
             _logger.LogTrace("Null target supplied, creating new instance");
             target = CreateNewInstance(source, mappingHelper, failures.Add);
-            if (target == null && object.Equals(target, default) && failures.Count > 0)
+            if (target == null || object.Equals(target, default) || failures.Count > 0)
             {
                 return new AggregatedResult<TTargetEntity>(failures).Log(_logger, Protocol);                
             }
@@ -51,7 +51,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
     }
 
     protected abstract TTargetEntity? CreateNewInstance(TSourceEntity source, MappingHelper mappingHelper, AddFailure addFailure);
-    protected abstract TTargetEntity MapInternal(TSourceEntity source, TTargetEntity? target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure);
+    protected abstract TTargetEntity MapInternal(TSourceEntity source, TTargetEntity target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure);
 
     protected delegate void AddFailure(MapperResultFailure<TTargetEntity> failure);
 
@@ -68,7 +68,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
 
         public Guid Require(Guid? value, string valueName)
         {
-            if (value is Guid v && v != Guid.Empty)
+            if (value is { } v && v != Guid.Empty)
             {
                 return v;
             }
@@ -84,7 +84,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
         
         public int Require(int? value, string valueName)
         {
-            if (value is int v)
+            if (value is { } v)
             {
                 return v;
             }
@@ -100,7 +100,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
         
         public bool Require(bool? value, string valueName)
         {
-            if (value is bool v)
+            if (value is { } v)
             {
                 return v;
             }
@@ -116,7 +116,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
         
         public DateTime Require(DateTime? value, string valueName)
         {
-            if (value is DateTime v)
+            if (value is { } v)
             {
                 return v;
             }
@@ -139,7 +139,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
             }
             
             translatedId = _primaryKeyMappingContext.MapFromSourceOrNull(keyNameSelector, sourceId);
-            if (sourceId.HasValue && !translatedId.HasValue)
+            if (!translatedId.HasValue)
             {
                 var memberName = keyNameSelector.GetMemberName();
                 var failure = HandbookReferences

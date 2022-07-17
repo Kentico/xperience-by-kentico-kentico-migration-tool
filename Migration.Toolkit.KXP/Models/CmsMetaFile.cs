@@ -1,8 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Migration.Toolkit.KXO.Models
+namespace Migration.Toolkit.KXP.Models
 {
     [Table("CMS_MetaFile")]
     [Index("MetaFileGuid", "MetaFileSiteId", "MetaFileObjectType", "MetaFileObjectId", "MetaFileGroupName", Name = "IX_CMS_MetaFile_MetaFileGUID_MetaFileSiteID_MetaFileObjectType_MetaFileObjectID_MetaFileGroupName")]

@@ -1,8 +1,8 @@
+namespace Migration.Toolkit.KXP.Api;
+
 using CMS.Membership;
 
-namespace Migration.Toolkit.KXO.Api;
-
-public class KxoUserFacade
+public class KxpUserFacade
 {
     public UserInfo GetUser(string? email, string userName)
     {

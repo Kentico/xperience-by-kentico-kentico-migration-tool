@@ -33,14 +33,14 @@
     <data name="ConfigurationValidator_GetValidationErrors_TargetCmsDirPath_IsRequired" xml:space="preserve">
         <value>Configuration value in path 'Settings.TargetCmsDirPath' is required</value>
     </data>
-    <data name="ConfigurationValidator_GetValidationErrors_TargetKxoApiSettings_IsRequired" xml:space="preserve">
-        <value>Section 'Settings.TargetKxoApiSettings' is required</value>
+    <data name="ConfigurationValidator_GetValidationErrors_TargetKxpApiSettings_IsRequired" xml:space="preserve">
+        <value>Section 'Settings.TargetKxpApiSettings' is required</value>
     </data>
     <data name="ConfigurationValidator_GetValidationErrors_ConnectionStrings_IsRequired" xml:space="preserve">
-        <value>Section 'Settings.TargetKxoApiSettings.ConnectionStrings' is required</value>
+        <value>Section 'Settings.TargetKxpApiSettings.ConnectionStrings' is required</value>
     </data>
     <data name="ConfigurationValidator_GetValidationErrors_CmsConnectionString_IsRequired" xml:space="preserve">
-        <value>Configuration value in path  'Settings.TargetKxoApiSettings.ConnectionStrings.CMSConnectionString' is required</value>
+        <value>Configuration value in path  'Settings.TargetKxpApiSettings.ConnectionStrings.CMSConnectionString' is required</value>
     </data>
     <data name="ConfigurationValidator_GetValidationErrors_UseOmActivitySiteRelationAutofix_MustFit" xml:space="preserve">
         <value>Configuration value in path 'Settings.UseOmActivitySiteRelationAutofix' must fit one of: {0}</value>
@@ -68,5 +68,14 @@
     </data>
     <data name="Exception_MappingIsRequired" xml:space="preserve">
         <value>{0} ExplicitPrimaryKeyMapping of {1} is required.</value>
+    </data>
+    <data name="Attachment_MovedToLibrary" xml:space="preserve">
+        <value>Attachment moved to media library, media file path: ({0}/{1})</value>
+    </data>
+    <data name="AttachmentGrouped_ModevToLibrary" xml:space="preserve">
+        <value>Grouped attachment moved to media library, media file path: ({0}/{1})</value>
+    </data>
+    <data name="Document_Relationship_NotSupported" xml:space="preserve">
+        <value>Document relationship is currently not supported - related to: {0}</value>
     </data>
 </root>

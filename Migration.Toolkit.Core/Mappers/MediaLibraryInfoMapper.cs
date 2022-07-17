@@ -21,13 +21,6 @@ public class MediaLibraryInfoMapper : EntityMapperBase<KX13.Models.MediaLibrary,
 
     protected override MediaLibraryInfo MapInternal(KX13.Models.MediaLibrary source, MediaLibraryInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
-        // if (source.LibraryGuid != target.LibraryGuid)
-        // {
-        //     // assertion failed
-        //     _logger.LogTrace("Assertion failed, entity key mismatch.");
-        //     return new ModelMappingFailedKeyMismatch<KXO.Models.MediaLibrary>().Log(_logger);
-        // }
-
         // Sets the library properties
         target.LibraryDisplayName = source.LibraryDisplayName;
         target.LibraryName = source.LibraryName;
@@ -50,10 +43,10 @@ public class MediaLibraryInfoMapper : EntityMapperBase<KX13.Models.MediaLibrary,
         target.Access = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 7);
         
         target.LibraryLastModified = mappingHelper.Require(source.LibraryLastModified, nameof(source.LibraryLastModified));
-        target.LibraryUseDirectPathForContent = source.LibraryUseDirectPathForContent ?? true; //mappingHelper.Require(source.LibraryUseDirectPathForContent, nameof(source.LibraryUseDirectPathForContent));
+        target.LibraryUseDirectPathForContent = source.LibraryUseDirectPathForContent ?? true;
         
         target.LibraryTeaserPath = source.LibraryTeaserPath;
-        target.LibraryTeaserGUID = source.LibraryTeaserGuid ?? Guid.Empty; // mappingHelper.Require(source.LibraryTeaserGuid, nameof(source.LibraryTeaserGuid));
+        target.LibraryTeaserGUID = source.LibraryTeaserGuid ?? Guid.Empty;
 
         if (mappingHelper.TranslateRequiredId<KX13.Models.CmsSite>(c => c.SiteId, source.LibrarySiteId, out var siteId))
         {

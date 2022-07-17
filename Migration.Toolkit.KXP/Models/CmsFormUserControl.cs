@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-
-namespace Migration.Toolkit.KXO.Models
+﻿namespace Migration.Toolkit.KXP.Models
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using Microsoft.EntityFrameworkCore;
+
     [Table("CMS_FormUserControl")]
     [Index("UserControlCodeName", Name = "IX_CMS_FormUserControl_UserControlCodeName", IsUnique = true)]
     [Index("UserControlParentId", Name = "IX_CMS_FormUserControl_UserControlParentID")]

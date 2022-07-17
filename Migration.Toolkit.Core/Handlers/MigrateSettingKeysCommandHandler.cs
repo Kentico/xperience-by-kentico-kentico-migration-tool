@@ -9,25 +9,25 @@ using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KX13.Models;
-using Migration.Toolkit.KXO.Context;
+using Migration.Toolkit.KXP.Context;
 
 // TODO tk: 2022-06-01 Q - dle jakého klíče přenášet kategorie settings? jen pro klíče, které budou přeneseny do cílové instance?
 
 public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKeysCommand, CommandResult>, IDisposable
 {
     private readonly ILogger<MigrateSettingKeysCommandHandler> _logger;
-    private readonly IDbContextFactory<KxoContext> _kxoContextFactory;
+    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly IMigrationProtocol _migrationProtocol;
-    private readonly IEntityMapper<CmsSettingsKey, KXO.Models.CmsSettingsKey> _mapper;
+    private readonly IEntityMapper<CmsSettingsKey, KXP.Models.CmsSettingsKey> _mapper;
 
-    private KxoContext _kxoContext;
+    private KxpContext _kxpContext;
 
     public MigrateSettingKeysCommandHandler(
         ILogger<MigrateSettingKeysCommandHandler> logger,
-        IEntityMapper<CmsSettingsKey, KXO.Models.CmsSettingsKey> mapper,
-        IDbContextFactory<KxoContext> kxoContextFactory,
+        IEntityMapper<CmsSettingsKey, KXP.Models.CmsSettingsKey> mapper,
+        IDbContextFactory<KxpContext> kxpContextFactory,
         IDbContextFactory<KX13Context> kx13ContextFactory,
         ToolkitConfiguration toolkitConfiguration,
         IMigrationProtocol migrationProtocol
@@ -35,11 +35,11 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
     {
         _logger = logger;
         _mapper = mapper;
-        _kxoContextFactory = kxoContextFactory;
+        _kxpContextFactory = kxpContextFactory;
         _kx13ContextFactory = kx13ContextFactory;
         _toolkitConfiguration = toolkitConfiguration;
         _migrationProtocol = migrationProtocol;
-        _kxoContext = _kxoContextFactory.CreateDbContext();
+        _kxpContext = _kxpContextFactory.CreateDbContext();
     }
 
     public async Task<CommandResult> Handle(MigrateSettingKeysCommand request, CancellationToken cancellationToken)
@@ -102,14 +102,14 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
 
                 if (result.NewInstance)
                 {
-                    _kxoContext.CmsSettingsKeys.Add(result.Item);
+                    _kxpContext.CmsSettingsKeys.Add(result.Item);
                 }
                 else
                 {
-                    _kxoContext.CmsSettingsKeys.Update(result.Item);
+                    _kxpContext.CmsSettingsKeys.Update(result.Item);
                 }
 
-                await _kxoContext.SaveChangesAsync(cancellationToken);
+                await _kxpContext.SaveChangesAsync(cancellationToken);
                 _migrationProtocol.Success(kx13CmsSettingsKey, kxoCmsSettingsKey, mapped);
                 _logger.LogEntitySetAction(result.NewInstance, result.Item);
 
@@ -120,16 +120,16 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
         return new GenericCommandResult();
     }
 
-    private KXO.Models.CmsSettingsKey? GetKxoSettingsKey(CmsSettingsKey kx13CmsSettingsKey, int? siteId)
+    private KXP.Models.CmsSettingsKey? GetKxoSettingsKey(CmsSettingsKey kx13CmsSettingsKey, int? siteId)
     {
-        using var kxoContext = _kxoContextFactory.CreateDbContext();
+        using var kxpContext = _kxpContextFactory.CreateDbContext();
         
-        return kxoContext.CmsSettingsKeys
+        return kxpContext.CmsSettingsKeys
             .SingleOrDefault(k => k.KeyName == kx13CmsSettingsKey.KeyName && k.SiteId == siteId);
     }
 
     public void Dispose()
     {
-        _kxoContext.Dispose();
+        _kxpContext.Dispose();
     }
 }

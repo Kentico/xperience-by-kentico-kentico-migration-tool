@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-
-namespace Migration.Toolkit.KXO.Models
+﻿namespace Migration.Toolkit.KXP.Models
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using Microsoft.EntityFrameworkCore;
+
     [Table("COM_CustomerCreditHistory")]
     [Index("EventCustomerId", "EventDate", Name = "IX_COM_CustomerCreditHistory_EventCustomerID_EventDate")]
     [Index("EventSiteId", Name = "IX_COM_CustomerCreditHistory_EventSiteID")]

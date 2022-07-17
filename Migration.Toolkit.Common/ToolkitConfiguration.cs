@@ -17,22 +17,22 @@ public enum AutofixEnum
 public class ToolkitConfiguration
 {
     [JsonPropertyName(ConfigurationNames.SourceConnectionString)]
-    public string? SourceConnectionString { get; set; }
-    
+    public string SourceConnectionString { get; set; } = null!;
+
     [JsonPropertyName(ConfigurationNames.SourceCmsDirPath)]
     public string? SourceCmsDirPath { get; set; }
     
     [JsonPropertyName(ConfigurationNames.TargetConnectionString)]
-    public string? TargetConnectionString { get; set; }
+    public string TargetConnectionString { get; set; } = null!;
     
     [JsonPropertyName(ConfigurationNames.TargetCmsDirPath)]
-    public string? TargetCmsDirPath { get; set; }
+    public string TargetCmsDirPath { get; set; } = null!;
 
     [JsonPropertyName(ConfigurationNames.EntityConfigurations)]
     public EntityConfigurations EntityConfigurations { get; set; } = new();
     
     [JsonPropertyName(ConfigurationNames.TargetAttachmentMediaLibraryName)]
-    public string? TargetAttachmentMediaLibraryName { get; set; }
+    public string TargetAttachmentMediaLibraryName { get; set; } = null!;
     
     [JsonPropertyName(ConfigurationNames.MigrateOnlyMediaFileInfo)]
     public bool? MigrateOnlyMediaFileInfo { get; set; } = true;
@@ -65,7 +65,7 @@ public class ToolkitConfiguration
             throw new InvalidOperationException(string.Format(Resources.Exception_MappingIsRequired, typeof(TEntityType).Name, memberName));
         }, kvp =>
         {
-            if (kvp.Value is int id)
+            if (kvp.Value is { } id)
             {
                 return id;
             }

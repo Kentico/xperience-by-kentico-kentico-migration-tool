@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-
-namespace Migration.Toolkit.KXO.Models
+﻿namespace Migration.Toolkit.KXP.Models
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using Microsoft.EntityFrameworkCore;
+
     [Table("CMS_TranslationSubmission")]
     [Index("SubmissionServiceId", Name = "IX_CMS_TranslationSubmission_SubmissionServiceID")]
     [Index("SubmissionSubmittedByUserId", Name = "IX_CMS_TranslationSubmission_SubmissionSubmittedByUserID")]

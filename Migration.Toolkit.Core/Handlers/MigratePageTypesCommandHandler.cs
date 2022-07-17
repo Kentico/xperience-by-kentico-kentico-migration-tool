@@ -14,7 +14,7 @@ using Migration.Toolkit.Core.Helpers;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KX13.Models;
-using Migration.Toolkit.KXO.Api;
+using Migration.Toolkit.KXP.Api;
 
 public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCommand, CommandResult>
 {
@@ -22,7 +22,7 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
     private readonly IEntityMapper<CmsClass, DataClassInfo> _dataClassMapper;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
-    private readonly KxoClassFacade _kxoClassFacade;
+    private readonly KxpClassFacade _kxpClassFacade;
     private readonly IMigrationProtocol _migrationProtocol;
     private readonly ToolkitConfiguration _toolkitConfiguration;
 
@@ -31,7 +31,7 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
         IEntityMapper<CmsClass, DataClassInfo> dataClassMapper,
         IDbContextFactory<KX13Context> kx13ContextFactory,
         PrimaryKeyMappingContext primaryKeyMappingContext,
-        KxoClassFacade kxoClassFacade,
+        KxpClassFacade kxpClassFacade,
         IMigrationProtocol migrationProtocol,
         ToolkitConfiguration toolkitConfiguration
     )
@@ -40,7 +40,7 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
         _dataClassMapper = dataClassMapper;
         _kx13ContextFactory = kx13ContextFactory;
         _primaryKeyMappingContext = primaryKeyMappingContext;
-        _kxoClassFacade = kxoClassFacade;
+        _kxpClassFacade = kxpClassFacade;
         _migrationProtocol = migrationProtocol;
         _toolkitConfiguration = toolkitConfiguration;
     }
@@ -109,7 +109,7 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
 
             // kx13Class.ClassConnectionString check is not necessary
 
-            var kxoDataClass = _kxoClassFacade.GetClass(kx13Class.ClassGuid);
+            var kxoDataClass = _kxpClassFacade.GetClass(kx13Class.ClassGuid);
             _migrationProtocol.FetchedTarget(kxoDataClass);
 
             var dataClassId = SaveUsingKxoApi(kx13Class, kxoDataClass);
@@ -166,7 +166,7 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
                 var (dataClassInfo, newInstance) = result;
                 ArgumentNullException.ThrowIfNull(dataClassInfo, nameof(dataClassInfo));
 
-                _kxoClassFacade.SetClass(dataClassInfo);
+                _kxpClassFacade.SetClass(dataClassInfo);
 
                 _migrationProtocol.Success(kx13Class, dataClassInfo, mapped);
                 _logger.LogEntitySetAction(newInstance, dataClassInfo);

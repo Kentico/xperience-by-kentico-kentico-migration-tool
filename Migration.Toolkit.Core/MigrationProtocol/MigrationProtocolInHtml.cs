@@ -38,28 +38,9 @@ public class MigrationProtocolInHtml: IMigrationProtocol, IDisposable
         _streamWriter.AutoFlush = true;
     }
 
-    public class ShouldSerializeContractResolver : DefaultContractResolver
-    {
-        public static readonly ShouldSerializeContractResolver Instance = new();
-
-        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
-        {
-            var property = base.CreateProperty(member, memberSerialization);
-            property.ShouldSerialize = o => (!property.PropertyType.IsClass && !property.PropertyType.IsArray && !typeof(IEnumerable).IsAssignableFrom(property.PropertyType)) || property.PropertyType == typeof(string);
-            return property;
-        }
-    }
-
     private string ToJsonEscaped<T>(T obj)
     {
-        var serialized = WebUtility.HtmlEncode(JsonConvert.SerializeObject(obj, Formatting.Indented,
-            new JsonSerializerSettings
-            {
-                ContractResolver = new ShouldSerializeContractResolver(),
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                DefaultValueHandling = DefaultValueHandling.Ignore,
-                MaxDepth = 1
-            }));
+        var serialized = WebUtility.HtmlEncode(SerializationHelper.SerializeOnlyNonComplexProperties(obj));
         var id = $"d{Guid.NewGuid()}";
         return @$"<a data-bs-toggle=""collapse"" href=""#{id}"" role=""button"" aria-expanded=""false"" aria-controls=""{id}"">data</a><pre id={id} class=""collapse"">{serialized}</pre>";
     }
@@ -85,21 +66,6 @@ public class MigrationProtocolInHtml: IMigrationProtocol, IDisposable
         _streamWriter.WriteLine($"</table>");
     }
 
-    public void NeedsManualAction<TData>(HandbookReference handbookRef, TData data)
-    {
-        _streamWriter.WriteLine($"<tr>{GetTimeStamp()}<td>Manual action needed</td><td>{handbookRef}</td><td>{ToJsonEscaped(data)}</td></tr>");
-    }
-
-    public void NeedsManualAction<TSource, TTarget>(HandbookReference handbookRef, string whatNeedsToBeDoneOrWhatHappened, TSource source, TTarget? target, IModelMappingResult<TTarget> mapped)
-    {
-        _streamWriter.WriteLine($"<tr>{GetTimeStamp()}<td>Manual action needed</td><td>{handbookRef}</td><td>{ToJsonEscaped(source)}</td><td>{ToJsonEscaped(target)}</td></tr>");
-    }
-
-    public void NeedsManualAction<TSource, TTarget>(HandbookReference handbookRef, string whatNeedsToBeDoneOrWhatHappened, TSource source, TTarget? target)
-    {
-        _streamWriter.WriteLine($"<tr>{GetTimeStamp()}<td>Manual action needed</td><td>{handbookRef}</td><td>{ToJsonEscaped(source)}</td><td>{ToJsonEscaped(target)}</td></tr>");
-    }
-    
     public void Append(HandbookReference? handbookReference)
     {
         ArgumentNullException.ThrowIfNull(handbookReference);
@@ -122,35 +88,15 @@ public class MigrationProtocolInHtml: IMigrationProtocol, IDisposable
         
     }
 
-    public void Success<TSource, TTarget>(TSource source, TTarget target, IModelMappingResult<TTarget> mapped)
+    public void Success<TSource, TTarget>(TSource source, TTarget target, IModelMappingResult<TTarget>? mapped)
     {
         // _streamWriter.WriteLine($"<tr>{GetTimeStamp()}<td>Manual action needed</td><td>Success</td><td>{ToJsonEscaped(new {source=source, target=target})}</td></tr>");
         // _streamWriter.WriteLine($"<tr>{GetTimeStamp()}<td>Success</td><td></td><td></td></tr>");
     }
 
-    public IDisposable CreateScope<TScopeType>()
-    {
-        throw new NotImplementedException();
-    }
-
     public void Warning<T>(HandbookReference handbookRef, T? entity)
     {
         _streamWriter.WriteLine($"<tr>{GetTimeStamp()}<td>Warning</td><td>{handbookRef}</td><td>{ToJsonEscaped(entity)}</td></tr>");
-    }
-
-    public void Warning<TSource, TTarget>(HandbookReference handbookRef, TSource? source, TTarget? target)
-    {
-        _streamWriter.WriteLine($"<tr>{GetTimeStamp()}<td>Warning</td><td>{handbookRef}</td><td>{ToJsonEscaped(source)}</td><td>{ToJsonEscaped(target)}</td></tr>");
-    }
-
-    public void Fatal<T>(HandbookReference handbookRef, T? entity)
-    {
-        _streamWriter.WriteLine($"<tr>{GetTimeStamp()}<td>Fatal error</td><td>{handbookRef}</td><td>{ToJsonEscaped(entity)}</td></tr>");
-    }
-
-    public void Error<T>(HandbookReference handbookRef, T? entity)
-    {
-        _streamWriter.WriteLine($"<tr>{GetTimeStamp()}<td>Error</td><td>{handbookRef}</td><td>{ToJsonEscaped(entity)}</td></tr>");
     }
 
     public void Dispose()

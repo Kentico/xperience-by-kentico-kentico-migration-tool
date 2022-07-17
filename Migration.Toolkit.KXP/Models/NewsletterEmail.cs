@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-
-namespace Migration.Toolkit.KXO.Models
+﻿namespace Migration.Toolkit.KXP.Models
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using Microsoft.EntityFrameworkCore;
+
     [Table("Newsletter_Emails")]
     [Index("EmailGuid", Name = "IX_Newsletter_Emails_EmailGUID", IsUnique = true)]
     [Index("EmailNewsletterIssueId", Name = "IX_Newsletter_Emails_EmailNewsletterIssueID")]

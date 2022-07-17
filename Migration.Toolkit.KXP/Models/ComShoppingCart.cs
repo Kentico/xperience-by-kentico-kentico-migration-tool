@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-
-namespace Migration.Toolkit.KXO.Models
+﻿namespace Migration.Toolkit.KXP.Models
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using Microsoft.EntityFrameworkCore;
+
     [Table("COM_ShoppingCart")]
     [Index("ShoppingCartBillingAddressId", Name = "IX_COM_ShoppingCart_ShoppingCartBillingAddressID")]
     [Index("ShoppingCartCompanyAddressId", Name = "IX_COM_ShoppingCart_ShoppingCartCompanyAddressID")]

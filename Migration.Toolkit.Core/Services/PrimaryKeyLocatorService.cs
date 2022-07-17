@@ -5,20 +5,22 @@ using Migration.Toolkit.Common;
 
 namespace Migration.Toolkit.Core.Services;
 
+using Migration.Toolkit.KXP.Context;
+
 public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
 {
     private readonly ILogger<PrimaryKeyLocatorService> _logger;
-    private readonly IDbContextFactory<KXO.Context.KxoContext> _kxoContextFactory;
+    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
     private readonly IDbContextFactory<KX13.Context.KX13Context> _kx13ContextFactory;
 
     public PrimaryKeyLocatorService(
         ILogger<PrimaryKeyLocatorService> logger,
-        IDbContextFactory<KXO.Context.KxoContext> kxoContextFactory,
+        IDbContextFactory<KxpContext> kxpContextFactory,
         IDbContextFactory<KX13.Context.KX13Context> kx13ContextFactory
     )
     {
         _logger = logger;
-        _kxoContextFactory = kxoContextFactory;
+        _kxpContextFactory = kxpContextFactory;
         _kx13ContextFactory = kx13ContextFactory;
     }
 
@@ -40,18 +42,18 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
 
     public IEnumerable<SourceTargetKeyMapping> SelectAll<T>(Expression<Func<T, object>> keyNameSelector)
     {
-        using var kxoContext = _kxoContextFactory.CreateDbContext();
+        using var kxpContext = _kxpContextFactory.CreateDbContext();
         using var kx13Context = _kx13ContextFactory.CreateDbContext();
         
         var sourceType = typeof(T);
         var memberName = keyNameSelector.GetMemberName();
 
-        _logger.LogTrace("Preload of entity {entity} member {memberName} mapping requested", sourceType.Name, memberName);
+        _logger.LogTrace("Preload of entity {Entity} member {MemberName} mapping requested", sourceType.Name, memberName);
         
         if (sourceType == typeof(KX13.Models.CmsUser) && memberName == nameof(KX13M.CmsUser.UserId))
         {
             var sourceUsers = kx13Context.CmsUsers.Select(x => new { x.UserId, x.UserGuid, x.UserName }).ToList();
-            var targetUsers = kxoContext.CmsUsers.Select(x => new { x.UserId, x.UserName, x.UserGuid }).ToList();
+            var targetUsers = kxpContext.CmsUsers.Select(x => new { x.UserId, x.UserName, x.UserGuid }).ToList();
 
             var result = sourceUsers.Join(targetUsers,
                 a => new CmsUserKey(a.UserGuid, a.UserName),
@@ -73,7 +75,7 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
             var source = kx13Context.OmContacts
                 .OrderBy(c => c.ContactCreated)
                 .Select(x => new { x.ContactId, x.ContactGuid }).ToList();
-            var target = kxoContext.OmContacts
+            var target = kxpContext.OmContacts
                 .OrderBy(c => c.ContactCreated)
                 .Select(x => new { x.ContactId, x.ContactGuid }).ToList();
 
@@ -94,7 +96,7 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
         if (sourceType == typeof(KX13.Models.CmsTree) && memberName == nameof(KX13M.CmsTree.NodeId))
         {
             var source = kx13Context.CmsTrees.Select(x => new { x.NodeId, x.NodeGuid }).ToList();
-            var target = kxoContext.CmsTrees.Select(x => new { x.NodeId, x.NodeGuid }).ToList();
+            var target = kxpContext.CmsTrees.Select(x => new { x.NodeId, x.NodeGuid }).ToList();
 
             var result = source.Join(target,
                 a => a.NodeGuid,
@@ -113,7 +115,7 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
         if (sourceType == typeof(KX13.Models.CmsState) && memberName == nameof(KX13M.CmsState.StateId))
         {
             var source = kx13Context.CmsStates.Select(x => new { x.StateId, x.StateName }).ToList();
-            var target = kxoContext.CmsStates.Select(x => new {  x.StateId, x.StateName }).ToList();
+            var target = kxpContext.CmsStates.Select(x => new {  x.StateId, x.StateName }).ToList();
 
             var result = source.Join(target,
                 a => a.StateName,
@@ -132,7 +134,7 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
         if (sourceType == typeof(KX13.Models.CmsCountry) && memberName == nameof(KX13M.CmsCountry.CountryId))
         {
             var source = kx13Context.CmsCountries.Select(x => new { x.CountryId, x.CountryName }).ToList();
-            var target = kxoContext.CmsCountries.Select(x => new {  x.CountryId, x.CountryName }).ToList();
+            var target = kxpContext.CmsCountries.Select(x => new {  x.CountryId, x.CountryName }).ToList();
 
             var result = source.Join(target,
                 a => a.CountryName,
@@ -155,7 +157,7 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
 
     public bool TryLocate<T>(Expression<Func<T, object>> keyNameSelector, int sourceId, out int targetId)
     {
-        using var kxoContext = _kxoContextFactory.CreateDbContext();
+        using var kxpContext = _kxpContextFactory.CreateDbContext();
         using var kx13Context = _kx13ContextFactory.CreateDbContext();
 
         // var memberName = keyNameSelector.GetMemberName();
@@ -169,14 +171,14 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
             if (sourceType == typeof(KX13.Models.CmsClass))
             {
                 var kx13Guid = kx13Context.CmsClasses.Where(c => c.ClassId == sourceId).Select(x => x.ClassGuid).Single();
-                targetId = kxoContext.CmsClasses.Where(x => x.ClassGuid == kx13Guid).Select(x => x.ClassId).Single();
+                targetId = kxpContext.CmsClasses.Where(x => x.ClassGuid == kx13Guid).Select(x => x.ClassId).Single();
                 return true;
             }
 
             if (sourceType == typeof(KX13.Models.CmsUser))
             {
                 var kx13User = kx13Context.CmsUsers.Where(c => c.UserId == sourceId).Select(x => new { x.UserGuid, x.UserName }).Single();
-                targetId = kxoContext.CmsUsers.Where(x => x.UserGuid == kx13User.UserGuid || x.UserName == kx13User.UserName).Select(x => x.UserId)
+                targetId = kxpContext.CmsUsers.Where(x => x.UserGuid == kx13User.UserGuid || x.UserName == kx13User.UserName).Select(x => x.UserId)
                     .Single();
                 return true;
             }
@@ -184,66 +186,61 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
             if (sourceType == typeof(KX13.Models.CmsSite))
             {
                 var kx13Guid = kx13Context.CmsSites.Where(c => c.SiteId == sourceId).Select(x => x.SiteGuid).Single();
-                targetId = kxoContext.CmsSites.Where(x => x.SiteGuid == kx13Guid).Select(x => x.SiteId).Single();
+                targetId = kxpContext.CmsSites.Where(x => x.SiteGuid == kx13Guid).Select(x => x.SiteId).Single();
                 return true;
             }
 
-            // target.ContactStateId = _primaryKeyMappingContext.MapFromSource<K13M.CmsState>(u => u.StateId, source.ContactStateId);
             if (sourceType == typeof(KX13.Models.CmsState))
             {
                 var kx13Guid = kx13Context.CmsStates.Where(c => c.StateId == sourceId).Select(x => x.StateGuid).Single();
-                targetId = kxoContext.CmsStates.Where(x => x.StateGuid == kx13Guid).Select(x => x.StateId).Single();
+                targetId = kxpContext.CmsStates.Where(x => x.StateGuid == kx13Guid).Select(x => x.StateId).Single();
                 return true;
             }
 
-            // target.ContactCountryId = _primaryKeyMappingContext.MapFromSource<K13M.CmsCountry>(u => u.CountryId, source.ContactCountryId);
             if (sourceType == typeof(KX13.Models.CmsCountry))
             {
                 var kx13Guid = kx13Context.CmsCountries.Where(c => c.CountryId == sourceId).Select(x => x.CountryGuid).Single();
-                targetId = kxoContext.CmsCountries.Where(x => x.CountryGuid == kx13Guid).Select(x => x.CountryId).Single();
+                targetId = kxpContext.CmsCountries.Where(x => x.CountryGuid == kx13Guid).Select(x => x.CountryId).Single();
                 return true;
             }
 
-            // target.ContactStatusId = _primaryKeyMappingContext.MapFromSource<K13M.OmContactStatus>(u => u.ContactStatusId, source.ContactStatusId);
             if (sourceType == typeof(KX13.Models.OmContactStatus))
             {
                 var kx13Guid = kx13Context.OmContactStatuses.Where(c => c.ContactStatusId == sourceId).Select(x => x.ContactStatusName).Single();
-                targetId = kxoContext.OmContactStatuses.Where(x => x.ContactStatusName == kx13Guid).Select(x => x.ContactStatusId).Single();
+                targetId = kxpContext.OmContactStatuses.Where(x => x.ContactStatusName == kx13Guid).Select(x => x.ContactStatusId).Single();
                 return true;
             }
 
-            //target.ConsentAgreementContactId = _primaryKeyMappingContext.RequireMapFromSource<K13M.OmContact>(c => c.ContactId, source.ConsentAgreementContactId);
             if (sourceType == typeof(KX13.Models.OmContact))
             {
                 // TODO tk: 2022-06-13 might be good to optimize
                 var kx13Guid = kx13Context.OmContacts.Where(c => c.ContactId == sourceId).Select(x => x.ContactGuid).Single();
-                targetId = kxoContext.OmContacts.Where(x => x.ContactGuid == kx13Guid).Select(x => x.ContactId).Single();
+                targetId = kxpContext.OmContacts.Where(x => x.ContactGuid == kx13Guid).Select(x => x.ContactId).Single();
                 return true;
             }
 
             if (sourceType == typeof(KX13.Models.CmsTree))
             {
-                // carefull - cms.root will have different guid
+                // careful - cms.root will have different guid
                 var kx13Guid = kx13Context.CmsTrees.Where(c => c.NodeId == sourceId).Select(x => x.NodeGuid).Single();
-                targetId = kxoContext.CmsTrees.Where(x => x.NodeGuid == kx13Guid).Select(x => x.NodeId).Single();
+                targetId = kxpContext.CmsTrees.Where(x => x.NodeGuid == kx13Guid).Select(x => x.NodeId).Single();
                 return true;
             }
         }
         catch (InvalidOperationException ioex)
-            // when(ioex.Message.Contains("SequenceContainsN"))
         {
-            _logger.LogWarning("Mapping {sourceFullType} primary key: {sourceId} failed, {message}", sourceType.FullName, sourceId, ioex.Message);
+            _logger.LogWarning("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
             return false;
         }
         finally
         {
             if (targetId != -1)
             {
-                _logger.LogTrace("Mapping {sourceFullType} primary key: {sourceId} to {targetId}", sourceType.FullName, sourceId, targetId);
+                _logger.LogTrace("Mapping {SourceFullType} primary key: {SourceId} to {TargetId}", sourceType.FullName, sourceId, targetId);
             }
         }
 
-        _logger.LogError("Mapping {sourceFullType} primary key is not supported", sourceType.FullName);
+        _logger.LogError("Mapping {SourceFullType} primary key is not supported", sourceType.FullName);
         targetId = -1;
         return false;
     }

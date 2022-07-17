@@ -2,11 +2,12 @@ using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrationProtocol;
-using Migration.Toolkit.KXO.Models;
 
 namespace Migration.Toolkit.Core.Mappers;
 
-public class OmContactGroupMapper : EntityMapperBase<KX13.Models.OmContactGroup, KXO.Models.OmContactGroup>
+using Migration.Toolkit.KXP.Models;
+
+public class OmContactGroupMapper : EntityMapperBase<KX13.Models.OmContactGroup, OmContactGroup>
 {
     public OmContactGroupMapper(
         ILogger<OmContactGroupMapper> logger,
@@ -21,15 +22,6 @@ public class OmContactGroupMapper : EntityMapperBase<KX13.Models.OmContactGroup,
     protected override OmContactGroup MapInternal(KX13.Models.OmContactGroup source, OmContactGroup target, bool newInstance,
         MappingHelper mappingHelper, AddFailure addFailure)
     {
-        // if (!newInstance && source.ContactGroupGuid != target.ContactGroupGuid)
-        // {
-        //     // assertion failed
-        //     _logger.LogTrace("Assertion failed, entity key mismatch.");
-        //     return new ModelMappingFailedKeyMismatch<KXO.Models.OmContactGroup>().Log(_logger);
-        // }
-
-        // do not try to insert pk
-        // target.ContactGroupId = source.ContactGroupId;
         target.ContactGroupName = source.ContactGroupName;
         target.ContactGroupDisplayName = source.ContactGroupDisplayName;
         target.ContactGroupDescription = source.ContactGroupDescription;
@@ -38,9 +30,6 @@ public class OmContactGroupMapper : EntityMapperBase<KX13.Models.OmContactGroup,
         target.ContactGroupLastModified = source.ContactGroupLastModified;
         target.ContactGroupGuid = source.ContactGroupGuid;
         target.ContactGroupStatus = source.ContactGroupStatus;
-
-        // TODO tk: 2022-06-13  public virtual ICollection<NewsletterIssueContactGroup> NewsletterIssueContactGroups { get; set; }
-        // TODO tk: 2022-06-13  public virtual ICollection<OmContactGroupMember> OmContactGroupMembers { get; set; }
 
         return target;
     }

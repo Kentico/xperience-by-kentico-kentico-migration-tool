@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-
-namespace Migration.Toolkit.KXO.Models
+﻿namespace Migration.Toolkit.KXP.Models
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using Microsoft.EntityFrameworkCore;
+
     [Table("COM_TaxClassState")]
     [Index("StateId", Name = "IX_COM_TaxClassState_StateID")]
     [Index("TaxClassId", "StateId", Name = "IX_COM_TaxClassState_TaxClassID_StateID", IsUnique = true)]

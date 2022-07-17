@@ -1,8 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Migration.Toolkit.KXO.Models
+namespace Migration.Toolkit.KXP.Models
 {
     [Table("OM_ContactGroupMember")]
     [Index("ContactGroupMemberContactGroupId", "ContactGroupMemberType", Name = "IX_OM_ContactGroupMember_ContactGroupID_Type_MemberID_RelatedID_FromCondition_FromAccount_FromManual")]

@@ -81,7 +81,7 @@ To run tool, configure `appsettings.json` file:
     "TargetConnectionString": "[TODO]",
     "TargetCmsDirPath": "[TODO]",
     "MigrateOnlyMediaFileInfo": false,
-    "TargetKxoApiSettings": {
+    "TargetKxpApiSettings": {
       "ConnectionStrings": {
         "CMSConnectionString": "[TODO]"
       }
@@ -126,10 +126,9 @@ To run tool, configure `appsettings.json` file:
 | Settings.SourceCmsDirPath                                               | Source kentico instance filesystem absolute path - important if you want to migrate media files stored on filesystem |
 | Settings.TargetConnectionString                                         | Target (KXO) instance connection string for tool usage                                                               |
 | Settings.TargetCmsDirPath                                               | Target kentico instance filesystem absolute path - important if you want to migrate media files stored on filesystem |
-| Settings.TargetKxoApiSettings                                           | KXO Api Settings - `ConnectionStrings.CMSConnectionString` is required                                               |
+| Settings.TargetKxpApiSettings                                           | KXP Api Settings - `ConnectionStrings.CMSConnectionString` is required                                               |
 | Settings.EntityConfigurations.CMS_Site.ExplicitPrimaryKeyMapping.SiteID | Required - mapping of source siteId to target siteId (currently site creation is not supported)                      |
 | Settings.MigrateOnlyMediaFileInfo                                       | if media files are stored on filesystem and not in cloud storage, set setting to `true`                              |
-| Settings.TargetKxoApiSettings                                           | kentico api settings                                                                                                 |
 | Settings.UseOmActivityNodeRelationAutofix                               | possible options: [`DiscardData`,`AttemptFix`,`Error`]                                                               |
 | Settings.UseOmActivitySiteRelationAutofix                               | possible options: [`DiscardData`,`AttemptFix`,`Error`]                                                               |
 | Settings.TargetAttachmentMediaLibraryName                               | name of library where Attachment object will be migrated, `{siteName}` and `{siteId}` macros can be used             |

@@ -61,6 +61,24 @@ namespace Migration.Toolkit.Common {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Attachment moved to media library, media file path: ({0}/{1}).
+        /// </summary>
+        public static string Attachment_MovedToLibrary {
+            get {
+                return ResourceManager.GetString("Attachment_MovedToLibrary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Grouped attachment moved to media library, media file path: ({0}/{1}).
+        /// </summary>
+        public static string AttachmentGrouped_ModevToLibrary {
+            get {
+                return ResourceManager.GetString("AttachmentGrouped_ModevToLibrary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0}Configuration error{1}: {2}.
         /// </summary>
         public static string ConfigurationError {
@@ -79,7 +97,7 @@ namespace Migration.Toolkit.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Configuration value in path  &apos;Settings.TargetKxoApiSettings.ConnectionStrings.CMSConnectionString&apos; is required.
+        ///   Looks up a localized string similar to Configuration value in path  &apos;Settings.TargetKxpApiSettings.ConnectionStrings.CMSConnectionString&apos; is required.
         /// </summary>
         public static string ConfigurationValidator_GetValidationErrors_CmsConnectionString_IsRequired {
             get {
@@ -88,7 +106,7 @@ namespace Migration.Toolkit.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Section &apos;Settings.TargetKxoApiSettings.ConnectionStrings&apos; is required.
+        ///   Looks up a localized string similar to Section &apos;Settings.TargetKxpApiSettings.ConnectionStrings&apos; is required.
         /// </summary>
         public static string ConfigurationValidator_GetValidationErrors_ConnectionStrings_IsRequired {
             get {
@@ -162,11 +180,11 @@ namespace Migration.Toolkit.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Section &apos;Settings.TargetKxoApiSettings&apos; is required.
+        ///   Looks up a localized string similar to Section &apos;Settings.TargetKxpApiSettings&apos; is required.
         /// </summary>
-        public static string ConfigurationValidator_GetValidationErrors_TargetKxoApiSettings_IsRequired {
+        public static string ConfigurationValidator_GetValidationErrors_TargetKxpApiSettings_IsRequired {
             get {
-                return ResourceManager.GetString("ConfigurationValidator_GetValidationErrors_TargetKxoApiSettings_IsRequired", resourceCulture);
+                return ResourceManager.GetString("ConfigurationValidator_GetValidationErrors_TargetKxpApiSettings_IsRequired", resourceCulture);
             }
         }
         
@@ -196,6 +214,15 @@ namespace Migration.Toolkit.Common {
         public static string ConfigurationWarning {
             get {
                 return ResourceManager.GetString("ConfigurationWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Document relationship is currently not supported - related to: {0}.
+        /// </summary>
+        public static string Document_Relationship_NotSupported {
+            get {
+                return ResourceManager.GetString("Document_Relationship_NotSupported", resourceCulture);
             }
         }
         

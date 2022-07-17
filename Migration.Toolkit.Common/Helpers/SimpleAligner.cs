@@ -1,26 +1,26 @@
-using System.Collections;
-using System.Diagnostics;
-
 namespace Migration.Toolkit.Common.Helpers;
 
-public class SimpleAligner<TA, TB, TKey> : IEnumerator<SimpleAlignResult<TA, TB, TKey>> where TA : class where TB : class
+using System.Collections;
+
+public class SimpleAligner<TLeft, TRight, TKey> : IEnumerator<SimpleAlignResult<TLeft?, TRight?, TKey>> where TLeft : class where TRight : class
 {
         public delegate TKey? SelectKey<in T>(T? current);
 
-        private readonly SelectKey<TA> _selectKeyA;
-        private readonly SelectKey<TB> _selectKeyB;
+        private readonly SelectKey<TLeft> _selectKeyA;
+        private readonly SelectKey<TRight> _selectKeyB;
         private readonly bool _disposeEnumerators;
-        private readonly IEnumerator<TA> _eA;
-        private readonly IEnumerator<TB> _eB;
+        private readonly IEnumerator<TLeft> _eA;
+        private readonly IEnumerator<TRight> _eB;
         private readonly IEnumerator<TKey> _eK;
+        
         public int Ordinal { get; private set; }
 
         private SimpleAligner(
-            IEnumerator<TA> eA,
-            IEnumerator<TB> eB,
+            IEnumerator<TLeft> eA,
+            IEnumerator<TRight> eB,
             IEnumerator<TKey> eK,
-            SelectKey<TA> selectKeyA,
-            SelectKey<TB> selectKeyB,
+            SelectKey<TLeft> selectKeyA,
+            SelectKey<TRight> selectKeyB,
             bool disposeEnumerators
         )
         {
@@ -30,18 +30,19 @@ public class SimpleAligner<TA, TB, TKey> : IEnumerator<SimpleAlignResult<TA, TB,
             _eA = eA;
             _eB = eB;
             _eK = eK;
+            Current = new AlignDefault<TLeft?, TRight?, TKey>();
         }
 
-        public static SimpleAligner<TA, TB, TKey> Create(
-            IEnumerator<TA> eA, 
-            IEnumerator<TB> eB, 
+        public static SimpleAligner<TLeft, TRight, TKey> Create(
+            IEnumerator<TLeft> eA, 
+            IEnumerator<TRight> eB, 
             IEnumerator<TKey> eK,
-            SelectKey<TA> selectKeyA,
-            SelectKey<TB> selectKeyB,
+            SelectKey<TLeft> selectKeyA,
+            SelectKey<TRight> selectKeyB,
             bool disposeEnumerators
             )
         {
-            return new SimpleAligner<TA, TB, TKey>(eA, eB, eK, selectKeyA, selectKeyB, disposeEnumerators);
+            return new SimpleAligner<TLeft, TRight, TKey>(eA, eB, eK, selectKeyA, selectKeyB, disposeEnumerators);
         }
 
         private bool _hasA;
@@ -67,12 +68,11 @@ public class SimpleAligner<TA, TB, TKey> : IEnumerator<SimpleAlignResult<TA, TB,
                 var keyA = _selectKeyA(_eA.Current);
                 var keyB = _selectKeyB(_eB.Current);
 
-                var matchA = _eA.Current != default && Object.Equals(keyA, _eK.Current);
-                var matchB = _eB.Current != default && Object.Equals(keyB, _eK.Current);
+                var matchA = _eA.Current != default && Equals(keyA, _eK.Current);
+                var matchB = _eB.Current != default && Equals(keyB, _eK.Current);
                 if (matchA && matchB)
                 {
-                    Trace.WriteLine($"AB.Match: K={_eK.Current} => yield result");
-                    Current = new SimpleAlignResultMatch<TA?, TB?, TKey>(_eA.Current, _eB.Current, _eK.Current);
+                    Current = new SimpleAlignResultMatch<TLeft?, TRight?, TKey>(_eA.Current, _eB.Current, _eK.Current);
                     
                     _hasA = _hasA && _eA.MoveNext();
                     _hasB = _hasB && _eB.MoveNext();
@@ -82,8 +82,7 @@ public class SimpleAligner<TA, TB, TKey> : IEnumerator<SimpleAlignResult<TA, TB,
 
                 if (matchA)
                 {
-                    Trace.WriteLine($"A .Match: K={_eK.Current} => yield result");
-                    Current = new SimpleAlignResultOnlyA<TA?, TB?, TKey>(_eA.Current, _eK.Current);
+                    Current = new SimpleAlignResultOnlyA<TLeft?, TRight?, TKey>(_eA.Current, _eK.Current);
                     
                     _hasA = _hasA && _eA.MoveNext();
                     Ordinal++;
@@ -92,8 +91,7 @@ public class SimpleAligner<TA, TB, TKey> : IEnumerator<SimpleAlignResult<TA, TB,
 
                 if (matchB)
                 {
-                    Trace.WriteLine($"B .Match: K={_eK.Current} => yield result");
-                    Current = new SimpleAlignResultOnlyB<TA?, TB?, TKey>(_eB.Current, _eK.Current);
+                    Current = new SimpleAlignResultOnlyB<TLeft?, TRight?, TKey>(_eB.Current, _eK.Current);
                     
                     _hasB = _hasB && _eB.MoveNext();
                     Ordinal++;
@@ -102,8 +100,7 @@ public class SimpleAligner<TA, TB, TKey> : IEnumerator<SimpleAlignResult<TA, TB,
 
                 if (!matchA && !matchB)
                 {
-                    Trace.WriteLine($"AB.MatchNot: K={_eK.Current} AK={keyA} BK={keyB}");
-                    Current = new SimpleAlignFatalNoMatch<TA?, TB?, TKey>(_eA.Current, _eB.Current, _eK.Current, "AB.NOMATCH: possibly error / wrongly sorted, selected source enumerators.");
+                    Current = new SimpleAlignFatalNoMatch<TLeft?, TRight?, TKey>(_eA.Current, _eB.Current, _eK.Current, "AB.NOMATCH: possibly error / wrongly sorted, selected source enumerators.");
                     
                     Ordinal++;
                     return _hasK;
@@ -120,15 +117,15 @@ public class SimpleAligner<TA, TB, TKey> : IEnumerator<SimpleAlignResult<TA, TB,
             _eK.Reset();
         }
 
-        public SimpleAlignResult<TA?, TB?, TKey> Current { get; private set; } = null!;
+        public SimpleAlignResult<TLeft?, TRight?, TKey> Current { get; private set; }
 
         object IEnumerator.Current => Current;
 
         public void Dispose()
         {
             if (!_disposeEnumerators) return;
-            _eA?.Dispose();
-            _eB?.Dispose();
-            _eK?.Dispose();
+            _eA.Dispose();
+            _eB.Dispose();
+            _eK.Dispose();
         }
     }

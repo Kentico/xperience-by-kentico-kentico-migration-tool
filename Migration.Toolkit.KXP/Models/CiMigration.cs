@@ -1,8 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Migration.Toolkit.KXO.Models
+namespace Migration.Toolkit.KXP.Models
 {
     [Table("CI_Migration")]
     [Index("MigrationName", Name = "IX_CI_Migration_MigrationName", IsUnique = true)]

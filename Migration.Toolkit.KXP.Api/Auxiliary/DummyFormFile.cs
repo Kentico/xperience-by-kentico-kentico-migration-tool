@@ -1,6 +1,6 @@
-using CMS.Base;
+namespace Migration.Toolkit.KXP.Api.Auxiliary;
 
-namespace Migration.Toolkit.KXO.Api.Auxiliary;
+using CMS.Base;
 
 public class DummyUploadedFile: IUploadedFile
 {

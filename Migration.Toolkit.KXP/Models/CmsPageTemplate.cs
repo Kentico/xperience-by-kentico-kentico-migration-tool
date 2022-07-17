@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-
-namespace Migration.Toolkit.KXO.Models
+﻿namespace Migration.Toolkit.KXP.Models
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using Microsoft.EntityFrameworkCore;
+
     [Table("CMS_PageTemplate")]
     [Index("PageTemplateCodeName", "PageTemplateDisplayName", Name = "IX_CMS_PageTemplate_PageTemplateCodeName_PageTemplateDisplayName")]
     [Index("PageTemplateLayoutId", Name = "IX_CMS_PageTemplate_PageTemplateLayoutID")]

@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-
-namespace Migration.Toolkit.KXO.Models
+﻿namespace Migration.Toolkit.KXP.Models
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using Microsoft.EntityFrameworkCore;
+
     [Table("COM_MultiBuyCouponCode")]
     [Index("MultiBuyCouponCodeMultiBuyDiscountId", Name = "IX_COM_MultiBuyCouponCode_MultiBuyCouponCodeMultiBuyDiscountID")]
     public partial class ComMultiBuyCouponCode

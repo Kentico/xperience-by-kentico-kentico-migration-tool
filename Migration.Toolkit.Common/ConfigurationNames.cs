@@ -11,17 +11,24 @@ public class ConfigurationNames
     public const string UseOmActivityNodeRelationAutofix = "UseOmActivityNodeRelationAutofix";
     public const string UseOmActivitySiteRelationAutofix = "UseOmActivitySiteRelationAutofix";
     public const string MigrationProtocolPath = "MigrationProtocolPath";
-    
+
     public const string ExcludeCodeNames = "ExcludeCodeNames";
     public const string ExplicitPrimaryKeyMapping = "ExplicitPrimaryKeyMapping";
 
     #region "Section names"
 
+    public const string CmsConnectionString = "CMSConnectionString";
+    public const string ConnectionStrings = "ConnectionStrings";
     public const string Settings = "Settings";
     public const string Logging = "Logging";
     public const string EntityConfigurations = "EntityConfigurations";
+
+    [Obsolete("Use TargetKxpApiSettings const instead")]
     public const string TargetKxoApiSettings = "TargetKxoApiSettings";
 
-    #endregion
+    public const string TargetKxpApiSettings = "TargetKxpApiSettings";
 
+    #endregion
+    
+    public const string TodoPlaceholder = "[TODO]";
 }

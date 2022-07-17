@@ -1,8 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Migration.Toolkit.KXO.Models
+namespace Migration.Toolkit.KXP.Models
 {
     [Table("Staging_Task")]
     [Index("TaskDocumentId", "TaskNodeId", "TaskRunning", Name = "IX_Staging_Task_TaskDocumentID_TaskNodeID_TaskRunning")]

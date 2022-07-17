@@ -1,20 +1,20 @@
+namespace Migration.Toolkit.KXP.Api;
+
 using CMS.OnlineForms;
 using CMS.SiteProvider;
 using Microsoft.Extensions.Logging;
 
-namespace Migration.Toolkit.KXO.Api;
-
-public class KxoFormFacade
+public class KxpFormFacade
 {
-    private readonly ILogger<KxoClassFacade> _logger;
-    private readonly KxoApiInitializer _kxoApiInitializer;
+    private readonly ILogger<KxpClassFacade> _logger;
+    private readonly KxpApiInitializer _kxpApiInitializer;
 
-    public KxoFormFacade(ILogger<KxoClassFacade> logger, KxoApiInitializer kxoApiInitializer)
+    public KxpFormFacade(ILogger<KxpClassFacade> logger, KxpApiInitializer kxpApiInitializer)
     {
         _logger = logger;
-        _kxoApiInitializer = kxoApiInitializer;
+        _kxpApiInitializer = kxpApiInitializer;
 
-        _kxoApiInitializer.EnsureApiIsInitialized();
+        _kxpApiInitializer.EnsureApiIsInitialized();
     }
     
     public void SetForm(string formDisplayName, string formName, string tableName, SiteInfo siteInfo)

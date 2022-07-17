@@ -9,43 +9,43 @@ using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KX13.Models;
-using Migration.Toolkit.KXO.Context;
+using Migration.Toolkit.KXP.Context;
 
 public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataProtectionCommand, CommandResult>, IDisposable
 {
     private readonly ILogger<MigrateDataProtectionCommandHandler> _logger;
-    private readonly IDbContextFactory<KxoContext> _kxoContextFactory;
+    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
-    private readonly IEntityMapper<CmsConsent, KXO.Models.CmsConsent> _consentMapper;
-    private readonly IEntityMapper<CmsConsentArchive, KXO.Models.CmsConsentArchive> _consentArchiveMapper;
-    private readonly IEntityMapper<CmsConsentAgreement, KXO.Models.CmsConsentAgreement> _consentAgreementMapper;
+    private readonly IEntityMapper<CmsConsent, KXP.Models.CmsConsent> _consentMapper;
+    private readonly IEntityMapper<CmsConsentArchive, KXP.Models.CmsConsentArchive> _consentArchiveMapper;
+    private readonly IEntityMapper<CmsConsentAgreement, KXP.Models.CmsConsentAgreement> _consentAgreementMapper;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IMigrationProtocol _migrationProtocol;
 
-    private KxoContext _kxoContext;
+    private KxpContext _kxpContext;
 
     private static readonly int _batchSize = 1000;
 
     public MigrateDataProtectionCommandHandler(
         ILogger<MigrateDataProtectionCommandHandler> logger,
-        IDbContextFactory<KxoContext> kxoContextFactory,
+        IDbContextFactory<KxpContext> kxpContextFactory,
         IDbContextFactory<KX13Context> kx13ContextFactory,
-        IEntityMapper<CmsConsent, KXO.Models.CmsConsent> consentMapper,
-        IEntityMapper<CmsConsentArchive, KXO.Models.CmsConsentArchive> consentArchiveMapper,
-        IEntityMapper<CmsConsentAgreement, KXO.Models.CmsConsentAgreement> consentAgreementMapper,
+        IEntityMapper<CmsConsent, KXP.Models.CmsConsent> consentMapper,
+        IEntityMapper<CmsConsentArchive, KXP.Models.CmsConsentArchive> consentArchiveMapper,
+        IEntityMapper<CmsConsentAgreement, KXP.Models.CmsConsentAgreement> consentAgreementMapper,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IMigrationProtocol migrationProtocol
     )
     {
         _logger = logger;
-        _kxoContextFactory = kxoContextFactory;
+        _kxpContextFactory = kxpContextFactory;
         _kx13ContextFactory = kx13ContextFactory;
         _consentMapper = consentMapper;
         _consentArchiveMapper = consentArchiveMapper;
         _consentAgreementMapper = consentAgreementMapper;
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _migrationProtocol = migrationProtocol;
-        _kxoContext = _kxoContextFactory.CreateDbContext();
+        _kxpContext = _kxpContextFactory.CreateDbContext();
     }
     
     public async Task<CommandResult> Handle(MigrateDataProtectionCommand request, CancellationToken cancellationToken)
@@ -68,7 +68,7 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
             _migrationProtocol.FetchedSource(kx13Consent);
             _logger.LogTrace("Migrating consent {ConsentName} with ConsentGuid {ConsentGuid}", kx13Consent.ConsentName, kx13Consent.ConsentGuid);
             
-            var kxoConsent = await _kxoContext.CmsConsents.FirstOrDefaultAsync(consent => consent.ConsentGuid == kx13Consent.ConsentGuid, cancellationToken);
+            var kxoConsent = await _kxpContext.CmsConsents.FirstOrDefaultAsync(consent => consent.ConsentGuid == kx13Consent.ConsentGuid, cancellationToken);
             _migrationProtocol.FetchedTarget(kxoConsent);
 
             var mapped = _consentMapper.Map(kx13Consent, kxoConsent);
@@ -81,16 +81,16 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
 
                 if (newInstance)
                 {
-                    _kxoContext.CmsConsents.Add(cmsConsent);
+                    _kxpContext.CmsConsents.Add(cmsConsent);
                 }
                 else
                 {
-                    _kxoContext.CmsConsents.Update(cmsConsent);
+                    _kxpContext.CmsConsents.Update(cmsConsent);
                 }
 
                 try
                 {
-                    await _kxoContext.SaveChangesAsync(cancellationToken);
+                    await _kxpContext.SaveChangesAsync(cancellationToken);
 
                     _migrationProtocol.Success(kx13Consent, cmsConsent, mapped);
                     _logger.LogEntitySetAction(newInstance, cmsConsent);
@@ -105,8 +105,8 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
                         .WithMessage("Failed to migrate consent, target database constraint broken.")
                     );
 
-                    await _kxoContext.DisposeAsync();
-                    _kxoContext = await _kxoContextFactory.CreateDbContextAsync(cancellationToken);
+                    await _kxpContext.DisposeAsync();
+                    _kxpContext = await _kxpContextFactory.CreateDbContextAsync(cancellationToken);
                 }
             }
         }
@@ -123,7 +123,7 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
             _migrationProtocol.FetchedSource(kx13ArchiveConsent);
             _logger.LogTrace("Migrating consent archive with ConsentArchiveGuid {ConsentGuid}", kx13ArchiveConsent.ConsentArchiveGuid);
 
-            var kxoConsentArchive = await _kxoContext.CmsConsentArchives.FirstOrDefaultAsync(consentArchive => consentArchive.ConsentArchiveGuid == kx13ArchiveConsent.ConsentArchiveGuid, cancellationToken);
+            var kxoConsentArchive = await _kxpContext.CmsConsentArchives.FirstOrDefaultAsync(consentArchive => consentArchive.ConsentArchiveGuid == kx13ArchiveConsent.ConsentArchiveGuid, cancellationToken);
             _migrationProtocol.FetchedTarget(kxoConsentArchive);
 
             var mapped = _consentArchiveMapper.Map(kx13ArchiveConsent, kxoConsentArchive);
@@ -136,16 +136,16 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
 
                 if (newInstance)
                 {
-                    _kxoContext.CmsConsentArchives.Add(cmsConsentArchive);
+                    _kxpContext.CmsConsentArchives.Add(cmsConsentArchive);
                 }
                 else
                 {
-                    _kxoContext.CmsConsentArchives.Update(cmsConsentArchive);
+                    _kxpContext.CmsConsentArchives.Update(cmsConsentArchive);
                 }
 
                 try
                 {
-                    await _kxoContext.SaveChangesAsync(cancellationToken);
+                    await _kxpContext.SaveChangesAsync(cancellationToken);
 
                     _migrationProtocol.Success(kx13ArchiveConsent, cmsConsentArchive, mapped);
                     _logger.LogEntitySetAction(newInstance, cmsConsentArchive);
@@ -161,8 +161,8 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
                         .WithMessage("Failed to migrate consent archive, target database constraint broken.")
                     );
 
-                    await _kxoContext.DisposeAsync();
-                    _kxoContext = await _kxoContextFactory.CreateDbContextAsync(cancellationToken);
+                    await _kxpContext.DisposeAsync();
+                    _kxpContext = await _kxpContextFactory.CreateDbContextAsync(cancellationToken);
                 }
             }
         }
@@ -175,8 +175,8 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
         var index = 0;
         var indexFull = 0;
-        var consentAgreementUpdates= new List<KXO.Models.CmsConsentAgreement>();
-        var consentAgreementNews = new List<KXO.Models.CmsConsentAgreement>();
+        var consentAgreementUpdates= new List<KXP.Models.CmsConsentAgreement>();
+        var consentAgreementNews = new List<KXP.Models.CmsConsentAgreement>();
         var itemsCount = kx13Context.CmsConsentAgreements.Count();
 
         foreach (var kx13ConsentAgreement in kx13Context.CmsConsentAgreements)
@@ -184,7 +184,7 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
             _migrationProtocol.FetchedSource(kx13ConsentAgreement);
             _logger.LogTrace("Migrating consent agreement with ConsentAgreementGuid {ConsentAgreementGuid}", kx13ConsentAgreement.ConsentAgreementGuid);
 
-            var kxoConsentAgreement = await _kxoContext.CmsConsentAgreements.FirstOrDefaultAsync(consentAgreement => consentAgreement.ConsentAgreementGuid == kx13ConsentAgreement.ConsentAgreementGuid, cancellationToken);
+            var kxoConsentAgreement = await _kxpContext.CmsConsentAgreements.FirstOrDefaultAsync(consentAgreement => consentAgreement.ConsentAgreementGuid == kx13ConsentAgreement.ConsentAgreementGuid, cancellationToken);
             _migrationProtocol.FetchedTarget(kxoConsentAgreement);
 
             var mapped = _consentAgreementMapper.Map(kx13ConsentAgreement, kxoConsentAgreement);
@@ -210,23 +210,25 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
 
             if (index == batchSize || indexFull == itemsCount)
             {
-                _kxoContext.CmsConsentAgreements.AddRange(consentAgreementNews);
-                _kxoContext.CmsConsentAgreements.UpdateRange(consentAgreementUpdates);
+                _kxpContext.CmsConsentAgreements.AddRange(consentAgreementNews);
+                _kxpContext.CmsConsentAgreements.UpdateRange(consentAgreementUpdates);
 
                 try
                 {
-                    await _kxoContext.SaveChangesAsync(cancellationToken);
+                    await _kxpContext.SaveChangesAsync(cancellationToken);
 
                     foreach (var newKx13ConsentAgreement in consentAgreementNews)
                     {
                         _migrationProtocol.Success(kx13ConsentAgreement, newKx13ConsentAgreement, mapped);
-                        _logger.LogInformation("CmsConsentAgreement: with ConsentAgreementGuid \'ConsentAgreementGuid}\' was inserted", newKx13ConsentAgreement.ConsentAgreementGuid);
+                        _logger.LogInformation("CmsConsentAgreement: with ConsentAgreementGuid \'ConsentAgreementGuid}\' was inserted",
+                            newKx13ConsentAgreement.ConsentAgreementGuid);
                     }
 
                     foreach (var updateKx13ConsentAgreement in consentAgreementUpdates)
                     {
                         _migrationProtocol.Success(kx13ConsentAgreement, updateKx13ConsentAgreement, mapped);
-                        _logger.LogInformation("CmsConsentAgreement: with ConsentAgreementGuid \'ConsentAgreementGuid}\' was updated", updateKx13ConsentAgreement.ConsentAgreementGuid);
+                        _logger.LogInformation("CmsConsentAgreement: with ConsentAgreementGuid \'ConsentAgreementGuid}\' was updated",
+                            updateKx13ConsentAgreement.ConsentAgreementGuid);
                     }
                 }
                 catch (DbUpdateException dbUpdateException) when (
@@ -234,38 +236,31 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
                     sqlException.Message.Contains("Cannot insert duplicate key row in object")
                 )
                 {
-                    await _kxoContext.DisposeAsync();
+                    await _kxpContext.DisposeAsync();
 
-                    foreach (var newKx13ConsentAgreement in consentAgreementNews)
-                    {
-                        _logger.LogError("Failed to migrate consent agreement - consent guid: {ConsentAgreementGuid}. Use needs manual migration", kx13ConsentAgreement.ConsentAgreementGuid);
-                        _migrationProtocol.NeedsManualAction(
-                            HandbookReferences.CmsConsentAgreementSkip,
-                            $"Failed to migrate consent agreement - server guid: {kx13ConsentAgreement.ConsentAgreementGuid}. Use needs manual migration.",
-                            kx13ConsentAgreement,
-                            newKx13ConsentAgreement,
-                            mapped
-                        );
-                    }
+                    _migrationProtocol.Append(HandbookReferences
+                        .ErrorCreatingTargetInstance<KXP.Models.CmsConsentAgreement>(dbUpdateException)
+                        .NeedsManualAction()
+                        .WithIdentityPrints(consentAgreementNews)
+                    );
+                    _logger.LogEntitiesSetError(dbUpdateException, true, consentAgreementNews);
 
-                    foreach (var updateKx13ConsentAgreement in consentAgreementUpdates)
-                    {
-                        _logger.LogError("Failed to migrate consent agreement - consent guid: {ConsentAgreementGuid}. Use needs manual migration", kx13ConsentAgreement.ConsentAgreementGuid);
-                        _migrationProtocol.NeedsManualAction(
-                            HandbookReferences.CmsConsentAgreementSkip,
-                            $"Failed to migrate consent agreement - server guid: {kx13ConsentAgreement.ConsentAgreementGuid}. Use needs manual migration.",
-                            kx13ConsentAgreement,
-                            updateKx13ConsentAgreement,
-                            mapped
-                        );
-                    }
-                    _kxoContext = await _kxoContextFactory.CreateDbContextAsync(cancellationToken);
 
+                    _migrationProtocol.Append(HandbookReferences
+                        .ErrorUpdatingTargetInstance<KXP.Models.CmsConsentAgreement>(dbUpdateException)
+                        .NeedsManualAction()
+                        .WithIdentityPrints(consentAgreementUpdates)
+                    );
+                    
+                    _logger.LogEntitiesSetError(dbUpdateException, false, consentAgreementUpdates);
+
+                    _kxpContext = await _kxpContextFactory.CreateDbContextAsync(cancellationToken);
                 }
-                finally {
+                finally
+                {
                     index = 0;
-                    consentAgreementUpdates = new List<KXO.Models.CmsConsentAgreement>();
-                    consentAgreementNews = new List<KXO.Models.CmsConsentAgreement>();
+                    consentAgreementUpdates = new List<KXP.Models.CmsConsentAgreement>();
+                    consentAgreementNews = new List<KXP.Models.CmsConsentAgreement>();
                 }
             }
         }
@@ -275,6 +270,6 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
     
     public void Dispose()
     {
-        _kxoContext.Dispose();
+        _kxpContext.Dispose();
     }
 }

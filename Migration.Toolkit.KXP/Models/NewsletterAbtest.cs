@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-
-namespace Migration.Toolkit.KXO.Models
+﻿namespace Migration.Toolkit.KXP.Models
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using Microsoft.EntityFrameworkCore;
+
     [Table("Newsletter_ABTest")]
     [Index("TestIssueId", Name = "IX_Newsletter_ABTest_TestIssueID", IsUnique = true)]
     [Index("TestWinnerIssueId", Name = "IX_Newsletter_ABTest_TestWinnerIssueID")]

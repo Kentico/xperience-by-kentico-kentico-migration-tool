@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-
-namespace Migration.Toolkit.KXO.Models
+﻿namespace Migration.Toolkit.KXP.Models
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using Microsoft.EntityFrameworkCore;
+
     [Table("CMS_Attachment")]
     [Index("AttachmentDocumentId", Name = "IX_CMS_Attachment_AttachmentDocumentID")]
     [Index("AttachmentGuid", "AttachmentSiteId", Name = "IX_CMS_Attachment_AttachmentGUID_AttachmentSiteID")]

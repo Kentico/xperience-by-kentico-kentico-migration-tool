@@ -11,9 +11,9 @@ using Migration.Toolkit.Core;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.Services;
 using Migration.Toolkit.KX13;
-using Migration.Toolkit.KXO;
-using Migration.Toolkit.KXO.Api;
-using Migration.Toolkit.KXO.Context;
+using Migration.Toolkit.KXP;
+using Migration.Toolkit.KXP.Api;
+using Migration.Toolkit.KXP.Context;
 
 const string red = "\x1b[31m";
 const string yellow = "\x1b[33m";
@@ -96,8 +96,15 @@ services
     });
 
 services.UseKx13DbContext(settings);
-services.UseKxoDbContext(settings);
-services.UseKxoApi(config.GetRequiredSection(ConfigurationNames.Settings).GetRequiredSection(ConfigurationNames.TargetKxoApiSettings), settings.TargetCmsDirPath);
+services.UseKxpDbContext(settings);
+
+var kxpApiSettings = 
+    config.GetRequiredSection(ConfigurationNames.Settings).GetSection(ConfigurationNames.TargetKxpApiSettings) ??
+#pragma warning disable CS0618
+    config.GetRequiredSection(ConfigurationNames.Settings).GetSection(ConfigurationNames.TargetKxoApiSettings);
+#pragma warning restore CS0618
+
+services.UseKxpApi(kxpApiSettings, settings.TargetCmsDirPath);
 services.AddSingleton(settings);
 services.UseToolkitCore();
 
@@ -186,7 +193,7 @@ void PrintCommandDescriptions()
 }
 
 var mediatr = scope.ServiceProvider.GetRequiredService<IMediator>();
-var kxoContext = scope.ServiceProvider.GetRequiredService<IDbContextFactory<KxoContext>>().CreateDbContext();
+var kxpContext = scope.ServiceProvider.GetRequiredService<IDbContextFactory<KxpContext>>().CreateDbContext();
 
 var argsQ = new Queue<string>(args);
 var commands = new List<ICommand>();
@@ -197,7 +204,7 @@ while (argsQ.TryDequeue(out var arg))
     var cultureCode = "";
     
     // TODO tk: 2022-06-23 ! konfigurovat site přes SiteName (ponechat aktuální přístup)
-    if (RequireNumberParameter("--siteId", out var siteId) && siteId is int sid && kxoContext.CmsSites.OrderBy(x => x.SiteId).FirstOrDefault()?.SiteId is int targetSiteId)
+    if (RequireNumberParameter("--siteId", out var siteId) && siteId is int sid && kxpContext.CmsSites.OrderBy(x => x.SiteId).FirstOrDefault()?.SiteId is int targetSiteId)
     {
         toolkitConfiguration.AddExplicitMapping<Migration.Toolkit.KX13.Models.CmsSite>(s => s.SiteId, sid, targetSiteId);
     }
@@ -341,7 +348,7 @@ while (argsQ.TryDequeue(out var arg))
     }
 }
 
-kxoContext.Dispose();
+kxpContext.Dispose();
 
 var satisfiedDependencies = new HashSet<Type>();
 var dependenciesSatisfied = true;

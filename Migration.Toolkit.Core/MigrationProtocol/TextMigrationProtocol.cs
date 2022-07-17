@@ -5,6 +5,8 @@ using Migration.Toolkit.Core.Abstractions;
 
 namespace Migration.Toolkit.Core.MigrationProtocol;
 
+using Migration.Toolkit.Core.Helpers;
+
 public class TextMigrationProtocol: IMigrationProtocol, IDisposable
 {
     private readonly ToolkitConfiguration _configuration;
@@ -15,18 +17,27 @@ public class TextMigrationProtocol: IMigrationProtocol, IDisposable
         _configuration = configuration;
 
         var nowStartDate = DateTime.Now;
-        if (string.IsNullOrWhiteSpace(configuration.MigrationProtocolPath))
+        if (string.IsNullOrWhiteSpace(configuration.MigrationProtocolPath) && Process.GetCurrentProcess().MainModule?.FileName is {} programPath)
         {
-            var processDir = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
-            _streamWriter = new StreamWriter(Path.Combine(processDir, $"MigrationProtocol_{nowStartDate:yyyyMMdd_hhmm}.html"));    
+            var processDir = Path.GetDirectoryName(programPath);
+            if (processDir != null)
+                _streamWriter = new StreamWriter(Path.Combine(processDir, $"MigrationProtocol_{nowStartDate:yyyyMMdd_hhmm}.html"));
         }
         else
         {
             var directoryName = Path.GetDirectoryName(configuration.MigrationProtocolPath);
-            Directory.CreateDirectory(directoryName);
-            var nameWithoutExtension = Path.GetFileNameWithoutExtension(configuration.MigrationProtocolPath);
-            var extension = Path.GetExtension(configuration.MigrationProtocolPath);
-            _streamWriter = new StreamWriter(Path.Combine(directoryName, $"{nameWithoutExtension}{nowStartDate:yyyyMMdd_hhmm}{extension}"));
+            if (directoryName != null)
+            {
+                Directory.CreateDirectory(directoryName);
+                var nameWithoutExtension = Path.GetFileNameWithoutExtension(configuration.MigrationProtocolPath);
+                var extension = Path.GetExtension(configuration.MigrationProtocolPath);
+                _streamWriter = new StreamWriter(Path.Combine(directoryName, $"{nameWithoutExtension}{nowStartDate:yyyyMMdd_hhmm}{extension}"));
+            }
+        }
+
+        if (_streamWriter == null)
+        {
+            throw new InvalidOperationException("Unable to get path for migration protocol initialization - configure settings in path 'Settings.MigrationProtocolPath'");
         }
         
         _streamWriter.AutoFlush = true;
@@ -59,7 +70,7 @@ public class TextMigrationProtocol: IMigrationProtocol, IDisposable
 
     public void Success<TSource, TTarget>(TSource source, TTarget target, IModelMappingResult<TTarget>? mapped)
     {
-        
+        WriteLine($"Success: {Printer.GetEntityIdentityPrint(target)}");
     }
 
     public void Warning<T>(HandbookReference handbookRef, T? entity)

@@ -14,31 +14,31 @@ using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.Core.Services.BulkCopy;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KX13.Models;
-using Migration.Toolkit.KXO.Api;
-using Migration.Toolkit.KXO.Context;
+using Migration.Toolkit.KXP.Api;
+using Migration.Toolkit.KXP.Context;
 
 public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, CommandResult>, IDisposable
 {
     private readonly ILogger<MigrateFormsCommandHandler> _logger;
-    private readonly IDbContextFactory<KxoContext> _kxoContextFactory;
+    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
     private readonly IEntityMapper<CmsClass, DataClassInfo> _dataClassMapper;
-    private readonly IEntityMapper<CmsForm, KXO.Models.CmsForm> _cmsFormMapper;
-    private readonly KxoClassFacade _kxoClassFacade;
+    private readonly IEntityMapper<CmsForm, KXP.Models.CmsForm> _cmsFormMapper;
+    private readonly KxpClassFacade _kxpClassFacade;
     private readonly BulkDataCopyService _bulkDataCopyService;
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IMigrationProtocol _migrationProtocol;
 
-    private KxoContext _kxoContext;
+    private KxpContext _kxpContext;
 
     public MigrateFormsCommandHandler(
         ILogger<MigrateFormsCommandHandler> logger,
-        IDbContextFactory<KxoContext> kxoContextFactory,
+        IDbContextFactory<KxpContext> kxpContextFactory,
         IDbContextFactory<KX13Context> kx13ContextFactory,
         IEntityMapper<CmsClass, DataClassInfo> dataClassMapper,
-        IEntityMapper<CmsForm, KXO.Models.CmsForm> cmsFormMapper,
-        KxoClassFacade kxoClassFacade,
+        IEntityMapper<CmsForm, KXP.Models.CmsForm> cmsFormMapper,
+        KxpClassFacade kxpClassFacade,
         BulkDataCopyService bulkDataCopyService,
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
@@ -46,16 +46,16 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
     )
     {
         _logger = logger;
-        _kxoContextFactory = kxoContextFactory;
+        _kxpContextFactory = kxpContextFactory;
         _kx13ContextFactory = kx13ContextFactory;
         _dataClassMapper = dataClassMapper;
         _cmsFormMapper = cmsFormMapper;
-        _kxoClassFacade = kxoClassFacade;
+        _kxpClassFacade = kxpClassFacade;
         _bulkDataCopyService = bulkDataCopyService;
         _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _migrationProtocol = migrationProtocol;
-        _kxoContext = kxoContextFactory.CreateDbContext();
+        _kxpContext = kxpContextFactory.CreateDbContext();
     }
 
     public async Task<CommandResult> Handle(MigrateFormsCommand request, CancellationToken cancellationToken)
@@ -82,7 +82,7 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
                 continue;
             }
 
-            var kxoDataClass = _kxoClassFacade.GetClass(kx13Class.ClassGuid);
+            var kxoDataClass = _kxpClassFacade.GetClass(kx13Class.ClassGuid);
             _migrationProtocol.FetchedTarget(kxoDataClass);
 
             var classSuccessFullySaved = MapAndSaveUsingKxoApi(kx13Class, kxoDataClass);
@@ -95,7 +95,7 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
             {
                 _migrationProtocol.FetchedSource(kx13CmsForm);
                 
-                var kxoCmsForm = _kxoContext.CmsForms.FirstOrDefault(f => f.FormGuid == kx13CmsForm.FormGuid);
+                var kxoCmsForm = _kxpContext.CmsForms.FirstOrDefault(f => f.FormGuid == kx13CmsForm.FormGuid);
                 
                 _migrationProtocol.FetchedTarget(kxoCmsForm);
 
@@ -111,14 +111,14 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
                     {
                         if (newInstance)
                         {
-                            _kxoContext.CmsForms.Add(cmsForm);
+                            _kxpContext.CmsForms.Add(cmsForm);
                         }
                         else
                         {
-                            _kxoContext.CmsForms.Update(cmsForm);
+                            _kxpContext.CmsForms.Update(cmsForm);
                         }
 
-                        await _kxoContext.SaveChangesAsync(cancellationToken);
+                        await _kxpContext.SaveChangesAsync(cancellationToken);
                         _logger.LogEntitySetAction(newInstance, cmsForm);
 
                         _primaryKeyMappingContext.SetMapping<CmsForm>(
@@ -129,11 +129,11 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
                     }
                     catch (Exception ex)
                     {
-                        await _kxoContext.DisposeAsync(); // reset context errors
-                        _kxoContext = await _kxoContextFactory.CreateDbContextAsync(cancellationToken);
+                        await _kxpContext.DisposeAsync(); // reset context errors
+                        _kxpContext = await _kxpContextFactory.CreateDbContextAsync(cancellationToken);
 
                         _migrationProtocol.Append(HandbookReferences
-                            .ErrorCreatingTargetInstance<KXO.Models.CmsForm>(ex)
+                            .ErrorCreatingTargetInstance<KXP.Models.CmsForm>(ex)
                             .NeedsManualAction()
                             .WithIdentityPrint(cmsForm)
                         );
@@ -195,7 +195,7 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
 
             try
             {
-                _kxoClassFacade.SetClass(dataClassInfo);
+                _kxpClassFacade.SetClass(dataClassInfo);
 
                 _migrationProtocol.Success(kx13Class, dataClassInfo, mapped);
                 _logger.LogEntitySetAction(newInstance, dataClassInfo);
@@ -224,6 +224,6 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
 
     public void Dispose()
     {
-        _kxoContext.Dispose();
+        _kxpContext.Dispose();
     }
 }

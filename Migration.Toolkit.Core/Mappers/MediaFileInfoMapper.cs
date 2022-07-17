@@ -47,16 +47,8 @@ public class MediaFileInfoMapper: EntityMapperBase<MediaFileInfoMapperSource, Me
 
     protected override MediaFileInfo MapInternal(MediaFileInfoMapperSource args, MediaFileInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
-        // if (source.FileGuid != target.FileGuid)
-        // {
-        //     // assertion failed
-        //     _logger.LogTrace("Assertion failed, entity key mismatch.");
-        //     return new ModelMappingFailedKeyMismatch<KXO.Models.MediaFile>().Log(_logger);
-        // }
-        
         var (mediaFile, targetLibraryId, file, _, migrateOnlyMediaFileInfo) = args;
         
-        // target.FileId = source.FileId;
         target.FileName = mediaFile.FileName;
         target.FileTitle = mediaFile.FileTitle;
         target.FileDescription = mediaFile.FileDescription;

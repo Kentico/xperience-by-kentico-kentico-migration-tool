@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-
-namespace Migration.Toolkit.KXO.Models
+﻿namespace Migration.Toolkit.KXP.Models
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using Microsoft.EntityFrameworkCore;
+
     [Table("Newsletter_EmailTemplate")]
     [Index("TemplateSiteId", "TemplateName", Name = "IX_Newsletter_EmailTemplate_TemplateSiteID_TemplateName", IsUnique = true)]
     public partial class NewsletterEmailTemplate

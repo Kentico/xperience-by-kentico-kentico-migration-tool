@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-
-namespace Migration.Toolkit.KXO.Models
+﻿namespace Migration.Toolkit.KXP.Models
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using Microsoft.EntityFrameworkCore;
+
     [Table("Analytics_ExitPages")]
     [Index("ExitPageLastModified", Name = "IX_Analytics_ExitPages_ExitPageLastModified")]
     [Index("ExitPageSessionIdentifier", Name = "UQ_Analytics_ExitPages_ExitPageSessionIdentifier", IsUnique = true)]

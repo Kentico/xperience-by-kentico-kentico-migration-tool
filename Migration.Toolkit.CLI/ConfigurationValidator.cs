@@ -19,62 +19,62 @@ public static class ConfigurationValidator
     [Pure]
     public static IEnumerable<ValidationMessage> GetValidationErrors(IConfigurationRoot root)
     {
-        var settings = root.GetSection(CfgConstants.Settings);
+        var settings = root.GetSection(ConfigurationNames.Settings);
 
         if (settings is null)
         {
             yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_Settings_IsRequired);
         }
         
-        if (CheckCfgValue(settings?.GetValue<string>(CfgConstants.SourceConnectionString)))
+        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.SourceConnectionString)))
         {
             yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_SourceConnectionString_IsRequired);
         }
 
-        if (CheckCfgValue(settings?.GetValue<string>(CfgConstants.SourceCmsDirPath)))
+        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.SourceCmsDirPath)))
         {
             yield return new ValidationMessage(ValidationMessageType.Warning, Resources.ConfigurationValidator_GetValidationErrors_SourceCmsDirPath_IsRecommended);
         }
 
-        if (CheckCfgValue(settings?.GetValue<string>(CfgConstants.TargetConnectionString)))
+        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.TargetConnectionString)))
         {
             yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_TargetConnectionString_IsRequired);
         }
 
-        if (CheckCfgValue(settings?.GetValue<string>(CfgConstants.TargetCmsDirPath)))
+        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.TargetCmsDirPath)))
         {
             yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_TargetCmsDirPath_IsRequired);
         }
 
-        var targetKxoApiSettings = settings?.GetSection(CfgConstants.TargetKxoApiSettings);
-        if (targetKxoApiSettings is null)
+        var targetKxpApiSettings = settings?.GetSection(ConfigurationNames.TargetKxpApiSettings);
+        if (targetKxpApiSettings is null)
         {
-            yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_TargetKxoApiSettings_IsRequired);
+            yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_TargetKxpApiSettings_IsRequired);
         }
 
-        var connectionStrings = targetKxoApiSettings?.GetSection(CfgConstants.ConnectionStrings);
+        var connectionStrings = targetKxpApiSettings?.GetSection(ConfigurationNames.ConnectionStrings);
         if (connectionStrings is null)
         {
             yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_ConnectionStrings_IsRequired);
         }
 
-        if (CheckCfgValue(connectionStrings?.GetValue<string>(CfgConstants.CmsConnectionString)))
+        if (CheckCfgValue(connectionStrings?.GetValue<string>(ConfigurationNames.CmsConnectionString)))
         {
             yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_CmsConnectionString_IsRequired);
         }
 
-        if (!StringIsNullOrFitsOneOf<AutofixEnum>(connectionStrings?.GetValue<string>(CfgConstants.UseOmActivityNodeRelationAutofix)))
+        if (!StringIsNullOrFitsOneOf<AutofixEnum>(connectionStrings?.GetValue<string>(ConfigurationNames.UseOmActivityNodeRelationAutofix)))
         {
             yield return new ValidationMessage(ValidationMessageType.Error, string.Format(Resources.ConfigurationValidator_GetValidationErrors_UseOmActivityNodeRelationAutofix_MustFit, Printer.PrintEnumValues<AutofixEnum>(", ")));
         }
 
-        if (!StringIsNullOrFitsOneOf<AutofixEnum>(connectionStrings?.GetValue<string>(CfgConstants.UseOmActivitySiteRelationAutofix)))
+        if (!StringIsNullOrFitsOneOf<AutofixEnum>(connectionStrings?.GetValue<string>(ConfigurationNames.UseOmActivitySiteRelationAutofix)))
         {
             yield return new ValidationMessage(ValidationMessageType.Error, string.Format(Resources.ConfigurationValidator_GetValidationErrors_UseOmActivitySiteRelationAutofix_MustFit, Printer.PrintEnumValues<AutofixEnum>(", "))
             );
         }
 
-        if (CheckCfgValue(settings?.GetValue<string>(CfgConstants.TargetAttachmentMediaLibraryName)))
+        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.TargetAttachmentMediaLibraryName)))
         {
             yield return new ValidationMessage(ValidationMessageType.Error,
                 Resources.ConfigurationValidator_GetValidationErrors_TargetAttachmentMediaLibraryName_IsRequired,
@@ -94,7 +94,7 @@ public static class ConfigurationValidator
     [Pure]
     private static bool CheckCfgValue(string? s)
     {
-        return string.IsNullOrWhiteSpace(s) || s == CfgConstants.TodoPlaceholder;
+        return string.IsNullOrWhiteSpace(s) || s == ConfigurationNames.TodoPlaceholder;
     }
 
     #endregion

@@ -12,14 +12,14 @@ public class TableReflectionService
     public TableReflectionService(ILogger<TableReflectionService> logger)
     {
         _logger = logger;
-        var (nameLookup, tableNameLookup) = typeof(KX13.Context.KX13Context).Assembly.GetTypes().Aggregate((
+        var (_, tableNameLookup) = typeof(KX13.Context.KX13Context).Assembly.GetTypes().Aggregate((
             nameLookup: new Dictionary<string, Type>(),
             tableNameLookup: new Dictionary<string, Type>()
         ), (lookups, type) =>
         {
             var rh = new ReflectionHelper(type);
 
-            if (rh.GetFirstAttributeOrNull<TableAttribute>()?.Name is string tableName && !string.IsNullOrWhiteSpace(tableName))
+            if (rh.GetFirstAttributeOrNull<TableAttribute>()?.Name is {} tableName && !string.IsNullOrWhiteSpace(tableName))
             {
                 lookups.tableNameLookup[tableName] = type;
                 lookups.nameLookup[type.Name] = type;
@@ -36,7 +36,7 @@ public class TableReflectionService
         if (!_tableNameLookup.ContainsKey(tableName))
         {
             var joinedKeys = string.Join(", ", _tableNameLookup.Keys);
-            _logger.LogError("Invalid table name, use one of following: {tableNames}", joinedKeys);
+            _logger.LogError("Invalid table name, use one of following: {TableNames}", joinedKeys);
             throw new KeyNotFoundException($"Invalid table name, use one of following: {joinedKeys}");
         }
         return _tableNameLookup[tableName];

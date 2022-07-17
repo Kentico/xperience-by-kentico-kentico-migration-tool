@@ -1,6 +1,6 @@
-using System.Runtime.InteropServices;
+namespace Migration.Toolkit.TestConsole;
 
-namespace Migration.Toolkit.CLI;
+using System.Runtime.InteropServices;
 
 public class ConsoleHelper
 {

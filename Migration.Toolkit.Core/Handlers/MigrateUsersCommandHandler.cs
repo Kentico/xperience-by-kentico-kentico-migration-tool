@@ -9,41 +9,42 @@ using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
-using Migration.Toolkit.KXO.Context;
+using Migration.Toolkit.KXP.Context;
+using Migration.Toolkit.KXP.Models;
 
 public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, CommandResult>, IDisposable
 {
     private readonly ILogger<MigrateUsersCommandHandler> _logger;
-    private readonly IDbContextFactory<KxoContext> _kxoContextFactory;
+    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
-    private readonly IEntityMapper<KX13M.CmsUser, KXO.Models.CmsUser> _userMapper;
-    private readonly IEntityMapper<KX13M.CmsRole, KXO.Models.CmsRole> _roleMapper;
+    private readonly IEntityMapper<KX13M.CmsUser, CmsUser> _userMapper;
+    private readonly IEntityMapper<KX13M.CmsRole, CmsRole> _roleMapper;
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IMigrationProtocol _migrationProtocol;
 
-    private KxoContext _kxoContext;
+    private KxpContext _kxpContext;
 
     public MigrateUsersCommandHandler(
         ILogger<MigrateUsersCommandHandler> logger,
-        IDbContextFactory<KxoContext> kxoContextFactory,
+        IDbContextFactory<KxpContext> kxpContextFactory,
         IDbContextFactory<KX13Context> kx13ContextFactory,
-        IEntityMapper<KX13M.CmsUser, KXO.Models.CmsUser> userMapper,
-        IEntityMapper<KX13M.CmsRole, KXO.Models.CmsRole> roleMapper,
+        IEntityMapper<KX13M.CmsUser, CmsUser> userMapper,
+        IEntityMapper<KX13M.CmsRole, CmsRole> roleMapper,
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IMigrationProtocol migrationProtocol
     )
     {
         _logger = logger;
-        _kxoContextFactory = kxoContextFactory;
+        _kxpContextFactory = kxpContextFactory;
         _kx13ContextFactory = kx13ContextFactory;
         _userMapper = userMapper;
         _roleMapper = roleMapper;
         _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _migrationProtocol = migrationProtocol;
-        _kxoContext = _kxoContextFactory.CreateDbContext();
+        _kxpContext = _kxpContextFactory.CreateDbContext();
     }
     
     public async Task<CommandResult> Handle(MigrateUsersCommand request, CancellationToken cancellationToken)
@@ -64,7 +65,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
             _migrationProtocol.FetchedSource(kx13User);
             _logger.LogTrace("Migrating user {UserName} with UserGuid {UserGuid}", kx13User.UserName, kx13User.UserGuid);
 
-            var kxoUser = await _kxoContext.CmsUsers
+            var kxoUser = await _kxpContext.CmsUsers
                     .Include(u => u.CmsUserRoles)
                     .ThenInclude(ur => ur.Role)
                     .FirstOrDefaultAsync(u => u.UserGuid == kx13User.UserGuid, cancellationToken)
@@ -101,16 +102,16 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
 
                 if (newInstance)
                 {
-                    _kxoContext.CmsUsers.Add(cmsUser);
+                    _kxpContext.CmsUsers.Add(cmsUser);
                 }
                 else
                 {
-                    _kxoContext.CmsUsers.Update(cmsUser);
+                    _kxpContext.CmsUsers.Update(cmsUser);
                 }
 
                 try
                 {
-                    await _kxoContext.SaveChangesAsync(cancellationToken);
+                    await _kxpContext.SaveChangesAsync(cancellationToken);
 
                     _migrationProtocol.Success(kx13User, cmsUser, mapped);
                     _logger.LogEntitySetAction(newInstance, cmsUser);
@@ -129,8 +130,8 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
                         .WithMessage("Failed to migrate user, target database broken.")
                     );
                     
-                    await _kxoContext.DisposeAsync();
-                    _kxoContext = await _kxoContextFactory.CreateDbContextAsync(cancellationToken);
+                    await _kxpContext.DisposeAsync();
+                    _kxpContext = await _kxpContextFactory.CreateDbContextAsync(cancellationToken);
                 }
 
                 _primaryKeyMappingContext.SetMapping<KX13M.CmsUser>(r => r.UserId, kx13User.UserId, cmsUser.UserId);
@@ -149,7 +150,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
         {
             _migrationProtocol.FetchedSource(kx13CmsRole);
 
-            var kxoCmsRole = await _kxoContext.CmsRoles
+            var kxoCmsRole = await _kxpContext.CmsRoles
                 .FirstOrDefaultAsync(x => x.RoleGuid == kx13CmsRole.RoleGuid, cancellationToken: cancellationToken);
 
             _migrationProtocol.FetchedTarget(kxoCmsRole);
@@ -164,14 +165,14 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
 
                 if (newInstance)
                 {
-                    _kxoContext.CmsRoles.Add(cmsRole);
+                    _kxpContext.CmsRoles.Add(cmsRole);
                 }
                 else
                 {
-                    _kxoContext.CmsRoles.Update(cmsRole);
+                    _kxpContext.CmsRoles.Update(cmsRole);
                 }
 
-                await _kxoContext.SaveChangesAsync(cancellationToken);
+                await _kxpContext.SaveChangesAsync(cancellationToken);
 
                 _migrationProtocol.Success(kx13CmsRole, cmsRole, mapped);
                 _logger.LogEntitySetAction(newInstance, cmsRole);
@@ -188,6 +189,6 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
 
     public void Dispose()
     {
-        _kxoContext.Dispose();
+        _kxpContext.Dispose();
     }
 }

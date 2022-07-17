@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-
-namespace Migration.Toolkit.KXO.Models
+﻿namespace Migration.Toolkit.KXP.Models
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using Microsoft.EntityFrameworkCore;
+
     [Table("COM_OrderItemSKUFile")]
     [Index("FileId", Name = "IX_COM_OrderItemSKUFile_FileID")]
     [Index("OrderItemId", Name = "IX_COM_OrderItemSKUFile_OrderItemID")]

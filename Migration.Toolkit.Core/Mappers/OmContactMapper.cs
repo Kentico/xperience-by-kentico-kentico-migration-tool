@@ -2,20 +2,21 @@ using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrationProtocol;
-using Migration.Toolkit.KXO.Models;
 
 
 namespace Migration.Toolkit.Core.Mappers;
 
-public class OmContactMapper : EntityMapperBase<KX13.Models.OmContact, KXO.Models.OmContact>
+using Migration.Toolkit.KXP.Models;
+
+public class OmContactMapper : EntityMapperBase<KX13.Models.OmContact, OmContact>
 {
     private readonly ILogger<OmContactMapper> _logger;
-    private readonly IEntityMapper<KX13M.OmContactStatus, KXO.Models.OmContactStatus> _contactStatusMapper;
+    private readonly IEntityMapper<KX13M.OmContactStatus, OmContactStatus> _contactStatusMapper;
 
     public OmContactMapper(
         ILogger<OmContactMapper> logger,
         PrimaryKeyMappingContext primaryKeyMappingContext,
-        IEntityMapper<KX13.Models.OmContactStatus, KXO.Models.OmContactStatus> contactStatusMapper,
+        IEntityMapper<KX13.Models.OmContactStatus, OmContactStatus> contactStatusMapper,
         IMigrationProtocol protocol
     ): base(logger, primaryKeyMappingContext, protocol)
     {
@@ -25,7 +26,7 @@ public class OmContactMapper : EntityMapperBase<KX13.Models.OmContact, KXO.Model
 
     protected override OmContact? CreateNewInstance(KX13.Models.OmContact tSourceEntity, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
-    protected override KXO.Models.OmContact MapInternal(KX13.Models.OmContact source, KXO.Models.OmContact target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override OmContact MapInternal(KX13.Models.OmContact source, OmContact target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         if (!newInstance && source.ContactGuid != target.ContactGuid)
         {
@@ -64,8 +65,6 @@ public class OmContactMapper : EntityMapperBase<KX13.Models.OmContact, KXO.Model
         // TODO tk: 2022-06-13 resolve migration of target.ContactStateId = _primaryKeyMappingContext.MapFromSource<K13M.CmsState>(u => u.StateId, source.ContactStateId);
         // TODO tk: 2022-06-13 resolve migration of target.ContactCountryId = _primaryKeyMappingContext.MapFromSource<K13M.CmsCountry>(u => u.CountryId, source.ContactCountryId);
 
-
-        // target.ContactStatusId = _primaryKeyMappingContext.MapFromSource<K13M.OmContactStatus>(u => u.ContactStatusId, source.ContactStatusId);
         if (source.ContactStatus != null)
         {
             switch (_contactStatusMapper.Map(source.ContactStatus, target.ContactStatus))
@@ -88,7 +87,6 @@ public class OmContactMapper : EntityMapperBase<KX13.Models.OmContact, KXO.Model
         }
 
         target.ContactSalesForceLeadId = source.ContactSalesForceLeadId;
-        // target.ContactOwnerUserId = _primaryKeyMappingContext.MapFromSource<KX13.Models.CmsUser>(u => u.UserId, source.ContactOwnerUserId);
         if (mappingHelper.TranslateId<KX13M.CmsUser>(u => u.UserId, source.ContactOwnerUserId, out var userId))
         {
             target.ContactOwnerUserId = userId;

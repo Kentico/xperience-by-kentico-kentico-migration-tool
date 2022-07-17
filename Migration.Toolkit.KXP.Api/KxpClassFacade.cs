@@ -1,20 +1,20 @@
+namespace Migration.Toolkit.KXP.Api;
+
 using System.Diagnostics;
 using CMS.DataEngine;
 using Microsoft.Extensions.Logging;
 
-namespace Migration.Toolkit.KXO.Api;
-
-public class KxoClassFacade
+public class KxpClassFacade
 {
-    private readonly ILogger<KxoClassFacade> _logger;
-    private readonly KxoApiInitializer _kxoApiInitializer;
+    private readonly ILogger<KxpClassFacade> _logger;
+    private readonly KxpApiInitializer _kxpApiInitializer;
 
-    public KxoClassFacade(ILogger<KxoClassFacade> logger, KxoApiInitializer kxoApiInitializer)
+    public KxpClassFacade(ILogger<KxpClassFacade> logger, KxpApiInitializer kxpApiInitializer)
     {
         _logger = logger;
-        _kxoApiInitializer = kxoApiInitializer;
+        _kxpApiInitializer = kxpApiInitializer;
 
-        _kxoApiInitializer.EnsureApiIsInitialized();
+        _kxpApiInitializer.EnsureApiIsInitialized();
     }
     
     public DataClassInfo SetClass(DataClassInfo dataClassInfo)

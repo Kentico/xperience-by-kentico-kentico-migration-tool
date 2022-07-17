@@ -32,7 +32,7 @@ public static class LogExtensions
             }
             case { Success: true } result:
             {
-                logger.LogTrace("Success - {model}", Printer.PrintKxoModelInfo(result.Item));
+                logger.LogTrace("Success - {model}", Printer.PrintKxpModelInfo(result.Item));
                 break;
             }
             default:
@@ -55,6 +55,13 @@ public static class LogExtensions
     {
         var entityIdentityPrint = Printer.GetEntityIdentityPrint(entity);
         logger.LogError(exception, "Entity {EntityType} failed during {Action}, {EntityIdentityPrint}", ReflectionHelper<T>.CurrentType.Name, newInstance ? "insert" : "update", entityIdentityPrint);
+        return logger;
+    }
+    
+    public static ILogger<T> LogEntitiesSetError<T, TEntity>(this ILogger<T> logger, Exception exception, bool newInstance, IEnumerable<TEntity> entities)
+    {
+        var entityIdentityPrint = Printer.GetEntityIdentityPrints(entities);
+        logger.LogError(exception, "Entities {EntityType} failed during {Action}, {EntityIdentityPrint}", ReflectionHelper<T>.CurrentType.Name, newInstance ? "insert" : "update", entityIdentityPrint);
         return logger;
     }
     

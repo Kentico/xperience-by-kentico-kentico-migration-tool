@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-
-namespace Migration.Toolkit.KXO.Models
+﻿namespace Migration.Toolkit.KXP.Models
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using Microsoft.EntityFrameworkCore;
+
     [Table("CMS_RelationshipName")]
     [Index("RelationshipAllowedObjects", Name = "IX_CMS_RelationshipName_RelationshipAllowedObjects")]
     [Index("RelationshipName", "RelationshipDisplayName", Name = "IX_CMS_RelationshipName_RelationshipName_RelationshipDisplayName")]

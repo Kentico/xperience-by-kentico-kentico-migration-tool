@@ -2,11 +2,12 @@
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrationProtocol;
-using Migration.Toolkit.KXO.Models;
 
 namespace Migration.Toolkit.Core.Mappers;
 
-public class CmsResourceMapper : EntityMapperBase<Migration.Toolkit.KX13.Models.CmsResource, Migration.Toolkit.KXO.Models.CmsResource>
+using Migration.Toolkit.KXP.Models;
+
+public class CmsResourceMapper : EntityMapperBase<Migration.Toolkit.KX13.Models.CmsResource, CmsResource>
 {
     private readonly ILogger<CmsResourceMapper> _logger;
 
@@ -23,8 +24,7 @@ public class CmsResourceMapper : EntityMapperBase<Migration.Toolkit.KX13.Models.
         if (source.ResourceGuid != target.ResourceGuid)
         {
             // assertion failed
-            _logger.LogTrace("Assertion failed, entity key mismatch on resources S={sourceGuild}, T={targetGuid}", source.ResourceGuid,
-                target.ResourceGuid);
+            _logger.LogTrace("Assertion failed, entity key mismatch on resources S={SourceGuild}, T={TargetGuid}", source.ResourceGuid, target.ResourceGuid);
             // allowing to run through, same resource is not required for target instance
             // return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXP.Models.CmsResource>();
         }
@@ -32,8 +32,6 @@ public class CmsResourceMapper : EntityMapperBase<Migration.Toolkit.KX13.Models.
         // avoid updating resource
         if (!newInstance) return target;
 
-        // map entity
-        // target.ResourceId = source.ResourceId;
         target.ResourceDisplayName = source.ResourceDisplayName;
         target.ResourceName = source.ResourceName;
         target.ResourceDescription = source.ResourceDescription;

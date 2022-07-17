@@ -13,30 +13,30 @@ using Migration.Toolkit.Core.Mappers;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KX13.Models;
-using Migration.Toolkit.KXO.Api;
-using Migration.Toolkit.KXO.Api.Auxiliary;
-using Migration.Toolkit.KXO.Context;
+using Migration.Toolkit.KXP.Api;
+using Migration.Toolkit.KXP.Api.Auxiliary;
+using Migration.Toolkit.KXP.Context;
 
 public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaLibrariesCommand, CommandResult>, IDisposable
 {
     private readonly ILogger<MigrateMediaLibrariesCommandHandler> _logger;
-    private readonly IDbContextFactory<KxoContext> _kxoContextFactory;
+    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
     private readonly IEntityMapper<MediaLibrary, MediaLibraryInfo> _mediaLibraryInfoMapper;
-    private readonly KxoMediaFileFacade _mediaFileFacade;
+    private readonly KxpMediaFileFacade _mediaFileFacade;
     private readonly IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo> _mediaFileInfoMapper;
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IMigrationProtocol _migrationProtocol;
 
-    private KxoContext _kxoContext;
+    private KxpContext _kxpContext;
 
     public MigrateMediaLibrariesCommandHandler(
         ILogger<MigrateMediaLibrariesCommandHandler> logger,
-        IDbContextFactory<KxoContext> kxoContextFactory,
+        IDbContextFactory<KxpContext> kxpContextFactory,
         IDbContextFactory<KX13Context> kx13ContextFactory,
         IEntityMapper<MediaLibrary, MediaLibraryInfo> mediaLibraryInfoMapper,
-        KxoMediaFileFacade mediaFileFacade,
+        KxpMediaFileFacade mediaFileFacade,
         IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo> mediaFileInfoMapper, 
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
@@ -44,7 +44,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
     )
     {
         _logger = logger;
-        _kxoContextFactory = kxoContextFactory;
+        _kxpContextFactory = kxpContextFactory;
         _kx13ContextFactory = kx13ContextFactory;
         _mediaLibraryInfoMapper = mediaLibraryInfoMapper;
         _mediaFileFacade = mediaFileFacade;
@@ -52,7 +52,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
         _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _migrationProtocol = migrationProtocol;
-        _kxoContext = kxoContextFactory.CreateDbContext();
+        _kxpContext = kxpContextFactory.CreateDbContext();
     }
 
     public async Task<CommandResult> Handle(MigrateMediaLibrariesCommand request, CancellationToken cancellationToken)
@@ -103,8 +103,8 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
                 }
                 catch (Exception ex)
                 {
-                    await _kxoContext.DisposeAsync(); // reset context errors
-                    _kxoContext = await _kxoContextFactory.CreateDbContextAsync(cancellationToken);
+                    await _kxpContext.DisposeAsync(); // reset context errors
+                    _kxpContext = await _kxpContextFactory.CreateDbContextAsync(cancellationToken);
 
                     _migrationProtocol.Append(HandbookReferences
                         .ErrorCreatingTargetInstance<MediaLibraryInfo>(ex)
@@ -153,7 +153,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
         List<(MediaLibrary sourceLibrary, MediaLibraryInfo targetLibrary)> migratedMediaLibraries,
         KX13Context kx13Context, CancellationToken cancellationToken)
     {
-        var kxoDbContext = await _kxoContextFactory.CreateDbContextAsync(cancellationToken);
+        var kxoDbContext = await _kxpContextFactory.CreateDbContextAsync(cancellationToken);
         try
         {
             foreach (var (sourceMediaLibrary, targetMediaLibrary) in migratedMediaLibraries)
@@ -213,7 +213,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
                             }
 
                             _mediaFileFacade.SetMediaFile(mf, newInstance);
-                            await _kxoContext.SaveChangesAsync(cancellationToken);
+                            await _kxpContext.SaveChangesAsync(cancellationToken);
 
                             _migrationProtocol.Success(kx13MediaFile, mf, mapped);
                             _logger.LogEntitySetAction(newInstance, mf);
@@ -221,7 +221,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
                         catch (Exception ex) // TODO tk: 2022-05-18 handle exceptions
                         {
                             await kxoDbContext.DisposeAsync(); // reset context errors
-                            kxoDbContext = await _kxoContextFactory.CreateDbContextAsync(cancellationToken);
+                            kxoDbContext = await _kxpContextFactory.CreateDbContextAsync(cancellationToken);
 
                             _migrationProtocol.Append(HandbookReferences
                                 .ErrorCreatingTargetInstance<MediaLibraryInfo>(ex)
@@ -249,6 +249,6 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
 
     public void Dispose()
     {
-        _kxoContext.Dispose();
+        _kxpContext.Dispose();
     }
 }

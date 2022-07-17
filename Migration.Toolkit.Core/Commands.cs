@@ -53,11 +53,7 @@ public record MigrateFormsCommand : IRequest<CommandResult>, ICommand
     public static string Moniker => "forms";
     public static string MonikerFriendly => "Forms";
     
-    public Type[] Dependencies => new[]
-    {
-        typeof(MigrateSitesCommand)
-        // TODO tk: 2022-05-26: require forms class first
-    };
+    public Type[] Dependencies => new[] { typeof(MigrateSitesCommand) };
 }
 
 public record MigrateMediaLibrariesCommand : IRequest<CommandResult>, ICommand
@@ -99,11 +95,3 @@ public record MigrateAttachmentsCommand(string CultureCode) : IRequest<CommandRe
     
     public Type[] Dependencies => new[] { typeof(MigrateSitesCommand) };
 }
-
-// public record MigrateWebFarmsCommand(): IRequest<GenericCommandResult>, ICommand
-// {
-//     public static string Moniker => "web-farms";
-//     public static string MonikerFriendly => "Web farms";
-//     
-//     public Type[] Dependencies => new[] { typeof(MigrateSitesCommand) };
-// }

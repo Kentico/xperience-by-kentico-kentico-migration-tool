@@ -15,35 +15,35 @@ using Migration.Toolkit.Core.Mappers;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KX13.Models;
-using Migration.Toolkit.KXO.Api;
-using Migration.Toolkit.KXO.Context;
+using Migration.Toolkit.KXP.Api;
+using Migration.Toolkit.KXP.Context;
 
 // ReSharper disable once UnusedType.Global
 public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, CommandResult>
 {
     private readonly ILogger<MigratePagesCommandHandler> _logger;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
-    private readonly IDbContextFactory<KxoContext> _kxoContextFactory;
+    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
     private readonly IEntityMapper<CmsTreeMapperSource, TreeNode> _nodeMapper;
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IMigrationProtocol _migrationProtocol;
-    private readonly KxoPageFacade _pageFacade;
+    private readonly KxpPageFacade _pageFacade;
 
     public MigratePagesCommandHandler(
         ILogger<MigratePagesCommandHandler> logger,
         IDbContextFactory<KX13Context> kx13ContextFactory,
-        IDbContextFactory<KxoContext> kxoContextFactory,
+        IDbContextFactory<KxpContext> kxpContextFactory,
         IEntityMapper<CmsTreeMapperSource, TreeNode> nodeMapper,
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IMigrationProtocol migrationProtocol,
-        KxoPageFacade pageFacade
+        KxpPageFacade pageFacade
     )
     {
         _logger = logger;
         _kx13ContextFactory = kx13ContextFactory;
-        _kxoContextFactory = kxoContextFactory;
+        _kxpContextFactory = kxpContextFactory;
         _nodeMapper = nodeMapper;
         _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
@@ -157,7 +157,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                 {
                     _logger.LogError("Unable to find target instance page root node");
                     _migrationProtocol.Append(HandbookReferences
-                        .MissingRequiredDependency<KXO.Models.CmsTree>(nameof(TreeNode.NodeParentID), mappedParentNodeId)
+                        .MissingRequiredDependency<KXP.Models.CmsTree>(nameof(TreeNode.NodeParentID), mappedParentNodeId)
                         .NeedsManualAction()
                         .WithData(new
                         {
@@ -198,7 +198,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
             if (mappedParentNodeId == null)
             {
                 _migrationProtocol.Append(HandbookReferences
-                    .MissingRequiredDependency<KXO.Models.CmsTree>(nameof(TreeNode.NodeParentID), mappedParentNodeId)
+                    .MissingRequiredDependency<KXP.Models.CmsTree>(nameof(TreeNode.NodeParentID), mappedParentNodeId)
                     .NeedsManualAction()
                     .WithData(new
                     {
@@ -291,10 +291,10 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
     private void MigratePageUrlPaths(CmsTree kx13CmsTree, CmsDocument kx13CmsDocument, TreeNode treeNode)
     {
         using var kx13Context = _kx13ContextFactory.CreateDbContext();
-        using var kxoContext = _kxoContextFactory.CreateDbContext();
+        using var kxpContext = _kxpContextFactory.CreateDbContext();
         
         var pageUrlPathsByHash =
-            kxoContext.CmsPageUrlPaths.Include(x => x.PageUrlPathNode)
+            kxpContext.CmsPageUrlPaths.Include(x => x.PageUrlPathNode)
                 .ToDictionary(x => new PageUrlPathKey(x.PageUrlPathSiteId, x.PageUrlPathUrlPathHash, x.PageUrlPathCulture));
 
         var kx13PageUrlPaths = kx13Context

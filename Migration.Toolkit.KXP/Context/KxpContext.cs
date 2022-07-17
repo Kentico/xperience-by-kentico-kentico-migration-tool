@@ -1,15 +1,18 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using Migration.Toolkit.KXO.Models;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Migration.Toolkit.KXP.Models;
 
-namespace Migration.Toolkit.KXO.Context
+namespace Migration.Toolkit.KXP.Context
 {
-    public partial class KxoContext : DbContext
+    public partial class KxpContext : DbContext
     {
-        public KxoContext()
+        public KxpContext()
         {
         }
 
-        public KxoContext(DbContextOptions<KxoContext> options)
+        public KxpContext(DbContextOptions<KxpContext> options)
             : base(options)
         {
         }

@@ -80,6 +80,25 @@ public static class HandbookReferences
                 
             });
     
+    public static HandbookReference ErrorUpdatingTargetInstance<TTarget>() =>
+        new HandbookReference("FailedToUpdateTargetInstance")
+            .NeedsManualAction()
+            .WithData(new
+            {
+                TargetEntityType = typeof(TTarget).FullName,
+                
+            });
+    
+    public static HandbookReference ErrorUpdatingTargetInstance<TTarget>(Exception exception) =>
+        new HandbookReference("FailedToUpdateTargetInstance")
+            .NeedsManualAction()
+            .WithData(new
+            {
+                TargetEntityType = typeof(TTarget).FullName,
+                Exception = exception.ToString(),
+                
+            });
+    
     public static HandbookReference MissingConfiguration<TCommand>(string configurationName) =>
         new HandbookReference("MissingConfiguration")
             .NeedsManualAction()
