@@ -11,15 +11,15 @@ public class RequestHandlingBehavior<TRequest, TResponse>: IPipelineBehavior<TRe
     where TResponse: CommandResult
 {
     private readonly ILogger<RequestHandlingBehavior<TRequest, TResponse>> _logger;
-    private readonly IMigrationProtocol _migrationProtocol;
+    private readonly IMigrationProtocol _protocol;
 
     public RequestHandlingBehavior(
         ILogger<RequestHandlingBehavior<TRequest, TResponse>> logger,
-        IMigrationProtocol migrationProtocol
+        IMigrationProtocol protocol
         )
     {
         _logger = logger;
-        _migrationProtocol = migrationProtocol;
+        _protocol = protocol;
     }
 
     public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
@@ -28,14 +28,14 @@ public class RequestHandlingBehavior<TRequest, TResponse>: IPipelineBehavior<TRe
         _logger.LogInformation("Handling {CommandName}", typeof(TRequest).Name);
         try
         {
-            _migrationProtocol.CommandRequest<TRequest, TResponse>(request);
+            _protocol.CommandRequest<TRequest, TResponse>(request);
             var response = await next();
-            _migrationProtocol.CommandFinished(request, response);
+            _protocol.CommandFinished(request, response);
             return response;
         }
         catch (Exception ex)
         {
-            _migrationProtocol.CommandError<TRequest, TResponse>(ex, request);
+            _protocol.CommandError<TRequest, TResponse>(ex, request);
             _logger.LogError(ex, "Error occured");
             throw;
         }

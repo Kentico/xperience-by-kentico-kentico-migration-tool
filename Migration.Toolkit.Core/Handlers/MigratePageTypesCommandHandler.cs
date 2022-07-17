@@ -23,7 +23,7 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly KxpClassFacade _kxpClassFacade;
-    private readonly IMigrationProtocol _migrationProtocol;
+    private readonly IProtocol _protocol;
     private readonly ToolkitConfiguration _toolkitConfiguration;
 
     public MigratePageTypesCommandHandler(
@@ -32,7 +32,7 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
         IDbContextFactory<KX13Context> kx13ContextFactory,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         KxpClassFacade kxpClassFacade,
-        IMigrationProtocol migrationProtocol,
+        IProtocol protocol,
         ToolkitConfiguration toolkitConfiguration
     )
     {
@@ -41,7 +41,7 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
         _kx13ContextFactory = kx13ContextFactory;
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _kxpClassFacade = kxpClassFacade;
-        _migrationProtocol = migrationProtocol;
+        _protocol = protocol;
         _toolkitConfiguration = toolkitConfiguration;
     }
 
@@ -75,7 +75,7 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
                 else
                 {
                     _logger.LogErrorMissingDependency(kx13Class, nameof(kx13Class.ClassInheritsFromClassId), kx13Class.ClassInheritsFromClassId, typeof(DataClassInfo));
-                    _migrationProtocol.Append(HandbookReferences
+                    _protocol.Append(HandbookReferences
                         .MissingRequiredDependency<CmsClass>(nameof(CmsClass.ClassId), classInheritsFromClassId)
                         .NeedsManualAction()
                     );
@@ -91,18 +91,18 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
                 continue;
             }
             
-            _migrationProtocol.FetchedSource(kx13Class);
+            _protocol.FetchedSource(kx13Class);
 
             if (entityConfiguration.ExcludeCodeNames.Contains(kx13Class.ClassName, StringComparer.InvariantCultureIgnoreCase))
             {
-                _migrationProtocol.Warning(HandbookReferences.EntityExplicitlyExcludedByCodeName(kx13Class.ClassName, "PageType"), kx13Class);
+                _protocol.Warning(HandbookReferences.EntityExplicitlyExcludedByCodeName(kx13Class.ClassName, "PageType"), kx13Class);
                 _logger.LogWarning("CmsClass: {ClassName} was skipped => it is explicitly excluded in configuration", kx13Class.ClassName);
                 continue;    
             }
             
             if (kx13Class.ClassName == "CMS.Root")
             {
-                _migrationProtocol.Warning(HandbookReferences.CmsClassCmsRootClassTypeSkip, kx13Class);
+                _protocol.Warning(HandbookReferences.CmsClassCmsRootClassTypeSkip, kx13Class);
                 _logger.LogWarning("CmsClass: {ClassName} was skipped => CMS.Root cannot be migrated", kx13Class.ClassName);
                 continue;
             }
@@ -110,7 +110,7 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
             // kx13Class.ClassConnectionString check is not necessary
 
             var kxoDataClass = _kxpClassFacade.GetClass(kx13Class.ClassGuid);
-            _migrationProtocol.FetchedTarget(kxoDataClass);
+            _protocol.FetchedTarget(kxoDataClass);
 
             var dataClassId = SaveUsingKxoApi(kx13Class, kxoDataClass);
             if (dataClassId is { } dcId)
@@ -133,12 +133,12 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
                 classSiteInfo.SiteID = targetSiteId;
                 ClassSiteInfoProvider.ProviderObject.Set(classSiteInfo);
 
-                _migrationProtocol.Success(new { dataClassId, targetSiteId }, classSiteInfo, null);
+                _protocol.Success(new { dataClassId, targetSiteId }, classSiteInfo, null);
             }
             catch (Exception exception)
             {
                 _logger.LogError(exception, "Failed to create target instance");
-                _migrationProtocol.Append(HandbookReferences
+                _protocol.Append(HandbookReferences
                     .ErrorCreatingTargetInstance<ClassSiteInfo>(exception)
                     .NeedsManualAction()
                     .WithData(new
@@ -157,7 +157,7 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
     private int? SaveUsingKxoApi(CmsClass kx13Class, DataClassInfo kxoDataClass)
     {
         var mapped = _dataClassMapper.Map(kx13Class, kxoDataClass);
-        _migrationProtocol.MappedTarget(mapped);
+        _protocol.MappedTarget(mapped);
 
         try
         {
@@ -168,7 +168,7 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
 
                 _kxpClassFacade.SetClass(dataClassInfo);
 
-                _migrationProtocol.Success(kx13Class, dataClassInfo, mapped);
+                _protocol.Success(kx13Class, dataClassInfo, mapped);
                 _logger.LogEntitySetAction(newInstance, dataClassInfo);
 
                 _primaryKeyMappingContext.SetMapping<CmsClass>(

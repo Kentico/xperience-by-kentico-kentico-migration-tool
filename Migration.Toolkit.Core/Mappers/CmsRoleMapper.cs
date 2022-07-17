@@ -12,7 +12,7 @@ public class CmsRoleMapper : EntityMapperBase<KX13.Models.CmsRole, CmsRole>
     public CmsRoleMapper(
         ILogger<CmsRoleMapper> logger,
         PrimaryKeyMappingContext primaryKeyMappingContext,
-        IMigrationProtocol protocol
+        IProtocol protocol
     ) : base(logger, primaryKeyMappingContext, protocol)
     {
     }

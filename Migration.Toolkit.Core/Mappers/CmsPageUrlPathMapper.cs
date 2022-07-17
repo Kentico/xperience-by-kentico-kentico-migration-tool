@@ -14,7 +14,7 @@ public class CmsPageUrlPathMapper : EntityMapperBase<KX13.Models.CmsPageUrlPath,
     public CmsPageUrlPathMapper(
         ILogger<CmsPageUrlPathMapper> logger,
         PrimaryKeyMappingContext primaryKeyMappingContext,
-        IMigrationProtocol protocol
+        IProtocol protocol
     ) : base(logger, primaryKeyMappingContext, protocol)
     {
         _primaryKeyMappingContext = primaryKeyMappingContext;

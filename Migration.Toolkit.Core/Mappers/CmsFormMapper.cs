@@ -15,7 +15,7 @@ public class CmsFormMapper : EntityMapperBase<KX13.Models.CmsForm, BizFormInfo>
     public CmsFormMapper(
         ILogger<CmsFormMapper> logger,
         PrimaryKeyMappingContext primaryKeyMappingContext,
-        IMigrationProtocol protocol
+        IProtocol protocol
     ) : base(logger, primaryKeyMappingContext, protocol)
     {
     }
@@ -68,7 +68,7 @@ public class CmsFormMapper : EntityMapperBase<KX13.Models.CmsForm, BizFormInfo>
 
 public class CmsFormMapperEf : EntityMapperBase<KX13.Models.CmsForm, Migration.Toolkit.KXP.Models.CmsForm>
 {
-    public CmsFormMapperEf(ILogger<CmsFormMapperEf> logger, PrimaryKeyMappingContext pkContext, IMigrationProtocol protocol) : base(logger, pkContext, protocol)
+    public CmsFormMapperEf(ILogger<CmsFormMapperEf> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : base(logger, pkContext, protocol)
     {
     }
 

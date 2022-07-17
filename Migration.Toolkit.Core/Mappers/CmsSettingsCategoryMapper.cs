@@ -14,7 +14,7 @@ public class CmsSettingsCategoryMapper : EntityMapperBase<Migration.Toolkit.KX13
     private readonly PrimaryKeyMappingContext _pkContext;
     private readonly IEntityMapper<KX13.Models.CmsResource, CmsResource> _cmsResourceMapper;
 
-    public CmsSettingsCategoryMapper(ILogger<CmsSettingsCategoryMapper> logger, PrimaryKeyMappingContext pkContext, IMigrationProtocol protocol,
+    public CmsSettingsCategoryMapper(ILogger<CmsSettingsCategoryMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol,
         IEntityMapper<KX13M.CmsResource, CmsResource> cmsResourceMapper) : base(logger, pkContext, protocol)
     {
         _logger = logger;

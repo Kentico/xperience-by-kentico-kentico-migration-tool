@@ -14,7 +14,7 @@ public class CmsUserMapper : EntityMapperBase<KX13.Models.CmsUser, CmsUser>
     public CmsUserMapper(
         ILogger<CmsUserMapper> logger,
         PrimaryKeyMappingContext primaryKeyMappingContext,
-        IMigrationProtocol protocol
+        IProtocol protocol
     ) : base(logger, primaryKeyMappingContext, protocol)
     {
         _logger = logger;

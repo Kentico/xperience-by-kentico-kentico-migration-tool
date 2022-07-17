@@ -20,30 +20,6 @@ public class BulkDataCopyService
         this._logger = logger;
     }
 
-    
-    
-    // use in case fast object to table insertion is needed
-    // // TODO tk: 2022-05-31 remove or use and fully implement
-    // public void Copy<TSource>(IEnumerable<TSource> sourceData, string destinationTableName, Func<string, bool> columnNameFilter) where TSource: class
-    // {
-    //     using var sqlBulkCopy = new SqlBulkCopy(_configuration.TargetConnectionString);
-    //     
-    //     sqlBulkCopy.DestinationTableName = destinationTableName;
-    //     
-    //     BulkDataObjectAdapter<TSource>.UpdateColumnMappingsSameColumnNames(sqlBulkCopy.ColumnMappings, columnNameFilter);
-    //     using var reader = BulkDataObjectAdapter<TSource>.Adapt(sourceData);
-    //     sqlBulkCopy.WriteToServer(reader);
-    // }
-    //
-    // // TODO tk: 2022-05-31 remove is not needed or fully implement 
-    // public void Copy<TSource>(IDataReader sourceData, string destinationTableName) where TSource: class
-    // {
-    //     using var sqlBulkCopy = new SqlBulkCopy(_configuration.TargetConnectionString);
-    //     
-    //     sqlBulkCopy.DestinationTableName = destinationTableName;
-    //     sqlBulkCopy.WriteToServer(sourceData);
-    // }
-
     public bool CheckIfDataExistsInTargetTable(string tableName)
     {
         using var targetConnection = new SqlConnection(_configuration.TargetConnectionString);

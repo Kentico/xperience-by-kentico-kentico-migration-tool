@@ -19,7 +19,7 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
     private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
     private readonly ToolkitConfiguration _toolkitConfiguration;
-    private readonly IMigrationProtocol _migrationProtocol;
+    private readonly IProtocol _protocol;
     private readonly IEntityMapper<CmsSettingsKey, KXP.Models.CmsSettingsKey> _mapper;
 
     private KxpContext _kxpContext;
@@ -30,7 +30,7 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
         IDbContextFactory<KxpContext> kxpContextFactory,
         IDbContextFactory<KX13Context> kx13ContextFactory,
         ToolkitConfiguration toolkitConfiguration,
-        IMigrationProtocol migrationProtocol
+        IProtocol protocol
         )
     {
         _logger = logger;
@@ -38,7 +38,7 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
         _kxpContextFactory = kxpContextFactory;
         _kx13ContextFactory = kx13ContextFactory;
         _toolkitConfiguration = toolkitConfiguration;
-        _migrationProtocol = migrationProtocol;
+        _protocol = protocol;
         _kxpContext = _kxpContextFactory.CreateDbContext();
     }
 
@@ -60,7 +60,7 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
 
         foreach (var kx13CmsSettingsKey in cmsSettingsKeys)
         {   
-            _migrationProtocol.FetchedSource(kx13CmsSettingsKey);
+            _protocol.FetchedSource(kx13CmsSettingsKey);
 
             var kxoGlobalSettingsKey = GetKxoSettingsKey(kx13CmsSettingsKey, null);
             
@@ -70,7 +70,7 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
             if (!canBeMigrated)
             {
                 _logger.LogWarning("Setting with key '{KeyName}' is currently not supported for migration", kx13CmsSettingsKey.KeyName);
-                _migrationProtocol.Append(
+                _protocol.Append(
                     HandbookReferences
                         .NotCurrentlySupportedSkip<SettingsKeyInfo>()
                         .WithId(nameof(kx13CmsSettingsKey.KeyId), kx13CmsSettingsKey.KeyId)
@@ -84,17 +84,17 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
                 continue;
             }
 
-            _migrationProtocol.FetchedTarget(kxoCmsSettingsKey);
+            _protocol.FetchedTarget(kxoCmsSettingsKey);
 
             if (entityConfiguration.ExcludeCodeNames.Contains(kx13CmsSettingsKey.KeyName))
             {
-                _migrationProtocol.Warning(HandbookReferences.CmsSettingsKeyExclusionListSkip, kx13CmsSettingsKey);
+                _protocol.Warning(HandbookReferences.CmsSettingsKeyExclusionListSkip, kx13CmsSettingsKey);
                 _logger.LogWarning("KeyName {KeyName} is excluded => skipping", kx13CmsSettingsKey.KeyName);
                 continue;
             }
 
             var mapped = _mapper.Map(kx13CmsSettingsKey, kxoCmsSettingsKey);
-            _migrationProtocol.MappedTarget(mapped);
+            _protocol.MappedTarget(mapped);
 
             if (mapped is { Success: true } result)
             {
@@ -110,7 +110,7 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
                 }
 
                 await _kxpContext.SaveChangesAsync(cancellationToken);
-                _migrationProtocol.Success(kx13CmsSettingsKey, kxoCmsSettingsKey, mapped);
+                _protocol.Success(kx13CmsSettingsKey, kxoCmsSettingsKey, mapped);
                 _logger.LogEntitySetAction(result.NewInstance, result.Item);
 
                 // TODO tk: 2022-07-15 catch error & reset dbContext on error

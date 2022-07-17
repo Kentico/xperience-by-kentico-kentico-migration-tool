@@ -24,13 +24,13 @@ public record MigrateUsersCommand : IRequest<CommandResult>, ICommand
     public Type[] Dependencies => new[] { typeof(MigrateSitesCommand) };
 }
 
-public record MigrateContactGroupsCommand : IRequest<CommandResult>, ICommand
-{
-    public static string Moniker => "contact-groups";
-    public static string MonikerFriendly => "Contact groups";
-    
-    public Type[] Dependencies => Type.EmptyTypes;
- }
+// public record MigrateContactGroupsCommand : IRequest<CommandResult>, ICommand
+// {
+//     public static string Moniker => "contact-groups";
+//     public static string MonikerFriendly => "Contact groups";
+//     
+//     public Type[] Dependencies => Type.EmptyTypes;
+//  }
 
 public record MigrateContactManagementCommand : IRequest<CommandResult>, ICommand
 {

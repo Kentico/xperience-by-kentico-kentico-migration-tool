@@ -12,7 +12,7 @@ public class CmsSiteMapper : EntityMapperBase<KX13.Models.CmsSite, CmsSite>
     public CmsSiteMapper(
         ILogger<CmsSiteMapper> logger,
         PrimaryKeyMappingContext pkContext,
-        IMigrationProtocol protocol
+        IProtocol protocol
     ) : base(logger, pkContext, protocol)
     {
         

@@ -47,11 +47,6 @@ public class TextMigrationProtocol: IMigrationProtocol, IDisposable
     {
         _streamWriter.WriteLine($"{DateTime.Now:yyyyMMdd_hhmmss}: {line}");
     }
-    
-    public void NeedsManualAction<TSource, TTarget>(HandbookReference handbookRef, string whatNeedsToBeDoneOrWhatHappened, TSource source, TTarget? target, IModelMappingResult<TTarget> mapped)
-    {
-        WriteLine($"{handbookRef}: {whatNeedsToBeDoneOrWhatHappened}");
-    }
 
     public void MappedTarget<TTarget>(IModelMappingResult<TTarget> mapped)
     {

@@ -14,12 +14,12 @@ public record MediaFileInfoMapperSource(MediaFile MediaFile, int TargetLibraryId
 
 public class MediaFileInfoMapper: EntityMapperBase<MediaFileInfoMapperSource, MediaFileInfo>
 {
-    private readonly IMigrationProtocol _protocol;
+    private readonly IProtocol _protocol;
 
     public MediaFileInfoMapper(
         ILogger<MediaFileInfoMapper> logger,
         PrimaryKeyMappingContext primaryKeyMappingContext,
-        IMigrationProtocol protocol
+        IProtocol protocol
         ): base(logger, primaryKeyMappingContext, protocol)
     {
         _protocol = protocol;

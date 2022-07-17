@@ -27,7 +27,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
     private readonly IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo> _mediaFileInfoMapper;
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
-    private readonly IMigrationProtocol _migrationProtocol;
+    private readonly IProtocol _protocol;
 
     private KxpContext _kxpContext;
 
@@ -40,7 +40,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
         IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo> mediaFileInfoMapper, 
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
-        IMigrationProtocol migrationProtocol
+        IProtocol protocol
     )
     {
         _logger = logger;
@@ -51,7 +51,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
         _mediaFileInfoMapper = mediaFileInfoMapper;
         _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
-        _migrationProtocol = migrationProtocol;
+        _protocol = protocol;
         _kxpContext = kxpContextFactory.CreateDbContext();
     }
 
@@ -70,11 +70,11 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
         var migratedMediaLibraries = new List<(MediaLibrary sourceLibrary, MediaLibraryInfo targetLibrary)>();
         foreach (var kx13MediaLibrary in kx13MediaLibraries)
         {
-            _migrationProtocol.FetchedSource(kx13MediaLibrary);
+            _protocol.FetchedSource(kx13MediaLibrary);
 
             if (kx13MediaLibrary.LibraryGuid is not { } mediaLibraryGuid)
             {
-                _migrationProtocol.Append(HandbookReferences
+                _protocol.Append(HandbookReferences
                     .InvalidSourceData<MediaLibrary>()
                     .WithId(nameof(MediaLibrary.LibraryId), kx13MediaLibrary.LibraryId)
                     .WithMessage("Media library has missing MediaLibraryGUID")
@@ -84,10 +84,10 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
 
             var mediaLibraryInfo = _mediaFileFacade.GetMediaLibraryInfo(mediaLibraryGuid);
 
-            _migrationProtocol.FetchedTarget(mediaLibraryInfo);
+            _protocol.FetchedTarget(mediaLibraryInfo);
 
             var mapped = _mediaLibraryInfoMapper.Map(kx13MediaLibrary, mediaLibraryInfo);
-            _migrationProtocol.MappedTarget(mapped);
+            _protocol.MappedTarget(mapped);
 
             if (mapped is { Success : true } result)
             {
@@ -98,7 +98,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
                 {
                     _mediaFileFacade.SetMediaLibrary(mfi);
 
-                    _migrationProtocol.Success(kx13MediaLibrary, mfi, mapped);
+                    _protocol.Success(kx13MediaLibrary, mfi, mapped);
                     _logger.LogEntitySetAction(newInstance, mfi);
                 }
                 catch (Exception ex)
@@ -106,7 +106,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
                     await _kxpContext.DisposeAsync(); // reset context errors
                     _kxpContext = await _kxpContextFactory.CreateDbContextAsync(cancellationToken);
 
-                    _migrationProtocol.Append(HandbookReferences
+                    _protocol.Append(HandbookReferences
                         .ErrorCreatingTargetInstance<MediaLibraryInfo>(ex)
                         .NeedsManualAction()
                         .WithIdentityPrint(mfi)
@@ -175,7 +175,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
 
                 foreach (var kx13MediaFile in kx13MediaFiles)
                 {
-                    _migrationProtocol.FetchedSource(kx13MediaFile);
+                    _protocol.FetchedSource(kx13MediaFile);
 
                     bool found = false;
                     IUploadedFile? uploadedFile = null;
@@ -192,12 +192,12 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
 
                     var kxoMediaFile = _mediaFileFacade.GetMediaFile(kx13MediaFile.FileGuid);
 
-                    _migrationProtocol.FetchedTarget(kxoMediaFile);
+                    _protocol.FetchedTarget(kxoMediaFile);
 
                     var source = new MediaFileInfoMapperSource(kx13MediaFile, targetMediaLibrary.LibraryID, found ? uploadedFile : null,
                         librarySubfolder, _toolkitConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(false));
                     var mapped = _mediaFileInfoMapper.Map(source, kxoMediaFile);
-                    _migrationProtocol.MappedTarget(mapped);
+                    _protocol.MappedTarget(mapped);
 
                     if (mapped is { Success : true } result)
                     {
@@ -215,7 +215,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
                             _mediaFileFacade.SetMediaFile(mf, newInstance);
                             await _kxpContext.SaveChangesAsync(cancellationToken);
 
-                            _migrationProtocol.Success(kx13MediaFile, mf, mapped);
+                            _protocol.Success(kx13MediaFile, mf, mapped);
                             _logger.LogEntitySetAction(newInstance, mf);
                         }
                         catch (Exception ex) // TODO tk: 2022-05-18 handle exceptions
@@ -223,7 +223,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
                             await kxoDbContext.DisposeAsync(); // reset context errors
                             kxoDbContext = await _kxpContextFactory.CreateDbContextAsync(cancellationToken);
 
-                            _migrationProtocol.Append(HandbookReferences
+                            _protocol.Append(HandbookReferences
                                 .ErrorCreatingTargetInstance<MediaLibraryInfo>(ex)
                                 .NeedsManualAction()
                                 .WithIdentityPrint(mf)

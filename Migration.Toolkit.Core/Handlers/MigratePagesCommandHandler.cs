@@ -27,7 +27,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
     private readonly IEntityMapper<CmsTreeMapperSource, TreeNode> _nodeMapper;
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
-    private readonly IMigrationProtocol _migrationProtocol;
+    private readonly IProtocol _protocol;
     private readonly KxpPageFacade _pageFacade;
 
     public MigratePagesCommandHandler(
@@ -37,7 +37,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
         IEntityMapper<CmsTreeMapperSource, TreeNode> nodeMapper,
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
-        IMigrationProtocol migrationProtocol,
+        IProtocol protocol,
         KxpPageFacade pageFacade
     )
     {
@@ -47,7 +47,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
         _nodeMapper = nodeMapper;
         _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
-        _migrationProtocol = migrationProtocol;
+        _protocol = protocol;
         _pageFacade = pageFacade;
     }
 
@@ -96,7 +96,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
 
         foreach (var kx13CmsTreeOriginal in kx13CmsTrees)
         {
-            _migrationProtocol.FetchedSource(kx13CmsTreeOriginal);
+            _protocol.FetchedSource(kx13CmsTreeOriginal);
             
             var kx13CmsTree = kx13CmsTreeOriginal;
             var migrationOfLinkedNode = false;
@@ -106,7 +106,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                 {
                     // skip & write to protocol
                     _logger.LogWarning("Linked node with NodeGuid {NodeGuid} is linked from different site - unable to migrate", kx13CmsTreeOriginal.NodeGuid);
-                    _migrationProtocol.Warning(HandbookReferences.CmsTreeTreeIsLinkFromDifferentSite, kx13CmsTree);
+                    _protocol.Warning(HandbookReferences.CmsTreeTreeIsLinkFromDifferentSite, kx13CmsTree);
                     continue;
                 }
 
@@ -133,7 +133,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
             
             if (classEntityConfiguration.ExcludeCodeNames.Contains(kx13CmsTree.NodeClass.ClassName, StringComparer.InvariantCultureIgnoreCase))
             {
-                _migrationProtocol.Warning(HandbookReferences.EntityExplicitlyExcludedByCodeName(kx13CmsTree.NodeClass.ClassName, "PageType"), kx13CmsTree);
+                _protocol.Warning(HandbookReferences.EntityExplicitlyExcludedByCodeName(kx13CmsTree.NodeClass.ClassName, "PageType"), kx13CmsTree);
                 _logger.LogWarning("Page: page of class {ClassName} was skipped => it is explicitly excluded in configuration", kx13CmsTree.NodeClass.ClassName);
                 continue;    
             }
@@ -156,7 +156,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                 if (mappedParentNodeId == null)
                 {
                     _logger.LogError("Unable to find target instance page root node");
-                    _migrationProtocol.Append(HandbookReferences
+                    _protocol.Append(HandbookReferences
                         .MissingRequiredDependency<KXP.Models.CmsTree>(nameof(TreeNode.NodeParentID), mappedParentNodeId)
                         .NeedsManualAction()
                         .WithData(new
@@ -169,7 +169,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                     return new CommandFailureResult();
                 }
 
-                _migrationProtocol.Warning(HandbookReferences.CmsTreeTreeRootSkip, kx13CmsTree);
+                _protocol.Warning(HandbookReferences.CmsTreeTreeRootSkip, kx13CmsTree);
                 _primaryKeyMappingContext.SetMapping<CmsTree>(
                     r => r.NodeId,
                     kx13CmsTree.NodeId,
@@ -190,14 +190,14 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
             if (!isPublished)
             {
                 _logger.LogWarning("Source page {PageGuid} is not published => skipping", kx13CmsDocument.DocumentGuid);
-                _migrationProtocol.Warning(HandbookReferences.SourcePageIsNotPublished(kx13CmsDocument.DocumentGuid ?? Guid.Empty), kx13CmsDocument);
+                _protocol.Warning(HandbookReferences.SourcePageIsNotPublished(kx13CmsDocument.DocumentGuid ?? Guid.Empty), kx13CmsDocument);
                 continue;
             }
             
             mappedParentNodeId = _primaryKeyMappingContext.MapFromSourceOrNull<CmsTree>(t => t.NodeId, kx13CmsTree.NodeParentId);
             if (mappedParentNodeId == null)
             {
-                _migrationProtocol.Append(HandbookReferences
+                _protocol.Append(HandbookReferences
                     .MissingRequiredDependency<KXP.Models.CmsTree>(nameof(TreeNode.NodeParentID), mappedParentNodeId)
                     .NeedsManualAction()
                     .WithData(new
@@ -215,12 +215,12 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                 .WithGuid(kx13CmsTree.CmsDocuments.Single().DocumentGuid.GetValueOrDefault())
                 .SingleOrDefault();
 
-            _migrationProtocol.FetchedTarget(kxoTreeNode);
+            _protocol.FetchedTarget(kxoTreeNode);
 
             if (migrationOfLinkedNode && kxoTreeNode != null)
             {
                 _logger.LogWarning("Linked node is already materialized in target instance, if you want to migrate again delete it in target instance");
-                _migrationProtocol.Append(HandbookReferences.LinkedDataAlreadyMaterializedInTargetInstance.WithData(new { kx13CmsTree.NodeGuid, kx13CmsTree.NodeAliasPath }));
+                _protocol.Append(HandbookReferences.LinkedDataAlreadyMaterializedInTargetInstance.WithData(new { kx13CmsTree.NodeGuid, kx13CmsTree.NodeAliasPath }));
                 continue;
             }
 
@@ -231,7 +231,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
             
             var source = new CmsTreeMapperSource(kx13CmsTree, cultureCode);
             var mapped = _nodeMapper.Map(source, kxoTreeNode);
-            _migrationProtocol.MappedTarget(mapped);
+            _protocol.MappedTarget(mapped);
 
             if (mapped is { Success : true } result)
             {
@@ -263,7 +263,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
 
                     treeNode.Publish();
 
-                    _migrationProtocol.Success(kx13CmsTree, treeNode, mapped);
+                    _protocol.Success(kx13CmsTree, treeNode, mapped);
                     _logger.LogEntitySetAction(newInstance, treeNode);
                     
                     _primaryKeyMappingContext.SetMapping<CmsTree>(
@@ -275,7 +275,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                 
                 catch (Exception ex) // TODO tk: 2022-05-18 handle exceptions
                 {
-                    _migrationProtocol.Append(HandbookReferences
+                    _protocol.Append(HandbookReferences
                         .ErrorCreatingTargetInstance<TreeNode>(ex)
                         .NeedsManualAction()
                         .WithIdentityPrint(treeNode)
@@ -337,7 +337,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
             catch (DbUpdateException dbUpdateException) when (dbUpdateException.InnerException is SqlException { Number: 2601 or 2627 } sqlException)
             {
                 _logger.LogEntitySetError(sqlException, true, pageUrlPath);
-                _migrationProtocol.Append(HandbookReferences.DbConstraintBroken(sqlException, pageUrlPath)
+                _protocol.Append(HandbookReferences.DbConstraintBroken(sqlException, pageUrlPath)
                     .WithData(new
                     {
                         pageUrlPath.PageUrlPathUrlPathHash,

@@ -33,7 +33,7 @@ public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
         ILogger<TreeNodeMapper> logger, 
         PrimaryKeyMappingContext pkContext, 
         CoupledDataService coupledDataService, 
-        IMigrationProtocol protocol, 
+        IProtocol protocol, 
         ClassService classService,
         AttachmentMigrator attachmentMigrator,
         CmsRelationshipService relationshipService

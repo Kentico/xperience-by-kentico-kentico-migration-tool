@@ -21,7 +21,7 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
     private readonly ClassService _classService;
 
     public CmsClassMapper(ILogger<CmsClassMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext, ClassService classService,
-        IMigrationProtocol protocol) : base(logger, primaryKeyMappingContext, protocol)
+        IProtocol protocol) : base(logger, primaryKeyMappingContext, protocol)
     {
         _logger = logger;
         _primaryKeyMappingContext = primaryKeyMappingContext;

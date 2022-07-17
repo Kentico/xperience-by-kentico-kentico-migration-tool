@@ -17,7 +17,7 @@ public class OmContactMapper : EntityMapperBase<KX13.Models.OmContact, OmContact
         ILogger<OmContactMapper> logger,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IEntityMapper<KX13.Models.OmContactStatus, OmContactStatus> contactStatusMapper,
-        IMigrationProtocol protocol
+        IProtocol protocol
     ): base(logger, primaryKeyMappingContext, protocol)
     {
         _logger = logger;

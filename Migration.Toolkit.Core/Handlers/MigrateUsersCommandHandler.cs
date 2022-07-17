@@ -21,7 +21,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
     private readonly IEntityMapper<KX13M.CmsRole, CmsRole> _roleMapper;
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
-    private readonly IMigrationProtocol _migrationProtocol;
+    private readonly IProtocol _protocol;
 
     private KxpContext _kxpContext;
 
@@ -33,7 +33,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
         IEntityMapper<KX13M.CmsRole, CmsRole> roleMapper,
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
-        IMigrationProtocol migrationProtocol
+        IProtocol protocol
     )
     {
         _logger = logger;
@@ -43,7 +43,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
         _roleMapper = roleMapper;
         _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
-        _migrationProtocol = migrationProtocol;
+        _protocol = protocol;
         _kxpContext = _kxpContextFactory.CreateDbContext();
     }
     
@@ -62,7 +62,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
 
         foreach (var kx13User in kx13CmsUsers)
         {
-            _migrationProtocol.FetchedSource(kx13User);
+            _protocol.FetchedSource(kx13User);
             _logger.LogTrace("Migrating user {UserName} with UserGuid {UserGuid}", kx13User.UserName, kx13User.UserGuid);
 
             var kxoUser = await _kxpContext.CmsUsers
@@ -71,11 +71,11 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
                     .FirstOrDefaultAsync(u => u.UserGuid == kx13User.UserGuid, cancellationToken)
                 ;
             
-            _migrationProtocol.FetchedTarget(kxoUser);
+            _protocol.FetchedTarget(kxoUser);
 
             if (kx13User.UserPrivilegeLevel == 3 && kxoUser != null)
             {
-                _migrationProtocol.Append(HandbookReferences.CmsUserAdminUserSkip.WithIdentityPrint(kxoUser));
+                _protocol.Append(HandbookReferences.CmsUserAdminUserSkip.WithIdentityPrint(kxoUser));
                 _logger.LogInformation("User with guid {UserGuid} is administrator, you need to update administrators manually => skipping", kx13User.UserGuid);
                 _primaryKeyMappingContext.SetMapping<KX13M.CmsUser>(r => r.UserId, kx13User.UserId, kxoUser.UserId);
                 continue;
@@ -83,7 +83,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
             
             if (kxoUser?.UserName == "public" || kx13User.UserName == "public")
             {
-                _migrationProtocol.Append(HandbookReferences.CmsUserPublicUserSkip.WithIdentityPrint(kxoUser));
+                _protocol.Append(HandbookReferences.CmsUserPublicUserSkip.WithIdentityPrint(kxoUser));
                 _logger.LogInformation("User with guid {UserGuid} is public user, special case that can't be migrated => skipping", kxoUser?.UserGuid ?? kx13User.UserGuid);
                 if (kxoUser != null)
                 {
@@ -93,7 +93,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
             }
             
             var mapped = _userMapper.Map(kx13User, kxoUser);
-            _migrationProtocol.MappedTarget(mapped);
+            _protocol.MappedTarget(mapped);
 
             if (mapped is { Success : true } result)
             {
@@ -113,14 +113,14 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
                 {
                     await _kxpContext.SaveChangesAsync(cancellationToken);
 
-                    _migrationProtocol.Success(kx13User, cmsUser, mapped);
+                    _protocol.Success(kx13User, cmsUser, mapped);
                     _logger.LogEntitySetAction(newInstance, cmsUser);
                 }
                 /*Violation in unique index or Violation in unique constraint */ 
                 catch (DbUpdateException dbUpdateException) when (dbUpdateException.InnerException is SqlException { Number: 2601 or 2627 } sqlException)
                 {
                     _logger.LogEntitySetError(sqlException, newInstance, cmsUser);
-                    _migrationProtocol.Append(HandbookReferences.DbConstraintBroken(sqlException, kx13User)
+                    _protocol.Append(HandbookReferences.DbConstraintBroken(sqlException, kx13User)
                         .WithData(new
                         {
                             kx13User.UserName,
@@ -148,15 +148,15 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
 
         foreach (var kx13CmsRole in kx13CmsRoles)
         {
-            _migrationProtocol.FetchedSource(kx13CmsRole);
+            _protocol.FetchedSource(kx13CmsRole);
 
             var kxoCmsRole = await _kxpContext.CmsRoles
                 .FirstOrDefaultAsync(x => x.RoleGuid == kx13CmsRole.RoleGuid, cancellationToken: cancellationToken);
 
-            _migrationProtocol.FetchedTarget(kxoCmsRole);
+            _protocol.FetchedTarget(kxoCmsRole);
 
             var mapped = _roleMapper.Map(kx13CmsRole, kxoCmsRole);
-            _migrationProtocol.MappedTarget(mapped);
+            _protocol.MappedTarget(mapped);
 
             if (mapped is { Success : true } result)
             {
@@ -174,7 +174,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
 
                 await _kxpContext.SaveChangesAsync(cancellationToken);
 
-                _migrationProtocol.Success(kx13CmsRole, cmsRole, mapped);
+                _protocol.Success(kx13CmsRole, cmsRole, mapped);
                 _logger.LogEntitySetAction(newInstance, cmsRole);
 
                 _primaryKeyMappingContext.SetMapping<KX13M.CmsRole>(

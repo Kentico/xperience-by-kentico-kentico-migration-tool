@@ -18,7 +18,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
     private readonly BulkDataCopyService _bulkDataCopyService;
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
-    private readonly IMigrationProtocol _migrationProtocol;
+    private readonly IProtocol _protocol;
     private readonly KxpContext _kxpContext;
 
     public MigrateContactManagementCommandHandler(
@@ -27,7 +27,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         BulkDataCopyService bulkDataCopyService,
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
-        IMigrationProtocol migrationProtocol
+        IProtocol protocol
     )
     {
         _logger = logger;
@@ -35,7 +35,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         _bulkDataCopyService = bulkDataCopyService;
         _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
-        _migrationProtocol = migrationProtocol;
+        _protocol = protocol;
     }
 
     public Task<CommandResult> Handle(MigrateContactManagementCommand request, CancellationToken cancellationToken)
@@ -87,14 +87,14 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
 
         // if (_bulkDataCopyService.CheckIfDataExistsInTargetTable("OM_Contact"))
         // {
-        //     _migrationProtocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable("OM_Contact"));
+        //     _protocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable("OM_Contact"));
         //     _logger.LogError("Data must not exist in target instance table, remove data before proceeding");
         //     return new CommandFailureResult();
         // }
 
         if (_bulkDataCopyService.CheckForTableColumnsDifferences("OM_Contact", requiredColumnsForContactMigration, out var differences))
         {
-            _migrationProtocol.Append(HandbookReferences
+            _protocol.Append(HandbookReferences
                 .BulkCopyColumnMismatch("OM_Contact")
                 .NeedsManualAction()
                 .WithData(differences)
@@ -134,7 +134,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
 
             if (value is string { Length: > 100 } s)
             {
-                _migrationProtocol.Append(HandbookReferences.ValueTruncationSkip("OM_Contact")
+                _protocol.Append(HandbookReferences.ValueTruncationSkip("OM_Contact")
                     .WithData(new { value, maxLength = 100, s.Length, columnName, contact = PrintHelper.PrintDictionary(currentRow) })
                 );
                 return ValueInterceptorResult.SkipRow;
@@ -149,7 +149,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
                     return ValueInterceptorResult.ReplaceValue(id);
                 case { Success: false }:
                 {
-                    _migrationProtocol.Append(HandbookReferences.MissingRequiredDependency<KXP.Models.CmsUser>(columnName, value)
+                    _protocol.Append(HandbookReferences.MissingRequiredDependency<KXP.Models.CmsUser>(columnName, value)
                         .WithData(currentRow));
                     return ValueInterceptorResult.SkipRow;
                 }
@@ -164,7 +164,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         //             return ValueInterceptorResult.ReplaceValue(id);
         //         case { Success: false }:
         //         {
-        //             _migrationProtocol.Append(HandbookReferences.MissingRequiredDependency<KXO.Models.CmsState>(columnName, value)
+        //             _protocol.Append(HandbookReferences.MissingRequiredDependency<KXO.Models.CmsState>(columnName, value)
         //                 .WithData(currentRow));
         //             return ValueInterceptorResult.SkipRow;
         //         }
@@ -179,7 +179,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         //             return ValueInterceptorResult.ReplaceValue(id);
         //         case { Success: false }:
         //         {
-        //             _migrationProtocol.Append(HandbookReferences.MissingRequiredDependency<KXO.Models.CmsCountry>(columnName, value)
+        //             _protocol.Append(HandbookReferences.MissingRequiredDependency<KXO.Models.CmsCountry>(columnName, value)
         //                 .WithData(currentRow));
         //             return ValueInterceptorResult.SkipRow;
         //         }
@@ -223,14 +223,14 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         // TODO tk: 2022-07-07 replace table data
         // if (_bulkDataCopyService.CheckIfDataExistsInTargetTable("OM_Activity"))
         // {
-        //     _migrationProtocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable("OM_Activity"));
+        //     _protocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable("OM_Activity"));
         //     _logger.LogError("Data must not exist in target instance table, remove data before proceeding");
         //     return new CommandFailureResult();
         // }
 
         if (_bulkDataCopyService.CheckForTableColumnsDifferences("OM_Activity", requiredColumnsForContactMigration, out var differences))
         {
-            _migrationProtocol.Append(HandbookReferences
+            _protocol.Append(HandbookReferences
                 .BulkCopyColumnMismatch("OM_Activity")
                 .NeedsManualAction()
                 .WithData(differences)
@@ -269,7 +269,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
                     return ValueInterceptorResult.ReplaceValue(id);
                 case { Success: false }:
                 {
-                    _migrationProtocol.Append(HandbookReferences
+                    _protocol.Append(HandbookReferences
                         .MissingRequiredDependency<KXP.Models.OmContact>(columnName, value)
                         .WithData(currentRow)
                     );
@@ -296,7 +296,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
                             _logger.LogTrace("Autofix (ActivitySiteId={ActivitySiteId} not exists) => ActivityNodeId=0", sourceActivitySiteId);
                             return ValueInterceptorResult.ReplaceValue(0);
                         default: //error
-                            _migrationProtocol.Append(HandbookReferences
+                            _protocol.Append(HandbookReferences
                                 .MissingRequiredDependency<KXP.Models.CmsSite>(columnName, value)
                                 .WithData(currentRow)
                             );
@@ -323,7 +323,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
                             _logger.LogTrace("Autofix (ActivityNodeId={NodeId} not exists) => ActivityNodeId=0", activityNodeId);
                             return ValueInterceptorResult.ReplaceValue(0);
                         default: //error
-                            _migrationProtocol.Append(HandbookReferences
+                            _protocol.Append(HandbookReferences
                                 .MissingRequiredDependency<KXP.Models.CmsTree>(columnName, value)
                                 .WithData(currentRow)
                             );

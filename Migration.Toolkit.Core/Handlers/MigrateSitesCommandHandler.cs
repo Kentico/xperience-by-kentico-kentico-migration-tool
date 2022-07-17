@@ -18,7 +18,7 @@ public class MigrateSitesCommandHandler: IRequestHandler<MigrateSitesCommand, Co
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
     private readonly IEntityMapper<CmsSite, KXP.Models.CmsSite> _cmsSiteMapper;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
-    private readonly IMigrationProtocol _migrationProtocol;
+    private readonly IProtocol _protocol;
 
     private KxpContext _kxpContext;
 
@@ -28,7 +28,7 @@ public class MigrateSitesCommandHandler: IRequestHandler<MigrateSitesCommand, Co
         IDbContextFactory<KX13Context> kx13ContextFactory,
         IEntityMapper<CmsSite, KXP.Models.CmsSite> cmsSiteMapper,
         PrimaryKeyMappingContext primaryKeyMappingContext,
-        IMigrationProtocol migrationProtocol
+        IProtocol protocol
     )
     {
         _logger = logger;
@@ -36,7 +36,7 @@ public class MigrateSitesCommandHandler: IRequestHandler<MigrateSitesCommand, Co
         _kx13ContextFactory = kx13ContextFactory;
         _cmsSiteMapper = cmsSiteMapper;
         _primaryKeyMappingContext = primaryKeyMappingContext;
-        _migrationProtocol = migrationProtocol;
+        _protocol = protocol;
         _kxpContext = _kxpContextFactory.CreateDbContext();
     }
     
@@ -46,7 +46,7 @@ public class MigrateSitesCommandHandler: IRequestHandler<MigrateSitesCommand, Co
 
         foreach (var kx13CmsSite in kx13Context.CmsSites)
         {
-            _migrationProtocol.FetchedSource(kx13CmsSite);
+            _protocol.FetchedSource(kx13CmsSite);
             _logger.LogTrace("Migrating site {SiteName} with UserGuid {SiteGuid}", kx13CmsSite.SiteName, kx13CmsSite.SiteGuid);
 
             var targetSiteId = _primaryKeyMappingContext.MapFromSourceOrNull<CmsSite>(s => s.SiteId, kx13CmsSite.SiteId);
@@ -58,10 +58,10 @@ public class MigrateSitesCommandHandler: IRequestHandler<MigrateSitesCommand, Co
             }
             
             var kxoCmsSite = await _kxpContext.CmsSites.FirstOrDefaultAsync(u => u.SiteId == targetSiteId, cancellationToken);
-            _migrationProtocol.FetchedTarget(kxoCmsSite);
+            _protocol.FetchedTarget(kxoCmsSite);
 
             var mapped = _cmsSiteMapper.Map(kx13CmsSite, kxoCmsSite);
-            _migrationProtocol.MappedTarget(mapped);
+            _protocol.MappedTarget(mapped);
 
             if (mapped is { Success : true } result)
             {
@@ -79,7 +79,7 @@ public class MigrateSitesCommandHandler: IRequestHandler<MigrateSitesCommand, Co
 
                 await _kxpContext.SaveChangesAsync(cancellationToken);
 
-                _migrationProtocol.Success(kx13CmsSite, cmsSite, mapped);
+                _protocol.Success(kx13CmsSite, cmsSite, mapped);
                 _logger.LogEntitySetAction(newInstance, cmsSite);
                     
                 _primaryKeyMappingContext.SetMapping<CmsSite>(r => r.SiteId, kx13CmsSite.SiteId, cmsSite.SiteId);

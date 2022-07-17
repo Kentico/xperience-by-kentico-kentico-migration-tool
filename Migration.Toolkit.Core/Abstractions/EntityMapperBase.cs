@@ -10,9 +10,9 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
 {
     private readonly ILogger _logger;
     private readonly PrimaryKeyMappingContext _pkContext;
-    protected readonly IMigrationProtocol Protocol;
+    protected readonly IProtocol Protocol;
     
-    protected EntityMapperBase(ILogger logger, PrimaryKeyMappingContext pkContext, IMigrationProtocol protocol)
+    protected EntityMapperBase(ILogger logger, PrimaryKeyMappingContext pkContext, IProtocol protocol)
     {
         _logger = logger;
         _pkContext = pkContext;

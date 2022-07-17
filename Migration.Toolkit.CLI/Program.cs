@@ -179,7 +179,7 @@ void PrintCommandDescriptions()
     WriteCommandDesc($"starts migration of {Green(MigratePageTypesCommand.MonikerFriendly)}", $"migrate --{MigratePageTypesCommand.Moniker}");
     WriteCommandDesc($"starts migration of {Green(MigratePagesCommand.MonikerFriendly)}", $"migrate --{MigratePagesCommand.Moniker}");
     WriteCommandDesc($"starts migration of {Green(MigrateSettingKeysCommand.MonikerFriendly)}", $"migrate --{MigrateSettingKeysCommand.Moniker}");
-    WriteCommandDesc($"starts migration of {Green(MigrateContactGroupsCommand.MonikerFriendly)}", $"migrate --{MigrateContactGroupsCommand.Moniker}");
+    // WriteCommandDesc($"starts migration of {Green(MigrateContactGroupsCommand.MonikerFriendly)}", $"migrate --{MigrateContactGroupsCommand.Moniker}");
     WriteCommandDesc($"starts migration of {Green(MigrateContactManagementCommand.MonikerFriendly)}", $"migrate --{MigrateContactManagementCommand.Moniker}");
     WriteCommandDesc($"starts migration of {Green(MigrateDataProtectionCommand.MonikerFriendly)}", $"migrate --{MigrateDataProtectionCommand.Moniker}");
     WriteCommandDesc($"starts migration of {Green(MigrateFormsCommand.MonikerFriendly)}", $"migrate --{MigrateFormsCommand.Moniker}");
@@ -248,11 +248,11 @@ while (argsQ.TryDequeue(out var arg))
         break;
     }
 
-    if (arg == $"--{MigrateContactGroupsCommand.Moniker}")
-    {
-        commands.Add(new MigrateContactGroupsCommand());
-        continue;
-    }
+    // if (arg == $"--{MigrateContactGroupsCommand.Moniker}")
+    // {
+    //     commands.Add(new MigrateContactGroupsCommand());
+    //     continue;
+    // }
 
     if (arg == $"--{MigrateContactManagementCommand.Moniker}")
     {

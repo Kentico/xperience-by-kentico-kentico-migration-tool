@@ -28,7 +28,7 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
     private readonly BulkDataCopyService _bulkDataCopyService;
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
-    private readonly IMigrationProtocol _migrationProtocol;
+    private readonly IProtocol _protocol;
 
     private KxpContext _kxpContext;
 
@@ -42,7 +42,7 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
         BulkDataCopyService bulkDataCopyService,
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
-        IMigrationProtocol migrationProtocol
+        IProtocol protocol
     )
     {
         _logger = logger;
@@ -54,7 +54,7 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
         _bulkDataCopyService = bulkDataCopyService;
         _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
-        _migrationProtocol = migrationProtocol;
+        _protocol = protocol;
         _kxpContext = kxpContextFactory.CreateDbContext();
     }
 
@@ -72,7 +72,7 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
 
         foreach (var kx13Class in cmsClassForms)
         {
-            _migrationProtocol.FetchedSource(kx13Class);
+            _protocol.FetchedSource(kx13Class);
 
             // checking of kx13Class.ClassConnectionString is not necessary
 
@@ -83,7 +83,7 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
             }
 
             var kxoDataClass = _kxpClassFacade.GetClass(kx13Class.ClassGuid);
-            _migrationProtocol.FetchedTarget(kxoDataClass);
+            _protocol.FetchedTarget(kxoDataClass);
 
             var classSuccessFullySaved = MapAndSaveUsingKxoApi(kx13Class, kxoDataClass);
             if (!classSuccessFullySaved)
@@ -93,14 +93,14 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
             
             foreach (var kx13CmsForm in kx13Class.CmsForms)
             {
-                _migrationProtocol.FetchedSource(kx13CmsForm);
+                _protocol.FetchedSource(kx13CmsForm);
                 
                 var kxoCmsForm = _kxpContext.CmsForms.FirstOrDefault(f => f.FormGuid == kx13CmsForm.FormGuid);
                 
-                _migrationProtocol.FetchedTarget(kxoCmsForm);
+                _protocol.FetchedTarget(kxoCmsForm);
 
                 var mapped = _cmsFormMapper.Map(kx13CmsForm, kxoCmsForm);
-                _migrationProtocol.MappedTarget(mapped);
+                _protocol.MappedTarget(mapped);
 
                 if (mapped is { Success : true } result)
                 {
@@ -132,7 +132,7 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
                         await _kxpContext.DisposeAsync(); // reset context errors
                         _kxpContext = await _kxpContextFactory.CreateDbContextAsync(cancellationToken);
 
-                        _migrationProtocol.Append(HandbookReferences
+                        _protocol.Append(HandbookReferences
                             .ErrorCreatingTargetInstance<KXP.Models.CmsForm>(ex)
                             .NeedsManualAction()
                             .WithIdentityPrint(cmsForm)
@@ -164,7 +164,7 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
                 if (_bulkDataCopyService.CheckIfDataExistsInTargetTable(kx13Class.ClassTableName))
                 {
                     _logger.LogWarning("Data exists in target coupled data table '{TableName}' - cannot migrate, skipping form data migration", r.ClassTableName);
-                    _migrationProtocol.Append(HandbookReferences
+                    _protocol.Append(HandbookReferences
                         .DataMustNotExistInTargetInstanceTable(kx13Class.ClassTableName)
                     );
                     continue;
@@ -186,7 +186,7 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
     private bool MapAndSaveUsingKxoApi(CmsClass kx13Class, DataClassInfo kxoDataClass)
     {
         var mapped = _dataClassMapper.Map(kx13Class, kxoDataClass);
-        _migrationProtocol.MappedTarget(mapped);
+        _protocol.MappedTarget(mapped);
 
         if (mapped is { Success : true } result)
         {
@@ -197,7 +197,7 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
             {
                 _kxpClassFacade.SetClass(dataClassInfo);
 
-                _migrationProtocol.Success(kx13Class, dataClassInfo, mapped);
+                _protocol.Success(kx13Class, dataClassInfo, mapped);
                 _logger.LogEntitySetAction(newInstance, dataClassInfo);
 
                 _primaryKeyMappingContext.SetMapping<CmsClass>(
@@ -210,7 +210,7 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
             }
             catch (Exception ex)
             {
-                _migrationProtocol.Append(HandbookReferences
+                _protocol.Append(HandbookReferences
                     .ErrorCreatingTargetInstance<DataClassInfo>(ex)
                     .NeedsManualAction()
                     .WithIdentityPrint(dataClassInfo)

@@ -12,7 +12,7 @@
 //     public CmsMediaLibraryMapper(
 //         ILogger<CmsMediaLibraryMapper> logger,
 //         PrimaryKeyMappingContext primaryKeyMappingContext,
-//         IMigrationProtocol protocol
+//         IProtocol protocol
 //     ) : base(logger, primaryKeyMappingContext, protocol)
 //     {
 //     }

@@ -11,7 +11,7 @@ public class CmsResourceMapper : EntityMapperBase<Migration.Toolkit.KX13.Models.
 {
     private readonly ILogger<CmsResourceMapper> _logger;
 
-    public CmsResourceMapper(ILogger<CmsResourceMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext, IMigrationProtocol protocol) :
+    public CmsResourceMapper(ILogger<CmsResourceMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext, IProtocol protocol) :
         base(logger, primaryKeyMappingContext, protocol)
     {
         _logger = logger;

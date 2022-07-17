@@ -9,7 +9,7 @@ using Migration.Toolkit.KXP.Models;
 
 public class CmsConsentMapper : EntityMapperBase<KX13.Models.CmsConsent, CmsConsent>
 {
-    public CmsConsentMapper(ILogger<CmsConsentMapper> logger, PrimaryKeyMappingContext pkContext, IMigrationProtocol protocol): base(logger, pkContext, protocol)
+    public CmsConsentMapper(ILogger<CmsConsentMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol): base(logger, pkContext, protocol)
     {
     }
 

@@ -27,7 +27,7 @@ public class AttachmentMigrator
     private readonly KxpMediaFileFacade _mediaFileFacade;
     private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
     private readonly IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo> _attachmentMapper;
-    private readonly IMigrationProtocol _migrationProtocol;
+    private readonly IProtocol _protocol;
 
     public AttachmentMigrator(
         ILogger<AttachmentMigrator> logger,
@@ -37,7 +37,7 @@ public class AttachmentMigrator
         KxpMediaFileFacade mediaFileFacade,
         IDbContextFactory<KxpContext> kxpContextFactory,
         IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo> attachmentMapper,
-        IMigrationProtocol migrationProtocol
+        IProtocol protocol
     )
     {
         _logger = logger;
@@ -47,7 +47,7 @@ public class AttachmentMigrator
         _mediaFileFacade = mediaFileFacade;
         _kxpContextFactory = kxpContextFactory;
         _attachmentMapper = attachmentMapper;
-        _migrationProtocol = migrationProtocol;
+        _protocol = protocol;
     }
 
     public record MigrateAttachmentResult(bool Success, bool CanContinue, MediaFileInfo? MediaFileInfo = null, MediaLibraryInfo? MediaLibraryInfo = null);
@@ -69,7 +69,7 @@ public class AttachmentMigrator
         if (attachment == null)
         {
             _logger.LogWarning("Attachment '{AttachmentGuid}' not found! => skipping", kx13CmsAttachmentGuid);
-            _migrationProtocol.Append(HandbookReferences.TemporaryAttachmentMigrationIsNotSupported.WithData(new
+            _protocol.Append(HandbookReferences.TemporaryAttachmentMigrationIsNotSupported.WithData(new
             {
                 AttachmentGuid = kx13CmsAttachmentGuid,
             }));
@@ -86,18 +86,18 @@ public class AttachmentMigrator
         var libraryNameMask = _toolkitConfiguration.TargetAttachmentMediaLibraryName;
         if (string.IsNullOrWhiteSpace(libraryNameMask))
         {
-            _migrationProtocol.Append(HandbookReferences
+            _protocol.Append(HandbookReferences
                 .MissingConfiguration<MigrateAttachmentsCommand>(nameof(_toolkitConfiguration.TargetAttachmentMediaLibraryName))
             );
             return new MigrateAttachmentResult(false, false);
         }
         
-        _migrationProtocol.FetchedSource(kx13CmsAttachment);
+        _protocol.FetchedSource(kx13CmsAttachment);
 
         if (kx13CmsAttachment.AttachmentFormGuid != null)
         {
             _logger.LogWarning("Attachment '{AttachmentGuid}' is temporary => skipping", kx13CmsAttachment.AttachmentGuid);
-            _migrationProtocol.Append(HandbookReferences.TemporaryAttachmentMigrationIsNotSupported.WithData(new
+            _protocol.Append(HandbookReferences.TemporaryAttachmentMigrationIsNotSupported.WithData(new
             {
                 kx13CmsAttachment.AttachmentId,
                 kx13CmsAttachment.AttachmentGuid,
@@ -130,7 +130,7 @@ public class AttachmentMigrator
         var uploadedFile = CreateUploadFileFromAttachment(kx13CmsAttachment);
         if (uploadedFile == null)
         {
-            _migrationProtocol.Append(HandbookReferences
+            _protocol.Append(HandbookReferences
                 .FailedToCreateTargetInstance<MediaFileInfo>()
                 .WithIdentityPrint(kx13CmsAttachment)
                 .WithMessage("Failed to create dummy upload file containing data")
@@ -140,7 +140,7 @@ public class AttachmentMigrator
 
         var mediaFile = _mediaFileFacade.GetMediaFile(kx13CmsAttachment.AttachmentGuid);
 
-        _migrationProtocol.FetchedTarget(mediaFile);
+        _protocol.FetchedTarget(mediaFile);
 
         var librarySubFolder = "";
         if (kx13AttachmentDocument != null)
@@ -154,7 +154,7 @@ public class AttachmentMigrator
         }
 
         var mapped = _attachmentMapper.Map(new CmsAttachmentMapperSource(kx13CmsAttachment, targetMediaLibraryId, uploadedFile, librarySubFolder), mediaFile);
-        _migrationProtocol.MappedTarget(mapped);
+        _protocol.MappedTarget(mapped);
 
         if (mapped is (var mediaFileInfo, var newInstance) { Success: true })
         {
@@ -169,7 +169,7 @@ public class AttachmentMigrator
 
                 _mediaFileFacade.SetMediaFile(mediaFileInfo, newInstance);
 
-                _migrationProtocol.Success(kx13AttachmentDocument, mediaFileInfo, mapped);
+                _protocol.Success(kx13AttachmentDocument, mediaFileInfo, mapped);
                 _logger.LogEntitySetAction(newInstance, mediaFileInfo);
 
                 return new(true, true, mediaFileInfo, MediaLibraryInfoProvider.ProviderObject.Get(targetMediaLibraryId));
@@ -177,7 +177,7 @@ public class AttachmentMigrator
             catch (Exception exception)
             {
                 _logger.LogEntitySetError(exception, newInstance, mediaFileInfo);
-                _migrationProtocol.Append(HandbookReferences.ErrorCreatingTargetInstance<MediaFileInfo>(exception)
+                _protocol.Append(HandbookReferences.ErrorCreatingTargetInstance<MediaFileInfo>(exception)
                     .NeedsManualAction()
                     .WithIdentityPrint(mediaFileInfo)
                     .WithData(new
@@ -237,7 +237,7 @@ public class AttachmentMigrator
         catch (Exception exception)
         {
             _logger.LogError(exception, "creating target media library failed");
-            _migrationProtocol.Append(HandbookReferences.ErrorCreatingTargetInstance<MediaLibraryInfo>(exception)
+            _protocol.Append(HandbookReferences.ErrorCreatingTargetInstance<MediaLibraryInfo>(exception)
                 .NeedsManualAction()
                 .WithData(new
                 {

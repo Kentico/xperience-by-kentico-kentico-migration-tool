@@ -12,7 +12,7 @@ public class OmContactGroupMapper : EntityMapperBase<KX13.Models.OmContactGroup,
     public OmContactGroupMapper(
         ILogger<OmContactGroupMapper> logger,
         PrimaryKeyMappingContext primaryKeyMappingContext,
-        IMigrationProtocol protocol
+        IProtocol protocol
     ) : base(logger, primaryKeyMappingContext, protocol)
     {
     }
