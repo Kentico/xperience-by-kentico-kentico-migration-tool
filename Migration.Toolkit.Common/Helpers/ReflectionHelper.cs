@@ -3,14 +3,12 @@ using System.Reflection;
 
 namespace Migration.Toolkit.Common.Helpers;
 
-public class ReflectionHelper<T>
+public static class ReflectionHelper<T>
 {
-    public static Type CurrentType { get; set; }
-    
+    public static Type CurrentType { get; } = typeof(T);
+
     static ReflectionHelper()
     {
-        CurrentType = typeof(T);
-        
         var i = 0;
         PropertyGetterMaps = new Dictionary<string, ObjectPropertyGetterMap>();
         foreach (var propertyInfo in CurrentType.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly))
@@ -91,7 +89,7 @@ public class ReflectionHelper<T>
 
 public class ObjectPropertyGetterMap
 {
-    public string PropertyName { get; set; }
+    public string? PropertyName { get; set; }
     public MethodInfo? PropertyGetMethod { get; set; }
     public int PropertyIndex { get; set; }
 }

@@ -5,12 +5,9 @@ using CMS.OnlineForms;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Common;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Behaviors;
-using Migration.Toolkit.Core.CmsSettingsKey;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.Convertors;
 using Migration.Toolkit.Core.Handlers;
 using Migration.Toolkit.Core.Mappers;
 using Migration.Toolkit.Core.MigrationProtocol;
@@ -21,100 +18,64 @@ using Migration.Toolkit.Core.Services.CmsRelationship;
 
 namespace Migration.Toolkit.Core;
 
+using Migration.Toolkit.KXP.Models;
+
 public static class DependencyInjectionExtensions
 {
     public static IServiceCollection UseToolkitCore(this IServiceCollection services)
     {
+        services.AddSingleton<IProtocol, Protocol>();
         services.AddSingleton<IMigrationProtocol, TextMigrationProtocol>();
-        // services.AddSingleton<IMigrationProtocol, NullMigrationProtocol>();
-        services.AddScoped<IPrimaryKeyLocatorService, PrimaryKeyLocatorService>();
-        services.AddScoped<AttachmentMigrator>();
+        services.AddSingleton<IMigrationProtocol, DebugMigrationProtocol>();
+        
         services.AddTransient<BulkDataCopyService>();
-        services.AddTransient<CoupledDataService>();
-        services.AddTransient<FormInfoDefinitionConvertor>();
         services.AddTransient<CmsRelationshipService>();
+        services.AddTransient<CoupledDataService>();
+        services.AddScoped<AttachmentMigrator>();
         services.AddScoped<ClassService>();
+        
+        services.AddMediatR(typeof(DependencyInjectionExtensions));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestHandlingBehavior<,>));
 
         services.AddSingleton(s => new TableReflectionService(s.GetRequiredService<ILogger<TableReflectionService>>()));
 
         services.AddScoped<PrimaryKeyMappingContext>();
-        services.AddSingleton<PageMigrationContext>();
+        services.AddScoped<IPrimaryKeyLocatorService, PrimaryKeyLocatorService>();
 
-        services.AddTransient<IDataEqualityComparer<Migration.Toolkit.KX13.Models.CmsSettingsKey, Migration.Toolkit.KXO.Models.CmsSettingsKey>, CmsSettingsKeyComparer>();
-        services.AddTransient<IEntityMapper<Migration.Toolkit.KX13.Models.CmsSettingsKey, Migration.Toolkit.KXO.Models.CmsSettingsKey>, CmsSettingsKeyMapper>();
-
-        // forms
-        services.AddTransient<IRequestHandler<MigrateFormsCommand, GenericCommandResult>, MigrateFormsCommandHandler>();
-        services.AddTransient<IEntityMapper<KX13.Models.CmsForm, KXO.Models.CmsForm>, CmsFormMapperEf>();
-        services.AddTransient<IEntityMapper<KX13.Models.CmsForm, BizFormInfo>, CmsFormMapper>();
-
-        // page type synchronizer
-        services.AddTransient<MigratePageTypesCommandHandler>();
-        // services.AddTransient<IEntityMapper<KX13.Models.CmsClass, KXO.Models.CmsClass>, CmsClassMapper>();
-        services.AddTransient<IEntityMapper<KX13.Models.CmsClass, DataClassInfo>, CmsClassMapper>();
-
-        // setting keys migrate command
-        services.AddTransient<MigrateSettingKeysCommandHandler>();
-        services.AddTransient<IEntityMapper<KX13.Models.CmsSettingsCategory, KXO.Models.CmsSettingsCategory>, CmsSettingsCategoryMapper>();
-
-        // cms resource
-        services
-            .AddTransient<IEntityMapper<Migration.Toolkit.KX13.Models.CmsResource, Migration.Toolkit.KXO.Models.CmsResource>, CmsResourceMapper>();
-
-        // cms user
-        services.AddTransient<IEntityMapper<KX13.Models.CmsUser, KXO.Models.CmsUser>, CmsUserMapper>();
-        services.AddTransient<IEntityMapper<KX13.Models.CmsRole, KXO.Models.CmsRole>, CmsRoleMapper>();
-        services.AddTransient<MigrateUsersCommandHandler>();
-
-        // cms web farm
-        // services.AddTransient<IEntityMapper<KX13.Models.CmsWebFarmServer, KXO.Models.CmsWebFarmServer>, CmsWebFarmMapper>();
-        // services.AddTransient<MigrateWebFarmsCommandHandler>();
-
-        // pages
-        services.AddTransient<MigratePagesCommand>();
-        services.AddTransient<IEntityMapper<CmsTreeMapperSource, TreeNode>, TreeNodeMapper>();
-        // services.AddTransient<IEntityMapper<KX13.Models.CmsTree, KXO.Models.CmsTree>, CmsTreeMapper>();
-        // services.AddTransient<IEntityMapper<KX13.Models.CmsDocument, KXO.Models.CmsDocument>, CmsDocumentMapper>();
-        // services.AddTransient<IEntityMapper<KX13.Models.CmsAcl, KXO.Models.CmsAcl>, CmsAclMapper>();
-        services.AddTransient<IEntityMapper<KX13.Models.CmsPageUrlPath, KXO.Models.CmsPageUrlPath>, CmsPageUrlPathMapper>();
-
-        // media libraries
-        // services.AddTransient<IEntityMapper<KX13.Models.MediaFile, KXO.Models.MediaFile>, CmsMediaFileMapper>();
-        services.AddTransient<IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo>, MediaFileInfoMapper>();
-        
-        services.AddTransient<IEntityMapper<KX13.Models.MediaLibrary, KXO.Models.MediaLibrary>, CmsMediaLibraryMapper>();
-        services.AddTransient<IEntityMapper<KX13.Models.MediaLibrary, MediaLibraryInfo>, MediaLibraryInfoMapper>();
-
-        // sites
-        services.AddTransient<IEntityMapper<KX13.Models.CmsSite, KXO.Models.CmsSite>, CmsSiteMapper>();
-        services.AddTransient<IRequestHandler<MigrateSitesCommand, GenericCommandResult>, MigrateSitesCommandHandler>();
-
-        // cms forms
-        // services.AddTransient<IEntityMapper<KX13.Models.CmsForm, KXO.Models.CmsForm>, CmsFormMapper>();
-        services.AddTransient<MigrateFormsCommandHandler>();
-
-        services.AddMediatR(typeof(DependencyInjectionExtensions));
-        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestHandlingBehavior<,>));
-        // cms data protection
-        services.AddTransient<IEntityMapper<KX13.Models.CmsConsent, KXO.Models.CmsConsent>, CmsConsentMapper>();
-        services.AddTransient<IEntityMapper<KX13.Models.CmsConsentArchive, KXO.Models.CmsConsentArchive>, CmsConsentArchiveMapper>();
-        services.AddTransient<IEntityMapper<KX13.Models.CmsConsentAgreement, KXO.Models.CmsConsentAgreement>, CmsConsentAgreementMapper>();
-        services.AddTransient<MigrateDataProtectionCommandHandler>();
-
-        // contact groups
-        services.AddTransient<IEntityMapper<KX13.Models.OmContactGroup, KXO.Models.OmContactGroup>, OmContactGroupMapper>();
-        services.AddTransient<MigrateContactGroupsCommand>();
-
-        // contacts
-        services.AddTransient<IEntityMapper<KX13.Models.OmContact, KXO.Models.OmContact>, OmContactMapper>();
-        services.AddTransient<IEntityMapper<KX13.Models.OmContactStatus, KXO.Models.OmContactStatus>, OmContactStatusMapper>();
-        services.AddTransient<MigrateContactManagementCommandHandler>();
-
-        // attachments
+        // commands
         services.AddTransient<MigrateAttachmentsCommandHandler>();
+        // services.AddTransient<MigrateContactGroupsCommand>();
+        services.AddTransient<MigrateContactManagementCommandHandler>();
+        services.AddTransient<MigrateDataProtectionCommandHandler>();
+        services.AddTransient<MigrateFormsCommandHandler>();
+        services.AddTransient<MigratePageTypesCommandHandler>();
+        services.AddTransient<MigratePagesCommand>();
+        services.AddTransient<MigrateSettingKeysCommandHandler>();
+        services.AddTransient<MigrateSitesCommandHandler>();
+        services.AddTransient<MigrateUsersCommandHandler>();
+        
+        // mappers
         services.AddTransient<IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo>, CmsAttachmentMapper>();
+        services.AddTransient<IEntityMapper<CmsTreeMapperSource, TreeNode>, TreeNodeMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsClass, DataClassInfo>, CmsClassMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsConsent, CmsConsent>, CmsConsentMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsConsentAgreement, CmsConsentAgreement>, CmsConsentAgreementMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsConsentArchive, CmsConsentArchive>, CmsConsentArchiveMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsForm, BizFormInfo>, CmsFormMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsForm, CmsForm>, CmsFormMapperEf>();
+        services.AddTransient<IEntityMapper<KX13M.CmsPageUrlPath, CmsPageUrlPath>, CmsPageUrlPathMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsResource, CmsResource>, CmsResourceMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsRole, CmsRole>, CmsRoleMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsSettingsCategory, CmsSettingsCategory>, CmsSettingsCategoryMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsSettingsKey, CmsSettingsKey>, CmsSettingsKeyMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsSite, CmsSite>, CmsSiteMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsUser, CmsUser>, CmsUserMapper>();
+        services.AddTransient<IEntityMapper<KX13M.MediaLibrary, MediaLibraryInfo>, MediaLibraryInfoMapper>();
+        services.AddTransient<IEntityMapper<KX13M.OmContact, OmContact>, OmContactMapper>();
+        services.AddTransient<IEntityMapper<KX13M.OmContactGroup, OmContactGroup>, OmContactGroupMapper>();
+        services.AddTransient<IEntityMapper<KX13M.OmContactStatus, OmContactStatus>, OmContactStatusMapper>();
+        services.AddTransient<IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo>, MediaFileInfoMapper>();
 
-        // IPipelineBehavior 
         return services;
     }
 }

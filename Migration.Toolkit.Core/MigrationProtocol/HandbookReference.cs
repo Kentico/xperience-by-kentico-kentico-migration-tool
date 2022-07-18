@@ -4,7 +4,6 @@ using Migration.Toolkit.Core.Helpers;
 
 namespace Migration.Toolkit.Core.MigrationProtocol;
 
-// TODO tk: 2022-05-18 ref uri to wiki 
 public class HandbookReference
 {
     public override string ToString()
@@ -99,6 +98,13 @@ public class HandbookReference
     {
         this.Data ??= new();
         this.Data.Add("Entity", Printer.GetEntityIdentityPrint(model));
+        return this;
+    }
+    
+    public HandbookReference WithIdentityPrints<T>(IEnumerable<T> models)
+    {
+        this.Data ??= new();
+        this.Data.Add("Entity", Printer.GetEntityIdentityPrint(models));
         return this;
     }
 

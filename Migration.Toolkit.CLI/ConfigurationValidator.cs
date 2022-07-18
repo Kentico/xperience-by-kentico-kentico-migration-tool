@@ -19,75 +19,66 @@ public static class ConfigurationValidator
     [Pure]
     public static IEnumerable<ValidationMessage> GetValidationErrors(IConfigurationRoot root)
     {
-        var settings = root.GetSection("Settings");
+        var settings = root.GetSection(ConfigurationNames.Settings);
 
         if (settings is null)
         {
-            yield return new ValidationMessage(ValidationMessageType.Error, "Section 'Settings' is required");
+            yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_Settings_IsRequired);
         }
         
-        if (CheckCfgValue(settings?.GetValue<string>("SourceConnectionString")))
+        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.SourceConnectionString)))
         {
-            yield return new ValidationMessage(ValidationMessageType.Error,
-                "Configuration value in path 'Settings.SourceConnectionString' is required");
+            yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_SourceConnectionString_IsRequired);
         }
 
-        if (CheckCfgValue(settings?.GetValue<string>("SourceCmsDirPath")))
+        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.SourceCmsDirPath)))
         {
-            yield return new ValidationMessage(ValidationMessageType.Warning,
-                "Configuration value in path 'Settings.SourceCmsDirPath' is empty, it is recommended to set source instance filesystem path");
+            yield return new ValidationMessage(ValidationMessageType.Warning, Resources.ConfigurationValidator_GetValidationErrors_SourceCmsDirPath_IsRecommended);
         }
 
-        if (CheckCfgValue(settings?.GetValue<string>("TargetConnectionString")))
+        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.TargetConnectionString)))
         {
-            yield return new ValidationMessage(ValidationMessageType.Error,
-                "Configuration value in path 'Settings.TargetConnectionString' is required");
+            yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_TargetConnectionString_IsRequired);
         }
 
-        if (CheckCfgValue(settings?.GetValue<string>("TargetCmsDirPath")))
+        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.TargetCmsDirPath)))
         {
-            yield return new ValidationMessage(ValidationMessageType.Error,
-                "Configuration value in path 'Settings.TargetCmsDirPath' is required");
+            yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_TargetCmsDirPath_IsRequired);
         }
 
-        var targetKxoApiSettings = settings?.GetSection("TargetKxoApiSettings");
-        if (targetKxoApiSettings is null)
+        var targetKxpApiSettings = settings?.GetSection(ConfigurationNames.TargetKxpApiSettings);
+        if (targetKxpApiSettings is null)
         {
-            yield return new ValidationMessage(ValidationMessageType.Error, "Section 'Settings.TargetKxoApiSettings' is required");
+            yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_TargetKxpApiSettings_IsRequired);
         }
 
-        var connectionStrings = targetKxoApiSettings?.GetSection("ConnectionStrings");
+        var connectionStrings = targetKxpApiSettings?.GetSection(ConfigurationNames.ConnectionStrings);
         if (connectionStrings is null)
         {
-            yield return new ValidationMessage(ValidationMessageType.Error,
-                "Section 'Settings.TargetKxoApiSettings.ConnectionStrings' is required");
+            yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_ConnectionStrings_IsRequired);
         }
 
-        if (CheckCfgValue(connectionStrings?.GetValue<string>("CMSConnectionString")))
+        if (CheckCfgValue(connectionStrings?.GetValue<string>(ConfigurationNames.CmsConnectionString)))
         {
-            yield return new ValidationMessage(ValidationMessageType.Error,
-                "Configuration value in path  'Settings.TargetKxoApiSettings.ConnectionStrings.CMSConnectionString' is required");
+            yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_CmsConnectionString_IsRequired);
         }
 
-        if (!StringIsNullOrFitsOneOf<AutofixEnum>(connectionStrings?.GetValue<string>("UseOmActivityNodeRelationAutofix")))
+        if (!StringIsNullOrFitsOneOf<AutofixEnum>(connectionStrings?.GetValue<string>(ConfigurationNames.UseOmActivityNodeRelationAutofix)))
         {
-            yield return new ValidationMessage(ValidationMessageType.Error,
-                $"Configuration value in path 'Settings.UseOmActivityNodeRelationAutofix' must fit one of: {Printer.PrintEnumValues<AutofixEnum>(", ")}"
+            yield return new ValidationMessage(ValidationMessageType.Error, string.Format(Resources.ConfigurationValidator_GetValidationErrors_UseOmActivityNodeRelationAutofix_MustFit, Printer.PrintEnumValues<AutofixEnum>(", ")));
+        }
+
+        if (!StringIsNullOrFitsOneOf<AutofixEnum>(connectionStrings?.GetValue<string>(ConfigurationNames.UseOmActivitySiteRelationAutofix)))
+        {
+            yield return new ValidationMessage(ValidationMessageType.Error, string.Format(Resources.ConfigurationValidator_GetValidationErrors_UseOmActivitySiteRelationAutofix_MustFit, Printer.PrintEnumValues<AutofixEnum>(", "))
             );
         }
 
-        if (!StringIsNullOrFitsOneOf<AutofixEnum>(connectionStrings?.GetValue<string>("UseOmActivitySiteRelationAutofix")))
+        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.TargetAttachmentMediaLibraryName)))
         {
             yield return new ValidationMessage(ValidationMessageType.Error,
-                $"Configuration value in path 'Settings.UseOmActivitySiteRelationAutofix' must fit one of: {Printer.PrintEnumValues<AutofixEnum>(", ")}"
-            );
-        }
-
-        if (CheckCfgValue(settings?.GetValue<string>("TargetAttachmentMediaLibraryName")))
-        {
-            yield return new ValidationMessage(ValidationMessageType.Error,
-                $"Configuration value in path 'Settings.TargetAttachmentMediaLibraryName' is required.",
-                "Set value to 'CmsAttachmentsForSite{{siteName}}Or{{siteId}}' for example. Command '--attachments' cannot complete successfully without value set."
+                Resources.ConfigurationValidator_GetValidationErrors_TargetAttachmentMediaLibraryName_IsRequired,
+                Resources.ConfigurationValidator_GetValidationErrors_TargetAttachmentMediaLibraryName_RecommendedFix
             );
         }
     }
@@ -103,7 +94,7 @@ public static class ConfigurationValidator
     [Pure]
     private static bool CheckCfgValue(string? s)
     {
-        return string.IsNullOrWhiteSpace(s) || s == "[TODO]";
+        return string.IsNullOrWhiteSpace(s) || s == ConfigurationNames.TodoPlaceholder;
     }
 
     #endregion

@@ -2,16 +2,16 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.CLI;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Core;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.Services;
 using Migration.Toolkit.Core.Services.CmsClass;
 using Migration.Toolkit.KX13;
-using Migration.Toolkit.KXO;
-using Migration.Toolkit.KXO.Api;
-using Migration.Toolkit.KXO.Context;
+using Migration.Toolkit.KXP;
+using Migration.Toolkit.KXP.Api;
+using Migration.Toolkit.KXP.Context;
+using Migration.Toolkit.TestConsole;
 
 ConsoleHelper.EnableVirtualTerminalProcessing();
 
@@ -43,8 +43,8 @@ services
     });
 
 services.UseKx13DbContext(settings);
-services.UseKxoDbContext(settings);
-services.UseKxoApi(config.GetRequiredSection("Settings").GetRequiredSection("TargetKxoApiSettings"), settings.TargetCmsDirPath);
+services.UseKxpDbContext(settings);
+services.UseKxpApi(config.GetRequiredSection("Settings").GetRequiredSection("TargetKxoApiSettings"), settings.TargetCmsDirPath);
 services.AddSingleton(settings);
 services.UseToolkitCore();
 
@@ -55,7 +55,7 @@ var mappingContext = scope.ServiceProvider.GetRequiredService<PrimaryKeyMappingC
 var toolkitConfiguration = scope.ServiceProvider.GetRequiredService<ToolkitConfiguration>();
 var tableTypeLookupService = scope.ServiceProvider.GetRequiredService<TableReflectionService>();
 // var mediatr = scope.ServiceProvider.GetRequiredService<IMediator>();
-var kxoContext = scope.ServiceProvider.GetRequiredService<IDbContextFactory<KxoContext>>().CreateDbContext();
+var kxpContext = scope.ServiceProvider.GetRequiredService<IDbContextFactory<KxpContext>>().CreateDbContext();
 
 
 var classService = scope.ServiceProvider.GetRequiredService<ClassService>();
@@ -66,4 +66,4 @@ foreach (var classColumnModel in classFields)
     logger.LogInformation("{classColumnModel}", classColumnModel);
 }
 
-kxoContext.Dispose();
+kxpContext.Dispose();

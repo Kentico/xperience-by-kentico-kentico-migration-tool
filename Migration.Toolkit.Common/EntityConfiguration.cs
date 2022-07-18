@@ -30,7 +30,7 @@ public class EntityConfigurations : Dictionary<string, EntityConfiguration>
     public void SetEntityConfiguration<TModel>(EntityConfiguration config)
     {
         var tableName = ReflectionHelper<TModel>.GetFirstAttributeOrNull<TableAttribute>()?.Name;
-        if (this.ContainsKey(tableName))
+        if (this.ContainsKey(tableName ?? throw new InvalidOperationException("Table name not found for entity, possibly class is not decorated with [TableAttribute]?")))
         {
             this[tableName] = config;
         }
@@ -43,9 +43,9 @@ public class EntityConfigurations : Dictionary<string, EntityConfiguration>
 
 public class EntityConfiguration
 {
-    [JsonPropertyName("ExcludeCodeNames")]
+    [JsonPropertyName(ConfigurationNames.ExcludeCodeNames)]
     public string[] ExcludeCodeNames { get; set; } = Array.Empty<string>();
     
-    [JsonPropertyName("ExplicitPrimaryKeyMapping")]
+    [JsonPropertyName(ConfigurationNames.ExplicitPrimaryKeyMapping)]
     public Dictionary<string, Dictionary<string, int?>> ExplicitPrimaryKeyMapping { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }

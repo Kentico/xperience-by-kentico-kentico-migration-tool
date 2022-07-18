@@ -80,6 +80,25 @@ public static class HandbookReferences
                 
             });
     
+    public static HandbookReference ErrorUpdatingTargetInstance<TTarget>() =>
+        new HandbookReference("FailedToUpdateTargetInstance")
+            .NeedsManualAction()
+            .WithData(new
+            {
+                TargetEntityType = typeof(TTarget).FullName,
+                
+            });
+    
+    public static HandbookReference ErrorUpdatingTargetInstance<TTarget>(Exception exception) =>
+        new HandbookReference("FailedToUpdateTargetInstance")
+            .NeedsManualAction()
+            .WithData(new
+            {
+                TargetEntityType = typeof(TTarget).FullName,
+                Exception = exception.ToString(),
+                
+            });
+    
     public static HandbookReference MissingConfiguration<TCommand>(string configurationName) =>
         new HandbookReference("MissingConfiguration")
             .NeedsManualAction()
@@ -118,7 +137,7 @@ public static class HandbookReferences
             Type = ReflectionHelper<TSource>.CurrentType.Name
         });
     
-    public static HandbookReference FaultyData<TSource>() => new HandbookReference("FaultyData")
+    public static HandbookReference InvalidSourceData<TSource>() => new HandbookReference("InvalidSourceData")
         .NeedsManualAction()
         .WithData(new
         {

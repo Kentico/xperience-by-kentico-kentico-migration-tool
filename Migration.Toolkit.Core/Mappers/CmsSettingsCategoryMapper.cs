@@ -2,42 +2,33 @@
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrationProtocol;
-using Migration.Toolkit.KX13.Models;
 
 namespace Migration.Toolkit.Core.Mappers;
 
+using Migration.Toolkit.KXP.Models;
+
 public class CmsSettingsCategoryMapper : EntityMapperBase<Migration.Toolkit.KX13.Models.CmsSettingsCategory,
-    Migration.Toolkit.KXO.Models.CmsSettingsCategory>
+    CmsSettingsCategory>
 {
     private readonly ILogger<CmsSettingsCategoryMapper> _logger;
     private readonly PrimaryKeyMappingContext _pkContext;
-    private readonly IEntityMapper<KX13.Models.CmsResource, KXO.Models.CmsResource> _cmsResourceMapper;
+    private readonly IEntityMapper<KX13.Models.CmsResource, CmsResource> _cmsResourceMapper;
 
-    public CmsSettingsCategoryMapper(ILogger<CmsSettingsCategoryMapper> logger, PrimaryKeyMappingContext pkContext, IMigrationProtocol protocol,
-        IEntityMapper<KX13M.CmsResource, KXO.Models.CmsResource> cmsResourceMapper) : base(logger, pkContext, protocol)
+    public CmsSettingsCategoryMapper(ILogger<CmsSettingsCategoryMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol,
+        IEntityMapper<KX13M.CmsResource, CmsResource> cmsResourceMapper) : base(logger, pkContext, protocol)
     {
         _logger = logger;
         _pkContext = pkContext;
         _cmsResourceMapper = cmsResourceMapper;
     }
 
-    protected override KXO.Models.CmsSettingsCategory? CreateNewInstance(CmsSettingsCategory source, MappingHelper mappingHelper,
+    protected override CmsSettingsCategory? CreateNewInstance(KX13.Models.CmsSettingsCategory source, MappingHelper mappingHelper,
         AddFailure addFailure) => new();
     
 
-    protected override KXOM.CmsSettingsCategory MapInternal(KX13.Models.CmsSettingsCategory source, KXOM.CmsSettingsCategory target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override CmsSettingsCategory MapInternal(KX13.Models.CmsSettingsCategory source, CmsSettingsCategory target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         // no category guid to match on...
-        // else if (source.CategoryName != target.CategoryName)
-        // {
-        //     // assertion failed
-        //     _logger.LogTrace("Assertion failed, entity key mismatch.");
-        //     return new ModelMappingFailedKeyMismatch<Migration.Toolkit.KXO.Models.CmsSettingsCategory>();
-        // }
-
-        // map entity
-        // target.CategoryId = source.CategoryId;
-
         if (newInstance)
         {
             target.CategoryOrder = source.CategoryOrder;
@@ -53,10 +44,10 @@ public class CmsSettingsCategoryMapper : EntityMapperBase<Migration.Toolkit.KX13
 
         if (source.CategoryResource != null)
         {
-            if (target.CategoryResource != null)
+            if (target.CategoryResource != null && source.CategoryResourceId != null && target.CategoryResourceId != null)
             {
                 // skip if target is present
-                _logger.LogTrace("Skipping category resource '{resourceGuid}', already present in target instance.", target.CategoryResource.ResourceGuid);
+                _logger.LogTrace("Skipping category resource '{ResourceGuid}', already present in target instance", target.CategoryResource.ResourceGuid);
                 _pkContext.SetMapping<KX13.Models.CmsResource>(r => r.ResourceId, source.CategoryResourceId.Value, target.CategoryResourceId.Value);
             }
             else
@@ -70,7 +61,7 @@ public class CmsSettingsCategoryMapper : EntityMapperBase<Migration.Toolkit.KX13
                     }
                     case { Success: false } result:
                     {
-                        addFailure(new MapperResultFailure<KXOM.CmsSettingsCategory>(result.HandbookReference));
+                        addFailure(new MapperResultFailure<CmsSettingsCategory>(result.HandbookReference));
                         break;
                     }
                 }
@@ -92,7 +83,7 @@ public class CmsSettingsCategoryMapper : EntityMapperBase<Migration.Toolkit.KX13
                 }
                 case { Success: false } result:
                 {
-                    addFailure(new MapperResultFailure<KXOM.CmsSettingsCategory>(result.HandbookReference));
+                    addFailure(new MapperResultFailure<CmsSettingsCategory>(result.HandbookReference));
                     break;
                 }
             }

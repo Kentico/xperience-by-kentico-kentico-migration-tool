@@ -12,7 +12,7 @@ public record CmsAttachmentMapperSource(KX13M.CmsAttachment Attachment, int Targ
 
 public class CmsAttachmentMapper: EntityMapperBase<CmsAttachmentMapperSource, MediaFileInfo>
 {
-    public CmsAttachmentMapper(ILogger<CmsAttachmentMapper> logger, PrimaryKeyMappingContext pkContext, IMigrationProtocol protocol) : base(logger, pkContext, protocol)
+    public CmsAttachmentMapper(ILogger<CmsAttachmentMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : base(logger, pkContext, protocol)
     {
     }
 
@@ -33,7 +33,6 @@ public class CmsAttachmentMapper: EntityMapperBase<CmsAttachmentMapperSource, Me
 
     protected override MediaFileInfo MapInternal(CmsAttachmentMapperSource args, MediaFileInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
-        // target.FileId = source.FileId;
         var (cmsAttachment, targetLibraryId, _, _) = args;
         
         target.FileName = Path.GetFileNameWithoutExtension(cmsAttachment.AttachmentName);
@@ -41,25 +40,21 @@ public class CmsAttachmentMapper: EntityMapperBase<CmsAttachmentMapperSource, Me
         target.FileDescription = cmsAttachment.AttachmentDescription ?? string.Empty;
         target.FileExtension = cmsAttachment.AttachmentExtension;
         target.FileMimeType = cmsAttachment.AttachmentMimeType;
-        // target.FilePath = targetMediaFilePath;
         target.FileSize = cmsAttachment.AttachmentSize;
         target.FileImageWidth = cmsAttachment.AttachmentImageWidth ?? 0;
         target.FileImageHeight = cmsAttachment.AttachmentImageHeight ?? 0;
         target.FileGUID = cmsAttachment.AttachmentGuid;
         target.FileLibraryID = targetLibraryId;
-        // target.FileSiteID = _primaryKeyMappingContext.RequireMapFromSource<KX13.Models.CmsSite>(s => s.SiteId, source.AttachmentSiteId);
         if (mappingHelper.TranslateRequiredId<KX13.Models.CmsSite>(s => s.SiteId, cmsAttachment.AttachmentSiteId, out var siteId))
         {
             target.FileSiteID = siteId;
         }
-
-        // TODO tk: 2022-06-29 user not migrated
-        // target.FileCreatedByUserID = source.;
-        // target.FileModifiedByUserID = source.FileModifiedByUserId;
-
-        // TODO tk: 2022-06-29 temporal info not migrated
-        // target.FileCreatedWhen = source.;
-        // target.FileModifiedWhen = source.FileModifiedWhen;
+        
+        // target.FileCreatedByUserID = cmsAttachment.?;
+        // target.FileModifiedByUserID = cmsAttachment.?;
+        // target.FileCreatedWhen = cmsAttachment.?;
+        
+        target.FileModifiedWhen = cmsAttachment.AttachmentLastModified;
 
         KenticoHelper.CopyCustomData(target.FileCustomData, cmsAttachment.AttachmentCustomData);
         

@@ -1,3 +1,5 @@
+namespace Migration.Toolkit.Core.Handlers;
+
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -8,8 +10,7 @@ using Migration.Toolkit.Core.Helpers;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.Core.Services.BulkCopy;
 using Migration.Toolkit.KX13.Models;
-
-namespace Migration.Toolkit.Core.Handlers;
+using Migration.Toolkit.KXP.Context;
 
 public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateContactManagementCommand, CommandResult>, IDisposable
 {
@@ -17,24 +18,24 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
     private readonly BulkDataCopyService _bulkDataCopyService;
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
-    private readonly IMigrationProtocol _migrationProtocol;
-    private readonly KXO.Context.KxoContext _kxoContext;
+    private readonly IProtocol _protocol;
+    private readonly KxpContext _kxpContext;
 
     public MigrateContactManagementCommandHandler(
         ILogger<MigrateContactManagementCommandHandler> logger,
-        IDbContextFactory<KXO.Context.KxoContext> kxoContextFactory,
+        IDbContextFactory<KxpContext> kxpContextFactory,
         BulkDataCopyService bulkDataCopyService,
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
-        IMigrationProtocol migrationProtocol
+        IProtocol protocol
     )
     {
         _logger = logger;
-        _kxoContext = kxoContextFactory.CreateDbContext();
+        _kxpContext = kxpContextFactory.CreateDbContext();
         _bulkDataCopyService = bulkDataCopyService;
         _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
-        _migrationProtocol = migrationProtocol;
+        _protocol = protocol;
     }
 
     public Task<CommandResult> Handle(MigrateContactManagementCommand request, CancellationToken cancellationToken)
@@ -52,49 +53,48 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
     {
         var requiredColumnsForContactMigration = new Dictionary<string, string>
         {
-            { nameof(OmContact.ContactId), nameof(KXO.Models.OmContact.ContactId) },
-            { nameof(OmContact.ContactFirstName), nameof(KXO.Models.OmContact.ContactFirstName) },
-            { nameof(OmContact.ContactMiddleName), nameof(KXO.Models.OmContact.ContactMiddleName) },
-            { nameof(OmContact.ContactLastName), nameof(KXO.Models.OmContact.ContactLastName) },
-            { nameof(OmContact.ContactJobTitle), nameof(KXO.Models.OmContact.ContactJobTitle) },
-            { nameof(OmContact.ContactAddress1), nameof(KXO.Models.OmContact.ContactAddress1) },
-            { nameof(OmContact.ContactCity), nameof(KXO.Models.OmContact.ContactCity) },
-            { nameof(OmContact.ContactZip), nameof(KXO.Models.OmContact.ContactZip) },
-            { nameof(OmContact.ContactStateId), nameof(KXO.Models.OmContact.ContactStateId) }, // No support 2022-07-07 but needs to be mapped because of constraint
-            { nameof(OmContact.ContactCountryId), nameof(KXO.Models.OmContact.ContactCountryId) }, // No support 2022-07-07 but needs to be mapped because of constraint
-            { nameof(OmContact.ContactMobilePhone), nameof(KXO.Models.OmContact.ContactMobilePhone) },
-            { nameof(OmContact.ContactBusinessPhone), nameof(KXO.Models.OmContact.ContactBusinessPhone) },
-            { nameof(OmContact.ContactEmail), nameof(KXO.Models.OmContact.ContactEmail) },
+            { nameof(OmContact.ContactId), nameof(KXP.Models.OmContact.ContactId) },
+            { nameof(OmContact.ContactFirstName), nameof(KXP.Models.OmContact.ContactFirstName) },
+            { nameof(OmContact.ContactMiddleName), nameof(KXP.Models.OmContact.ContactMiddleName) },
+            { nameof(OmContact.ContactLastName), nameof(KXP.Models.OmContact.ContactLastName) },
+            { nameof(OmContact.ContactJobTitle), nameof(KXP.Models.OmContact.ContactJobTitle) },
+            { nameof(OmContact.ContactAddress1), nameof(KXP.Models.OmContact.ContactAddress1) },
+            { nameof(OmContact.ContactCity), nameof(KXP.Models.OmContact.ContactCity) },
+            { nameof(OmContact.ContactZip), nameof(KXP.Models.OmContact.ContactZip) },
+            { nameof(OmContact.ContactStateId), nameof(KXP.Models.OmContact.ContactStateId) }, // No support 2022-07-07 but needs to be mapped because of constraint
+            { nameof(OmContact.ContactCountryId), nameof(KXP.Models.OmContact.ContactCountryId) }, // No support 2022-07-07 but needs to be mapped because of constraint
+            { nameof(OmContact.ContactMobilePhone), nameof(KXP.Models.OmContact.ContactMobilePhone) },
+            { nameof(OmContact.ContactBusinessPhone), nameof(KXP.Models.OmContact.ContactBusinessPhone) },
+            { nameof(OmContact.ContactEmail), nameof(KXP.Models.OmContact.ContactEmail) },
             // No support 2022-07-07  { nameof(OmContact.ContactBirthday), nameof(KXO.Models.OmContact.ContactBirthday) },
-            { nameof(OmContact.ContactGender), nameof(KXO.Models.OmContact.ContactGender) },
+            { nameof(OmContact.ContactGender), nameof(KXP.Models.OmContact.ContactGender) },
             // { nameof(OmContact.ContactStatusId), nameof(KXO.Models.OmContact.ContactStatusId) }, // No support 2022-07-07  but needs to be mapped because of constraint
-            { nameof(OmContact.ContactNotes), nameof(KXO.Models.OmContact.ContactNotes) },
-            { nameof(OmContact.ContactOwnerUserId), nameof(KXO.Models.OmContact.ContactOwnerUserId) },
+            { nameof(OmContact.ContactNotes), nameof(KXP.Models.OmContact.ContactNotes) },
+            { nameof(OmContact.ContactOwnerUserId), nameof(KXP.Models.OmContact.ContactOwnerUserId) },
             // No support 2022-07-07  { nameof(OmContact.ContactMonitored), nameof(KXO.Models.OmContact.ContactMonitored) },
-            { nameof(OmContact.ContactGuid), nameof(KXO.Models.OmContact.ContactGuid) },
-            { nameof(OmContact.ContactLastModified), nameof(KXO.Models.OmContact.ContactLastModified) },
-            { nameof(OmContact.ContactCreated), nameof(KXO.Models.OmContact.ContactCreated) },
+            { nameof(OmContact.ContactGuid), nameof(KXP.Models.OmContact.ContactGuid) },
+            { nameof(OmContact.ContactLastModified), nameof(KXP.Models.OmContact.ContactLastModified) },
+            { nameof(OmContact.ContactCreated), nameof(KXP.Models.OmContact.ContactCreated) },
             // No support 2022-07-07  { nameof(OmContact.ContactBounces), nameof(KXO.Models.OmContact.ContactBounces) },
-            { nameof(OmContact.ContactCampaign), nameof(KXO.Models.OmContact.ContactCampaign) },
+            { nameof(OmContact.ContactCampaign), nameof(KXP.Models.OmContact.ContactCampaign) },
             // No support 2022-07-07  { nameof(OmContact.ContactSalesForceLeadId), nameof(KXO.Models.OmContact.ContactSalesForceLeadId) },
             // No support 2022-07-07  { nameof(OmContact.ContactSalesForceLeadReplicationDisabled), nameof(KXO.Models.OmContact.ContactSalesForceLeadReplicationDisabled) },
             // No support 2022-07-07  { nameof(OmContact.ContactSalesForceLeadReplicationDateTime), nameof(KXO.Models.OmContact.ContactSalesForceLeadReplicationDateTime) },
             // No support 2022-07-07  { nameof(OmContact.ContactSalesForceLeadReplicationSuspensionDateTime), nameof(KXO.Models.OmContact.ContactSalesForceLeadReplicationSuspensionDateTime) },
-            { nameof(OmContact.ContactCompanyName), nameof(KXO.Models.OmContact.ContactCompanyName) },
+            { nameof(OmContact.ContactCompanyName), nameof(KXP.Models.OmContact.ContactCompanyName) },
             // No support 2022-07-07  { nameof(OmContact.ContactSalesForceLeadReplicationRequired), nameof(KXO.Models.OmContact.ContactSalesForceLeadReplicationRequired) },
         };
 
-        // TODO tk: 2022-07-07 replace table data?
         // if (_bulkDataCopyService.CheckIfDataExistsInTargetTable("OM_Contact"))
         // {
-        //     _migrationProtocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable("OM_Contact"));
+        //     _protocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable("OM_Contact"));
         //     _logger.LogError("Data must not exist in target instance table, remove data before proceeding");
         //     return new CommandFailureResult();
         // }
 
         if (_bulkDataCopyService.CheckForTableColumnsDifferences("OM_Contact", requiredColumnsForContactMigration, out var differences))
         {
-            _migrationProtocol.Append(HandbookReferences
+            _protocol.Append(HandbookReferences
                 .BulkCopyColumnMismatch("OM_Contact")
                 .NeedsManualAction()
                 .WithData(differences)
@@ -108,7 +108,6 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         _primaryKeyMappingContext.PreloadDependencies<CmsUser>(u => u.UserId);
         _primaryKeyMappingContext.PreloadDependencies<CmsState>(u => u.StateId);
         _primaryKeyMappingContext.PreloadDependencies<CmsCountry>(u => u.CountryId);
-        
 
         var bulkCopyRequest = new BulkCopyRequest("OM_Contact",
             s => true,// s => s != "ContactID",
@@ -127,7 +126,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
 
     private ValueInterceptorResult ContactValueInterceptor(int ordinal, string columnName, object value, Dictionary<string, object?> currentRow)
     {
-        if (columnName.Equals(nameof(KXO.Models.OmContact.ContactCompanyName), StringComparison.InvariantCultureIgnoreCase))
+        if (columnName.Equals(nameof(KXP.Models.OmContact.ContactCompanyName), StringComparison.InvariantCultureIgnoreCase))
         {
             // autofix removed in favor of error report and data consistency
             // var truncatedValue = SqlDataTypeHelper.TruncateString(value, 100);
@@ -135,14 +134,14 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
 
             if (value is string { Length: > 100 } s)
             {
-                _migrationProtocol.Append(HandbookReferences.ValueTruncationSkip("OM_Contact")
+                _protocol.Append(HandbookReferences.ValueTruncationSkip("OM_Contact")
                     .WithData(new { value, maxLength = 100, s.Length, columnName, contact = PrintHelper.PrintDictionary(currentRow) })
                 );
                 return ValueInterceptorResult.SkipRow;
             }
         }
 
-        if (columnName.Equals(nameof(KXO.Models.OmContact.ContactOwnerUserId), StringComparison.InvariantCultureIgnoreCase) && value is int sourceUserId)
+        if (columnName.Equals(nameof(KXP.Models.OmContact.ContactOwnerUserId), StringComparison.InvariantCultureIgnoreCase) && value is int sourceUserId)
         {
             switch (_primaryKeyMappingContext.MapSourceId<CmsUser>(u => u.UserId, sourceUserId))
             {
@@ -150,7 +149,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
                     return ValueInterceptorResult.ReplaceValue(id);
                 case { Success: false }:
                 {
-                    _migrationProtocol.Append(HandbookReferences.MissingRequiredDependency<KXO.Models.CmsUser>(columnName, value)
+                    _protocol.Append(HandbookReferences.MissingRequiredDependency<KXP.Models.CmsUser>(columnName, value)
                         .WithData(currentRow));
                     return ValueInterceptorResult.SkipRow;
                 }
@@ -165,7 +164,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         //             return ValueInterceptorResult.ReplaceValue(id);
         //         case { Success: false }:
         //         {
-        //             _migrationProtocol.Append(HandbookReferences.MissingRequiredDependency<KXO.Models.CmsState>(columnName, value)
+        //             _protocol.Append(HandbookReferences.MissingRequiredDependency<KXO.Models.CmsState>(columnName, value)
         //                 .WithData(currentRow));
         //             return ValueInterceptorResult.SkipRow;
         //         }
@@ -180,7 +179,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         //             return ValueInterceptorResult.ReplaceValue(id);
         //         case { Success: false }:
         //         {
-        //             _migrationProtocol.Append(HandbookReferences.MissingRequiredDependency<KXO.Models.CmsCountry>(columnName, value)
+        //             _protocol.Append(HandbookReferences.MissingRequiredDependency<KXO.Models.CmsCountry>(columnName, value)
         //                 .WithData(currentRow));
         //             return ValueInterceptorResult.SkipRow;
         //         }
@@ -196,42 +195,42 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
 
     #region "Migrate contact activities"
 
-    private CommandResult? MigrateContactActivities(List<int?> migratedSiteIds)
+    private CommandResult? MigrateContactActivities(List<int> migratedSiteIds)
     {
         var requiredColumnsForContactMigration = new Dictionary<string, string>
         {
-            { nameof(OmActivity.ActivityId), nameof(KXO.Models.OmActivity.ActivityId) },
-            { nameof(OmActivity.ActivityContactId), nameof(KXO.Models.OmActivity.ActivityContactId) },
-            { nameof(OmActivity.ActivityCreated), nameof(KXO.Models.OmActivity.ActivityCreated) },
-            { nameof(OmActivity.ActivityType), nameof(KXO.Models.OmActivity.ActivityType) },
+            { nameof(OmActivity.ActivityId), nameof(KXP.Models.OmActivity.ActivityId) },
+            { nameof(OmActivity.ActivityContactId), nameof(KXP.Models.OmActivity.ActivityContactId) },
+            { nameof(OmActivity.ActivityCreated), nameof(KXP.Models.OmActivity.ActivityCreated) },
+            { nameof(OmActivity.ActivityType), nameof(KXP.Models.OmActivity.ActivityType) },
             // No support 2022-07-07  { nameof(OmActivity.ActivityItemId), nameof(KXO.Models.OmActivity.ActivityItemId) },
             // No support 2022-07-07  { nameof(OmActivity.ActivityItemDetailId), nameof(KXO.Models.OmActivity.ActivityItemDetailId) },
-            { nameof(OmActivity.ActivityValue), nameof(KXO.Models.OmActivity.ActivityValue) },
-            { nameof(OmActivity.ActivityUrl), nameof(KXO.Models.OmActivity.ActivityUrl) },
-            { nameof(OmActivity.ActivityTitle), nameof(KXO.Models.OmActivity.ActivityTitle) },
-            { nameof(OmActivity.ActivitySiteId), nameof(KXO.Models.OmActivity.ActivitySiteId) },
-            { nameof(OmActivity.ActivityComment), nameof(KXO.Models.OmActivity.ActivityComment) },
-            { nameof(OmActivity.ActivityCampaign), nameof(KXO.Models.OmActivity.ActivityCampaign) },
-            { nameof(OmActivity.ActivityUrlreferrer), nameof(KXO.Models.OmActivity.ActivityUrlreferrer) },
-            { nameof(OmActivity.ActivityCulture), nameof(KXO.Models.OmActivity.ActivityCulture) },
-            { nameof(OmActivity.ActivityNodeId), nameof(KXO.Models.OmActivity.ActivityNodeId) },
-            { nameof(OmActivity.ActivityUtmsource), nameof(KXO.Models.OmActivity.ActivityUtmsource) },
+            { nameof(OmActivity.ActivityValue), nameof(KXP.Models.OmActivity.ActivityValue) },
+            { nameof(OmActivity.ActivityUrl), nameof(KXP.Models.OmActivity.ActivityUrl) },
+            { nameof(OmActivity.ActivityTitle), nameof(KXP.Models.OmActivity.ActivityTitle) },
+            { nameof(OmActivity.ActivitySiteId), nameof(KXP.Models.OmActivity.ActivitySiteId) },
+            { nameof(OmActivity.ActivityComment), nameof(KXP.Models.OmActivity.ActivityComment) },
+            { nameof(OmActivity.ActivityCampaign), nameof(KXP.Models.OmActivity.ActivityCampaign) },
+            { nameof(OmActivity.ActivityUrlreferrer), nameof(KXP.Models.OmActivity.ActivityUrlreferrer) },
+            { nameof(OmActivity.ActivityCulture), nameof(KXP.Models.OmActivity.ActivityCulture) },
+            { nameof(OmActivity.ActivityNodeId), nameof(KXP.Models.OmActivity.ActivityNodeId) },
+            { nameof(OmActivity.ActivityUtmsource), nameof(KXP.Models.OmActivity.ActivityUtmsource) },
             // No support 2022-07-07  { nameof(OmActivity.ActivityAbvariantName), nameof(KXO.Models.OmActivity.ActivityAbvariantName) },
-            { nameof(OmActivity.ActivityUrlhash), nameof(KXO.Models.OmActivity.ActivityUrlhash) },
-            { nameof(OmActivity.ActivityUtmcontent), nameof(KXO.Models.OmActivity.ActivityUtmcontent) },
+            { nameof(OmActivity.ActivityUrlhash), nameof(KXP.Models.OmActivity.ActivityUrlhash) },
+            { nameof(OmActivity.ActivityUtmcontent), nameof(KXP.Models.OmActivity.ActivityUtmcontent) },
         };
 
         // TODO tk: 2022-07-07 replace table data
         // if (_bulkDataCopyService.CheckIfDataExistsInTargetTable("OM_Activity"))
         // {
-        //     _migrationProtocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable("OM_Activity"));
+        //     _protocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable("OM_Activity"));
         //     _logger.LogError("Data must not exist in target instance table, remove data before proceeding");
         //     return new CommandFailureResult();
         // }
 
         if (_bulkDataCopyService.CheckForTableColumnsDifferences("OM_Activity", requiredColumnsForContactMigration, out var differences))
         {
-            _migrationProtocol.Append(HandbookReferences
+            _protocol.Append(HandbookReferences
                 .BulkCopyColumnMismatch("OM_Activity")
                 .NeedsManualAction()
                 .WithData(differences)
@@ -262,7 +261,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
 
     private ValueInterceptorResult ActivityValueInterceptor(int columnOrdinal, string columnName, object value, Dictionary<string, object?> currentRow)
     {
-        if (columnName.Equals(nameof(KXO.Models.OmActivity.ActivityContactId), StringComparison.InvariantCultureIgnoreCase) && value is int sourceContactId)
+        if (columnName.Equals(nameof(KXP.Models.OmActivity.ActivityContactId), StringComparison.InvariantCultureIgnoreCase) && value is int sourceContactId)
         {
             switch (_primaryKeyMappingContext.MapSourceId<OmContact>(u => u.ContactId, sourceContactId, false))
             {
@@ -270,8 +269,8 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
                     return ValueInterceptorResult.ReplaceValue(id);
                 case { Success: false }:
                 {
-                    _migrationProtocol.Append(HandbookReferences
-                        .MissingRequiredDependency<KXO.Models.OmContact>(columnName, value)
+                    _protocol.Append(HandbookReferences
+                        .MissingRequiredDependency<KXP.Models.OmContact>(columnName, value)
                         .WithData(currentRow)
                     );
                     return ValueInterceptorResult.SkipRow;
@@ -279,7 +278,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
             }
         }
 
-        if (columnName.Equals(nameof(KXO.Models.OmActivity.ActivitySiteId), StringComparison.InvariantCultureIgnoreCase) &&
+        if (columnName.Equals(nameof(KXP.Models.OmActivity.ActivitySiteId), StringComparison.InvariantCultureIgnoreCase) &&
             value is int sourceActivitySiteId)
         {
             switch (_primaryKeyMappingContext.MapSourceId<CmsSite>(u => u.SiteId, sourceActivitySiteId.NullIfZero()))
@@ -297,8 +296,8 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
                             _logger.LogTrace("Autofix (ActivitySiteId={ActivitySiteId} not exists) => ActivityNodeId=0", sourceActivitySiteId);
                             return ValueInterceptorResult.ReplaceValue(0);
                         default: //error
-                            _migrationProtocol.Append(HandbookReferences
-                                .MissingRequiredDependency<KXO.Models.CmsSite>(columnName, value)
+                            _protocol.Append(HandbookReferences
+                                .MissingRequiredDependency<KXP.Models.CmsSite>(columnName, value)
                                 .WithData(currentRow)
                             );
                             return ValueInterceptorResult.SkipRow;
@@ -307,7 +306,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
             }
         }
 
-        if (columnName.Equals(nameof(KXO.Models.OmActivity.ActivityNodeId), StringComparison.InvariantCultureIgnoreCase) && value is int activityNodeId)
+        if (columnName.Equals(nameof(KXP.Models.OmActivity.ActivityNodeId), StringComparison.InvariantCultureIgnoreCase) && value is int activityNodeId)
         {
             switch (_primaryKeyMappingContext.MapSourceId<CmsTree>(u => u.NodeId, activityNodeId.NullIfZero(), useLocator: false))
             {
@@ -324,8 +323,8 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
                             _logger.LogTrace("Autofix (ActivityNodeId={NodeId} not exists) => ActivityNodeId=0", activityNodeId);
                             return ValueInterceptorResult.ReplaceValue(0);
                         default: //error
-                            _migrationProtocol.Append(HandbookReferences
-                                .MissingRequiredDependency<KXO.Models.CmsTree>(columnName, value)
+                            _protocol.Append(HandbookReferences
+                                .MissingRequiredDependency<KXP.Models.CmsTree>(columnName, value)
                                 .WithData(currentRow)
                             );
                             return ValueInterceptorResult.SkipRow;
@@ -341,6 +340,6 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
 
     public void Dispose()
     {
-        _kxoContext.Dispose();
+        _kxpContext.Dispose();
     }
 }

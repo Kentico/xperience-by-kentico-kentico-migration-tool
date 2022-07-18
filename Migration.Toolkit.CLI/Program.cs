@@ -11,9 +11,9 @@ using Migration.Toolkit.Core;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.Services;
 using Migration.Toolkit.KX13;
-using Migration.Toolkit.KXO;
-using Migration.Toolkit.KXO.Api;
-using Migration.Toolkit.KXO.Context;
+using Migration.Toolkit.KXP;
+using Migration.Toolkit.KXP.Api;
+using Migration.Toolkit.KXP.Context;
 
 const string red = "\x1b[31m";
 const string yellow = "\x1b[33m";
@@ -32,7 +32,6 @@ var config = new ConfigurationBuilder()
         .SetBasePath(Environment.CurrentDirectory)
         .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
         .AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: false)
-        // .AddEnvironmentVariables()
         .Build()
     ;
 
@@ -45,10 +44,10 @@ foreach (var (validationMessageType, message, recommendedFix) in validationError
         case ValidationMessageType.Error:
             if (!string.IsNullOrWhiteSpace(message))
             {
-                Console.Write($"{red}Configuration error{reset}: {message}");
+                Console.Write(Resources.ConfigurationError, red, reset, message);
                 if (!string.IsNullOrWhiteSpace(recommendedFix))
                 {
-                    Console.Write($" {yellow}Possible fix{reset}: {recommendedFix}");
+                    Console.Write(Resources.ConfigurationRecommendedFix, yellow, reset, recommendedFix);
                 }
                 anyValidationErrors = true;
                 Console.WriteLine();
@@ -57,10 +56,10 @@ foreach (var (validationMessageType, message, recommendedFix) in validationError
         case ValidationMessageType.Warning:
             if (!string.IsNullOrWhiteSpace(message))
             {
-                Console.Write($"{yellow}Configuration warning{reset}: {message}");
+                Console.Write(Resources.ConfigurationWarning, yellow, reset, message);
                 if (!string.IsNullOrWhiteSpace(recommendedFix))
                 {
-                    Console.Write($" {yellow}Possible fix{reset}: {recommendedFix}");
+                    Console.Write(Resources.ConfigurationRecommendedFix, yellow, reset, recommendedFix);
                 }
 
                 Console.WriteLine();
@@ -72,38 +71,46 @@ foreach (var (validationMessageType, message, recommendedFix) in validationError
 
 if (anyValidationErrors)
 {
-    Console.WriteLine($"Press any key to exit program...");
+    Console.WriteLine(Resources.ProgramAwaitingExitMessage);
     Console.ReadKey();
     return;
 }
 
 
-var settings = config.GetRequiredSection("Settings").Get<ToolkitConfiguration>();
+var settings = config.GetRequiredSection(ConfigurationNames.Settings).Get<ToolkitConfiguration>();
+settings.EntityConfigurations ??= new EntityConfigurations();
 
 var services = new ServiceCollection();
 
 services
     .AddLogging(builder =>
     {
-        builder.AddConfiguration(config.GetSection("Logging"));
+        builder.AddConfiguration(config.GetSection(ConfigurationNames.Logging));
         builder.AddSimpleConsole(options =>
         {
             options.IncludeScopes = true;
             options.SingleLine = true;
             options.TimestampFormat = "hh:mm:ss.fff ";
         });
-        builder.AddFile(config.GetSection("Logging"));
+        builder.AddFile(config.GetSection(ConfigurationNames.Logging));
     });
 
 services.UseKx13DbContext(settings);
-services.UseKxoDbContext(settings);
-services.UseKxoApi(config.GetRequiredSection("Settings").GetRequiredSection("TargetKxoApiSettings"), settings.TargetCmsDirPath);
+services.UseKxpDbContext(settings);
+
+var kxpApiSettings = 
+    config.GetRequiredSection(ConfigurationNames.Settings).GetSection(ConfigurationNames.TargetKxpApiSettings) ??
+#pragma warning disable CS0618
+    config.GetRequiredSection(ConfigurationNames.Settings).GetSection(ConfigurationNames.TargetKxoApiSettings);
+#pragma warning restore CS0618
+
+services.UseKxpApi(kxpApiSettings, settings.TargetCmsDirPath);
 services.AddSingleton(settings);
 services.UseToolkitCore();
 
 await using var serviceProvider = services.BuildServiceProvider();
 using var scope = serviceProvider.CreateScope();
-var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+// var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
 void WriteCommandDesc(string desc, string commandMoniker)
 {
@@ -149,23 +156,22 @@ bool RequireNumberParameter(string paramName, out int? paramValue)
 var mappingContext = scope.ServiceProvider.GetRequiredService<PrimaryKeyMappingContext>();
 var toolkitConfiguration = scope.ServiceProvider.GetRequiredService<ToolkitConfiguration>();
 var tableTypeLookupService = scope.ServiceProvider.GetRequiredService<TableReflectionService>();
-if (toolkitConfiguration.EntityConfigurations != null)
-    foreach (var (k, ek) in toolkitConfiguration.EntityConfigurations)
-    {
-        var tableType = tableTypeLookupService.GetSourceTableTypeByTableName(k);
+foreach (var (k, ek) in toolkitConfiguration.EntityConfigurations)
+{
+    var tableType = tableTypeLookupService.GetSourceTableTypeByTableName(k);
 
-        foreach (var (kPkName, mappings) in ek.ExplicitPrimaryKeyMapping)
+    foreach (var (kPkName, mappings) in ek.ExplicitPrimaryKeyMapping)
+    {
+        foreach (var (kPk, vPk) in mappings)
         {
-            foreach (var (kPk, vPk) in mappings)
+            // TODO tk: 2022-05-26 report incorrect property setting
+            if (int.TryParse(kPk, out var kPkParsed) && vPk.HasValue)
             {
-                // TODO tk: 2022-05-26 report incorrect property setting
-                if (int.TryParse(kPk, out var kPkParsed) && vPk.HasValue)
-                {
-                    mappingContext.SetMapping(tableType, kPkName, kPkParsed, vPk.Value);
-                }
+                mappingContext.SetMapping(tableType, kPkName, kPkParsed, vPk.Value);
             }
         }
     }
+}
 
 
 void PrintCommandDescriptions()
@@ -173,7 +179,7 @@ void PrintCommandDescriptions()
     WriteCommandDesc($"starts migration of {Green(MigratePageTypesCommand.MonikerFriendly)}", $"migrate --{MigratePageTypesCommand.Moniker}");
     WriteCommandDesc($"starts migration of {Green(MigratePagesCommand.MonikerFriendly)}", $"migrate --{MigratePagesCommand.Moniker}");
     WriteCommandDesc($"starts migration of {Green(MigrateSettingKeysCommand.MonikerFriendly)}", $"migrate --{MigrateSettingKeysCommand.Moniker}");
-    WriteCommandDesc($"starts migration of {Green(MigrateContactGroupsCommand.MonikerFriendly)}", $"migrate --{MigrateContactGroupsCommand.Moniker}");
+    // WriteCommandDesc($"starts migration of {Green(MigrateContactGroupsCommand.MonikerFriendly)}", $"migrate --{MigrateContactGroupsCommand.Moniker}");
     WriteCommandDesc($"starts migration of {Green(MigrateContactManagementCommand.MonikerFriendly)}", $"migrate --{MigrateContactManagementCommand.Moniker}");
     WriteCommandDesc($"starts migration of {Green(MigrateDataProtectionCommand.MonikerFriendly)}", $"migrate --{MigrateDataProtectionCommand.Moniker}");
     WriteCommandDesc($"starts migration of {Green(MigrateFormsCommand.MonikerFriendly)}", $"migrate --{MigrateFormsCommand.Moniker}");
@@ -187,7 +193,7 @@ void PrintCommandDescriptions()
 }
 
 var mediatr = scope.ServiceProvider.GetRequiredService<IMediator>();
-var kxoContext = scope.ServiceProvider.GetRequiredService<IDbContextFactory<KxoContext>>().CreateDbContext();
+var kxpContext = scope.ServiceProvider.GetRequiredService<IDbContextFactory<KxpContext>>().CreateDbContext();
 
 var argsQ = new Queue<string>(args);
 var commands = new List<ICommand>();
@@ -198,10 +204,9 @@ while (argsQ.TryDequeue(out var arg))
     var cultureCode = "";
     
     // TODO tk: 2022-06-23 ! konfigurovat site přes SiteName (ponechat aktuální přístup)
-    if (RequireNumberParameter("--siteId", out var siteId) && siteId is int sid && kxoContext.CmsSites.OrderBy(x => x.SiteId).FirstOrDefault()?.SiteId is int targetSiteId)
+    if (RequireNumberParameter("--siteId", out var siteId) && siteId is int sid && kxpContext.CmsSites.OrderBy(x => x.SiteId).FirstOrDefault()?.SiteId is int targetSiteId)
     {
         toolkitConfiguration.AddExplicitMapping<Migration.Toolkit.KX13.Models.CmsSite>(s => s.SiteId, sid, targetSiteId);
-        // mappingContext.SetMapping<Migration.Toolkit.KX13.Models.CmsSite>(s => s.SiteId, sid, targetSiteId);
     }
     else
     {
@@ -243,11 +248,11 @@ while (argsQ.TryDequeue(out var arg))
         break;
     }
 
-    if (arg == $"--{MigrateContactGroupsCommand.Moniker}")
-    {
-        commands.Add(new MigrateContactGroupsCommand());
-        continue;
-    }
+    // if (arg == $"--{MigrateContactGroupsCommand.Moniker}")
+    // {
+    //     commands.Add(new MigrateContactGroupsCommand());
+    //     continue;
+    // }
 
     if (arg == $"--{MigrateContactManagementCommand.Moniker}")
     {
@@ -341,18 +346,9 @@ while (argsQ.TryDequeue(out var arg))
             continue;
         }
     }
-
-    // if (arg == $"--{MigrateWebFarmsCommand.Moniker}")
-    // {
-    //     commands.Add(new MigrateWebFarmsCommand());
-    //     continue;
-    // }
-
-    // Console.WriteLine($"Invalid arguments, for help call with command {Yellow("help")}, usable commands:");
-    // PrintCommandDescriptions();
 }
 
-kxoContext.Dispose();
+kxpContext.Dispose();
 
 var satisfiedDependencies = new HashSet<Type>();
 var dependenciesSatisfied = true;
@@ -388,5 +384,5 @@ foreach (var command in commands)
     Console.WriteLine($"Command {command.GetType().Name} is completed");
 }
 
-Console.WriteLine("Press any key to exit...");
+Console.WriteLine(Resources.ProgramAwaitingExitMessage);
 Console.ReadKey();

@@ -16,66 +16,83 @@ public enum AutofixEnum
 
 public class ToolkitConfiguration
 {
-    [JsonPropertyName("SourceConnectionString")]
-    public string? SourceConnectionString { get; set; }
-    
-    [JsonPropertyName("SourceCmsDirPath")]
+    [JsonPropertyName(ConfigurationNames.SourceConnectionString)]
+    public string SourceConnectionString { get; set; } = null!;
+
+    [JsonPropertyName(ConfigurationNames.SourceCmsDirPath)]
     public string? SourceCmsDirPath { get; set; }
     
-    [JsonPropertyName("TargetConnectionString")]
-    public string? TargetConnectionString { get; set; }
+    [JsonPropertyName(ConfigurationNames.TargetConnectionString)]
+    public string TargetConnectionString { get; set; } = null!;
     
-    [JsonPropertyName("TargetCmsDirPath")]
-    public string? TargetCmsDirPath { get; set; }
+    [JsonPropertyName(ConfigurationNames.TargetCmsDirPath)]
+    public string TargetCmsDirPath { get; set; } = null!;
+
+    [JsonPropertyName(ConfigurationNames.EntityConfigurations)]
+    public EntityConfigurations EntityConfigurations { get; set; } = new();
     
-    [JsonPropertyName("EntityConfigurations")]
-    public EntityConfigurations? EntityConfigurations { get; set; }
+    [JsonPropertyName(ConfigurationNames.TargetAttachmentMediaLibraryName)]
+    public string TargetAttachmentMediaLibraryName { get; set; } = null!;
     
-    [JsonPropertyName("TargetAttachmentMediaLibraryName")]
-    public string? TargetAttachmentMediaLibraryName { get; set; }
-    
-    [JsonPropertyName("MigrateOnlyMediaFileInfo")]
+    [JsonPropertyName(ConfigurationNames.MigrateOnlyMediaFileInfo)]
     public bool? MigrateOnlyMediaFileInfo { get; set; } = true;
 
-    [JsonPropertyName("UseOmActivityNodeRelationAutofix")]
+    [JsonPropertyName(ConfigurationNames.UseOmActivityNodeRelationAutofix)]
     public AutofixEnum? UseOmActivityNodeRelationAutofix { get; set; } = AutofixEnum.Error;
     
-    [JsonPropertyName("UseOmActivitySiteRelationAutofix")]
+    [JsonPropertyName(ConfigurationNames.UseOmActivitySiteRelationAutofix)]
     public AutofixEnum? UseOmActivitySiteRelationAutofix { get; set; } = AutofixEnum.Error;
     
-    [JsonPropertyName("MigrationProtocolPath")]
+    [JsonPropertyName(ConfigurationNames.MigrationProtocolPath)]
     public string? MigrationProtocolPath { get; set; }
 
-    public Dictionary<int?, int?> RequireExplicitMapping<TEntityType>(Expression<Func<TEntityType, object>> keyNameSelector)
+    public Dictionary<int, int> RequireExplicitMapping<TEntityType>(Expression<Func<TEntityType, object>> keyNameSelector)
     {
         var memberName = keyNameSelector.GetMemberName();
-        var migratedSiteIds = EntityConfigurations?.GetEntityConfiguration<TEntityType>()?.ExplicitPrimaryKeyMapping[memberName];
-        if (migratedSiteIds == null)
+        var migratedIds = EntityConfigurations?.GetEntityConfiguration<TEntityType>()?.ExplicitPrimaryKeyMapping[memberName];
+        if (migratedIds == null)
         {
-            throw new InvalidOperationException($"{typeof(TEntityType).Name} ExplicitPrimaryKeyMapping of {memberName} is required.");
+            throw new InvalidOperationException(string.Format(Resources.Exception_MappingIsRequired, typeof(TEntityType).Name, memberName));
         }
 
-        return migratedSiteIds.ToDictionary(kvp => (int?)int.Parse(kvp.Key), kvp => kvp.Value);
+        return migratedIds.ToDictionary(kvp =>
+        {
+            if (int.TryParse(kvp.Key, out var id))
+            {
+                return id;    
+            }
+
+            throw new InvalidOperationException(string.Format(Resources.Exception_MappingIsRequired, typeof(TEntityType).Name, memberName));
+        }, kvp =>
+        {
+            if (kvp.Value is { } id)
+            {
+                return id;
+            }
+            
+            throw new InvalidOperationException(string.Format(Resources.Exception_MappingIsRequired, typeof(TEntityType).Name, memberName));
+        });
     }
 
     public void AddExplicitMapping<TEntityType>(Expression<Func<TEntityType, object>> keyNameSelector, int sourceId, int targetId)
     {
         var memberName = keyNameSelector.GetMemberName();
-        if (EntityConfigurations == null) EntityConfigurations = new EntityConfigurations();
+        EntityConfigurations ??= new EntityConfigurations();
+        
         var entityConfiguration = EntityConfigurations.GetEntityConfiguration<TEntityType>();
-        var explicitPrimaryKeyMapping = entityConfiguration.ExplicitPrimaryKeyMapping;
-        if (!explicitPrimaryKeyMapping.ContainsKey(memberName))
+        var mapping = entityConfiguration.ExplicitPrimaryKeyMapping;
+        if (!mapping.ContainsKey(memberName))
         {
-            explicitPrimaryKeyMapping.Add(memberName, new());
+            mapping.Add(memberName, new());
         }
 
-        if (!explicitPrimaryKeyMapping[memberName].ContainsKey(sourceId.ToString()))
+        if (!mapping[memberName].ContainsKey(sourceId.ToString()))
         {
-            explicitPrimaryKeyMapping[memberName].Add(sourceId.ToString(), targetId);
+            mapping[memberName].Add(sourceId.ToString(), targetId);
         }
         else
         {
-            explicitPrimaryKeyMapping[memberName][sourceId.ToString()] = targetId;
+            mapping[memberName][sourceId.ToString()] = targetId;
         }
 
         EntityConfigurations.SetEntityConfiguration<TEntityType>(entityConfiguration);

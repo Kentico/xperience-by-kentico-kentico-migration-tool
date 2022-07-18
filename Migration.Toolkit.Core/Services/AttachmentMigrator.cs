@@ -10,11 +10,13 @@ using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.Mappers;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
-using Migration.Toolkit.KXO.Api;
-using Migration.Toolkit.KXO.Api.Auxiliary;
-using Migration.Toolkit.KXO.Context;
 
 namespace Migration.Toolkit.Core.Services;
+
+using Migration.Toolkit.KXP.Api;
+using Migration.Toolkit.KXP.Api.Auxiliary;
+using Migration.Toolkit.KXP.Context;
+using Migration.Toolkit.KXP.Models;
 
 public class AttachmentMigrator
 {
@@ -22,20 +24,20 @@ public class AttachmentMigrator
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
-    private readonly KxoMediaFileFacade _mediaFileFacade;
-    private readonly IDbContextFactory<KxoContext> _kxoContextFactory;
+    private readonly KxpMediaFileFacade _mediaFileFacade;
+    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
     private readonly IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo> _attachmentMapper;
-    private readonly IMigrationProtocol _migrationProtocol;
+    private readonly IProtocol _protocol;
 
     public AttachmentMigrator(
         ILogger<AttachmentMigrator> logger,
         IDbContextFactory<KX13.Context.KX13Context> kx13ContextFactory,
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
-        KxoMediaFileFacade mediaFileFacade,
-        IDbContextFactory<KXO.Context.KxoContext> kxoContextFactory,
+        KxpMediaFileFacade mediaFileFacade,
+        IDbContextFactory<KxpContext> kxpContextFactory,
         IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo> attachmentMapper,
-        IMigrationProtocol migrationProtocol
+        IProtocol protocol
     )
     {
         _logger = logger;
@@ -43,9 +45,9 @@ public class AttachmentMigrator
         _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _mediaFileFacade = mediaFileFacade;
-        _kxoContextFactory = kxoContextFactory;
+        _kxpContextFactory = kxpContextFactory;
         _attachmentMapper = attachmentMapper;
-        _migrationProtocol = migrationProtocol;
+        _protocol = protocol;
     }
 
     public record MigrateAttachmentResult(bool Success, bool CanContinue, MediaFileInfo? MediaFileInfo = null, MediaLibraryInfo? MediaLibraryInfo = null);
@@ -67,7 +69,7 @@ public class AttachmentMigrator
         if (attachment == null)
         {
             _logger.LogWarning("Attachment '{AttachmentGuid}' not found! => skipping", kx13CmsAttachmentGuid);
-            _migrationProtocol.Append(HandbookReferences.TemporaryAttachmentMigrationIsNotSupported.WithData(new
+            _protocol.Append(HandbookReferences.TemporaryAttachmentMigrationIsNotSupported.WithData(new
             {
                 AttachmentGuid = kx13CmsAttachmentGuid,
             }));
@@ -77,25 +79,25 @@ public class AttachmentMigrator
         return MigrateAttachment(attachment);
     } 
     
-    private readonly ConcurrentDictionary<int, KXOM.CmsSite> _targetSites = new();
+    private readonly ConcurrentDictionary<int, CmsSite> _targetSites = new();
     
     public MigrateAttachmentResult MigrateAttachment(KX13M.CmsAttachment kx13CmsAttachment, string? additionalMedialPath = null)
     {
         var libraryNameMask = _toolkitConfiguration.TargetAttachmentMediaLibraryName;
         if (string.IsNullOrWhiteSpace(libraryNameMask))
         {
-            _migrationProtocol.Append(HandbookReferences
+            _protocol.Append(HandbookReferences
                 .MissingConfiguration<MigrateAttachmentsCommand>(nameof(_toolkitConfiguration.TargetAttachmentMediaLibraryName))
             );
             return new MigrateAttachmentResult(false, false);
         }
         
-        _migrationProtocol.FetchedSource(kx13CmsAttachment);
+        _protocol.FetchedSource(kx13CmsAttachment);
 
         if (kx13CmsAttachment.AttachmentFormGuid != null)
         {
             _logger.LogWarning("Attachment '{AttachmentGuid}' is temporary => skipping", kx13CmsAttachment.AttachmentGuid);
-            _migrationProtocol.Append(HandbookReferences.TemporaryAttachmentMigrationIsNotSupported.WithData(new
+            _protocol.Append(HandbookReferences.TemporaryAttachmentMigrationIsNotSupported.WithData(new
             {
                 kx13CmsAttachment.AttachmentId,
                 kx13CmsAttachment.AttachmentGuid,
@@ -111,7 +113,7 @@ public class AttachmentMigrator
         var targetSiteId = _primaryKeyMappingContext.RequireMapFromSource<KX13.Models.CmsSite>(s => s.SiteId, kx13CmsAttachment.AttachmentSiteId);
         var targetSite = _targetSites.GetOrAdd(targetSiteId, i =>
         {
-            using var kxoDbContext = _kxoContextFactory.CreateDbContext();
+            using var kxoDbContext = _kxpContextFactory.CreateDbContext();
             return kxoDbContext.CmsSites.Single(s => s.SiteId == targetSiteId);
         });
 
@@ -128,7 +130,7 @@ public class AttachmentMigrator
         var uploadedFile = CreateUploadFileFromAttachment(kx13CmsAttachment);
         if (uploadedFile == null)
         {
-            _migrationProtocol.Append(HandbookReferences
+            _protocol.Append(HandbookReferences
                 .FailedToCreateTargetInstance<MediaFileInfo>()
                 .WithIdentityPrint(kx13CmsAttachment)
                 .WithMessage("Failed to create dummy upload file containing data")
@@ -138,7 +140,7 @@ public class AttachmentMigrator
 
         var mediaFile = _mediaFileFacade.GetMediaFile(kx13CmsAttachment.AttachmentGuid);
 
-        _migrationProtocol.FetchedTarget(mediaFile);
+        _protocol.FetchedTarget(mediaFile);
 
         var librarySubFolder = "";
         if (kx13AttachmentDocument != null)
@@ -152,7 +154,7 @@ public class AttachmentMigrator
         }
 
         var mapped = _attachmentMapper.Map(new CmsAttachmentMapperSource(kx13CmsAttachment, targetMediaLibraryId, uploadedFile, librarySubFolder), mediaFile);
-        _migrationProtocol.MappedTarget(mapped);
+        _protocol.MappedTarget(mapped);
 
         if (mapped is (var mediaFileInfo, var newInstance) { Success: true })
         {
@@ -167,7 +169,7 @@ public class AttachmentMigrator
 
                 _mediaFileFacade.SetMediaFile(mediaFileInfo, newInstance);
 
-                _migrationProtocol.Success(kx13AttachmentDocument, mediaFileInfo, mapped);
+                _protocol.Success(kx13AttachmentDocument, mediaFileInfo, mapped);
                 _logger.LogEntitySetAction(newInstance, mediaFileInfo);
 
                 return new(true, true, mediaFileInfo, MediaLibraryInfoProvider.ProviderObject.Get(targetMediaLibraryId));
@@ -175,7 +177,7 @@ public class AttachmentMigrator
             catch (Exception exception)
             {
                 _logger.LogEntitySetError(exception, newInstance, mediaFileInfo);
-                _migrationProtocol.Append(HandbookReferences.ErrorCreatingTargetInstance<MediaFileInfo>(exception)
+                _protocol.Append(HandbookReferences.ErrorCreatingTargetInstance<MediaFileInfo>(exception)
                     .NeedsManualAction()
                     .WithIdentityPrint(mediaFileInfo)
                     .WithData(new
@@ -217,7 +219,7 @@ public class AttachmentMigrator
     
     
     private readonly ConcurrentDictionary<(string libraryName, int siteId), int> _mediaLibraryIdCache = new();
-    private int EnsureMediaFileLibrary((string libraryName, int siteId) arg, KxoContext db)
+    private int EnsureMediaFileLibrary((string libraryName, int siteId) arg, KxpContext db)
     {
         var (libraryName, siteId) = arg;
         var tml = db.MediaLibraries.SingleOrDefault(ml => ml.LibrarySiteId == siteId && ml.LibraryName == libraryName);
@@ -225,7 +227,7 @@ public class AttachmentMigrator
     }
     private bool TryEnsureTargetLibraryExists(string targetLibraryName, int targetSiteId, out int targetLibraryId)
     {
-        using var dbContext = _kxoContextFactory.CreateDbContext();
+        using var dbContext = _kxpContextFactory.CreateDbContext();
         try
         {
             targetLibraryId = _mediaLibraryIdCache.GetOrAdd((targetLibraryName, targetSiteId), EnsureMediaFileLibrary, dbContext);
@@ -235,7 +237,7 @@ public class AttachmentMigrator
         catch (Exception exception)
         {
             _logger.LogError(exception, "creating target media library failed");
-            _migrationProtocol.Append(HandbookReferences.ErrorCreatingTargetInstance<MediaLibraryInfo>(exception)
+            _protocol.Append(HandbookReferences.ErrorCreatingTargetInstance<MediaLibraryInfo>(exception)
                 .NeedsManualAction()
                 .WithData(new
                 {

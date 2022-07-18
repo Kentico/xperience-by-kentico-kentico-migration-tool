@@ -10,9 +10,9 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
 {
     private readonly ILogger _logger;
     private readonly PrimaryKeyMappingContext _pkContext;
-    protected readonly IMigrationProtocol Protocol;
+    protected readonly IProtocol Protocol;
     
-    protected EntityMapperBase(ILogger logger, PrimaryKeyMappingContext pkContext, IMigrationProtocol protocol)
+    protected EntityMapperBase(ILogger logger, PrimaryKeyMappingContext pkContext, IProtocol protocol)
     {
         _logger = logger;
         _pkContext = pkContext;
@@ -26,30 +26,23 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
         
         if (source is null)
         {
-            _logger.LogTrace("Source entity is not defined.");
+            _logger.LogTrace("Source entity is not defined");
             return HandbookReferences.SourceEntityIsNull<TSourceEntity>().AsFailure<TTargetEntity>().Log(_logger, Protocol);
         }
 
         var newInstance = false;
         if (target is null)
         {
-            _logger.LogTrace("Null target supplied, creating new instance.");
+            _logger.LogTrace("Null target supplied, creating new instance");
             target = CreateNewInstance(source, mappingHelper, failures.Add);
-            if (target == null && object.Equals(target, default) && failures.Count > 0)
+            if (target == null || object.Equals(target, default) || failures.Count > 0)
             {
                 return new AggregatedResult<TTargetEntity>(failures).Log(_logger, Protocol);                
             }
 
             newInstance = true;
         }
-        // else if (source.NodeGuid != target.NodeGUID)
-        // {
-        //     // assertion failed
-        //     _logger.LogTrace("Assertion failed, entity key mismatch.");
-        //     return new ModelMappingFailedKeyMismatch<TTargetEntity>().Log(_logger);
-        // }
-        
-        
+
         var mappedResult = MapInternal(source, target, newInstance, mappingHelper, failures.Add);
 
         return failures.Count > 0 
@@ -75,7 +68,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
 
         public Guid Require(Guid? value, string valueName)
         {
-            if (value is Guid v && v != Guid.Empty)
+            if (value is { } v && v != Guid.Empty)
             {
                 return v;
             }
@@ -91,7 +84,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
         
         public int Require(int? value, string valueName)
         {
-            if (value is int v)
+            if (value is { } v)
             {
                 return v;
             }
@@ -107,7 +100,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
         
         public bool Require(bool? value, string valueName)
         {
-            if (value is bool v)
+            if (value is { } v)
             {
                 return v;
             }
@@ -123,7 +116,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
         
         public DateTime Require(DateTime? value, string valueName)
         {
-            if (value is DateTime v)
+            if (value is { } v)
             {
                 return v;
             }
@@ -146,7 +139,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
             }
             
             translatedId = _primaryKeyMappingContext.MapFromSourceOrNull(keyNameSelector, sourceId);
-            if (sourceId.HasValue && !translatedId.HasValue)
+            if (!translatedId.HasValue)
             {
                 var memberName = keyNameSelector.GetMemberName();
                 var failure = HandbookReferences

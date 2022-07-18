@@ -2,36 +2,35 @@
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrationProtocol;
-using Migration.Toolkit.KXO.Models;
 
 namespace Migration.Toolkit.Core.Mappers;
 
-public class CmsUserMapper : EntityMapperBase<KX13.Models.CmsUser, KXO.Models.CmsUser>
+using Migration.Toolkit.KXP.Models;
+
+public class CmsUserMapper : EntityMapperBase<KX13.Models.CmsUser, CmsUser>
 {
     private readonly ILogger<CmsUserMapper> _logger;
 
     public CmsUserMapper(
         ILogger<CmsUserMapper> logger,
         PrimaryKeyMappingContext primaryKeyMappingContext,
-        IMigrationProtocol protocol
+        IProtocol protocol
     ) : base(logger, primaryKeyMappingContext, protocol)
     {
         _logger = logger;
     }
 
-    protected override CmsUser? CreateNewInstance(KX13.Models.CmsUser tSourceEntity, MappingHelper mappingHelper, AddFailure addFailure) => new();
+    protected override CmsUser CreateNewInstance(KX13.Models.CmsUser tSourceEntity, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
     protected override CmsUser MapInternal(KX13.Models.CmsUser source, CmsUser target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         if (!newInstance && source.UserGuid != target.UserGuid)
         {
             // assertion failed
-            _logger.LogTrace("Assertion failed, entity key mismatch.");
+            _logger.LogTrace("Assertion failed, entity key mismatch");
             throw new InvalidOperationException("Assertion failed, entity key mismatch.");
         }
-
-        // do not try to insert pk
-        // target.UserId = source.UserId;
+        
         target.UserName = source.UserName;
         target.FirstName = source.FirstName;
         target.LastName = source.LastName;
@@ -59,7 +58,7 @@ public class CmsUserMapper : EntityMapperBase<KX13.Models.CmsUser, KXO.Models.Cm
             {
                 if (target.CmsUserRoles.All(x => x.RoleId != targetRoleId))
                 {
-                    target.CmsUserRoles.Add(new KXO.Models.CmsUserRole
+                    target.CmsUserRoles.Add(new CmsUserRole
                     {
                         RoleId = targetRoleId,
                         User = target,
@@ -72,7 +71,7 @@ public class CmsUserMapper : EntityMapperBase<KX13.Models.CmsUser, KXO.Models.Cm
         foreach (var sourceCmsUserSite in source.CmsUserSites)
         {
             var userSite = new CmsUserSite();
-            if (mappingHelper.TryTranslateId<KX13M.CmsSite>(s => s.SiteId, sourceCmsUserSite.SiteId, out var siteId))
+            if (mappingHelper.TryTranslateId<KX13M.CmsSite>(s => s.SiteId, sourceCmsUserSite.SiteId, out var siteId) && siteId != null)
             {
                 userSite.SiteId = siteId.Value;
                 target.CmsUserSites.Add(userSite);
