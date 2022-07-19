@@ -18,6 +18,8 @@ using Migration.Toolkit.KXP.Api;
 
 public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCommand, CommandResult>
 {
+    private const string CLASS_CMS_ROOT = "CMS.Root";
+    
     private readonly ILogger<MigratePageTypesCommandHandler> _logger;
     private readonly IEntityMapper<CmsClass, DataClassInfo> _dataClassMapper;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
@@ -100,7 +102,7 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
                 continue;    
             }
             
-            if (kx13Class.ClassName == "CMS.Root")
+            if (kx13Class.ClassName == CLASS_CMS_ROOT)
             {
                 _protocol.Warning(HandbookReferences.CmsClassCmsRootClassTypeSkip, kx13Class);
                 _logger.LogWarning("CmsClass: {ClassName} was skipped => CMS.Root cannot be migrated", kx13Class.ClassName);

@@ -32,18 +32,28 @@ public class HandbookReference
     public string? AdditionalInfo { get; }
     public Dictionary<string, object?>? Data { get; private set; } = null;
 
+    /// <summary>
+    /// Use <see cref="HandbookReferences"/> class to store factory methods, don't create instances directly in code.
+    /// </summary>
+    /// <param name="referenceName">Use common identifier characters to describe handbook reference (consider usage in HTML, JSON, DB, C#, href attribute in HTML)</param>
     public HandbookReference(string referenceName, string? additionalInfo = null)
     {
         this.ReferenceName = referenceName;
         this.AdditionalInfo = additionalInfo;
     }
 
+    /// <summary>
+    /// Related ID of data, specify if possible
+    /// </summary>
     public HandbookReference WithId(string idName, object idValue)
     {
         this.WithData(idName, idValue);
         return this;
     }
     
+    /// <summary>
+    /// Appends message for user to see, use it for describing issue and propose fix if possible 
+    /// </summary>
     public HandbookReference WithMessage(string message)
     {
         this.Data ??= new();
@@ -60,6 +70,9 @@ public class HandbookReference
         return this;
     }
 
+    /// <summary>
+    /// Appends data to dictionary for user to see 
+    /// </summary>
     public HandbookReference WithData(string key, object value)
     {
         this.Data ??= new();
@@ -68,6 +81,9 @@ public class HandbookReference
         return this;
     }
 
+    /// <summary>
+    /// Appends data to dictionary for user to see 
+    /// </summary>
     public HandbookReference WithData<TValue>(Dictionary<string, TValue> data)
     {
         this.Data ??= new();
@@ -79,6 +95,10 @@ public class HandbookReference
         return this;
     }
 
+    /// <summary>
+    /// Appends data to dictionary for user to see 
+    /// </summary>
+    /// <param name="data">All public instance properties of object are written to dictionary for user to see. Anonymous object can be used</param>
     public HandbookReference WithData(object data)
     {
         this.Data ??= new();
@@ -94,6 +114,11 @@ public class HandbookReference
         return this;
     }
     
+    /// <summary>
+    /// Prints entity information. Type must be supported for print in method 'GetEntityIdentityPrint' in class <see cref="Printer"/>
+    /// </summary>
+    /// <param name="model">Models to print</param>
+    /// <typeparam name="T">Type of model to print - type must be supported for print in method 'GetEntityIdentityPrint' in class <see cref="Printer"/></typeparam>
     public HandbookReference WithIdentityPrint<T>(T model)
     {
         this.Data ??= new();
@@ -101,6 +126,11 @@ public class HandbookReference
         return this;
     }
     
+    /// <summary>
+    /// Prints entity information. Type must be supported for print in method 'GetEntityIdentityPrint' in class <see cref="Printer"/>
+    /// </summary>
+    /// <param name="models">Models to print</param>
+    /// <typeparam name="T">Type of model to print - type must be supported for print in method 'GetEntityIdentityPrint' in class <see cref="Printer"/></typeparam>
     public HandbookReference WithIdentityPrints<T>(IEnumerable<T> models)
     {
         this.Data ??= new();
@@ -108,6 +138,9 @@ public class HandbookReference
         return this;
     }
 
+    /// <summary>
+    /// Marks reference as higher priority with serious consequences to migration of data to target instance
+    /// </summary>
     public HandbookReference NeedsManualAction()
     {
         this.NeedManualAction = true;

@@ -21,6 +21,8 @@ using Migration.Toolkit.KXP.Context;
 // ReSharper disable once UnusedType.Global
 public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, CommandResult>
 {
+    private const string CLASS_CMS_ROOT = "CMS.Root";
+    
     private readonly ILogger<MigratePagesCommandHandler> _logger;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
     private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
@@ -139,7 +141,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
             }
             
             int? mappedParentNodeId;
-            if (kx13CmsTree.NodeClass.ClassName == "CMS.Root")
+            if (kx13CmsTree.NodeClass.ClassName == CLASS_CMS_ROOT)
             {
                 if(!siteMappings.TryGetValue(kx13CmsTree.NodeSiteId, out var targetSiteId))
                 {
@@ -147,7 +149,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                 }
 
                 // TODO tk: 2022-07-15 cache parent
-                mappedParentNodeId = new DocumentQuery("CMS.Root")
+                mappedParentNodeId = new DocumentQuery(CLASS_CMS_ROOT)
                     .OnSite(new SiteInfoIdentifier(targetSiteId))
                     .Culture(cultureCode)
                     .SingleOrDefault()
@@ -181,7 +183,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
 
             // TODO tk: 2022-07-12 check if page class is supported / migrated
             
-            var isPublished = _pageFacade.IsPublished(new IsPublishedArgument(
+            var isPublished = _pageFacade.IsPublished(new IsPublishedArguments(
                 kx13CmsDocument.DocumentCanBePublished, kx13CmsDocument.DocumentWorkflowStepId,
                 kx13CmsDocument.DocumentIsArchived, kx13CmsDocument.DocumentCheckedOutVersionHistoryId,
                 kx13CmsDocument.DocumentPublishedVersionHistoryId, kx13CmsDocument.DocumentPublishFrom, kx13CmsDocument.DocumentPublishTo)
@@ -225,7 +227,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
             }
 
             var kxoTreeNodeParent = new DocumentQuery()
-                .Where("NodeID", QueryOperator.Equals, mappedParentNodeId)
+                .Where(nameof(TreeNode.NodeID), QueryOperator.Equals, mappedParentNodeId)
                 .Culture(cultureCode)
                 .Single();
             

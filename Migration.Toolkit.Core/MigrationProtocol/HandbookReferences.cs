@@ -9,17 +9,10 @@ public static class HandbookReferences
 
     public static HandbookReference EntityExplicitlyExcludedByCodeName(string codeName, string entityName) => new("EntityExplicitlyExcludedByCodeName", $"CodeName={codeName}, EntityName={entityName}");
     public static HandbookReference CmsClassCmsRootClassTypeSkip => new("CmsClass_CmsRootClassTypeSkip");
-    public static HandbookReference CmsClassClassConnectionStringIsDifferent => new("CmsClass_ClassConnectionStringIsDifferent");
     public static HandbookReference CmsUserAdminUserSkip => new("CmsUser_SkipAdminUser");
     public static HandbookReference CmsUserPublicUserSkip => new("CmsUser_SkipPublicUser");
-    public static HandbookReference CmsWebFarmServerSkip => new("CmsWebFarm_SkipPublicWebFarm");
-    public static HandbookReference CmsConsentSkip => new("CmsConsent_SkipPublicConsent");
-    public static HandbookReference CmsConsentArchiveSkip => new("CmsConsentArchive_SkipPublicConsentArchive");
-    public static HandbookReference CmsConsentAgreementSkip => new("CmsConsentAgreement_SkipPublicConsentAgreement");
     public static HandbookReference CmsTreeTreeRootSkip => new("CmsTree_TreeRootSkipped");
-    public static HandbookReference CmsSettingsKeyExclusionListSkip => new("CmsSettingsKey_SkipExclusionList");
-
-    public static HandbookReference CreatePossiblyCustomControlNeedToBeMigrated(string controlName) => new("ClassFormDefinition_PossiblyCustomControlNeedsToBeCreated", controlName);
+    public static HandbookReference CmsSettingsKeyExclusionListSkip => new("CmsSettingsKey_SkipExclusionList"); // TODO tk: 2022-07-19 generalize
 
     public static HandbookReference SourcePageIsNotPublished(Guid sourcePageGuid) => new("SourcePageIsNotPublished", $"PageGuid={sourcePageGuid}"); 
     
@@ -79,16 +72,7 @@ public static class HandbookReferences
                 Exception = exception.ToString(),
                 
             });
-    
-    public static HandbookReference ErrorUpdatingTargetInstance<TTarget>() =>
-        new HandbookReference("FailedToUpdateTargetInstance")
-            .NeedsManualAction()
-            .WithData(new
-            {
-                TargetEntityType = typeof(TTarget).FullName,
-                
-            });
-    
+
     public static HandbookReference ErrorUpdatingTargetInstance<TTarget>(Exception exception) =>
         new HandbookReference("FailedToUpdateTargetInstance")
             .NeedsManualAction()
@@ -107,21 +91,12 @@ public static class HandbookReferences
                 Command = typeof(TCommand).FullName, 
                 ConfigurationName = configurationName
             });
-    
-    public static HandbookReference CmsUserEmailConstraintBroken => new("CmsUser_EmailConstraintBroken");
-    public static HandbookReference CmsUserUserNameConstraintBroken => new("CmsUser_UserNameConstraintBroken");
-    public static HandbookReference DbConstraintBroken(string constraintName) => new HandbookReference("DbConstraintBroken")
-        .NeedsManualAction()
-        .WithMessage($"Database constraint '{constraintName}' broken");
-    
+
     public static HandbookReference DbConstraintBroken<TEntity>(SqlException ex, TEntity entity) => new HandbookReference("DbConstraintBroken")
         .NeedsManualAction()
         .WithIdentityPrint(entity)
         .WithMessage(ex.Message);
     
-    public static HandbookReference CmsTreeTreeRootIsMissing => new("CmsTree_TreeRootIsMissing");
-    public static HandbookReference CmsTreeUserIsMissingInTargetInstance => new("CmsTree_UserIsMissingInTargetInstance");
-    public static HandbookReference CmsTreeTreeParentIsMissing => new("CmsTree_TreeParentIsMissing");
     public static HandbookReference BulkCopyColumnMismatch(string tableName) => new("BulkCopyColumnMismatch", $"TableName={tableName}");
 
     public static HandbookReference DataMustNotExistInTargetInstanceTable(string tableName) =>
