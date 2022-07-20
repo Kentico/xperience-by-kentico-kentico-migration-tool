@@ -41,5 +41,5 @@ public record MapperResultFailure<TResult>(HandbookReference HandbookReference) 
 
 public static class Extensions
 {
-    public static IModelMappingResult<TResult> AsFailure<TResult>(this HandbookReference reference) => new MapperResultFailure<TResult>(reference);
+    public static MapperResultFailure<TResult> AsFailure<TResult>(this HandbookReference reference) => new MapperResultFailure<TResult>(reference);
 }

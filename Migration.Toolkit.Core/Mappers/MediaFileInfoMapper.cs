@@ -86,7 +86,7 @@ public class MediaFileInfoMapper: EntityMapperBase<MediaFileInfoMapperSource, Me
 
         if (file == null && !migrateOnlyMediaFileInfo)
         {
-            _protocol.Append(HandbookReferences.MediaFileIsMissingOnSourceFilesystem
+            addFailure(HandbookReferences.MediaFileIsMissingOnSourceFilesystem
                 .WithId(nameof(mediaFile.FileId), mediaFile.FileId)
                 .WithData(new
                 {
@@ -95,6 +95,7 @@ public class MediaFileInfoMapper: EntityMapperBase<MediaFileInfoMapperSource, Me
                     mediaFile.FileLibraryId,
                     mediaFile.FileSiteId
                 })
+                .AsFailure<MediaFileInfo>()
             );
         }
 

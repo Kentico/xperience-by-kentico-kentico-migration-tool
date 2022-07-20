@@ -19,6 +19,7 @@ using Migration.Toolkit.KXP.Context;
 
 public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaLibrariesCommand, CommandResult>, IDisposable
 {
+    private const string DIR_MEDIA = "media";
     private readonly ILogger<MigrateMediaLibrariesCommandHandler> _logger;
     private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
@@ -163,8 +164,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
                 if (!_toolkitConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(true) &&
                     !string.IsNullOrWhiteSpace(_toolkitConfiguration.SourceCmsDirPath))
                 {
-                    sourceMediaLibraryPath = Path.Join(_toolkitConfiguration.SourceCmsDirPath, sourceMediaLibrary.LibrarySite.SiteName, "media",
-                        sourceMediaLibrary.LibraryFolder);
+                    sourceMediaLibraryPath = Path.Join(_toolkitConfiguration.SourceCmsDirPath, sourceMediaLibrary.LibrarySite.SiteName, DIR_MEDIA, sourceMediaLibrary.LibraryFolder);
                     loadMediaFileData = true;
                 }
 

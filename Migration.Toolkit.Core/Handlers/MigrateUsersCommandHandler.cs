@@ -14,6 +14,8 @@ using Migration.Toolkit.KXP.Models;
 
 public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, CommandResult>, IDisposable
 {
+    private const string USER_PUBLIC = "public";
+    
     private readonly ILogger<MigrateUsersCommandHandler> _logger;
     private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
@@ -81,7 +83,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
                 continue;
             }
             
-            if (kxoUser?.UserName == "public" || kx13User.UserName == "public")
+            if (kxoUser?.UserName == USER_PUBLIC || kx13User.UserName == USER_PUBLIC)
             {
                 _protocol.Append(HandbookReferences.CmsUserPublicUserSkip.WithIdentityPrint(kxoUser));
                 _logger.LogInformation("User with guid {UserGuid} is public user, special case that can't be migrated => skipping", kxoUser?.UserGuid ?? kx13User.UserGuid);

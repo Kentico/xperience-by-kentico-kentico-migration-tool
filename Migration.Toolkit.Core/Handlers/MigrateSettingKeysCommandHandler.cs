@@ -74,6 +74,7 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
                     HandbookReferences
                         .NotCurrentlySupportedSkip<SettingsKeyInfo>()
                         .WithId(nameof(kx13CmsSettingsKey.KeyId), kx13CmsSettingsKey.KeyId)
+                        .WithMessage("Settings key is not supported in target instance")
                         .WithData(new
                         {
                             kx13CmsSettingsKey.KeyName,

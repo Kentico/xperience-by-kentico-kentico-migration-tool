@@ -69,8 +69,7 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
                 {
                     if (formFieldInfos.Count() > 1 && formFieldInfos.Key != null)
                     {
-                        _logger.LogWarning("Multiple mappings with same value in 'MappedToField': {Detail}",
-                            string.Join("|", formFieldInfos.Select(f => f.ToXML("FF", false))));
+                        _logger.LogWarning("Multiple mappings with same value in 'MappedToField': {Detail}", string.Join("|", formFieldInfos.Select(f => f.ToXML("FormFields", false))));
                     }
 
                     newMappings.AddFormItem(formFieldInfos.First());
