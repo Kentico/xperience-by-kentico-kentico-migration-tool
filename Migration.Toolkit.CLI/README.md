@@ -28,6 +28,7 @@ To perform the migration:
   4. Open the command line prompt.
   5. Navigate to the project's output directory.
   6. Run the `Migration.Toolkit.CLI.exe migrate` command with parameters according to your requirements.
+  7. Observe the command line output and review the [migration protocol](./MIGRATION_PROTOCOL_REFERENCE.md), which provides information about the result of the migration, lists required manual steps, etc.
 
 ### Migrate command parameters
 
@@ -73,24 +74,11 @@ Migration.Toolkit.CLI.exe migrate --siteId 1 --culture en-US --sites --users
 
 Writing in Progress
 
-* page type field mapping? (form control > form component)
-* macros in field settings? (default value)
-
 #### Attachments
 
 Page attachments are not supported in Xperience by Kentico. Attachments are migrated into media libraries.
 
 Writing in Progress
-
-	*structure
-		* ML root for site - "Attachments for site 'sitename'"
-			* new folder for each page with attachments, name = nodealiaspath (contains unsorted attachment)
-				* subfolder for field attachments - single and grouped, name = __fieldname
-		* "floating" attachments - added to the ML root
-		* temporary attachments not migrated  - warning logged
-
-
-*handler for attachment URLs
 
 #### Users
 
@@ -112,7 +100,7 @@ Add the options under the `Settings` section in the configuration file.
 | TargetConnectionString                                         | The connection string to the target Xperience by Kentico database.                                                               |
 | TargetCmsDirPath                                               | The absolute file system path of the root of the target Xperience by Kentico project. Required to migrate media library and page attachment files. |
 | TargetKxpApiSettings                                           | Configuration options set for the API when creating migrated objects in the target application.<br /><br />The `ConnectionStrings.CMSConnectionString`option is required - set the connection string to the target Xperience by Kentico database (the same value as `TargetConnectionString`).              |
-| MigrationProtocolPath                                          | The absolute file system path of the location where the [migration protocol file](./Migration.Toolkit.CLI/MIGRATION_PROTOCOL_REFERENCE.md) is generated.<br /><br />For example: `"C:\\Logs\\Migration.Toolkit.Protocol.log"`                       |
+| MigrationProtocolPath                                          | The absolute file system path of the location where the [migration protocol file](./MIGRATION_PROTOCOL_REFERENCE.md) is generated.<br /><br />For example: `"C:\\Logs\\Migration.Toolkit.Protocol.log"`                       |
 | MigrateOnlyMediaFileInfo                                       | If set to `true`, only the database representations of media files are migrated, without the files in the media folder in the project's file system. For example, enable this option if your media library files are mapped to a shared directory or Cloud storage.<br /><br />If `false`, media files are migrated based on the `SourceCmsDirPath` location.  |
 | UseOmActivityNodeRelationAutofix                               | Determines how the migration handles references from Contact management activities to non-existing pages.<br /><br />Possible options:<br />`DiscardData` - faulty references are removed,<br />`AttemptFix` - references are updated to the IDs of corresponding pages created by the migration,<br />`Error` - an error is reported and the reference can be translated or otherwise handled manually                                                             |
 | UseOmActivitySiteRelationAutofix                               | Determines how the migration handles site references from Contact management activities.<br /><br />Possible options: `DiscardData`,`AttemptFix`,`Error` |
