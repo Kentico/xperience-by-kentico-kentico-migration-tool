@@ -5,118 +5,102 @@
 [//]: # "[![MIT License][license-shield]][license-url]"
 [//]: # "[![Discord][discussion-shield]][discussion-url]"
 
+
 <!-- ABOUT THE PROJECT -->
+## Migration toolkit for Xperience
 
-## About The Project
+The Migration toolkit transfers content and other data from **Kentico Xperience 13** to **Xperience by Kentico**.
 
-The aim of Migration.Toolkit is to provide tools for move data from Kentico Xperience 13 to future Kentico Xperience, codenamed Odyssey.
+## Prerequisites & Compatibility
+
+### Source
+
+  * The source of the migration data must be a Kentico Xperience 13 instance, with **Refresh 4** ([hotfix](https://devnet.kentico.com/download/hotfixes) 13.0.52) or newer applied. 
+  * The development model (Core or MVC 5) does not affect the migration and both are supported.
+  * The source instance's database and file system must be accessible from the environment where you run the Migration toolkit.
+
+### Target
+
+  * The target of the migration can be any version of Xperience by Kentico. 
+  * The target instance's database and file system must be accessible from the environment where you run the Migration toolkit.
+  * To avoid conflicts and inconsistencies, the target instance must not contain any data apart from an empty site and/or data from the source site created by previous runs of the Migration toolkit.
+
+## Supported data and limitations
+
+The Migration toolkit does not transfer all data available in the Kentico Xperience 13 source. Xperience by Kentico currently provides a smaller, more focused, set of features, so many objects are not supported for migration. Certain types of data are migrated to a suitable alternative or discarded.
+
+The Migration toolkit only supports content and objects **stored in the database**, except for related binary data on the file system, such as media library files. Code, customizations, and any other types of content need to be migrated manually to the target project and adjusted for Xperience by Kentico.
+
+Currently, the Migration toolkit supports the following types of data:
+  * **Sites**
+  * **Page types**
+  * **Pages**
+	* Xperience by Kentico currently does not support multilingual sites. You need to select one culture from which the content of pages is migrated.
+	* Only pages that are **published** on the source instance are migrated.
+	* Includes the **Former URLs** of pages, but not Alternative URLs, which are currently not supported in Xperience by Kentico.
+  * **Page attachments**
+	* Page attachments are not supported in Xperience by Kentico. Attachments are migrated into media libraries. See [`Migration.Toolkit.CLI/README.md - Attachments`](./Migration.Toolkit.CLI/README.md#Attachments) for detailed information about the conversion process.
+  * **Media libraries and media files**
+  * **Forms**
+  * **Users**
+	* Xperience by Kentico currently does not support registration and authentication of users on the live site. User accounts only control access to the administration interface.
+  * **Contacts**
+  * **Activities**  
+  * **Consents and consent agreements**
+	* Only one culture version of consent texts is migrated, according to the culture selected during the migration.
+  * **Setting values**
+    * Xperience by Kentico uses a sub-set of the settings available in Kentico Xperience 13. The migration only transfers the values of settings that exist in Xperience by Kentico.
+  * **Countries and states**	
+
+### Unsupported data
+
+The following types of data exist in Xperience by Kentico, but are currently **not supported** by the Migration toolkit: 
+
+  * **Contact groups**
+	* Static contact groups are currently not supported in Xperience by Kentico.
+	* The condition format for dynamic contact groups is not compatible. To migrate contact groups: 
+		1. Migrate your contacts using the toolkit.
+		2. Create the [contact groups](https://docs.xperience.io/x/o4PWCQ) manually in Xperience by Kentico.
+		3. Build equivalent conditions.
+		4. Recalculate the contact groups.
+  * **License keys**
+    * Unnecessary, since Xperience by Kentico uses a new license key format.
 
 <!-- GETTING STARTED -->
+## Get started
 
-## Getting Started
+Follow the steps below to run the Migration toolkit:
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
+1. Clone or download the Migration.Toolkit source code from this repository.
+2. Open the `Migration.Toolkit.sln` solution in Visual Studio.
+3. Configure the options in the `Migration.Toolkit.CLI/appsettings.json` configuration file. See [`Migration.Toolkit.CLI/README.md - Configuration`](./Migration.Toolkit.CLI/README.md#Configuration) for details.
+4. Rebuild the solution and restore all required NuGet packages.
+5. Open the command line prompt.
+6. Navigate to the output directory of the `Migration.Toolkit.CLI` project.
+7. Run the `Migration.Toolkit.CLI.exe migrate` command.
+    * The following example shows the command with all parameters for complete migration:
+	```
+	Migration.Toolkit.CLI.exe  migrate --siteId 1 --culture en-US --sites --users --settings-keys --page-types --pages --attachments --contact-management --forms --media-libraries --data-protection --countries
+	```
+8. Observe the command line output. The command output is also stored into a log file (`logs\log-<date>.txt` under the output directory by default), which you can review later.
+9. Review the migration protocol, which provides information about the result of the migration, lists required manual steps, etc. 
+	* You can find the protocol in the location specified by the `MigrationProtocolPath` key in the `appsettings.json` configuration file.
+	* For more information, see [`Migration.Toolkit.CLI/MIGRATION_PROTOCOL_REFERENCE.md`](./Migration.Toolkit.CLI/MIGRATION_PROTOCOL_REFERENCE.md).
 
-1. clone source code locally
-2. open solution `Migration.Toolkit.sln` in favourite IDE
-3. restore nuget packages
-4. copy file `appsettings.json` as `appsettings.local.json` to same directory in project `Migration.Toolkit.CLI.csproj`
-5. configure basic parameters in json configuration file `appsettings.local.json` (for more information go to **/Migration.Toolkit.CLI/README.md**)
-   - `MigrationProtocolPath` - full path for migration protocol storage, example "C:\\Logs\\Migration.Toolkit.Protocol.log"
-   - `SourceConnectionString` - sql connection string to **source instance of Kentico Xperience 13**
-   - `SourceCmsDirPath` - absolute path to filesystem root of **source instance**
-   - `TargetConnectionString` - sql connection string to target **instance of Xperience by Kentico**
-   - `TargetCmsDirPath` - absolute path to filesystem root of **target instance**
-   - `MigrateOnlyMediaFileInfo` - if media files are not stored locally on filesystem set to true (for cloud storage), otherwise tool will try to find mediafile in `SourceCmsDirPath`
-   - `TargetKxoApiSettings.ConnectionStrings.CMSConnectionString` - set same value as `TargetConnectionString`
-   - `UseOmActivityNodeRelationAutofix` - for **Contact management** migration decide how will tool resolve reference to no longer existing page, options:
-      - `DiscardData` - faulty data are thrown away
-      - `Error` - error is reported by tool for later change to resolve problem
-   - `UseOmActivitySiteRelationAutofix` - for **Contact management** migration decide how will tool resolve reference to no longer existing site, options:
-      - `DiscardData` - faulty data are thrown away
-      - `Error` - error is reported by tool for later change to resolve problem
-6. **target instance** must have empty site as target for migration, by that no other data than from source KX13 source instance
-   - especially no pages, only page of type `CMS.Root` is allowed
-   - some commands cannot be run multiple time against same instance (reasons are optimization issues and it might be temporary measure)
-      - `migrate --contact-management`
-      - `migrate --forms`
-7. configure project profile for running `Migration.Toolkit.CLI` (or alternatively build project and navigate to output directory with cmd, run command manually)
-   - set command line arguments for profile
-      - `migrate --siteId <siteId>` - where `<siteId>` is `SiteID` of source instance for example _4_ (can be loaded from source instace using database query `SELECT * FROM dbo.CMS_Site`, value from `SiteID` column)
-      - `--culture <cultureCode>` - where `<cultureCode>` is `CultureCode` of source instance for example _en-US_ (currently multi-language migration is not supported)
-      - `--sites` - tool will migrate Site object
-      - `--users` - for migration of User object and object closely related to user (Roles)
-      - `--settings-keys` - for migration of currently supported Setting objects
-      - `--page-types` - for migration of Page Type object - required for migration of pages
-      - `--pages` - for migration of Page object - target instance must not contain _other Pages than those copied from source instance to avoid Url conflicts_
-      - `--attachments` - for migration of no longer supported Attachment objects to Media Libraries - name of target library is set with setting `TargetAttachmentMediaLibraryName`
-      - `--contact-management` - Contact management migration, depends on how many contact you have in database this can take time
-      - `--forms` - migration of form object and related data
-      - `--media-libraries` - migration of Media Libraries and related Media Files (binary file information will be migrated if setting `MigrateOnlyMediaFileInfo` is set to value _false_)
-      - `--data-protection` - Data protection object migration
-      - `--bypass-dependency-check` - to skip command dependency check, if you know you migrated `--sites` already, then you can skip it using this override
-
-8. **recommended** backup target instance filesystem and database
-9. all set - command line argument should look like this for complete migration `migrate --siteId 4 --culture en-US --sites --users --settings-keys --page-types --pages --attachments --contact-management --forms --media-libraries --data-protection`
-10. run launch profile an observe cmd output (should be also stored in `$ProjectOut\logs\log*.txt` with default settings)
-11. review migration protocol stored in file specified with configuration `Settings.MigrationProtocolPath` 
-
-### Common warnings & errors during migration
-
-| Message codename                                            | Desctiption                                                                                                                                                                                                                                                                                  | Severity | Fix                                                                                                                                |
-| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| EntityExplicitlyExcludedByCodeName                          | Migrated entity is excluded in configuration<br> `Settings.EntityConfigurations.[EntityTableName].ExcludeCodeNames`                                                                                                                                                                          | Warning  | Remove codename from configuration                                                                                                 |
-| InvalidSourceData                                           | Source instance is missing some required data or data is malformed                                                                                                                                                                                                                           | Error    | review details and try to look for defferences in source vs target schema differences if not specified in message otherwise        |
-| ValueTruncationSkip                                         | occurs when target database field for data has lower size then source database field size                                                                                                                                                                                                    | Error    | Decide whether truncate value value in source database or omit completely                                                          |
-| DataMustNotExistInTargetInstanceTable                       | Occurs when data is present in target instance for migrations where migration speed is more desirable then ability to repeat migration (for example **Contact management** migration usually contains many data rows). Fast migration strategy that doesn't allow repeated migration is used | Warning  | Delete data in target instance and rerun migration command                                                                         |
-| BulkCopyColumnMismatch                                      | When fast migration strategy is used, columns in database tables must match (tool attempts to throw away extra columns)                                                                                                                                                                      | Error    | Review tables for customizations in source instance and revert/update schema to match default KX13 schema                          |
-| NotCurrentlySupportedSkip                                   | Some object do not have migration path to new instance                                                                                                                                                                                                                                       | Warning  | Implement custom migration                                                                                                         |
-| DbConstraintBroken                                          | General message that specifes target database cannot hold data, becouse they are duplicate by certain column or missing dependency                                                                                                                                                           | Error    | Manually migrate object by id specified in message or check if dependency needed by object was successfuly migrated                |
-| MissingConfiguration                                        | Command is missing required configuration                                                                                                                                                                                                                                                    | Error    | Fill configuration specified in message                                                                                            |
-| FailedToUpdateTargetInstance / FailedToUpdateTargetInstance | General error occured when updating / inserting target instance object                                                                                                                                                                                                                       | Error    | Can be literally enything, from interrupted connection to database to malformed/incorect data. Error resolving depends on message. |
-| SourceValueIsRequired                                       | Source object instance has missing field value                                                                                                                                                                                                                                               | Error    | Review message and see what value is missing. Fill missing value in source instance or update to default if not needed             |
-| MissingRequiredDependency                                   | Source object instance has missing dependency need for target instance                                                                                                                                                                                                                       | Error    | Specify missing dependency in source instance or drop object completely                                                            |
-| MediaFileIsMissingOnSourceFilesystem                        | Occurs when media file is missing physically and configuration value `Settings.MigrateOnlyMediaFileInfo` is set to `false`                                                                                                                                                                   | Error    | Migrate source media file to target instance manually                                                                              |
-| SourceEntityIsNull                                          | Probably error while loading source data, could point to malformed data or error in toolkit itself                                                                                                                                                                                           | Error    | Check source datarow, if everything is ok report error                                                                             |
-| FailedToCreateTargetInstance                                | Creation of terget entity failed, probably error with data or in toolkit itself                                                                                                                                                                                                              | Error    | Check if data from source instance are compatible with target                                                                      |
-| LinkedDataAlreadyMaterializedInTargetInstance               | Linked page already exists in target instance, update is not possible (probably not needed)                                                                                                                                                                                                  | Warning  | Nothing needs to be done                                                                                                           |
-| TemporaryAttachmentMigrationIsNotSupported                  | Temporary attachments are not migrated, they occur when attachment upload is not finished correctly                                                                                                                                                                                          | Warning  | Nothing needs to be done                                                                                                           |
-| CmsTree_TreeIsLinkFromDifferentSite                         | Page is linked from different site, such linked page is not supported for migration                                                                                                                                                                                                          | Warning  | Remove page in source instance or create copy of page that is not linked from different site                                       |
-| SourcePageIsNotPublished                                    | Only published pages will be picked for migration, this warning occurs when page is not published                                                                                                                                                                                            | Warning  | Publish page in source instance                                                                                                    |
-| CmsUser_SkipAdminUser                                       | Migration of admin user not processed                                                                                                                                                                                                                                                        | Warning  | REmove admi user in target instance                                                                                                |
-| CmsUser_SkipPublicUser                                      | Migration of public user not processed, public userr is special case of user (catch all)                                                                                                                                                                                                     | Warning  | Do nothing, all relations to new public user will be mapped correctly                                                              |
-| CmsClass_CmsRootClassTypeSkip                               | Special type of page class, migration is not supported                                                                                                                                                                                                                                       | Warning  | Nothing needs to be done                                                                                                           |
-
-### Prerequisites
-
-- installation of nuget packages
-- reachable source instance database and filesystem locally
-- reachable target instance database and filesystem locally
-
-### Installation
-
-TODO section
-
-<!-- USAGE EXAMPLES -->
-
-## Usage
-
-- `Migration.Toolkit.CLI.exe migrate --siteId 1 --sites --users --settings-keys --media-libraries --page-types --pages --culture en-US`
-- `Migration.Toolkit.CLI.exe migrate --siteId 1 --pages --culture en-US --bypass-dependency-check` - if you want to retry only pages migration while knowing `--page-types`, `--sites`, `--users` migration were already run completely
-
-_For more examples, please refer to the **/Migration.Toolkit.CLI/README.md**_
+Data is now migrated to the target Xperience by Kentico instance according to your configuration. See [`Migration.Toolkit.CLI/README.md`](./Migration.Toolkit.CLI/README.md) for detailed information about the migration CLI, configuration options, instructions related to individual object types, and manual migration steps.
 
 <!-- CONTRIBUTING -->
-
 ## Contributing
 
-TODO section
-For Contributing please see <a href="./CONTRIBUTING.md">`CONTRIBUTING.md`</a> for more information.
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) to learn how to file issues, start discussions, and begin contributing.
+
+When submitting issues, please provide all available information about the problem or error. If possible, include the command line output log file and migration protocol generated for your `Migration.Toolkit.CLI.exe migrate` command.
 
 <!-- LICENSE -->
-
 ## License
 
-TODO section
 Distributed under the MIT License. See [`LICENSE.md`](./LICENSE.md) for more information.
+
+## Questions & Support
+
+See the [Kentico home repository](https://github.com/Kentico/Home/blob/master/README.md) for more information about the products and general advice on submitting questions.
