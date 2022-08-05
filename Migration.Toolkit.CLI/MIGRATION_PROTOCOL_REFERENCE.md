@@ -1,8 +1,8 @@
 ## Migration Protocol Reference
 
-Running the `Migration.Toolkit.CLI.exe migrate` command (see [`Migration.Toolkit.CLI/README.md`](./Migration.Toolkit.CLI/README.md)) generates a **migration protocol file**. The protocol provides information about the result of the migration, lists required manual steps, etc. 
+Running the `Migration.Toolkit.CLI.exe migrate` command (see [`/Migration.Toolkit.CLI/README.md`](/Migration.Toolkit.CLI/README.md)) generates a **migration protocol file**. The protocol provides information about the result of the migration, lists required manual steps, etc. 
 
-You can find the protocol file in the location specified by the `Settings.MigrationProtocolPath` [configuration option](./Migration.Toolkit.CLI/README.md#Configuration).
+You can find the protocol file in the location specified by the `Settings.MigrationProtocolPath` [configuration option](/Migration.Toolkit.CLI/README.md#Configuration).
 
 
 ## Common Migration Protocol Warnings & Errors
@@ -22,7 +22,7 @@ You can find the protocol file in the location specified by the `Settings.Migrat
 | InvalidSourceData                                           |        Warning           | The source instance is missing required data or data is malformed.<br /><br />**Fix**: Review the message details and try to look for differences between the source and target database schema. |
 | LinkedDataAlreadyMaterializedInTargetInstance               |        Warning           | A linked page already exists in the target instance and an update is not possible.<br /><br />**Fix**: No actions required. The update is probably not required. |
 | MediaFileIsMissingOnSourceFilesystem                        |        Error             | Occurs when a media file is missing from the source project's file system and the `Settings.MigrateOnlyMediaFileInfo` configuration option is `false`.<br /><br />**Fix**: Manually migrate the source media file to the target instance's file system. |                                                                               |
-| MissingConfiguration                                        |        Error             | The migrate command is missing required configuration.<br /><br />**Fix**: Add required configuration according to the error message. See [`Migration.Toolkit.CLI/README.md`](./Migration.Toolkit.CLI/README.md). |
+| MissingConfiguration                                        |        Error             | The migrate command is missing required configuration.<br /><br />**Fix**: Add required configuration according to the error message. See [`Migration.Toolkit.CLI/README.md`](/Migration.Toolkit.CLI/README.md). |
 | MissingRequiredDependency                                   |        Error             | An object from the source is missing a dependency required on the target instance.<br /><br />**Fix**: Add the missing dependency on the source instance or delete the object completely. |
 | NotCurrentlySupportedSkip                                   |        Warning           | Xperience by Kentico currently does not support all types of objects from Kentico Xperience 13, so they cannot be migrated via the toolkit.<br /><br />**Fix**: Implement custom migration. |
 | SourceEntityIsNull                                          |        Error             | Probably an error while loading source data. Can be caused by malformed source data or by an error in the Migration toolkit.**Fix**: Check the related source data. If everything looks correct, report a Migration toolkit issue. |
@@ -34,6 +34,6 @@ You can find the protocol file in the location specified by the `Settings.Migrat
 
 ## Submit issues
 
-See [`CONTRIBUTING.md`](./CONTRIBUTING.md).
+See [`CONTRIBUTING.md`](/CONTRIBUTING.md).
 
 When submitting issues, please provide all available information about the problem or error. If possible, include the command line output log file and migration protocol generated for your `Migration.Toolkit.CLI.exe migrate` command.
