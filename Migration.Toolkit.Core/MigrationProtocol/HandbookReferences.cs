@@ -23,6 +23,9 @@ public static class HandbookReferences
     public static HandbookReference LinkedDataAlreadyMaterializedInTargetInstance =>
         new HandbookReference("LinkedDataAlreadyMaterializedInTargetInstance");
     
+    public static HandbookReference DataAlreadyExistsInTargetInstance =>
+        new HandbookReference("DataAlreadyExistsInTargetInstance");
+    
     #endregion
 
 

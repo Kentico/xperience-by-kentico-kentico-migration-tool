@@ -181,8 +181,6 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                 continue;
             }
 
-            // TODO tk: 2022-07-12 check if page class is supported / migrated
-            
             var isPublished = _pageFacade.IsPublished(new IsPublishedArguments(
                 kx13CmsDocument.DocumentCanBePublished, kx13CmsDocument.DocumentWorkflowStepId,
                 kx13CmsDocument.DocumentIsArchived, kx13CmsDocument.DocumentCheckedOutVersionHistoryId,
@@ -275,7 +273,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                     );
                 }
                 
-                catch (Exception ex) // TODO tk: 2022-05-18 handle exceptions
+                catch (Exception ex)
                 {
                     _protocol.Append(HandbookReferences
                         .ErrorCreatingTargetInstance<TreeNode>(ex)
@@ -310,7 +308,6 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
             if (exists)
             {
                 _logger.LogWarning("PageUrlPath skipped, already exists in target instance: {Info}", pageUrlPathKey);
-                // TODO tk: 2022-07-08 report
                 continue;
             }
             
@@ -325,7 +322,11 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
             if (pageUrlPathsByHash.ContainsKey(pageUrlPathKey))
             {
                 _logger.LogWarning("PageUrlPath skipped, already exists in target instance: {Info}", pageUrlPathKey);
-                // TODO tk: 2022-07-08 report
+                _protocol.Append(HandbookReferences
+                    .DataAlreadyExistsInTargetInstance
+                    .WithMessage($"PathUrlPathHash is already present, possibly old PageUrlPaths are still present?")
+                    .WithIdentityPrint(kx13PageUrlPath)
+                );
                 continue;
             }
 
