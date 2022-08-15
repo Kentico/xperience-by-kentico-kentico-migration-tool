@@ -142,7 +142,7 @@ public class AttachmentMigrator
             librarySubFolder = Path.Combine(librarySubFolder, additionalMediaPath);
         }
 
-        var mapped = _attachmentMapper.Map(new CmsAttachmentMapperSource(kx13CmsAttachment, targetMediaLibraryId, uploadedFile, librarySubFolder), mediaFile);
+        var mapped = _attachmentMapper.Map(new CmsAttachmentMapperSource(kx13CmsAttachment, targetMediaLibraryId, uploadedFile, librarySubFolder, kx13AttachmentDocument), mediaFile);
         _protocol.MappedTarget(mapped);
 
         if (mapped is (var mediaFileInfo, var newInstance) { Success: true })
