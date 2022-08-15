@@ -73,14 +73,6 @@ public static class ConfigurationValidator
             yield return new ValidationMessage(ValidationMessageType.Error, string.Format(Resources.ConfigurationValidator_GetValidationErrors_UseOmActivitySiteRelationAutofix_MustFit, Printer.PrintEnumValues<AutofixEnum>(", "))
             );
         }
-
-        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.TargetAttachmentMediaLibraryName)))
-        {
-            yield return new ValidationMessage(ValidationMessageType.Error,
-                Resources.ConfigurationValidator_GetValidationErrors_TargetAttachmentMediaLibraryName_IsRequired,
-                Resources.ConfigurationValidator_GetValidationErrors_TargetAttachmentMediaLibraryName_RecommendedFix
-            );
-        }
     }
 
     #region "Helper methods"

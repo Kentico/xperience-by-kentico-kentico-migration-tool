@@ -31,9 +31,6 @@ public class ToolkitConfiguration
     [JsonPropertyName(ConfigurationNames.EntityConfigurations)]
     public EntityConfigurations EntityConfigurations { get; set; } = new();
     
-    [JsonPropertyName(ConfigurationNames.TargetAttachmentMediaLibraryName)]
-    public string TargetAttachmentMediaLibraryName { get; set; } = null!;
-    
     [JsonPropertyName(ConfigurationNames.MigrateOnlyMediaFileInfo)]
     public bool? MigrateOnlyMediaFileInfo { get; set; } = true;
 

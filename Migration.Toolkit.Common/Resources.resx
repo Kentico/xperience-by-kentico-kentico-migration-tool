@@ -48,12 +48,6 @@
     <data name="ConfigurationValidator_GetValidationErrors_UseOmActivityNodeRelationAutofix_MustFit" xml:space="preserve">
         <value>Configuration value in path 'Settings.UseOmActivityNodeRelationAutofix' must fit one of: {0}</value>
     </data>
-    <data name="ConfigurationValidator_GetValidationErrors_TargetAttachmentMediaLibraryName_IsRequired" xml:space="preserve">
-        <value>Configuration value in path 'Settings.TargetAttachmentMediaLibraryName' is required.</value>
-    </data>
-    <data name="ConfigurationValidator_GetValidationErrors_TargetAttachmentMediaLibraryName_RecommendedFix" xml:space="preserve">
-        <value>Set value to 'CmsAttachmentsForSite{{siteName}}Or{{siteId}}' for example. Command '--attachments' cannot complete successfully without value set.</value>
-    </data>
     <data name="ConfigurationError" xml:space="preserve">
         <value>{0}Configuration error{1}: {2}</value>
     </data>
