@@ -17,7 +17,7 @@ namespace Migration.Toolkit.Core.Mappers;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.KX13.Models;
 
-public record CmsTreeMapperSource(KX13M.CmsTree CmsTree, string CultureCode);
+public record CmsTreeMapperSource(KX13M.CmsTree CmsTree, string SourceCultureCode, string TargetCultureCode);
 
 public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
 {
@@ -50,7 +50,7 @@ public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
 
     protected override TreeNode MapInternal(CmsTreeMapperSource source, TreeNode target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
-        var (cmsTree, cultureCode) = source;
+        var (cmsTree, sourceCultureCode, targetCultureCode) = source;
         
         if (!newInstance && cmsTree.NodeGuid != target.NodeGUID)
         {
@@ -92,8 +92,8 @@ public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
         // target.NodeOriginalNodeID = ;
         // target.NodeLinkedNodeSiteID = ;
         
-        var sourceDocument = cmsTree.CmsDocuments.Single(x => x.DocumentCulture == cultureCode);
-        target.DocumentCulture = sourceDocument.DocumentCulture;
+        var sourceDocument = cmsTree.CmsDocuments.Single(x => x.DocumentCulture == sourceCultureCode);
+        target.DocumentCulture = targetCultureCode;
         target.DocumentContent.LoadContentXml(sourceDocument.DocumentContent ?? string.Empty);
         target.DocumentName = sourceDocument.DocumentName;
 

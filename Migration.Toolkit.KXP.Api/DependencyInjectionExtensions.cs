@@ -19,6 +19,7 @@ public static class DependencyInjectionExtensions
         services.AddSingleton<KxpClassFacade>();
         services.AddSingleton<KxpMediaFileFacade>();
         services.AddSingleton<KxpPageFacade>();
+        services.AddSingleton<KxpSiteFacade>();
 
         return services;
     }
