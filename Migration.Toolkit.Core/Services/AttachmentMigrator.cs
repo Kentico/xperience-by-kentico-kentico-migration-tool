@@ -13,6 +13,10 @@ using Migration.Toolkit.KX13.Context;
 
 namespace Migration.Toolkit.Core.Services;
 
+using System.Text;
+using System.Text.RegularExpressions;
+using CMS.Helpers;
+using CMS.IO;
 using Migration.Toolkit.KXP.Api;
 using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Context;
@@ -85,6 +89,7 @@ public class AttachmentMigrator
 
     public MigrateAttachmentResult MigrateAttachment(KX13M.CmsAttachment kx13CmsAttachment, string? additionalMediaPath = null)
     {
+        // TODO tomas.krch: 2022-08-18 directory validation only -_ replace!
         _protocol.FetchedSource(kx13CmsAttachment);
 
         if (kx13CmsAttachment.AttachmentFormGuid != null)
@@ -139,7 +144,7 @@ public class AttachmentMigrator
 
         if (!string.IsNullOrWhiteSpace(additionalMediaPath))
         {
-            librarySubFolder = Path.Combine(librarySubFolder, additionalMediaPath);
+            librarySubFolder = System.IO.Path.Combine(librarySubFolder, additionalMediaPath);
         }
 
         var mapped = _attachmentMapper.Map(new CmsAttachmentMapperSource(kx13CmsAttachment, targetMediaLibraryId, uploadedFile, librarySubFolder, kx13AttachmentDocument), mediaFile);
@@ -237,11 +242,24 @@ public class AttachmentMigrator
     }
 
     private record MediaLibraryFactoryContext(KxpMediaFileFacade MediaFileFacade, string TargetLibraryCodeName, string TargetLibraryDisplayName, KxpContext DbContext);
+
+    private static readonly Regex SanitizationRegex =
+        RegexHelper.GetRegex("[^-_a-z0-9]", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    
+    private static readonly Regex LibraryPathValidationRegex =
+        RegexHelper.GetRegex("^[-_a-z0-9]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.CultureInvariant);
     
     private static int MediaLibraryFactory((string libraryName, int siteId) arg, MediaLibraryFactoryContext context)
     {
         var (libraryName, siteId) = arg;
         var tml = context.DbContext.MediaLibraries.SingleOrDefault(ml => ml.LibrarySiteId == siteId && ml.LibraryName == libraryName);
-        return tml?.LibraryId ?? context.MediaFileFacade.CreateMediaLibrary(siteId, context.TargetLibraryCodeName, "Created by Xperience Migration.Toolkit", context.TargetLibraryCodeName, context.TargetLibraryDisplayName).LibraryID;
+        
+        var libraryDirectory = context.TargetLibraryCodeName;
+        if (!LibraryPathValidationRegex.IsMatch(libraryDirectory))
+        {
+            libraryDirectory = SanitizationRegex.Replace(libraryDirectory, "_");
+        }
+
+        return tml?.LibraryId ?? context.MediaFileFacade.CreateMediaLibrary(siteId, libraryDirectory, "Created by Xperience Migration.Toolkit", context.TargetLibraryCodeName, context.TargetLibraryDisplayName).LibraryID;
     }
 }
