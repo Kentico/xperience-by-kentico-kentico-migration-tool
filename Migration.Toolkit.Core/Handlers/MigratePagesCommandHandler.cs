@@ -175,7 +175,6 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                         return new CommandFailureResult();
                     }
 
-                    _protocol.Warning(HandbookReferences.CmsTreeTreeRootSkip, kx13CmsTree);
                     _primaryKeyMappingContext.SetMapping<CmsTree>(
                         r => r.NodeId,
                         kx13CmsTree.NodeId,
