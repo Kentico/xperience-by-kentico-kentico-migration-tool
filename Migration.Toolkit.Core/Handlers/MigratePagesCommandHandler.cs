@@ -74,6 +74,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
             .ThenBy(t => t.NodeParentId)
             .ThenBy(t => t.NodeId)
             .AsNoTracking()
+            .AsSplitQuery()
             .SingleOrDefault();
     }
 
@@ -102,6 +103,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                 .OrderBy(t => t.NodeLevel)
                 .ThenBy(t => t.NodeParentId)
                 .ThenBy(t => t.NodeId)
+                .AsSplitQuery()
                 .AsNoTrackingWithIdentityResolution();
             
             foreach (var kx13CmsTreeOriginal in kx13CmsTrees)
