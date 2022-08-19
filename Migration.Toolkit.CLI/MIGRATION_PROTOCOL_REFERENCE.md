@@ -1,6 +1,6 @@
 ## Migration Protocol Reference
 
-Running the `Migration.Toolkit.CLI.exe migrate` command (see [`/Migration.Toolkit.CLI/README.md`](/Migration.Toolkit.CLI/README.md)) generates a **migration protocol file**. The protocol provides information about the result of the migration, lists required manual steps, etc. 
+Running the `Migration.Toolkit.CLI.exe migrate` command (see [`Migration.Toolkit.CLI/README.md`](/Migration.Toolkit.CLI/README.md)) generates a **migration protocol file**. The protocol provides information about the result of the migration, lists required manual steps, etc. 
 
 You can find the protocol file in the location specified by the `Settings.MigrationProtocolPath` [configuration option](/Migration.Toolkit.CLI/README.md#Configuration).
 
@@ -10,7 +10,7 @@ You can find the protocol file in the location specified by the `Settings.Migrat
 | Message ReferenceName                                       |        Severity          |    Description               |
 | ------------------------------------------------------------|--------------------------|----------------------------- |
 | BulkCopyColumnMismatch                                      |        Error             | For performance optimization, the migration transfers certain objects using bulk SQL queries. The columns in the related database tables must match on the source and target. The migration attempts to discard data from extra columns on the source.<br /><br />**Fix**: Review the tables for customizations on the source instance and revert/update the schema to match the default Kentico Xperience 13 state. |
-| CmsClass_CmsRootClassTypeSkip                               |        Warning           | 'CMS.Root' is a special system page type and is not supported for migration.<br /><br />**Fix**: No actions required. Xperience by Kentico contains a root page type by default. |
+| CmsClass_CmsRootClassTypeSkip                               |        Information       | 'CMS.Root' is a special system page type and is not supported for migration.<br /><br />**Fix**: No actions required. Xperience by Kentico contains a root page type by default. |
 | CmsTree_TreeIsLinkFromDifferentSite                         |        Warning           | The content tree contains a page that is linked from a different site. Linked pages from other sites are not supported for migration (Xperience by Kentico currently does not allow multiple sites). <br /><br />**Fix**: Remove the linked page on the source instance or create a copy that is not linked from a different site. |
 | CmsUser_SkipAdminUser                                       |        Warning           | Migration of the 'administrator' user was not processed.<br /><br />**Fix**: Remove the 'administrator' user on the target instances. |
 | CmsUser_SkipPublicUser                                      |        Warning           | Migration of the system 'public' user was not processed.<br /><br />**Fix**: No actions required. All bindings (e.g. the site binding) for the 'public' user account will be mapped automatically. |
