@@ -44,8 +44,8 @@ Migration.Toolkit.CLI.exe migrate --siteId 1 --culture en-US --sites --users
 | `--sites`                   | Enables migration of the [site](https://docs.xperience.io/x/34HFC). The site's basic properties are transferred to the target instance. Requires the `siteId` parameter to be specified. |                                  |
 | `--users`                   | Enables migration of [users](https://docs.xperience.io/x/8ILWCQ).<br /><br />See: [Migration details for specific object types - Users](#users) | `--sites`                             |
 | `--settings-keys`           | Enables migration of values for [settings](https://docs.xperience.io/x/7YjFC) that are available in Xperience by Kentico. | `--sites`                             |
-| `--page-types`              | Enables migration of [page types](https://docs.xperience.io/x/gYHWCQ). Required to migrate Pages.  | `--sites`              |
-| `--pages`                   | Enables migration of [pages](https://docs.xperience.io/x/bxzfBw).<br /><br />The target instance must not contain pages other than those created by previous runs of the Migration toolkit. Requires the `--culture` parameter to be specified.<br /><br />See: [Migration details for specific object types - Page types and Pages](#page-types-and-pages) | `--sites`, `--users`, `--page-types` |
+| `--page-types`              | Enables migration of [page types](https://docs.xperience.io/x/gYHWCQ). Required to migrate Pages.<br /><br />See: [Migration details for specific object types - Page types](#page-types)  | `--sites`              |
+| `--pages`                   | Enables migration of [pages](https://docs.xperience.io/x/bxzfBw).<br /><br />The target instance must not contain pages other than those created by previous runs of the Migration toolkit. Requires the `--culture` parameter to be specified.<br /><br />See: [Migration details for specific object types - Pages](#pages) | `--sites`, `--users`, `--page-types` |
 | `--attachments`             | Enables migration of page attachments to [media libraries](https://docs.xperience.io/x/agKiCQ) (page attachments are not supported in Xperience by Kentico).<br /><br />See: [Migration details for specific object types - Attachments](#attachments)   | `--sites`    |
 | `--contact-management`      | Enables migration of [contacts](https://docs.xperience.io/x/nYPWCQ) and [activities](https://docs.xperience.io/x/oYPWCQ). The target instance must not contain any contacts or activities. May run for a long time depending on the number of contacts in the source database. |                        |
 | `--data-protection`         | Enables migration of [consents](https://docs.xperience.io/x/zoB1CQ) and consent agreements. Requires the `--culture` parameter to be specified.   | `--sites`, `--users`, `--contact management`  |
@@ -66,26 +66,62 @@ Migration.Toolkit.CLI.exe migrate --siteId 1 --culture en-US --sites --users
 
 ### Migration details for specific object types
 
-#### Page types and Pages
+#### Page types
+
+ * Xperience by Kentico currently does not support macro expressions in page type field default values or other settings. Page type fields containing macros will not work correctly after the migration.
+ * The Migration toolkit attempts to map the _Data type_ and _Form control_ of page type fields to an appropriate equivalent in Xperience by Kentico. This is not always possible, and cannot be done for custom data types or form controls. We recommend that you check your page type fields after the migration and adjust them if necessary.
+   * The [Form components](https://docs.xperience.io/x/5ASiCQ) used by page type fields in Xperience by Kentico often store data differently than their equivalent Form control in Xperience 13. To ensure that content is displayed correctly on page, you may need to manually adjust your website's implementation to match the new data format. See [Selector components in Xperience by Kentico](https://docs.xperience.io/x/wIfWCQ) to learn more about some of the most common form components.
+
+### Pages
 
   * Xperience by Kentico currently does not support multilingual sites. The content of pages is migrated from the culture specified in the `migrate --culture` parameter.
   * Only pages that are **published** on the source instance are migrated. After the migration, all pages are in the published workflow step.
   * Migration includes the URL paths and Former URLs of pages, but not Alternative URLs, which are currently not supported in Xperience by Kentico.
+  * Page permissions (ACLs) are currently not supported in Xperience by Kentico, so are not migrated.
 
-Writing in Progress
+#### Media libraries
+
+ * Media library permissions are currently not supported in Xperience by Kentico, so are not migrated.
 
 #### Attachments
 
-Page attachments are not supported in Xperience by Kentico. Attachments are migrated into media libraries.
+Page attachments are not supported in Xperience by Kentico. Attachment files are instead migrated into [media libraries](https://docs.xperience.io/x/agKiCQ).
 
-Writing in Progress
+ * Page attachments are migrated into a media library named: _"Attachments for site <sitename>"_ 
+ * The media library contains folders matching the content tree structure for all pages with attachments (including empty folders for parent pages without attachments). The folders are named after the _node alias_ of the source pages.
+   * Each page's folder directly contains all unsorted attachments (files added on the _Attachments_ tab in the Xperience 13 _Pages_ application).
+   * Attachments stored in specific page fields are placed into subfolders, named in format: _"__fieldname"_. These subfolders can include multiple files for fields of the _Attachments_ type, or a single file for _File_ type fields.
+ * Any "floating" attachments without an associated page are migrated into the media library root folder.
+ * The migration does not include temporary attachments (created when a file upload is not finished correctly). If any are present on the source instance, a warning is logged in the [migration protocol](./MIGRATION_PROTOCOL_REFERENCE.md).
+
+The following is an example of a media library created by the Migration toolkit for page attachments:
+
+**Media library "Attachments for site DancingGoat"**
+  * **Articles** (empty parent folder)
+    * **Coffee-processing-techniques** (contains any unsorted attachments of the '/Articles/Coffee-processing-techniques' page)
+      * **__Teaser** (contains attachments stored in the page's 'Teaser' field
+    * **Which-brewing-fits-you**
+      * **__Teaser**
+	* ...
+
+Additionally, any attachments placed into the content of migrated pages **will no longer work** in Xperience by Kentico. This includes images and file download links that use **/getattachment** and **/getimage** URLs. 
+
+If you wish to continue using these legacy Kentico Xperience 13 attachment URLs, you need to add a custom handler to your Xperience by Kentico project. See [`Migration.Toolkit.KXP.Extensions/README.MD`](/Migration.Toolkit.KXP.Extensions/README.MD) for instructions.
 
 #### Users
 
   * The 'administrator' user account is not updated by the migration, only transferred from the source if it does not exist on the target instance.
   * The 'public' system user is updated, and all bindings (e.g. the site binding) are mapped automatically on the target instance.
   * Site bindings are updated automatically for all migrated users.
+  * Users in Xperience by Kentico must have an email address. Migration is only supported for users who have a **unique** email address value on the source instance.
+  * The migration currently does not support custom user fields.
   * **Note**: Xperience by Kentico currently does not support registration and authentication of users on the live site. User accounts only control access to the administration interface.
+
+#### Contacts
+
+  * The migration currently does not support custom contact fields.
+  * For performance reasons, contacts and related objects are migrated using bulk SQL queries. As a result, you always need to delete all Contacts, Activities and Consent agreements before running the migration (when using the `migrate --contact-management` parameter).
+  
 
 ## Configuration
 
