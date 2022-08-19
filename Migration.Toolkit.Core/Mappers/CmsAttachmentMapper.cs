@@ -8,10 +8,15 @@ using Migration.Toolkit.Core.MigrationProtocol;
 
 namespace Migration.Toolkit.Core.Mappers;
 
-public record CmsAttachmentMapperSource(KX13M.CmsAttachment Attachment, int TargetLibraryId, IUploadedFile File, string LibrarySubFolder);
+using Migration.Toolkit.KX13.Models;
+
+public record CmsAttachmentMapperSource(CmsAttachment Attachment, int TargetLibraryId, IUploadedFile File, string LibrarySubFolder,
+    CmsDocument? AttachmentDocument);
 
 public class CmsAttachmentMapper: EntityMapperBase<CmsAttachmentMapperSource, MediaFileInfo>
 {
+    private const string LegacyOriginalPath = "__LegacyOriginalPath";
+
     public CmsAttachmentMapper(ILogger<CmsAttachmentMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : base(logger, pkContext, protocol)
     {
     }
@@ -33,7 +38,7 @@ public class CmsAttachmentMapper: EntityMapperBase<CmsAttachmentMapperSource, Me
 
     protected override MediaFileInfo MapInternal(CmsAttachmentMapperSource args, MediaFileInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
-        var (cmsAttachment, targetLibraryId, _, _) = args;
+        var (cmsAttachment, targetLibraryId, _, _, attachmentDocument) = args;
         
         target.FileName = Path.GetFileNameWithoutExtension(cmsAttachment.AttachmentName);
         target.FileTitle = cmsAttachment.AttachmentTitle ?? cmsAttachment.AttachmentName;
@@ -55,8 +60,13 @@ public class CmsAttachmentMapper: EntityMapperBase<CmsAttachmentMapperSource, Me
         // target.FileCreatedWhen = cmsAttachment.?;
         
         target.FileModifiedWhen = cmsAttachment.AttachmentLastModified;
-
+        
         KenticoHelper.CopyCustomData(target.FileCustomData, cmsAttachment.AttachmentCustomData);
+
+        if (attachmentDocument != null)
+        {
+            target.FileCustomData.SetValue(LegacyOriginalPath, attachmentDocument.DocumentNode.NodeAliasPath);    
+        }
         
         return target;
     }

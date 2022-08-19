@@ -50,8 +50,7 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
     public async Task<CommandResult> Handle(MigratePageTypesCommand request, CancellationToken cancellationToken)
     {
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
-
-        Debug.Assert(_toolkitConfiguration.EntityConfigurations != null, "_toolkitConfiguration.EntityConfigurations != null");
+        
         var entityConfiguration = _toolkitConfiguration.EntityConfigurations.GetEntityConfiguration<CmsClass>();
         
         var siteIdExplicitMapping = _toolkitConfiguration.RequireExplicitMapping<CmsSite>(s => s.SiteId);

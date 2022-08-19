@@ -149,10 +149,10 @@ Add the options under the `Settings` section in the configuration file.
       },
       "CMS_Class": {
         "ExcludeCodeNames": [
-          "CMS.File",
-		  "CMS.MenuItem",
+          "CMS.File", 
+          "CMS.MenuItem",
           "ACME.News",
-          "ACME.Office"
+          "ACME.Office",
           "CMS.Blog",
           "CMS.BlogPost"
         ]

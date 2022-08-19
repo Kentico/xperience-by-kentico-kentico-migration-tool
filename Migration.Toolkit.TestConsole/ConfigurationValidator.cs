@@ -82,14 +82,6 @@ public static class ConfigurationValidator
                 $"Configuration value in path 'Settings.UseOmActivitySiteRelationAutofix' must fit one of: {Printer.PrintEnumValues<AutofixEnum>(", ")}"
             );
         }
-
-        if (CheckCfgValue(settings?.GetValue<string>("TargetAttachmentMediaLibraryName")))
-        {
-            yield return new ValidationMessage(ValidationMessageType.Error,
-                $"Configuration value in path 'Settings.TargetAttachmentMediaLibraryName' is required.",
-                "Set value to 'CmsAttachmentsForSite{{siteName}}Or{{siteId}}' for example. Command '--attachments' cannot complete successfully without value set."
-            );
-        }
     }
 
     #region "Helper methods"

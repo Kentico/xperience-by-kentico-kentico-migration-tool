@@ -6,7 +6,6 @@ public class ConfigurationNames
     public const string SourceCmsDirPath = "SourceCmsDirPath";
     public const string TargetConnectionString = "TargetConnectionString";
     public const string TargetCmsDirPath = "TargetCmsDirPath";
-    public const string TargetAttachmentMediaLibraryName = "TargetAttachmentMediaLibraryName";
     public const string MigrateOnlyMediaFileInfo = "MigrateOnlyMediaFileInfo";
     public const string UseOmActivityNodeRelationAutofix = "UseOmActivityNodeRelationAutofix";
     public const string UseOmActivitySiteRelationAutofix = "UseOmActivitySiteRelationAutofix";

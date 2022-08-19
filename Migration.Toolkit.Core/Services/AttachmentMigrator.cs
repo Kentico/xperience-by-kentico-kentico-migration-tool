@@ -13,6 +13,10 @@ using Migration.Toolkit.KX13.Context;
 
 namespace Migration.Toolkit.Core.Services;
 
+using System.Text;
+using System.Text.RegularExpressions;
+using CMS.Helpers;
+using CMS.IO;
 using Migration.Toolkit.KXP.Api;
 using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Context;
@@ -50,18 +54,20 @@ public class AttachmentMigrator
         _protocol = protocol;
     }
 
-    public record MigrateAttachmentResult(bool Success, bool CanContinue, MediaFileInfo? MediaFileInfo = null, MediaLibraryInfo? MediaLibraryInfo = null);
+    public record MigrateAttachmentResult(bool Success, bool CanContinue, MediaFileInfo? MediaFileInfo = null,
+        MediaLibraryInfo? MediaLibraryInfo = null);
 
     public IEnumerable<MigrateAttachmentResult> MigrateGroupedAttachments(int documentId, Guid attachmentGroupGuid, string fieldName)
     {
         using var kx13Context = _kx13ContextFactory.CreateDbContext();
-        var groupedAttachment = kx13Context.CmsAttachments.Where(a => a.AttachmentGroupGuid == attachmentGroupGuid && a.AttachmentDocumentId == documentId);
+        var groupedAttachment =
+            kx13Context.CmsAttachments.Where(a => a.AttachmentGroupGuid == attachmentGroupGuid && a.AttachmentDocumentId == documentId);
         foreach (var cmsAttachment in groupedAttachment)
         {
-            yield return MigrateAttachment(cmsAttachment, fieldName);
+            yield return MigrateAttachment(cmsAttachment, $"__{fieldName}");
         }
     }
-    
+
     public MigrateAttachmentResult MigrateAttachment(Guid kx13CmsAttachmentGuid)
     {
         using var kx13Context = _kx13ContextFactory.CreateDbContext();
@@ -75,23 +81,15 @@ public class AttachmentMigrator
             }));
             return new MigrateAttachmentResult(false, true);
         }
-        
+
         return MigrateAttachment(attachment);
-    } 
-    
+    }
+
     private readonly ConcurrentDictionary<int, CmsSite> _targetSites = new();
-    
-    public MigrateAttachmentResult MigrateAttachment(KX13M.CmsAttachment kx13CmsAttachment, string? additionalMedialPath = null)
+
+    public MigrateAttachmentResult MigrateAttachment(KX13M.CmsAttachment kx13CmsAttachment, string? additionalMediaPath = null)
     {
-        var libraryNameMask = _toolkitConfiguration.TargetAttachmentMediaLibraryName;
-        if (string.IsNullOrWhiteSpace(libraryNameMask))
-        {
-            _protocol.Append(HandbookReferences
-                .MissingConfiguration<MigrateAttachmentsCommand>(nameof(_toolkitConfiguration.TargetAttachmentMediaLibraryName))
-            );
-            return new MigrateAttachmentResult(false, false);
-        }
-        
+        // TODO tomas.krch: 2022-08-18 directory validation only -_ replace!
         _protocol.FetchedSource(kx13CmsAttachment);
 
         if (kx13CmsAttachment.AttachmentFormGuid != null)
@@ -110,6 +108,7 @@ public class AttachmentMigrator
         var kx13AttachmentDocument = kx13CmsAttachment.AttachmentDocumentId is int attachmentDocumentId
             ? GetKx13CmsDocument(attachmentDocumentId)
             : null;
+        
         var targetSiteId = _primaryKeyMappingContext.RequireMapFromSource<KX13.Models.CmsSite>(s => s.SiteId, kx13CmsAttachment.AttachmentSiteId);
         var targetSite = _targetSites.GetOrAdd(targetSiteId, i =>
         {
@@ -117,12 +116,7 @@ public class AttachmentMigrator
             return kxoDbContext.CmsSites.Single(s => s.SiteId == targetSiteId);
         });
 
-        var targetLibraryName = libraryNameMask
-                .Replace("{sitename}", targetSite.SiteName, StringComparison.InvariantCultureIgnoreCase)
-                .Replace("{siteid}", targetSite.SiteId.ToString(), StringComparison.InvariantCultureIgnoreCase)
-            ;
-
-        if (!TryEnsureTargetLibraryExists(targetLibraryName, targetSite.SiteId, out var targetMediaLibraryId))
+        if (!TryEnsureTargetLibraryExists(targetSite.SiteId, targetSite.SiteName, out var targetMediaLibraryId))
         {
             return new(false, false);
         }
@@ -148,12 +142,12 @@ public class AttachmentMigrator
             librarySubFolder = kx13AttachmentDocument.DocumentNode.NodeAliasPath;
         }
 
-        if (!string.IsNullOrWhiteSpace(additionalMedialPath))
+        if (!string.IsNullOrWhiteSpace(additionalMediaPath))
         {
-            librarySubFolder = Path.Combine(librarySubFolder, additionalMedialPath);
+            librarySubFolder = System.IO.Path.Combine(librarySubFolder, additionalMediaPath);
         }
 
-        var mapped = _attachmentMapper.Map(new CmsAttachmentMapperSource(kx13CmsAttachment, targetMediaLibraryId, uploadedFile, librarySubFolder), mediaFile);
+        var mapped = _attachmentMapper.Map(new CmsAttachmentMapperSource(kx13CmsAttachment, targetMediaLibraryId, uploadedFile, librarySubFolder, kx13AttachmentDocument), mediaFile);
         _protocol.MappedTarget(mapped);
 
         if (mapped is (var mediaFileInfo, var newInstance) { Success: true })
@@ -182,7 +176,6 @@ public class AttachmentMigrator
                     .WithIdentityPrint(mediaFileInfo)
                     .WithData(new
                     {
-                        targetLibraryName,
                         targetSiteId,
                         mediaFileInfo.FileGUID,
                         mediaFileInfo.FileName,
@@ -216,22 +209,19 @@ public class AttachmentMigrator
             return null;
         }
     }
-    
-    
+
+
     private readonly ConcurrentDictionary<(string libraryName, int siteId), int> _mediaLibraryIdCache = new();
-    private int EnsureMediaFileLibrary((string libraryName, int siteId) arg, KxpContext db)
+
+    private bool TryEnsureTargetLibraryExists(int targetSiteId, string targetSiteName, out int targetLibraryId)
     {
-        var (libraryName, siteId) = arg;
-        var tml = db.MediaLibraries.SingleOrDefault(ml => ml.LibrarySiteId == siteId && ml.LibraryName == libraryName);
-        return tml?.LibraryId ?? _mediaFileFacade.CreateMediaLibrary(siteId, libraryName, "", libraryName, libraryName).LibraryID;
-    }
-    private bool TryEnsureTargetLibraryExists(string targetLibraryName, int targetSiteId, out int targetLibraryId)
-    {
+        var targetLibraryCodeName = $"AttachmentsForSite{targetSiteName}";
+        var targetLibraryDisplayName = $"Attachments for site {targetSiteName}";
         using var dbContext = _kxpContextFactory.CreateDbContext();
         try
         {
-            targetLibraryId = _mediaLibraryIdCache.GetOrAdd((targetLibraryName, targetSiteId), EnsureMediaFileLibrary, dbContext);
-            
+            targetLibraryId = _mediaLibraryIdCache.GetOrAdd((targetLibraryCodeName, targetSiteId), static (arg, context) => MediaLibraryFactory(arg, context), new MediaLibraryFactoryContext(_mediaFileFacade, targetLibraryCodeName, targetLibraryDisplayName, dbContext));
+
             return true;
         }
         catch (Exception exception)
@@ -241,7 +231,7 @@ public class AttachmentMigrator
                 .NeedsManualAction()
                 .WithData(new
                 {
-                    targetLibraryName,
+                    TargetLibraryCodeName = targetLibraryCodeName,
                     targetSiteId,
                 })
             );
@@ -249,5 +239,27 @@ public class AttachmentMigrator
 
         targetLibraryId = 0;
         return false;
+    }
+
+    private record MediaLibraryFactoryContext(KxpMediaFileFacade MediaFileFacade, string TargetLibraryCodeName, string TargetLibraryDisplayName, KxpContext DbContext);
+
+    private static readonly Regex SanitizationRegex =
+        RegexHelper.GetRegex("[^-_a-z0-9]", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    
+    private static readonly Regex LibraryPathValidationRegex =
+        RegexHelper.GetRegex("^[-_a-z0-9]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.CultureInvariant);
+    
+    private static int MediaLibraryFactory((string libraryName, int siteId) arg, MediaLibraryFactoryContext context)
+    {
+        var (libraryName, siteId) = arg;
+        var tml = context.DbContext.MediaLibraries.SingleOrDefault(ml => ml.LibrarySiteId == siteId && ml.LibraryName == libraryName);
+        
+        var libraryDirectory = context.TargetLibraryCodeName;
+        if (!LibraryPathValidationRegex.IsMatch(libraryDirectory))
+        {
+            libraryDirectory = SanitizationRegex.Replace(libraryDirectory, "_");
+        }
+
+        return tml?.LibraryId ?? context.MediaFileFacade.CreateMediaLibrary(siteId, libraryDirectory, "Created by Xperience Migration.Toolkit", context.TargetLibraryCodeName, context.TargetLibraryDisplayName).LibraryID;
     }
 }

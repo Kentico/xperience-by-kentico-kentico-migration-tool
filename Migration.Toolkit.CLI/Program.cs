@@ -262,8 +262,8 @@ while (argsQ.TryDequeue(out var arg))
 
     if (arg == $"--{MigrateDataProtectionCommand.Moniker}")
     {
-        RequireNumberParameter("--batchSize", out var batchSize);
-        commands.Add(new MigrateDataProtectionCommand(batchSize));
+        // RequireNumberParameter("--batchSize", out var batchSize);
+        commands.Add(new MigrateDataProtectionCommand(1000));
         continue;
     }
 

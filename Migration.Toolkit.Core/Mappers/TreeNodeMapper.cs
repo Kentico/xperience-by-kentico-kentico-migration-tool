@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Text;
-using CMS.DataEngine;
 using CMS.DocumentEngine;
 using CMS.DocumentEngine.Internal;
 using CMS.FormEngine;
@@ -18,11 +17,11 @@ namespace Migration.Toolkit.Core.Mappers;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.KX13.Models;
 
-public record CmsTreeMapperSource(KX13M.CmsTree CmsTree, string CultureCode);
+public record CmsTreeMapperSource(KX13M.CmsTree CmsTree, string SourceCultureCode, string TargetCultureCode);
 
 public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
 {
-    private const string CLASS_FIELD_CONTROLNAME = "controlname";
+    private const string CLASS_FIELD_CONTROL_NAME = "controlname";
     private readonly ILogger<TreeNodeMapper> _logger;
     private readonly CoupledDataService _coupledDataService;
     private readonly ClassService _classService;
@@ -51,7 +50,7 @@ public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
 
     protected override TreeNode MapInternal(CmsTreeMapperSource source, TreeNode target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
-        var (cmsTree, cultureCode) = source;
+        var (cmsTree, sourceCultureCode, targetCultureCode) = source;
         
         if (!newInstance && cmsTree.NodeGuid != target.NodeGUID)
         {
@@ -93,8 +92,8 @@ public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
         // target.NodeOriginalNodeID = ;
         // target.NodeLinkedNodeSiteID = ;
         
-        var sourceDocument = cmsTree.CmsDocuments.Single(x => x.DocumentCulture == cultureCode);
-        target.DocumentCulture = sourceDocument.DocumentCulture;
+        var sourceDocument = cmsTree.CmsDocuments.Single(x => x.DocumentCulture == sourceCultureCode);
+        target.DocumentCulture = targetCultureCode;
         target.DocumentContent.LoadContentXml(sourceDocument.DocumentContent ?? string.Empty);
         target.DocumentName = sourceDocument.DocumentName;
 
@@ -125,14 +124,12 @@ public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
 
         if (mappingHelper.TranslateRequiredId<KX13M.CmsUser>(u => u.UserId, sourceDocument.DocumentCreatedByUserId, out var createdByUserId))
         {
-            // target.DocumentCreatedByUserID = sourceDocument.DocumentCreatedByUserId;
-            target.SetValue(nameof(target.DocumentCreatedByUserID), createdByUserId); // TODO tk: 2022-07-06 not working
+            target.SetValue(nameof(target.DocumentCreatedByUserID), createdByUserId);
         }
 
         if (mappingHelper.TranslateRequiredId<KX13M.CmsUser>(u => u.UserId, sourceDocument.DocumentModifiedByUserId, out var modifiedByUserId))
         {
-            // target.DocumentModifiedByUserID = sourceDocument.DocumentModifiedByUserId;
-            target.SetValue(nameof(target.DocumentModifiedByUserID), modifiedByUserId); // TODO tk: 2022-07-06 not working
+            target.SetValue(nameof(target.DocumentModifiedByUserID), modifiedByUserId);
         }
 
         // target.DocumentPublishedVersionHistoryID = sourceDocument.DocumentPublishedVersionHistoryId;
@@ -148,8 +145,6 @@ public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
         {
             MapCoupledDataFieldValues(target, cmsTree, fieldsInfo, sourceDocument, columnNames, formInfo);
         }
-        
-        
 
         return target;
     }
@@ -165,7 +160,7 @@ public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
         foreach (var columnName in columnNames)
         {
             var field = formInfo.GetFormField(columnName);
-            var controlName = field.Settings[CLASS_FIELD_CONTROLNAME]?.ToString()?.ToLowerInvariant();
+            var controlName = field.Settings[CLASS_FIELD_CONTROL_NAME]?.ToString()?.ToLowerInvariant();
 
             Debug.Assert(coupledDataRow != null, nameof(coupledDataRow) + " != null");
 
@@ -239,7 +234,6 @@ public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
             }
             else
             {
-                // TODO tk: 2022-07-17 protocol
                 _logger.LogWarning("Coupled data is missing for source document {DocumentId} of class {ClassName}", sourceDocument.DocumentId, cmsTree.NodeClass.ClassName);
             }
         }

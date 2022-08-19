@@ -220,14 +220,14 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
                     foreach (var newKx13ConsentAgreement in consentAgreementNews)
                     {
                         _protocol.Success(kx13ConsentAgreement, newKx13ConsentAgreement, mapped);
-                        _logger.LogInformation("CmsConsentAgreement: with ConsentAgreementGuid \'ConsentAgreementGuid}\' was inserted",
+                        _logger.LogInformation("CmsConsentAgreement: with ConsentAgreementGuid \'{ConsentAgreementGuid}\' was inserted",
                             newKx13ConsentAgreement.ConsentAgreementGuid);
                     }
 
                     foreach (var updateKx13ConsentAgreement in consentAgreementUpdates)
                     {
                         _protocol.Success(kx13ConsentAgreement, updateKx13ConsentAgreement, mapped);
-                        _logger.LogInformation("CmsConsentAgreement: with ConsentAgreementGuid \'ConsentAgreementGuid}\' was updated",
+                        _logger.LogInformation("CmsConsentAgreement: with ConsentAgreementGuid \'{ConsentAgreementGuid}\' was updated",
                             updateKx13ConsentAgreement.ConsentAgreementGuid);
                     }
                 }

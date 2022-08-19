@@ -47,7 +47,7 @@ public class MigrateSitesCommandHandler: IRequestHandler<MigrateSitesCommand, Co
         foreach (var kx13CmsSite in kx13Context.CmsSites)
         {
             _protocol.FetchedSource(kx13CmsSite);
-            _logger.LogTrace("Migrating site {SiteName} with UserGuid {SiteGuid}", kx13CmsSite.SiteName, kx13CmsSite.SiteGuid);
+            _logger.LogTrace("Migrating site {SiteName} with SiteGuid {SiteGuid}", kx13CmsSite.SiteName, kx13CmsSite.SiteGuid);
 
             var targetSiteId = _primaryKeyMappingContext.MapFromSourceOrNull<CmsSite>(s => s.SiteId, kx13CmsSite.SiteId);
             if (targetSiteId is null)
