@@ -15,13 +15,14 @@ The Migration toolkit transfers content and other data from **Kentico Xperience 
 
 ### Source
 
-  * The source of the migration data must be a Kentico Xperience 13 instance, with **Refresh 4** ([hotfix](https://devnet.kentico.com/download/hotfixes) 13.0.52) or newer applied. 
+  * The source of the migration data must be a Kentico Xperience 13 instance, with **Refresh 5** ([hotfix](https://devnet.kentico.com/download/hotfixes) 13.0.64) or newer applied. 
   * The development model (Core or MVC 5) does not affect the migration and both are supported.
   * The source instance's database and file system must be accessible from the environment where you run the Migration toolkit.
 
 ### Target
 
-  * The target of the migration can be any version of Xperience by Kentico. 
+  * The toolkit is periodically updated to support migration to the **latest version** of Xperience by Kentico. However, there may be time gaps between Xperience by Kentico releases and Migration toolkit updates.
+	* Currently, Xperience by Kentico **22.0.4** is tested and supported.
   * The target instance's database and file system must be accessible from the environment where you run the Migration toolkit.
   * To avoid conflicts and inconsistencies, the target instance must not contain any data apart from an empty site and/or data from the source site created by previous runs of the Migration toolkit.
 
@@ -34,17 +35,27 @@ The Migration toolkit only supports content and objects **stored in the database
 Currently, the Migration toolkit supports the following types of data:
   * **Sites**
   * **Page types**
+    * The Migration toolkit attempts to map the _Data type_ and _Form control_ of page type fields to an appropriate equivalent in Xperience by Kentico. This is not always possible, and cannot be done for custom data types or form controls. We recommend that you check your page type fields after the migration and adjust them if necessary.
+	* Xperience by Kentico currently does not support:
+      * Macro expressions in page type field default values or other settings. Page type fields containing macros will not work correctly after the migration.
+	  * Page type inheritance. You cannot migrate page types that inherit fields from other types.
+	  * Categories for page type fields. Field categories are not migrated with page types.
   * **Pages**
 	* Xperience by Kentico currently does not support multilingual sites. You need to select one culture from which the content of pages is migrated.
 	* Only pages that are **published** on the source instance are migrated.
 	* Includes the **Former URLs** of pages, but not Alternative URLs, which are currently not supported in Xperience by Kentico.
+	* Page permissions (ACLs) are currently not supported in Xperience by Kentico, so are not migrated.
   * **Page attachments**
 	* Page attachments are not supported in Xperience by Kentico. Attachments are migrated into media libraries. See [`Migration.Toolkit.CLI/README.md - Attachments`](./Migration.Toolkit.CLI/README.md#Attachments) for detailed information about the conversion process.
   * **Media libraries and media files**
+	* Media library permissions are currently not supported in Xperience by Kentico, so are not migrated.
   * **Forms**
   * **Users**
 	* Xperience by Kentico currently does not support registration and authentication of users on the live site. User accounts only control access to the administration interface.
+	* Users in Xperience by Kentico must have an email address. Migration is only supported for users who have a unique email address value on the source instance.
+	* The migration currently does not support custom user fields.
   * **Contacts**
+    * The migration currently does not support custom contact fields.
   * **Activities**  
   * **Consents and consent agreements**
 	* Only one culture version of consent texts is migrated, according to the culture selected during the migration.
@@ -65,6 +76,10 @@ The following types of data exist in Xperience by Kentico, but are currently **n
 		4. Recalculate the contact groups.
   * **License keys**
     * Unnecessary, since Xperience by Kentico uses a new license key format.
+  * **Preset page templates** (_Custom page templates_ in Kentico Xperience 13)
+ 
+ Additionally, object values or other content containing **Macros** will not work correctly after the migration. Macros in general are currently not supported in Xperience by Kentico.
+	
 
 <!-- GETTING STARTED -->
 ## Get started
