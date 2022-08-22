@@ -36,7 +36,10 @@ Currently, the Migration toolkit supports the following types of data:
   * **Sites**
   * **Page types**
     * The Migration toolkit attempts to map the _Data type_ and _Form control_ of page type fields to an appropriate equivalent in Xperience by Kentico. This is not always possible, and cannot be done for custom data types or form controls. We recommend that you check your page type fields after the migration and adjust them if necessary.
-	* Xperience by Kentico currently does not support macro expressions in page type field default values or other settings. Page type fields containing macros will not work correctly after the migration.
+	* Xperience by Kentico currently does not support:
+      * Macro expressions in page type field default values or other settings. Page type fields containing macros will not work correctly after the migration.
+	  * Page type inheritance. You cannot migrate page types that inherit fields from other types.
+	  * Categories for page type fields. Field categories are not migrated with page types.
   * **Pages**
 	* Xperience by Kentico currently does not support multilingual sites. You need to select one culture from which the content of pages is migrated.
 	* Only pages that are **published** on the source instance are migrated.
