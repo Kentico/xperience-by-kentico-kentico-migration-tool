@@ -68,7 +68,10 @@ Migration.Toolkit.CLI.exe migrate --siteId 1 --culture en-US --sites --users
 
 #### Page types
 
- * Xperience by Kentico currently does not support macro expressions in page type field default values or other settings. Page type fields containing macros will not work correctly after the migration.
+ * Xperience by Kentico currently does not support:
+   * Macro expressions in page type field default values or other settings. Page type fields containing macros will not work correctly after the migration.
+   * Page type inheritance. You cannot migrate page types that inherit fields from other types.
+   * Categories for page type fields. Field categories are not migrated with page types.
  * The Migration toolkit attempts to map the _Data type_ and _Form control_ of page type fields to an appropriate equivalent in Xperience by Kentico. This is not always possible, and cannot be done for custom data types or form controls. We recommend that you check your page type fields after the migration and adjust them if necessary.
    * The [Form components](https://docs.xperience.io/x/5ASiCQ) used by page type fields in Xperience by Kentico often store data differently than their equivalent Form control in Xperience 13. To ensure that content is displayed correctly on page, you may need to manually adjust your website's implementation to match the new data format. See [Selector components in Xperience by Kentico](https://docs.xperience.io/x/wIfWCQ) to learn more about some of the most common form components.
 
