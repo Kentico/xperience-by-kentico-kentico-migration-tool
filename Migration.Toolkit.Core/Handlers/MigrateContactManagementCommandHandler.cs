@@ -8,6 +8,7 @@ using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.Helpers;
 using Migration.Toolkit.Core.MigrationProtocol;
+using Migration.Toolkit.Core.Services;
 using Migration.Toolkit.Core.Services.BulkCopy;
 using Migration.Toolkit.KX13.Models;
 using Migration.Toolkit.KXP.Context;
@@ -18,6 +19,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
     private readonly BulkDataCopyService _bulkDataCopyService;
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
+    private readonly CountryMigrator _countryMigrator;
     private readonly IProtocol _protocol;
     private readonly KxpContext _kxpContext;
 
@@ -27,6 +29,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         BulkDataCopyService bulkDataCopyService,
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
+        CountryMigrator countryMigrator,
         IProtocol protocol
     )
     {
@@ -35,12 +38,16 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         _bulkDataCopyService = bulkDataCopyService;
         _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
+        _countryMigrator = countryMigrator;
         _protocol = protocol;
     }
 
     public Task<CommandResult> Handle(MigrateContactManagementCommand request, CancellationToken cancellationToken)
     {
         var migratedSiteIds = _toolkitConfiguration.RequireExplicitMapping<CmsSite>(s => s.SiteId).Keys.ToList();
+        
+        _countryMigrator.MigrateCountriesAndStates();
+        
         if (MigrateContacts() is { } ccr) return Task.FromResult(ccr);
         if (MigrateContactActivities(migratedSiteIds) is { } acr) return Task.FromResult(acr);
 
@@ -61,8 +68,8 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
             { nameof(OmContact.ContactAddress1), nameof(KXP.Models.OmContact.ContactAddress1) },
             { nameof(OmContact.ContactCity), nameof(KXP.Models.OmContact.ContactCity) },
             { nameof(OmContact.ContactZip), nameof(KXP.Models.OmContact.ContactZip) },
-            { nameof(OmContact.ContactStateId), nameof(KXP.Models.OmContact.ContactStateId) }, // No support 2022-07-07 but needs to be mapped because of constraint
-            { nameof(OmContact.ContactCountryId), nameof(KXP.Models.OmContact.ContactCountryId) }, // No support 2022-07-07 but needs to be mapped because of constraint
+            { nameof(OmContact.ContactStateId), nameof(KXP.Models.OmContact.ContactStateId) },
+            { nameof(OmContact.ContactCountryId), nameof(KXP.Models.OmContact.ContactCountryId) },
             { nameof(OmContact.ContactMobilePhone), nameof(KXP.Models.OmContact.ContactMobilePhone) },
             { nameof(OmContact.ContactBusinessPhone), nameof(KXP.Models.OmContact.ContactBusinessPhone) },
             { nameof(OmContact.ContactEmail), nameof(KXP.Models.OmContact.ContactEmail) },
@@ -156,35 +163,35 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
             }
         }
         
-        // if (columnName.Equals(nameof(KXO.Models.OmContact.ContactStateId), StringComparison.InvariantCultureIgnoreCase) && value is int sourceStateId)
-        // {
-        //     switch (_primaryKeyMappingContext.MapSourceId<CmsState>(u => u.StateId, sourceStateId.NullIfZero()))
-        //     {
-        //         case (true, var id):
-        //             return ValueInterceptorResult.ReplaceValue(id);
-        //         case { Success: false }:
-        //         {
-        //             _protocol.Append(HandbookReferences.MissingRequiredDependency<KXO.Models.CmsState>(columnName, value)
-        //                 .WithData(currentRow));
-        //             return ValueInterceptorResult.SkipRow;
-        //         }
-        //     }
-        // }
-        //
-        // if (columnName.Equals(nameof(KXO.Models.OmContact.ContactCountryId), StringComparison.InvariantCultureIgnoreCase) && value is int sourceCountryId)
-        // {
-        //     switch (_primaryKeyMappingContext.MapSourceId<CmsCountry>(u => u.CountryId, sourceCountryId.NullIfZero()))
-        //     {
-        //         case (true, var id):
-        //             return ValueInterceptorResult.ReplaceValue(id);
-        //         case { Success: false }:
-        //         {
-        //             _protocol.Append(HandbookReferences.MissingRequiredDependency<KXO.Models.CmsCountry>(columnName, value)
-        //                 .WithData(currentRow));
-        //             return ValueInterceptorResult.SkipRow;
-        //         }
-        //     }
-        // }
+        if (columnName.Equals(nameof(KXP.Models.OmContact.ContactStateId), StringComparison.InvariantCultureIgnoreCase) && value is int sourceStateId)
+        {
+            switch (_primaryKeyMappingContext.MapSourceId<CmsState>(u => u.StateId, sourceStateId.NullIfZero()))
+            {
+                case (true, var id):
+                    return ValueInterceptorResult.ReplaceValue(id);
+                case { Success: false }:
+                {
+                    _protocol.Append(HandbookReferences.MissingRequiredDependency<KXP.Models.CmsState>(columnName, value)
+                        .WithData(currentRow));
+                    return ValueInterceptorResult.SkipRow;
+                }
+            }
+        }
+        
+        if (columnName.Equals(nameof(KXP.Models.OmContact.ContactCountryId), StringComparison.InvariantCultureIgnoreCase) && value is int sourceCountryId)
+        {
+            switch (_primaryKeyMappingContext.MapSourceId<CmsCountry>(u => u.CountryId, sourceCountryId.NullIfZero()))
+            {
+                case (true, var id):
+                    return ValueInterceptorResult.ReplaceValue(id);
+                case { Success: false }:
+                {
+                    _protocol.Append(HandbookReferences.MissingRequiredDependency<KXP.Models.CmsCountry>(columnName, value)
+                        .WithData(currentRow));
+                    return ValueInterceptorResult.SkipRow;
+                }
+            }
+        }
         
         
 

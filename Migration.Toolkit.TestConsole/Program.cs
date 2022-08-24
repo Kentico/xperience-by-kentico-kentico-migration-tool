@@ -58,12 +58,16 @@ var tableTypeLookupService = scope.ServiceProvider.GetRequiredService<TableRefle
 var kxpContext = scope.ServiceProvider.GetRequiredService<IDbContextFactory<KxpContext>>().CreateDbContext();
 
 
-var classService = scope.ServiceProvider.GetRequiredService<ClassService>();
-var classFields = classService.GetClassFields(new Guid("C1C4DEDA-9280-436C-9BF7-F1A0C706EC80")); // custom.News
+var countryMigrator = scope.ServiceProvider.GetRequiredService<CountryMigrator>();
 
-foreach (var classColumnModel in classFields)
-{
-    logger.LogInformation("{classColumnModel}", classColumnModel);
-}
+countryMigrator.MigrateCountriesAndStates();
 
-kxpContext.Dispose();
+// var classService = scope.ServiceProvider.GetRequiredService<ClassService>();
+// var classFields = classService.GetClassFields(new Guid("C1C4DEDA-9280-436C-9BF7-F1A0C706EC80")); // custom.News
+//
+// foreach (var classColumnModel in classFields)
+// {
+//     logger.LogInformation("{classColumnModel}", classColumnModel);
+// }
+//
+// kxpContext.Dispose();
