@@ -252,14 +252,17 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                             LogIntegration = false,
                             UpdatePaths = false,
                         };
+                        
                         treeNode.TreeProvider = treeProvider;
                         if (newInstance)
                         {
-                            treeNode.Insert(kxoTreeNodeParent, false);
+                            treeNode.Insert(kxoTreeNodeParent, true);
                         }
                         else
                         {
-                            treeNode.Update(false);
+                            var vh = VersionManager.GetInstance(treeProvider);
+                            vh.RemoveWorkflow(treeNode);
+                            treeNode.Update(true);
                         }
 
                         MigratePageUrlPaths(kx13CmsTree, kx13CmsDocument, treeNode);
