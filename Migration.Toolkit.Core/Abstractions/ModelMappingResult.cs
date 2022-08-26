@@ -26,9 +26,9 @@ public interface IModelMappingResult<TResult>: IModelMappingResult
 
 public record AggregatedResult<TResult>(IEnumerable<IModelMappingResult<TResult>> Results) : IModelMappingResult<TResult>
 {
-    public TResult? Item => throw new NotImplementedException();
+    public TResult? Item => default;
 
-    public bool NewInstance => throw new NotImplementedException();
+    public bool NewInstance => false;
 
     public HandbookReference? HandbookReference => throw new NotImplementedException();
 

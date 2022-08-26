@@ -192,15 +192,15 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
 
             if (sourceType == typeof(KX13.Models.CmsState))
             {
-                var kx13Guid = kx13Context.CmsStates.Where(c => c.StateId == sourceId).Select(x => x.StateGuid).Single();
-                targetId = kxpContext.CmsStates.Where(x => x.StateGuid == kx13Guid).Select(x => x.StateId).Single();
+                var kx13CodeName = kx13Context.CmsStates.Where(c => c.StateId == sourceId).Select(x => x.StateName).Single();
+                targetId = kxpContext.CmsStates.Where(x => x.StateName == kx13CodeName).Select(x => x.StateId).Single();
                 return true;
             }
 
             if (sourceType == typeof(KX13.Models.CmsCountry))
             {
-                var kx13Guid = kx13Context.CmsCountries.Where(c => c.CountryId == sourceId).Select(x => x.CountryGuid).Single();
-                targetId = kxpContext.CmsCountries.Where(x => x.CountryGuid == kx13Guid).Select(x => x.CountryId).Single();
+                var kx13CodeName = kx13Context.CmsCountries.Where(c => c.CountryId == sourceId).Select(x => x.CountryName).Single();
+                targetId = kxpContext.CmsCountries.Where(x => x.CountryName == kx13CodeName).Select(x => x.CountryId).Single();
                 return true;
             }
 

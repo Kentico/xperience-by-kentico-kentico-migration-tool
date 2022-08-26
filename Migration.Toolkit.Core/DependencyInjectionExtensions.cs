@@ -18,6 +18,7 @@ using Migration.Toolkit.Core.Services.CmsRelationship;
 
 namespace Migration.Toolkit.Core;
 
+using CMS.Globalization;
 using Migration.Toolkit.KXP.Models;
 
 public static class DependencyInjectionExtensions
@@ -32,6 +33,7 @@ public static class DependencyInjectionExtensions
         services.AddTransient<CmsRelationshipService>();
         services.AddTransient<CoupledDataService>();
         services.AddScoped<AttachmentMigrator>();
+        services.AddScoped<CountryMigrator>();
         services.AddScoped<ClassService>();
         
         services.AddMediatR(typeof(DependencyInjectionExtensions));
@@ -75,6 +77,8 @@ public static class DependencyInjectionExtensions
         services.AddTransient<IEntityMapper<KX13M.OmContactGroup, OmContactGroup>, OmContactGroupMapper>();
         services.AddTransient<IEntityMapper<KX13M.OmContactStatus, OmContactStatus>, OmContactStatusMapper>();
         services.AddTransient<IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo>, MediaFileInfoMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsCountry, CountryInfo>, CountryInfoMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsState, StateInfo>, StateInfoMapper>();
 
         return services;
     }

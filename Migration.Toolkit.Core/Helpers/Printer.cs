@@ -5,6 +5,7 @@ using Migration.Toolkit.Common.Helpers;
 
 namespace Migration.Toolkit.Core.Helpers;
 
+using CMS.Globalization;
 using Migration.Toolkit.KXP.Models;
 
 public static class Printer
@@ -55,6 +56,8 @@ public static class Printer
             MediaFileInfo item => FormatModel($"ID={item.FileID}, GUID={item.FileGUID}, Name={item.FileName}"),
             DataClassInfo item => FormatModel($"ID={item.ClassID}, GUID={item.ClassGUID}, Name={item.ClassName}"),
             PageUrlPathInfo item => FormatModel($"ID={item.PageUrlPathID}, GUID={item.PageUrlPathGUID}, UrlPath={item.PageUrlPathUrlPath}"),
+            CountryInfo item => FormatModel($"ID={item.CountryID}, GUID={item.CountryGUID}, Name={item.CountryName}"),
+            StateInfo item => FormatModel($"ID={item.StateID}, GUID={item.StateGUID}, Name={item.StateName}"),
             TreeNode item => FormatModel($"NodeID={item.NodeID}, DocumentID={item.DocumentID}, NodeGUID={item.NodeGUID}, DocumentGUID={item.DocumentGUID}, DocumentCulture={item.DocumentCulture}, DocumentName={item.DocumentName}"),
             
             CmsForm item => FormatModel($"ID={item.FormId}, GUID={item.FormGuid}, Name={item.FormName}"),
@@ -71,6 +74,8 @@ public static class Printer
             KX13M.CmsConsent item => FormatModel($"ID={item.ConsentId}, GUID={item.ConsentGuid}, Name={item.ConsentName}"),
             KX13M.CmsConsentArchive item => FormatModel($"ID={item.ConsentArchiveId}, GUID={item.ConsentArchiveGuid}"),
             KX13M.CmsConsentAgreement item => FormatModel($"ID={item.ConsentAgreementId}, GUID={item.ConsentAgreementGuid}"),
+            KX13M.CmsCountry item => FormatModel($"ID={item.CountryId}, GUID={item.CountryGuid}, Name={item.CountryName}"),
+            KX13M.CmsState item => FormatModel($"ID={item.StateId}, GUID={item.StateGuid}, Name={item.StateName}"),
             
             null => $"<null> of {currentTypeName}",
             _ => Fallback(model)
