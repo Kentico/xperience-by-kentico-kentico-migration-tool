@@ -9,8 +9,6 @@ using Migration.Toolkit.Core.Services.CmsClass;
 
 namespace Migration.Toolkit.Core.Mappers;
 
-using CMS.DocumentEngine;
-using Kentico.Components.Web.Mvc.FormComponents;
 using Migration.Toolkit.KX13.Auxiliary;
 using Migration.Toolkit.KX13.Models;
 using Migration.Toolkit.KXP.Api.Auxiliary;

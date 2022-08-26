@@ -1,7 +1,5 @@
 namespace Migration.Toolkit.Core.Behaviors;
 
-using System.Diagnostics;
-using CMS.Base;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -9,16 +7,15 @@ using Migration.Toolkit.Common;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
-using Migration.Toolkit.KX13.Models;
 
 public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
     where TResponse : CommandResult
 {
-    public const string CmsHotfixVersionKey = "CMSHotfixVersion";
-    public const string CmsHotfixDataVersionKey = "CMSHotfixDataVersion";
-    public const string CmsDbVersionKey = "CMSDBVersion";
-    public const string CmsDataVersionKey = "CMSDataVersion";
+    private const string CmsHotfixVersionKey = "CMSHotfixVersion";
+    private const string CmsHotfixDataVersionKey = "CMSHotfixDataVersion";
+    private const string CmsDbVersionKey = "CMSDBVersion";
+    private const string CmsDataVersionKey = "CMSDataVersion";
     
     private readonly ILogger<CommandConstraintBehavior<TRequest, TResponse>> _logger;
     private readonly IMigrationProtocol _protocol;
@@ -74,7 +71,7 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
             .Include(s => s.Cultures)
             .ToList();
 
-        foreach (var (sourceSiteId, targetSiteId) in sites)
+        foreach (var (sourceSiteId, _) in sites)
         {
             criticalCheckPassed &= CheckSite(sourceSites, sourceSiteId);
         }
@@ -90,30 +87,93 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
     private bool CheckVersion(KX13Context kx13Context, SemanticVersion minimalVersion)
     {
         var criticalCheckPassed = true;
-        if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == CmsDataVersionKey) is { } cmsDataVersion &&
-            SemanticVersion.TryParse(cmsDataVersion.KeyValue, out var cmdDataVer) && cmdDataVer.IsLesserThan(minimalVersion))
+
+        #region Check conclusion methods
+
+        void UnableToReadVersionKey(string keyName)
         {
-            // NOK
-            _logger.LogCritical("{Key} '{CMSDataVersion}' is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'.", CmsDataVersionKey, cmsDataVersion.KeyValue, minimalVersion.ToString());
+            _logger.LogCritical("Unable to read CMS version (incorrect format) - SettingsKeyName '{Key}'. Ensure Kentico version is at least '{SupportedVersion}'", keyName, minimalVersion.ToString());
             _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
             {
-                cmsDataVersion = cmsDataVersion.KeyValue,
-                supportedVersion = minimalVersion.ToString()
+                ErrorKind = "Settings key value incorrect format",
+                SettingsKeyName = keyName,
+                SupportedVersion = minimalVersion.ToString()
+            }));
+            criticalCheckPassed = false;
+        }
+        
+        void VersionKeyNotFound(string keyName)
+        {
+            _logger.LogCritical("CMS version not found - SettingsKeyName '{Key}'. Ensure Kentico version is at least '{SupportedVersion}'", keyName, minimalVersion.ToString());
+            _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
+            {
+                ErrorKind = "Settings key not found",
+                SettingsKeyName = keyName,
+                SupportedVersion = minimalVersion.ToString()
             }));
             criticalCheckPassed = false;
         }
 
-        if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == CmsDbVersionKey) is { } cmsDbVersion &&
-            SemanticVersion.TryParse(cmsDbVersion.KeyValue, out var cmsDbVer) && cmsDbVer.IsLesserThan(minimalVersion))
+        void UpgradeNeeded(string keyName, string currentVersion)
         {
-            // NOK
-            _logger.LogCritical("{Key} '{CMSDBVersion}' is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'.", CmsDbVersionKey, cmsDbVersion.KeyValue, minimalVersion.ToString());
+            _logger.LogCritical("{Key} '{CurrentVersion}' is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'", keyName, currentVersion, minimalVersion.ToString());
             _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
             {
-                cmsDbVersion = cmsDbVersion.KeyValue,
-                supportedVersion = minimalVersion.ToString()
+                CurrentVersion = currentVersion,
+                SupportedVersion = minimalVersion.ToString()
+            }));
+            criticalCheckPassed = false; 
+        }
+
+        void LowHotfix(string keyName, int currentHotfix)
+        {
+            _logger.LogCritical("{Key} '{CurrentVersion}' hotfix is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'", keyName, currentHotfix, minimalVersion.ToString());
+            _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
+            {
+                CurrentHotfix = currentHotfix.ToString(),
+                SupportedVersion = minimalVersion.ToString()
             }));
             criticalCheckPassed = false;
+        }
+
+        #endregion
+        
+        if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == CmsDataVersionKey) is { } cmsDataVersion)
+        {
+            if (SemanticVersion.TryParse(cmsDataVersion.KeyValue, out var cmsDataVer))
+            {
+                if (cmsDataVer.IsLesserThan(minimalVersion))
+                {
+                    UpgradeNeeded(CmsDataVersionKey, cmsDataVer.ToString());
+                }
+            }
+            else
+            {
+                UnableToReadVersionKey(CmsDataVersionKey);
+            }
+        }
+        else
+        {
+            VersionKeyNotFound(CmsDataVersionKey);
+        }
+
+        if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == CmsDbVersionKey) is { } cmsDbVersion)
+        {
+            if (SemanticVersion.TryParse(cmsDbVersion.KeyValue, out var cmsDataVer))
+            {
+                if (cmsDataVer.IsLesserThan(minimalVersion))
+                {
+                    UpgradeNeeded(CmsDbVersionKey, cmsDataVer.ToString());
+                }
+            }
+            else
+            {
+                UnableToReadVersionKey(CmsDbVersionKey);
+            }
+        }
+        else
+        {
+            VersionKeyNotFound(CmsDbVersionKey);
         }
 
         if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == CmsHotfixDataVersionKey) is { } cmsHotfixDataVersion)
@@ -122,29 +182,17 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
             {
                 if (version < minimalVersion.Hotfix)
                 {
-                    // NOK
-                    _logger.LogCritical(
-                        "{Key} '{CMSHotfixDataVersion}' is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'.",
-                        CmsHotfixDataVersionKey, version, minimalVersion.ToString());
-                    _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
-                    {
-                        cmsHotfixDataVersion = cmsHotfixDataVersion.KeyValue,
-                        supportedVersion = minimalVersion.ToString()
-                    }));
-                    criticalCheckPassed = false;
+                    LowHotfix(CmsHotfixDataVersionKey, version);
                 }
             }
             else
             {
-                _logger.LogCritical("Unable to read {Key} '{CMSHotfixDataVersion}'. Upgrade Kentico to at least '{SupportedVersion}'.",
-                    CmsHotfixDataVersionKey, cmsHotfixDataVersion.KeyValue, minimalVersion.ToString());
-                _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
-                {
-                    cmsHotfixDataVersion = cmsHotfixDataVersion.KeyValue,
-                    supportedVersion = minimalVersion.ToString()
-                }));
-                criticalCheckPassed = false;
+                UnableToReadVersionKey(CmsHotfixDataVersionKey);
             }
+        }
+        else
+        {
+            VersionKeyNotFound(CmsHotfixDataVersionKey);
         }
 
         if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == CmsHotfixVersionKey) is { } cmsHotfixVersion)
@@ -153,34 +201,25 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
             {
                 if (version < minimalVersion.Hotfix)
                 {
-                    // NOK
-                    _logger.LogCritical("{Key} '{CMSHotfixVersion}' is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'.", CmsHotfixVersionKey, version, minimalVersion.ToString());
-                    _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
-                    {
-                        cmsHotfixVersion = cmsHotfixVersion.KeyValue,
-                        supportedVersion = minimalVersion.ToString()
-                    }));
-                    criticalCheckPassed = false;
+                    LowHotfix(CmsHotfixVersionKey, version);
                 }
             }
             else
             {
-                _logger.LogCritical("Unable to read {Key} '{CMSHotfixVersion}'. Upgrade Kentico to at least '{SupportedVersion}'.", CmsHotfixVersionKey, cmsHotfixVersion.KeyValue, minimalVersion.ToString());
-                _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
-                {
-                    cmsHotfixVersion = cmsHotfixVersion.KeyValue,
-                    supportedVersion = minimalVersion.ToString()
-                }));
-                criticalCheckPassed = false;
+                UnableToReadVersionKey(CmsHotfixVersionKey);
             }
+        }
+        else
+        {
+            VersionKeyNotFound(CmsHotfixVersionKey);
         }
 
         return criticalCheckPassed;
     }
 
-    private bool CheckSite(List<CmsSite> sourceSites, int sourceSiteId)
+    private bool CheckSite(List<KX13M.CmsSite> sourceSites, int sourceSiteId)
     {
-        bool criticalCheckPassed = true;
+        var criticalCheckPassed = true;
         if (sourceSites.All(s => s.SiteId != sourceSiteId))
         {
             var supportedSites = sourceSites.Select(x => new
@@ -204,12 +243,12 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
         return criticalCheckPassed;
     }
 
-    private bool CheckCulture(ICultureReliantCommand cultureReliantCommand, List<CmsSite> sourceSites, Dictionary<int, int> sites)
+    private bool CheckCulture(ICultureReliantCommand cultureReliantCommand, List<KX13M.CmsSite> sourceSites, Dictionary<int, int> sites)
     {
         var criticalCheckPassed = true;
         var cultureCode = cultureReliantCommand.CultureCode;
         var siteCultureLookup = sourceSites
-            .ToDictionary(x => x.SiteId, x => x.Cultures.Select(x => x.CultureCode.ToLowerInvariant()));
+            .ToDictionary(x => x.SiteId, x => x.Cultures.Select(s => s.CultureCode.ToLowerInvariant()));
 
         foreach (var (sourceSiteId, _) in sites)
         {
@@ -219,9 +258,7 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
                 if (!siteCultures.Contains(cultureCode.ToLowerInvariant()))
                 {
                     var supportedCultures = string.Join(", ", siteCultures);
-                    _logger.LogCritical(
-                        "Unable to find culture '{Culture}' mapping to site '{SiteId}'. Check --culture parameter. Supported cultures for site: {SupportedCultures}",
-                        cultureCode, sourceSiteId, supportedCultures);
+                    _logger.LogCritical("Unable to find culture '{Culture}' mapping to site '{SiteId}'. Check --culture parameter. Supported cultures for site: {SupportedCultures}", cultureCode, sourceSiteId, supportedCultures);
                     _protocol.Append(HandbookReferences.CommandConstraintBroken("Culture is mapped to site")
                         .WithMessage("Check program argument '--culture'")
                         .WithData(new
