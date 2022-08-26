@@ -89,7 +89,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
         {
             _logger.LogInformation("Migrating pages for site {SourceSiteId} to target site {TargetSiteId}", sourceSiteId, targetSiteId);
             
-            var (targetSiteInfo, targetCultureCode) = _siteFacade.GetSiteInfo(targetSiteId);
+            var (targetSiteInfo, targetCultureCode) = _siteFacade.GetSiteInfo(targetSiteId, sourceCultureCode);
             
             await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 

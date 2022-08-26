@@ -8,6 +8,11 @@ public interface ICommand
     Type[] Dependencies { get; }
 }
 
+public interface ICultureReliantCommand
+{
+    string CultureCode { get; }
+}
+
 public record MigrateSitesCommand : IRequest<CommandResult>, ICommand
 {
     public static string Moniker => "sites";
@@ -40,7 +45,7 @@ public record MigrateContactManagementCommand : IRequest<CommandResult>, IComman
     public Type[] Dependencies => new[] {  typeof(MigrateUsersCommand) };
 }
 
-public record MigrateDataProtectionCommand(int? BatchSize) : IRequest<CommandResult>, ICommand
+public record MigrateDataProtectionCommand() : IRequest<CommandResult>, ICommand
 {
     public static string Moniker => "data-protection";
     public static string MonikerFriendly => "Data protection";
@@ -72,7 +77,7 @@ public record MigratePageTypesCommand : IRequest<CommandResult>, ICommand
     public Type[] Dependencies => new[] { typeof(MigrateSitesCommand) };
 }
 
-public record MigratePagesCommand(string CultureCode): IRequest<CommandResult>, ICommand
+public record MigratePagesCommand(string CultureCode): IRequest<CommandResult>, ICommand, ICultureReliantCommand
 {
     public static string Moniker => "pages";
     public static string MonikerFriendly => "Pages";
@@ -88,7 +93,7 @@ public record MigrateSettingKeysCommand : IRequest<CommandResult>, ICommand
     public Type[] Dependencies => new[] { typeof(MigrateSitesCommand) };
 }
 
-public record MigrateAttachmentsCommand(string CultureCode) : IRequest<CommandResult>, ICommand
+public record MigrateAttachmentsCommand(string CultureCode) : IRequest<CommandResult>, ICommand, ICultureReliantCommand
 {
     public static string Moniker => "attachments";
     public static string MonikerFriendly => "Attachments";
