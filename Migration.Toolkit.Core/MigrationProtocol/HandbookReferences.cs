@@ -7,30 +7,41 @@ public static class HandbookReferences
 {
     #region "Warnings - nothing needs to be done"
 
-    public static HandbookReference EntityExplicitlyExcludedByCodeName(string codeName, string entityName) => new("EntityExplicitlyExcludedByCodeName", $"CodeName={codeName}, EntityName={entityName}");
+    public static HandbookReference EntityExplicitlyExcludedByCodeName(string codeName, string entityName) =>
+        new("EntityExplicitlyExcludedByCodeName", $"CodeName={codeName}, EntityName={entityName}");
+
     public static HandbookReference CmsClassCmsRootClassTypeSkip => new("CmsClass_CmsRootClassTypeSkip");
     public static HandbookReference CmsUserAdminUserSkip => new("CmsUser_SkipAdminUser");
     public static HandbookReference CmsUserPublicUserSkip => new("CmsUser_SkipPublicUser");
     public static HandbookReference CmsTreeTreeRootSkip => new("CmsTree_TreeRootSkipped");
     public static HandbookReference CmsSettingsKeyExclusionListSkip => new("CmsSettingsKey_SkipExclusionList"); // TODO tk: 2022-07-19 generalize
 
-    public static HandbookReference SourcePageIsNotPublished(Guid sourcePageGuid) => new("SourcePageIsNotPublished", $"PageGuid={sourcePageGuid}"); 
-    
+    public static HandbookReference SourcePageIsNotPublished(Guid sourcePageGuid) => new("SourcePageIsNotPublished", $"PageGuid={sourcePageGuid}");
+
     public static HandbookReference CmsTreeTreeIsLinkFromDifferentSite => new("CmsTree_TreeIsLinkFromDifferentSite");
-    
+
     public static HandbookReference TemporaryAttachmentMigrationIsNotSupported => new("TemporaryAttachmentMigrationIsNotSupported");
 
     public static HandbookReference LinkedDataAlreadyMaterializedInTargetInstance =>
         new HandbookReference("LinkedDataAlreadyMaterializedInTargetInstance");
-    
+
     public static HandbookReference DataAlreadyExistsInTargetInstance =>
         new HandbookReference("DataAlreadyExistsInTargetInstance");
-    
+
     #endregion
 
 
     #region "Errors - something need to be done"
+
+    public static HandbookReference InvalidSourceCmsVersion() => new HandbookReference("InvalidSourceCmsVersion")
+        .NeedsManualAction()
+        ;
     
+    public static HandbookReference CommandConstraintBroken(string constraintName) => new HandbookReference("CommandConstraintBroken")
+        .WithMessage($"Command constraint '{constraintName}' broken.")
+        .NeedsManualAction()
+    ;
+
     public static HandbookReference MediaFileIsMissingOnSourceFilesystem => new("MediaFileIsMissingOnSourceFilesystem");
 
     public static HandbookReference MissingRequiredDependency<TSourceDependency>(string fieldName, object? sourceValue) =>
@@ -48,7 +59,7 @@ public static class HandbookReferences
             {
                 SourceEntityType = typeof(TSource).FullName,
             });
-    
+
     public static HandbookReference SourceValueIsRequired<TSource>(string valueName) =>
         new HandbookReference("SourceValueIsRequired")
             .NeedsManualAction()
@@ -57,15 +68,15 @@ public static class HandbookReferences
                 SourceEntityType = typeof(TSource).FullName,
                 ValueName = valueName
             });
-    
+
     public static HandbookReference FailedToCreateTargetInstance<TTarget>() =>
         new HandbookReference("FailedToCreateTargetInstance")
             .NeedsManualAction()
             .WithData(new
             {
-                TargetEntityType = typeof(TTarget).FullName,                
+                TargetEntityType = typeof(TTarget).FullName,
             });
-    
+
     public static HandbookReference ErrorCreatingTargetInstance<TTarget>(Exception exception) =>
         new HandbookReference("FailedToCreateTargetInstance")
             .NeedsManualAction()
@@ -73,7 +84,6 @@ public static class HandbookReferences
             {
                 TargetEntityType = typeof(TTarget).FullName,
                 Exception = exception.ToString(),
-                
             });
 
     public static HandbookReference ErrorUpdatingTargetInstance<TTarget>(Exception exception) =>
@@ -83,15 +93,14 @@ public static class HandbookReferences
             {
                 TargetEntityType = typeof(TTarget).FullName,
                 Exception = exception.ToString(),
-                
             });
-    
+
     public static HandbookReference MissingConfiguration<TCommand>(string configurationName) =>
         new HandbookReference("MissingConfiguration")
             .NeedsManualAction()
             .WithData(new
             {
-                Command = typeof(TCommand).FullName, 
+                Command = typeof(TCommand).FullName,
                 ConfigurationName = configurationName
             });
 
@@ -99,7 +108,7 @@ public static class HandbookReferences
         .NeedsManualAction()
         .WithIdentityPrint(entity)
         .WithMessage(ex.Message);
-    
+
     public static HandbookReference BulkCopyColumnMismatch(string tableName) => new("BulkCopyColumnMismatch", $"TableName={tableName}");
 
     public static HandbookReference DataMustNotExistInTargetInstanceTable(string tableName) =>
@@ -114,7 +123,7 @@ public static class HandbookReferences
         {
             Type = ReflectionHelper<TSource>.CurrentType.Name
         });
-    
+
     public static HandbookReference InvalidSourceData<TSource>() => new HandbookReference("InvalidSourceData")
         .NeedsManualAction()
         .WithData(new

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Migration.Toolkit.CLI;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Core;
+using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.Services;
 using Migration.Toolkit.KX13;
@@ -263,7 +264,7 @@ while (argsQ.TryDequeue(out var arg))
     if (arg == $"--{MigrateDataProtectionCommand.Moniker}")
     {
         // RequireNumberParameter("--batchSize", out var batchSize);
-        commands.Add(new MigrateDataProtectionCommand(1000));
+        commands.Add(new MigrateDataProtectionCommand());
         continue;
     }
 
@@ -380,7 +381,18 @@ if (!dependenciesSatisfied)
 
 foreach (var command in commands)
 {
-    await mediatr.Send(command);
+    var result = await mediatr.Send(command);
+    if (result is CommandCheckFailedResult { CanContinue: true })
+    {
+        Console.WriteLine($"Command {command.GetType().Name} failed.");
+        continue;
+    }
+    if (result is CommandCheckFailedResult { CanContinue: false })
+    {
+        Console.WriteLine($"Command {command.GetType().Name} failed critically.");
+        break;
+    }
+    
     Console.WriteLine($"Command {command.GetType().Name} is completed");
 }
 

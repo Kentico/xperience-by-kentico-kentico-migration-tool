@@ -50,7 +50,7 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
     
     public async Task<CommandResult> Handle(MigrateDataProtectionCommand request, CancellationToken cancellationToken)
     {
-        var batchSize = Math.Max(request.BatchSize ?? _batchSize, 5);
+        var batchSize = _batchSize;
         
         await MigrateConsent(cancellationToken);
         await MigrateConsentArchive(cancellationToken);

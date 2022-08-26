@@ -16,12 +16,13 @@ public class KxpSiteFacade
         kxpApiInitializer.EnsureApiIsInitialized();
     }
 
-    public SiteInfoResult GetSiteInfo(int siteId)
+    public SiteInfoResult GetSiteInfo(int siteId, string prefreredCulture)
     {
         var siteInfo = SiteInfoProvider.ProviderObject.Get(siteId);
         // assumption: current release supports only 1 culture
-        var siteCulture = CultureSiteInfoProvider.GetSiteCultureCodes(siteInfo.SiteName).Single();
+        var cultureCodes = CultureSiteInfoProvider.GetSiteCultureCodes(siteInfo.SiteName);
+        var siteCulture = cultureCodes.SingleOrDefault(x => x.Equals(prefreredCulture, StringComparison.InvariantCultureIgnoreCase)) ?? cultureCodes.First();
 
         return new SiteInfoResult(siteInfo, siteCulture);
-    } 
+    }
 }
