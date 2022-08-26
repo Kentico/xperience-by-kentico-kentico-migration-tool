@@ -14,12 +14,18 @@ using Migration.Toolkit.Core.Services.CmsRelationship;
 
 namespace Migration.Toolkit.Core.Mappers;
 
+using CMS.DataEngine;
+using CMS.MediaLibrary;
+using Kentico.Components.Web.Mvc.FormComponents;
 using Migration.Toolkit.Common;
+using Migration.Toolkit.KX13.Auxiliary;
 using Migration.Toolkit.KX13.Models;
+using Migration.Toolkit.KXP.Api.Auxiliary;
+using Newtonsoft.Json;
 
 public record CmsTreeMapperSource(KX13M.CmsTree CmsTree, string SourceCultureCode, string TargetCultureCode);
 
-public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
+public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
 {
     private const string CLASS_FIELD_CONTROL_NAME = "controlname";
     private readonly ILogger<TreeNodeMapper> _logger;
@@ -29,14 +35,14 @@ public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
     private readonly CmsRelationshipService _relationshipService;
 
     public TreeNodeMapper(
-        ILogger<TreeNodeMapper> logger, 
-        PrimaryKeyMappingContext pkContext, 
-        CoupledDataService coupledDataService, 
-        IProtocol protocol, 
+        ILogger<TreeNodeMapper> logger,
+        PrimaryKeyMappingContext pkContext,
+        CoupledDataService coupledDataService,
+        IProtocol protocol,
         ClassService classService,
         AttachmentMigrator attachmentMigrator,
         CmsRelationshipService relationshipService
-        ) : base(logger, pkContext, protocol)
+    ) : base(logger, pkContext, protocol)
     {
         _logger = logger;
         _coupledDataService = coupledDataService;
@@ -45,20 +51,21 @@ public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
         _relationshipService = relationshipService;
     }
 
-    protected override TreeNode? CreateNewInstance(CmsTreeMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) 
+    protected override TreeNode? CreateNewInstance(CmsTreeMapperSource source, MappingHelper mappingHelper, AddFailure addFailure)
         => TreeNode.New(source.CmsTree.NodeClass.ClassName);
 
-    protected override TreeNode MapInternal(CmsTreeMapperSource source, TreeNode target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override TreeNode MapInternal(CmsTreeMapperSource source, TreeNode target, bool newInstance, MappingHelper mappingHelper,
+        AddFailure addFailure)
     {
         var (cmsTree, sourceCultureCode, targetCultureCode) = source;
-        
+
         if (!newInstance && cmsTree.NodeGuid != target.NodeGUID)
         {
             // assertion failed
             _logger.LogTrace("Assertion failed, entity key mismatch");
             throw new InvalidOperationException("Assertion failed, entity key mismatch.");
         }
-        
+
         // mapping of linked nodes is not supported
         Debug.Assert(cmsTree.NodeLinkedNodeId == null, "cmsTree.NodeLinkedNodeId == null");
         Debug.Assert(cmsTree.NodeLinkedNodeSiteId == null, "cmsTree.NodeLinkedNodeSiteId == null");
@@ -91,7 +98,7 @@ public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
         // target.NodeLinkedNodeID = ;
         // target.NodeOriginalNodeID = ;
         // target.NodeLinkedNodeSiteID = ;
-        
+
         var sourceDocument = cmsTree.CmsDocuments.Single(x => x.DocumentCulture == sourceCultureCode);
         target.DocumentCulture = targetCultureCode;
         target.DocumentContent.LoadContentXml(sourceDocument.DocumentContent ?? string.Empty);
@@ -101,16 +108,16 @@ public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
 
         // target.DocumentID = sourceDocument.DocumentId;
         // target.DocumentIsArchived = sourceDocument.DocumentIsArchived;
-        
+
         // target.DocumentLastPublished = sourceDocument.DocumentLastPublished;
         target.SetValue(nameof(target.DocumentLastPublished), sourceDocument.DocumentLastPublished);
-        
+
         // target.DocumentModifiedWhen = sourceDocument.DocumentModifiedWhen;
         target.SetValue(nameof(target.DocumentModifiedWhen), sourceDocument.DocumentModifiedWhen);
-        
+
         // target.DocumentCreatedWhen = sourceDocument.DocumentCreatedWhen;
         target.SetValue(nameof(target.DocumentCreatedWhen), sourceDocument.DocumentCreatedWhen);
-        
+
         target.DocumentPublishFrom = sourceDocument.DocumentPublishFrom.GetValueOrDefault();
         target.DocumentPublishTo = sourceDocument.DocumentPublishTo.GetValueOrDefault();
         target.DocumentSearchExcluded = sourceDocument.DocumentSearchExcluded.GetValueOrDefault();
@@ -136,7 +143,7 @@ public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
         // target.DocumentCheckedOutByUserID = sourceDocument.DocumentCreatedByUserId;
         target.DocumentWorkflowCycleGUID = sourceDocument.DocumentWorkflowCycleGuid.GetValueOrDefault();
         // target.CoupledClassIDColumn = 
-        
+
         var formInfo = new FormInfo(cmsTree.NodeClass.ClassFormDefinition);
         var fieldsInfo = new DocumentFieldsInfo(cmsTree.NodeClass.ClassName);
         var columnNames = formInfo.GetColumnNames();
@@ -149,7 +156,8 @@ public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
         return target;
     }
 
-    private void MapCoupledDataFieldValues(TreeNode target, CmsTree cmsTree, DocumentFieldsInfo fieldsInfo, CmsDocument sourceDocument, List<string> columnNames,
+    private void MapCoupledDataFieldValues(TreeNode target, CmsTree cmsTree, DocumentFieldsInfo fieldsInfo, CmsDocument sourceDocument,
+        List<string> columnNames,
         FormInfo formInfo)
     {
         Debug.Assert(cmsTree.NodeClass.ClassTableName != null, "cmsTree.NodeClass.ClassTableName != null");
@@ -161,7 +169,7 @@ public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
         {
             var field = formInfo.GetFormField(columnName);
             var controlName = field.Settings[CLASS_FIELD_CONTROL_NAME]?.ToString()?.ToLowerInvariant();
-
+            
             Debug.Assert(coupledDataRow != null, nameof(coupledDataRow) + " != null");
 
             if (coupledDataRow.TryGetValue(columnName, out var value))
@@ -172,21 +180,46 @@ public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
                     {
                         case { UserControlForFile: true }:
                         {
-                            // attachment - migrate attachment from field and leave link to it
                             if (value is Guid attachmentGuid)
                             {
                                 var (success, _, mediaFileInfo, mediaLibraryInfo) = _attachmentMigrator.MigrateAttachment(attachmentGuid);
-                                if (success)
+                                if (success && mediaFileInfo != null)
                                 {
-                                    target.SetValue(columnName, string.Format(Resources.Attachment_MovedToLibrary, mediaLibraryInfo?.LibraryFolder, mediaFileInfo?.FilePath));
+                                    target.SetValueAsJson(columnName, new[]
+                                    {
+                                        new AssetRelatedItem
+                                        {
+                                            Identifier = mediaFileInfo.FileGUID,
+                                            Dimensions = new AssetDimensions
+                                            {
+                                                Height = mediaFileInfo.FileImageHeight,
+                                                Width = mediaFileInfo.FileImageWidth,
+                                            },
+                                            Name = mediaFileInfo.FileName,
+                                            Size = mediaFileInfo.FileSize
+                                        }
+                                    });
                                 }
                             }
                             else if (value is string attachmentGuidStr && Guid.TryParse(attachmentGuidStr, out attachmentGuid))
                             {
                                 var (success, _, mediaFileInfo, mediaLibraryInfo) = _attachmentMigrator.MigrateAttachment(attachmentGuid);
-                                if (success)
+                                if (success && mediaFileInfo != null)
                                 {
-                                    target.SetValue(columnName, string.Format(Resources.Attachment_MovedToLibrary, mediaLibraryInfo?.LibraryFolder, mediaFileInfo?.FilePath));
+                                    target.SetValueAsJson(columnName, new[]
+                                    {
+                                        new AssetRelatedItem
+                                        {
+                                            Identifier = mediaFileInfo.FileGUID,
+                                            Dimensions = new AssetDimensions
+                                            {
+                                                Height = mediaFileInfo.FileImageHeight,
+                                                Width = mediaFileInfo.FileImageWidth,
+                                            },
+                                            Name = mediaFileInfo.FileName,
+                                            Size = mediaFileInfo.FileSize
+                                        }
+                                    });
                                 }
                             }
 
@@ -194,31 +227,38 @@ public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
                         }
                         case { UserControlForDocAttachments: true }:
                         {
-                            // attachment - migrate attachment from field and leave link to it
-                            var result = new StringBuilder();
-                            foreach (var (success, canContinue, mediaFileInfo, mediaLibraryInfo) in _attachmentMigrator.MigrateGroupedAttachments(
-                                         sourceDocument.DocumentId, field.Guid, field.Name))
-                            {
-                                if (!canContinue) break;
-                                if (success)
-                                {
-                                    result.AppendLine(string.Format(Resources.AttachmentGrouped_ModevToLibrary, mediaLibraryInfo?.LibraryFolder, mediaFileInfo?.FilePath));
-                                }
-                            }
+                            var migratedAttachments =
+                                _attachmentMigrator.MigrateGroupedAttachments(sourceDocument.DocumentId, field.Guid, field.Name);
 
-                            target.SetValue(columnName, result.ToString());
+                            var assets = migratedAttachments
+                                .Where(x => x.MediaFileInfo != null)
+                                .Select(x => new AssetRelatedItem
+                                {
+                                    Identifier = x.MediaFileInfo.FileGUID,
+                                    Dimensions = new AssetDimensions
+                                    {
+                                        Height = x.MediaFileInfo.FileImageHeight,
+                                        Width = x.MediaFileInfo.FileImageWidth,
+                                    },
+                                    Name = x.MediaFileInfo.FileName,
+                                    Size = x.MediaFileInfo.FileSize
+                                });
+
+                            target.SetValueAsJson(columnName, assets);
+
                             break;
                         }
                         case { UserControlForDocRelationships: true }:
                         {
                             // relation to other document
-                            var result = new StringBuilder();
-                            foreach (var nodeRelationship in _relationshipService.GetNodeRelationships(cmsTree.NodeId))
-                            {
-                                result.AppendLine(string.Format(Resources.Document_Relationship_NotSupported, nodeRelationship.RightNode?.NodeAliasPath));
-                            }
 
-                            target.SetValue(columnName, result.ToString());
+                            var convertedRelation = _relationshipService.GetNodeRelationships(cmsTree.NodeId)
+                                .Select(r => new PageRelatedItem
+                                {
+                                    NodeGuid = r.RightNode.NodeGuid
+                                });
+
+                            target.SetValueAsJson(columnName, convertedRelation);
                             break;
                         }
                         default:
@@ -234,7 +274,8 @@ public class TreeNodeMapper: EntityMapperBase<CmsTreeMapperSource, TreeNode>
             }
             else
             {
-                _logger.LogWarning("Coupled data is missing for source document {DocumentId} of class {ClassName}", sourceDocument.DocumentId, cmsTree.NodeClass.ClassName);
+                _logger.LogWarning("Coupled data is missing for source document {DocumentId} of class {ClassName}", sourceDocument.DocumentId,
+                    cmsTree.NodeClass.ClassName);
             }
         }
     }

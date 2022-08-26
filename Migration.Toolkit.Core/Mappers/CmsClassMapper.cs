@@ -9,13 +9,17 @@ using Migration.Toolkit.Core.Services.CmsClass;
 
 namespace Migration.Toolkit.Core.Mappers;
 
+using CMS.DocumentEngine;
+using Kentico.Components.Web.Mvc.FormComponents;
+using Migration.Toolkit.KX13.Auxiliary;
 using Migration.Toolkit.KX13.Models;
+using Migration.Toolkit.KXP.Api.Auxiliary;
 
 public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassInfo>
 {
     private const string CLASS_FIELD_CONTROL_NAME = "controlname";
     private const string KENTICO_ADMINISTRATION_TEXTAREA = "Kentico.Administration.TextArea";
-    
+
     private readonly ILogger<CmsClassMapper> _logger;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly ClassService _classService;
@@ -40,7 +44,15 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
         target.ClassIsDocumentType = source.ClassIsDocumentType;
         target.ClassIsCoupledClass = source.ClassIsCoupledClass;
 
-        MapClassFields(source, target);
+        if (source.ClassIsDocumentType)
+        {
+            MapClassDocumentTypeFields(source, target);    
+        }
+
+        if (source.ClassIsForm ?? false)
+        {
+            MapClassFormFields(source, target);
+        }
 
         target.ClassNodeNameSource = source.ClassNodeNameSource;
         target.ClassTableName = source.ClassTableName;
@@ -69,7 +81,8 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
                 {
                     if (formFieldInfos.Count() > 1 && formFieldInfos.Key != null)
                     {
-                        _logger.LogWarning("Multiple mappings with same value in 'MappedToField': {Detail}", string.Join("|", formFieldInfos.Select(f => f.ToXML("FormFields", false))));
+                        _logger.LogWarning("Multiple mappings with same value in 'MappedToField': {Detail}",
+                            string.Join("|", formFieldInfos.Select(f => f.ToXML("FormFields", false))));
                     }
 
                     newMappings.AddFormItem(formFieldInfos.First());
@@ -106,7 +119,8 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
             target.ClassInheritsFromClassID = classId.UseKenticoDefault();
         }
 
-        target.ClassResourceID = _primaryKeyMappingContext.MapFromSource<KX13.Models.CmsResource>(c => c.ResourceId, source.ClassResourceId).UseKenticoDefault();
+        target.ClassResourceID = _primaryKeyMappingContext.MapFromSource<KX13.Models.CmsResource>(c => c.ResourceId, source.ClassResourceId)
+            .UseKenticoDefault();
         if (mappingHelper.TryTranslateId<KX13.Models.CmsResource>(c => c.ResourceId, source.ClassResourceId, out var resourceId))
         {
             if (resourceId.HasValue)
@@ -127,7 +141,7 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
         return target;
     }
 
-    private void MapClassFields(CmsClass source, DataClassInfo target)
+    private void MapClassFormFields(CmsClass source, DataClassInfo target)
     {
         var classStructureInfo = new ClassStructureInfo(source.ClassName, source.ClassXmlSchema, source.ClassTableName);
         var formInfo = new FormInfo(source.ClassFormDefinition);
@@ -138,62 +152,262 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
             {
                 var field = formInfo.GetFormField(columnName);
                 var controlName = field.Settings[CLASS_FIELD_CONTROL_NAME]?.ToString()?.ToLowerInvariant();
+                var columnType = field.DataType;
 
-                if (controlName != null)
+                switch (columnType)
                 {
-                    // might be custom control
-
-                    switch (_classService.GetFormControlDefinition(controlName))
+                    case Kx13FieldDataType.ALL:
                     {
-                        case { UserControlForFile: true }:
-                        {
-                            // attachment - migrate attachment from field and leave link to it
-                            field.Settings.Clear();
-                            field.SettingsMacroTable.Clear();
-                            field.Settings[CLASS_FIELD_CONTROL_NAME] = KENTICO_ADMINISTRATION_TEXTAREA;
-                            field.DataType = FieldDataType.LongText;
-                            field.Size = 0;
-                            formInfo.UpdateFormField(columnName, field);
-                            break;
-                        }
-                        case { UserControlForDocAttachments: true }:
-                        {
-                            // attachment - migrate attachment from field and leave link to it
-                            field.Settings.Clear();
-                            field.SettingsMacroTable.Clear();
-                            field.Settings[CLASS_FIELD_CONTROL_NAME] = KENTICO_ADMINISTRATION_TEXTAREA;
-                            field.DataType = FieldDataType.LongText;
-                            field.Size = 0;
-                            formInfo.UpdateFormField(columnName, field);
-                            break;
-                        }
-                        case { UserControlForDocRelationships: true }:
-                        {
-                            // relation to other document
-                            field.Settings.Clear();
-                            field.SettingsMacroTable.Clear();
-                            field.Settings[CLASS_FIELD_CONTROL_NAME] = KENTICO_ADMINISTRATION_TEXTAREA;
-                            field.DataType = FieldDataType.LongText;
-                            field.Size = 0;
-                            formInfo.UpdateFormField(columnName, field);
+                        field.DataType = FieldDataType.ALL;
+                        break;
+                    }
 
-                            Protocol.Append(HandbookReferences
-                                .NotCurrentlySupportedSkip<FormFieldInfo>()
-                                .NeedsManualAction()
-                                .WithMessage("Class field type is not supported right now")
-                                .WithData(new
-                                {
-                                    field.Name,
-                                    source.ClassName,
-                                    source.ClassGuid
-                                })
-                            );
+                    case Kx13FieldDataType.Unknown:
+                    {
+                        field.DataType = FieldDataType.Unknown;
+                        break;
+                    }
 
-                            break;
-                        }
-                        default:
-                            // leave as is
-                            break;
+                    case Kx13FieldDataType.Text:
+                    {
+                        // TODO tomas.krch: 2022-08-24 size, etc..
+                        field.DataType = FieldDataType.Text;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.LongText:
+                    {
+                        field.DataType = FieldDataType.LongText;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.Integer:
+                    {
+                        field.DataType = FieldDataType.Integer;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.LongInteger:
+                    {
+                        field.DataType = FieldDataType.LongInteger;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.Double:
+                    {
+                        field.DataType = FieldDataType.Double;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.DateTime:
+                    {
+                        field.DataType = FieldDataType.DateTime;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.Boolean:
+                    {
+                        field.DataType = FieldDataType.Boolean;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.DocAttachments:
+                    case Kx13FieldDataType.File:
+                    {
+                        field.Settings.Clear();
+                        field.SettingsMacroTable.Clear();
+                        field.DataType = FieldDataType.Assets;
+                        field.Settings[CLASS_FIELD_CONTROL_NAME] = FormComponents.AdminAssetSelectorComponent;
+                        field.Settings["MaximumAssets"] = "99";
+                        formInfo.UpdateFormField(columnName, field);
+                        break;
+                    }
+
+                    case Kx13FieldDataType.Guid:
+                    {
+                        field.DataType = FieldDataType.Guid;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.Binary:
+                    {
+                        field.DataType = FieldDataType.Binary;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.Xml:
+                    {
+                        field.DataType = FieldDataType.Xml;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.Decimal:
+                    {
+                        field.DataType = FieldDataType.Decimal;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.TimeSpan:
+                    {
+                        field.DataType = FieldDataType.TimeSpan;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.Date:
+                    {
+                        field.DataType = FieldDataType.Date;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.DocRelationships:
+                    {
+                        field.Settings.Clear();
+                        field.SettingsMacroTable.Clear();
+                        field.Settings[CLASS_FIELD_CONTROL_NAME] = FormComponents.AdminPageSelectorComponent;
+                        field.Settings["MaximumPages"] = "99";
+                        field.Settings["RootPath"] = "/";
+                        field.DataType = FieldDataType.Pages;
+                        field.Size = 0;
+                        formInfo.UpdateFormField(columnName, field);
+                        break;
+                    }
+                }
+            }
+        }
+
+        target.ClassXmlSchema = classStructureInfo.GetXmlSchema();
+        target.ClassFormDefinition = formInfo.GetXmlDefinition();
+    }
+    
+    private void MapClassDocumentTypeFields(CmsClass source, DataClassInfo target)
+    {
+        var classStructureInfo = new ClassStructureInfo(source.ClassName, source.ClassXmlSchema, source.ClassTableName);
+        var formInfo = new FormInfo(source.ClassFormDefinition);
+        if (source.ClassIsCoupledClass)
+        {
+            var columnNames = formInfo.GetColumnNames();
+            foreach (var columnName in columnNames)
+            {
+                var field = formInfo.GetFormField(columnName);
+                // var controlName = field.Settings[CLASS_FIELD_CONTROL_NAME]?.ToString()?.ToLowerInvariant();
+                var columnType = field.DataType;
+
+                switch (columnType)
+                {
+                    case Kx13FieldDataType.ALL:
+                    {
+                        field.DataType = FieldDataType.ALL;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.Unknown:
+                    {
+                        field.DataType = FieldDataType.Unknown;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.Text:
+                    {
+                        // TODO tomas.krch: 2022-08-24 size, etc..
+                        field.DataType = FieldDataType.Text;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.LongText:
+                    {
+                        field.DataType = FieldDataType.LongText;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.Integer:
+                    {
+                        field.DataType = FieldDataType.Integer;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.LongInteger:
+                    {
+                        field.DataType = FieldDataType.LongInteger;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.Double:
+                    {
+                        field.DataType = FieldDataType.Double;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.DateTime:
+                    {
+                        field.DataType = FieldDataType.DateTime;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.Boolean:
+                    {
+                        field.DataType = FieldDataType.Boolean;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.DocAttachments:
+                    case Kx13FieldDataType.File:
+                    {
+                        field.Settings.Clear();
+                        field.SettingsMacroTable.Clear();
+                        field.DataType = FieldDataType.Assets;
+                        field.Settings[CLASS_FIELD_CONTROL_NAME] = FormComponents.AdminAssetSelectorComponent;
+                        field.Settings["MaximumAssets"] = "99";
+                        formInfo.UpdateFormField(columnName, field);
+                        break;
+                    }
+
+                    case Kx13FieldDataType.Guid:
+                    {
+                        field.DataType = FieldDataType.Guid;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.Binary:
+                    {
+                        field.DataType = FieldDataType.Binary;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.Xml:
+                    {
+                        field.DataType = FieldDataType.Xml;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.Decimal:
+                    {
+                        field.DataType = FieldDataType.Decimal;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.TimeSpan:
+                    {
+                        field.DataType = FieldDataType.TimeSpan;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.Date:
+                    {
+                        field.DataType = FieldDataType.Date;
+                        break;
+                    }
+
+                    case Kx13FieldDataType.DocRelationships:
+                    {
+                        field.Settings.Clear();
+                        field.SettingsMacroTable.Clear();
+                        field.Settings[CLASS_FIELD_CONTROL_NAME] = FormComponents.AdminPageSelectorComponent;
+                        field.Settings["MaximumPages"] = "99";
+                        field.Settings["RootPath"] = "/";
+                        field.DataType = FieldDataType.Pages;
+                        field.Size = 0;
+                        formInfo.UpdateFormField(columnName, field);
+                        break;
                     }
                 }
             }
