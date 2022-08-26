@@ -19,6 +19,7 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
     public const string CmsHotfixDataVersionKey = "CMSHotfixDataVersion";
     public const string CmsDbVersionKey = "CMSDBVersion";
     public const string CmsDataVersionKey = "CMSDataVersion";
+    
     private readonly ILogger<CommandConstraintBehavior<TRequest, TResponse>> _logger;
     private readonly IMigrationProtocol _protocol;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
@@ -63,92 +64,9 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
     {
         var criticalCheckPassed = true;
         const string supportedVersion = "13.0.64";
-        if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == CmsDataVersionKey) is { } cmsDataVersion and not { KeyValue: "13.0" })
+        if (SemanticVersion.TryParse(supportedVersion, out var minimalVersion))
         {
-            // NOK
-            _logger.LogCritical("{Key} '{CMSDataVersion}' is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'.",
-                CmsDataVersionKey, cmsDataVersion.KeyValue, supportedVersion);
-            _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
-            {
-                cmsDataVersion = cmsDataVersion.KeyValue,
-                supportedVersion
-            }));
-            criticalCheckPassed = false;
-        }
-
-        if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == CmsDbVersionKey) is { } cmsDbVersion and not { KeyValue: "13.0" })
-        {
-            // NOK
-            _logger.LogCritical("{Key} '{CMSDBVersion}' is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'.",
-                CmsDbVersionKey, cmsDbVersion.KeyValue, supportedVersion);
-            _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
-            {
-                cmsDbVersion = cmsDbVersion.KeyValue,
-                supportedVersion
-            }));
-            criticalCheckPassed = false;
-        }
-
-        if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == CmsHotfixDataVersionKey) is { } cmsHotfixDataVersion)
-        {
-            if (int.TryParse(cmsHotfixDataVersion.KeyValue, out var version))
-            {
-                if (version < 64)
-                {
-                    // NOK
-                    _logger.LogCritical(
-                        "{Key} '{CMSHotfixDataVersion}' is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'.",
-                        CmsHotfixDataVersionKey, version, supportedVersion);
-                    _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
-                    {
-                        cmsHotfixDataVersion = cmsHotfixDataVersion.KeyValue,
-                        supportedVersion
-                    }));
-                    criticalCheckPassed = false;
-                }
-            }
-            else
-            {
-                _logger.LogCritical("Unable to read {Key} '{CMSHotfixDataVersion}'. Upgrade Kentico to at least '{SupportedVersion}'.",
-                    CmsHotfixDataVersionKey, cmsHotfixDataVersion.KeyValue, supportedVersion);
-                _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
-                {
-                    cmsHotfixDataVersion = cmsHotfixDataVersion.KeyValue,
-                    supportedVersion
-                }));
-                criticalCheckPassed = false;
-            }
-        }
-
-        if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == CmsHotfixVersionKey) is { } cmsHotfixVersion)
-        {
-            if (int.TryParse(cmsHotfixVersion.KeyValue, out var version))
-            {
-                if (version < 64)
-                {
-                    // NOK
-                    _logger.LogCritical(
-                        "{Key} '{CMSHotfixVersion}' is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'.",
-                        CmsHotfixVersionKey, version, supportedVersion);
-                    _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
-                    {
-                        cmsHotfixVersion = cmsHotfixVersion.KeyValue,
-                        supportedVersion
-                    }));
-                    criticalCheckPassed = false;
-                }
-            }
-            else
-            {
-                _logger.LogCritical("Unable to read {Key} '{CMSHotfixVersion}'. Upgrade Kentico to at least '{SupportedVersion}'.",
-                    CmsHotfixVersionKey, cmsHotfixVersion.KeyValue, supportedVersion);
-                _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
-                {
-                    cmsHotfixVersion = cmsHotfixVersion.KeyValue,
-                    supportedVersion
-                }));
-                criticalCheckPassed = false;
-            }
+            criticalCheckPassed &= CheckVersion(kx13Context, minimalVersion);    
         }
 
         var sites = _toolkitConfiguration.RequireExplicitMapping<KX13M.CmsSite>(s => s.SiteId);
@@ -164,6 +82,97 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
         if (request is ICultureReliantCommand cultureReliantCommand)
         {
             criticalCheckPassed &= CheckCulture(cultureReliantCommand, sourceSites, sites);
+        }
+
+        return criticalCheckPassed;
+    }
+
+    private bool CheckVersion(KX13Context kx13Context, SemanticVersion minimalVersion)
+    {
+        var criticalCheckPassed = true;
+        if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == CmsDataVersionKey) is { } cmsDataVersion &&
+            SemanticVersion.TryParse(cmsDataVersion.KeyValue, out var cmdDataVer) && cmdDataVer.IsLesserThan(minimalVersion))
+        {
+            // NOK
+            _logger.LogCritical("{Key} '{CMSDataVersion}' is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'.", CmsDataVersionKey, cmsDataVersion.KeyValue, minimalVersion.ToString());
+            _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
+            {
+                cmsDataVersion = cmsDataVersion.KeyValue,
+                supportedVersion = minimalVersion.ToString()
+            }));
+            criticalCheckPassed = false;
+        }
+
+        if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == CmsDbVersionKey) is { } cmsDbVersion &&
+            SemanticVersion.TryParse(cmsDbVersion.KeyValue, out var cmsDbVer) && cmsDbVer.IsLesserThan(minimalVersion))
+        {
+            // NOK
+            _logger.LogCritical("{Key} '{CMSDBVersion}' is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'.", CmsDbVersionKey, cmsDbVersion.KeyValue, minimalVersion.ToString());
+            _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
+            {
+                cmsDbVersion = cmsDbVersion.KeyValue,
+                supportedVersion = minimalVersion.ToString()
+            }));
+            criticalCheckPassed = false;
+        }
+
+        if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == CmsHotfixDataVersionKey) is { } cmsHotfixDataVersion)
+        {
+            if (int.TryParse(cmsHotfixDataVersion.KeyValue, out var version))
+            {
+                if (version < minimalVersion.Hotfix)
+                {
+                    // NOK
+                    _logger.LogCritical(
+                        "{Key} '{CMSHotfixDataVersion}' is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'.",
+                        CmsHotfixDataVersionKey, version, minimalVersion.ToString());
+                    _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
+                    {
+                        cmsHotfixDataVersion = cmsHotfixDataVersion.KeyValue,
+                        supportedVersion = minimalVersion.ToString()
+                    }));
+                    criticalCheckPassed = false;
+                }
+            }
+            else
+            {
+                _logger.LogCritical("Unable to read {Key} '{CMSHotfixDataVersion}'. Upgrade Kentico to at least '{SupportedVersion}'.",
+                    CmsHotfixDataVersionKey, cmsHotfixDataVersion.KeyValue, minimalVersion.ToString());
+                _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
+                {
+                    cmsHotfixDataVersion = cmsHotfixDataVersion.KeyValue,
+                    supportedVersion = minimalVersion.ToString()
+                }));
+                criticalCheckPassed = false;
+            }
+        }
+
+        if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == CmsHotfixVersionKey) is { } cmsHotfixVersion)
+        {
+            if (int.TryParse(cmsHotfixVersion.KeyValue, out var version))
+            {
+                if (version < minimalVersion.Hotfix)
+                {
+                    // NOK
+                    _logger.LogCritical("{Key} '{CMSHotfixVersion}' is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'.", CmsHotfixVersionKey, version, minimalVersion.ToString());
+                    _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
+                    {
+                        cmsHotfixVersion = cmsHotfixVersion.KeyValue,
+                        supportedVersion = minimalVersion.ToString()
+                    }));
+                    criticalCheckPassed = false;
+                }
+            }
+            else
+            {
+                _logger.LogCritical("Unable to read {Key} '{CMSHotfixVersion}'. Upgrade Kentico to at least '{SupportedVersion}'.", CmsHotfixVersionKey, cmsHotfixVersion.KeyValue, minimalVersion.ToString());
+                _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
+                {
+                    cmsHotfixVersion = cmsHotfixVersion.KeyValue,
+                    supportedVersion = minimalVersion.ToString()
+                }));
+                criticalCheckPassed = false;
+            }
         }
 
         return criticalCheckPassed;
