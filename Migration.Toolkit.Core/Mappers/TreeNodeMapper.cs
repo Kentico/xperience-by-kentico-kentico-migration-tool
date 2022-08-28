@@ -67,7 +67,7 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
         target.NodeAlias = cmsTree.NodeAlias;
         // target.NodeLevel = source.NodeLevel;
         target.NodeName = cmsTree.NodeName;
-        // target.NodeOrder = source.NodeOrder;
+        target.SetValue(nameof(TreeNode.NodeOrder), cmsTree.NodeOrder);
 
         if (mappingHelper.TranslateRequiredId<KX13M.CmsUser>(u => u.UserId, cmsTree.NodeOwner, out var ownerUserId))
         {
