@@ -101,6 +101,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                 .Include(t => t.NodeLinkedNode)
                 .Where(x => x.NodeSiteId == sourceSiteId)
                 .OrderBy(t => t.NodeLevel)
+                .ThenBy(t => t.NodeOrder)
                 .ThenBy(t => t.NodeParentId)
                 .ThenBy(t => t.NodeId)
                 .AsSplitQuery()
@@ -246,6 +247,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                     {
                         var treeProvider = new TreeProvider
                         {
+                            UseAutomaticOrdering = false,
                             UpdateUser = false,
                             UpdateTimeStamps = false,
                             LogEvents = false,
