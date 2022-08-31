@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Text;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -57,10 +58,14 @@ var tableTypeLookupService = scope.ServiceProvider.GetRequiredService<TableRefle
 // var mediatr = scope.ServiceProvider.GetRequiredService<IMediator>();
 var kxpContext = scope.ServiceProvider.GetRequiredService<IDbContextFactory<KxpContext>>().CreateDbContext();
 
+var sb = new StringBuilder();
+GenHelper.AppendFieldMappingDefinitionAsMarkdown(sb);
+var def = sb.ToString();
+Console.WriteLine(def);
 
-var countryMigrator = scope.ServiceProvider.GetRequiredService<CountryMigrator>();
-
-countryMigrator.MigrateCountriesAndStates();
+// var countryMigrator = scope.ServiceProvider.GetRequiredService<CountryMigrator>();
+//
+// countryMigrator.MigrateCountriesAndStates();
 
 // var classService = scope.ServiceProvider.GetRequiredService<ClassService>();
 // var classFields = classService.GetClassFields(new Guid("C1C4DEDA-9280-436C-9BF7-F1A0C706EC80")); // custom.News
