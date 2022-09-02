@@ -17,6 +17,10 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
     private const string CLASS_FIELD_SETTINGS_ROOTPATH = "RootPath";
     private const string CLASS_FIELD_SETTINGS_MAXIMUMASSETS = "MaximumAssets";
     private const string CLASS_FIELD_SETTINGS_MAXIMUMPAGES = "MaximumPages";
+    private const string FIELD_SETTING_MAXIMUMASSETS_FALLBACK = "99";
+    private const string FIELD_SETTING_MAXIMUMPAGES_FALLBACK = "99";
+    private const string FIELD_SETTING_ROOTPATH_FALLBACK = "/";
+    private const int FIELD_SIZE_ZERO = 0;
 
     private readonly ILogger<CmsClassMapper> _logger;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
@@ -198,14 +202,14 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
                     case TcaDirective.ConvertToAsset:
                     {
                         // field.DataType = FieldDataType.Assets;
-                        field.Settings[CLASS_FIELD_SETTINGS_MAXIMUMASSETS] = "99"; // setting is missing in source instance, target instance requires it
+                        field.Settings[CLASS_FIELD_SETTINGS_MAXIMUMASSETS] = FIELD_SETTING_MAXIMUMASSETS_FALLBACK; // setting is missing in source instance, target instance requires it
                         break;
                     }
                     case TcaDirective.ConvertToPages:
                     {
-                        field.Settings[CLASS_FIELD_SETTINGS_MAXIMUMPAGES] = "99"; // setting is missing in source instance, target instance requires it
-                        field.Settings[CLASS_FIELD_SETTINGS_ROOTPATH] = "/"; // TODO tk: 2022-08-31 describe why?
-                        field.Size = 0; // TODO tk: 2022-08-31 describe why?
+                        field.Settings[CLASS_FIELD_SETTINGS_MAXIMUMPAGES] = FIELD_SETTING_MAXIMUMPAGES_FALLBACK; // setting is missing in source instance, target instance requires it
+                        field.Settings[CLASS_FIELD_SETTINGS_ROOTPATH] = FIELD_SETTING_ROOTPATH_FALLBACK; // TODO tk: 2022-08-31 describe why?
+                        field.Size = FIELD_SIZE_ZERO; // TODO tk: 2022-08-31 describe why?
                         // field.DataType = FieldDataType.Pages;
                         break;
                     }
