@@ -117,14 +117,25 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
             target.ClassInheritsFromClassID = classId.UseKenticoDefault();
         }
 
-        target.ClassResourceID = _primaryKeyMappingContext.MapFromSource<KX13.Models.CmsResource>(c => c.ResourceId, source.ClassResourceId)
-            .UseKenticoDefault();
         if (mappingHelper.TryTranslateId<KX13.Models.CmsResource>(c => c.ResourceId, source.ClassResourceId, out var resourceId))
         {
             if (resourceId.HasValue)
             {
                 target.ClassResourceID = resourceId.Value;
             }
+        }
+        else
+        {
+            _logger.LogWarning("Migration of CMSResource is currently not supported. Resource with source ID '{ResourceId}'. Resource field {ResourceField}", source.ClassResourceId, nameof(source.ClassResourceId));
+            Protocol.Append(HandbookReferences
+                .NotCurrentlySupportedSkip<KX13M.CmsResource>()
+                .WithMessage($"Migration of CMSResource is currently not supported. Resource with source ID '{source.ClassResourceId}'. Resource field {nameof(source.ClassResourceId)}")
+                .WithData(new
+                {
+                    SourceClassId = source.ClassId,
+                    SourceClassResourceId =source.ClassResourceId
+                })
+            );
         }
 
         // TODO tk: 2022-05-30 domain validation failed (Field name: ClassSearchIndexDataSource)
