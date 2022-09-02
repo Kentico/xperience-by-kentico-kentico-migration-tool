@@ -14,9 +14,13 @@ namespace Migration.Toolkit.Core.Mappers;
 public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassInfo>
 {
     private const string CLASS_FIELD_CONTROL_NAME = "controlname";
+    private const string CLASS_FIELD_SETTINGS_ROOTPATH = "RootPath";
+    private const string CLASS_FIELD_SETTINGS_MAXIMUMASSETS = "MaximumAssets";
+    private const string CLASS_FIELD_SETTINGS_MAXIMUMPAGES = "MaximumPages";
 
     private readonly ILogger<CmsClassMapper> _logger;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
+    
 
     public CmsClassMapper(ILogger<CmsClassMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext, IProtocol protocol) : base(logger, primaryKeyMappingContext, protocol)
     {
@@ -194,13 +198,13 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
                     case TcaDirective.ConvertToAsset:
                     {
                         // field.DataType = FieldDataType.Assets;
-                        field.Settings["MaximumAssets"] = "99"; // setting is missing in source instance, target instance requires it
+                        field.Settings[CLASS_FIELD_SETTINGS_MAXIMUMASSETS] = "99"; // setting is missing in source instance, target instance requires it
                         break;
                     }
                     case TcaDirective.ConvertToPages:
                     {
-                        field.Settings["MaximumPages"] = "99"; // setting is missing in source instance, target instance requires it
-                        field.Settings["RootPath"] = "/"; // TODO tk: 2022-08-31 describe why?
+                        field.Settings[CLASS_FIELD_SETTINGS_MAXIMUMPAGES] = "99"; // setting is missing in source instance, target instance requires it
+                        field.Settings[CLASS_FIELD_SETTINGS_ROOTPATH] = "/"; // TODO tk: 2022-08-31 describe why?
                         field.Size = 0; // TODO tk: 2022-08-31 describe why?
                         // field.DataType = FieldDataType.Pages;
                         break;
@@ -215,19 +219,19 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
             if (controlName != null &&
                 typeMapping is { FormComponents: { } } &&
                 (typeMapping.FormComponents.TryGetValue(controlName, out var targetControlMapping) ||
-                 typeMapping.FormComponents.TryGetValue("#any-not-matched-by-control-mapping-list#", out targetControlMapping)))
+                 typeMapping.FormComponents.TryGetValue(SfcDirective.CatchAnyNonMatching, out targetControlMapping)))
             {
                 var (targetFormComponent, actions) = targetControlMapping;
-                if (targetControlMapping.TargetFormComponent == "#copy-source-control#")
+                if (targetControlMapping.TargetFormComponent == TfcDirective.CopySourceControl)
                 {
                     field.Settings[CLASS_FIELD_CONTROL_NAME] = controlName;
                     PerformActionsOnField(field, actions);
                 }
-                else if (targetFormComponent == "#clear-field-control#")
+                else if (targetFormComponent == TfcDirective.ClearFieldControl)
                 {
                     field.Settings.Remove(CLASS_FIELD_CONTROL_NAME);
                 }
-                else
+                else if(targetFormComponent == TfcDirective.DoNothing)
                 {
                     field.Settings[CLASS_FIELD_CONTROL_NAME] = targetFormComponent;
                     PerformActionsOnField(field, actions);
