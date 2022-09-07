@@ -129,7 +129,12 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                     Debug.Assert(kx13CmsTree != null, nameof(kx13CmsTree) + " != null");
                     Debug.Assert(linkedNode != null, nameof(linkedNode) + " != null");
 
-                    var originalCmsDocument = linkedNode.CmsDocuments.Single();
+                    var originalCmsDocument = linkedNode.CmsDocuments.SingleOrDefault();
+                    if (originalCmsDocument == null)
+                    {
+                        continue;
+                    }
+                    
                     originalCmsDocument.DocumentGuid = Guid.NewGuid();
                     originalCmsDocument.DocumentId = 0;
 
@@ -140,7 +145,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                     
                     _logger.LogTrace("Linked node with NodeGuid {NodeGuid} was materialized", kx13CmsTree.NodeGuid);
                 }
-
+                
                 var kx13CmsDocument = kx13CmsTree.CmsDocuments.SingleOrDefault(x => x.DocumentCulture == sourceCultureCode);
                 // Debug.Assert(kx13CmsDocument != null, nameof(kx13CmsDocument) + " != null"); // assertion is not true
                 if (kx13CmsDocument == null)
@@ -161,7 +166,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                     
                     continue;
                 }
-                
+
                 if (classEntityConfiguration.ExcludeCodeNames.Contains(kx13CmsTree.NodeClass.ClassName, StringComparer.InvariantCultureIgnoreCase))
                 {
                     _protocol.Warning(HandbookReferences.EntityExplicitlyExcludedByCodeName(kx13CmsTree.NodeClass.ClassName, "PageType"), kx13CmsTree);
@@ -234,7 +239,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                 }
 
                 var kxoTreeNode = new DocumentQuery(kx13CmsTree.NodeClass.ClassName)
-                    .WithGuid(kx13CmsTree.CmsDocuments.Single().DocumentGuid.GetValueOrDefault())
+                    .WithGuid(kx13CmsDocument.DocumentGuid.GetValueOrDefault())
                     .SingleOrDefault();
 
                 _protocol.FetchedTarget(kxoTreeNode);
