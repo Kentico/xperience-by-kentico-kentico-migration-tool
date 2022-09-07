@@ -95,7 +95,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
 
             var kx13CmsTrees = kx13Context.CmsTrees
                 .Include(t => t.NodeParent)
-                .Include(t => t.CmsDocuments.Where(x => x.DocumentCulture == sourceCultureCode))
+                .Include(t => t.CmsDocuments)
                 .Include(t => t.NodeClass)
                 .Include(t => t.CmsPageUrlPaths)
                 .Include(t => t.NodeLinkedNode)
@@ -140,9 +140,27 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                     
                     _logger.LogTrace("Linked node with NodeGuid {NodeGuid} was materialized", kx13CmsTree.NodeGuid);
                 }
-                
-                var kx13CmsDocument = kx13CmsTree.CmsDocuments.SingleOrDefault();
-                Debug.Assert(kx13CmsDocument != null, nameof(kx13CmsDocument) + " != null");
+
+                var kx13CmsDocument = kx13CmsTree.CmsDocuments.SingleOrDefault(x => x.DocumentCulture == sourceCultureCode);
+                // Debug.Assert(kx13CmsDocument != null, nameof(kx13CmsDocument) + " != null"); // assertion is not true
+                if (kx13CmsDocument == null)
+                {
+                    if (!kx13CmsTree.CmsDocuments.Any())
+                    {
+                        var handbookReference = HandbookReferences
+                            .InvalidSourceData<KX13M.CmsTree>()
+                            .NeedsManualAction()
+                            .WithMessage($"Invalid source TreeNode - contains no documents.");
+                        _protocol.Append(handbookReference);
+                        _logger.LogError(handbookReference.ToString());    
+                    }
+                    else
+                    {
+                        // this is OK - Node doesn't need to contain document for particular selected culture
+                    }
+                    
+                    continue;
+                }
                 
                 if (classEntityConfiguration.ExcludeCodeNames.Contains(kx13CmsTree.NodeClass.ClassName, StringComparer.InvariantCultureIgnoreCase))
                 {
