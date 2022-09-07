@@ -129,7 +129,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                     Debug.Assert(kx13CmsTree != null, nameof(kx13CmsTree) + " != null");
                     Debug.Assert(linkedNode != null, nameof(linkedNode) + " != null");
 
-                    var originalCmsDocument = linkedNode.CmsDocuments.SingleOrDefault();
+                    var originalCmsDocument = linkedNode.CmsDocuments.SingleOrDefault(x => x.DocumentCulture == sourceCultureCode);
                     if (originalCmsDocument == null)
                     {
                         continue;
@@ -147,7 +147,6 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                 }
                 
                 var kx13CmsDocument = kx13CmsTree.CmsDocuments.SingleOrDefault(x => x.DocumentCulture == sourceCultureCode);
-                // Debug.Assert(kx13CmsDocument != null, nameof(kx13CmsDocument) + " != null"); // assertion is not true
                 if (kx13CmsDocument == null)
                 {
                     if (!kx13CmsTree.CmsDocuments.Any())
@@ -238,10 +237,15 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                     continue;
                 }
 
-                var kxoTreeNode = new DocumentQuery(kx13CmsTree.NodeClass.ClassName)
-                    .WithGuid(kx13CmsDocument.DocumentGuid.GetValueOrDefault())
-                    .SingleOrDefault();
+                
+                var kxoTreeNodes = new DocumentQuery(kx13CmsTree.NodeClass.ClassName)
+                    .Culture(targetCultureCode)
+                    .Where("NodeLinkedNodeId IS NULL") // Linked nodes are not supported at this time in target instance
+                    .WhereEquals("NodeGUID", kx13CmsTree.NodeGuid)
+                    .ToList();
 
+                Debug.Assert(kxoTreeNodes.Count <= 1, "kxoTreeNodes.Count <= 1");
+                var kxoTreeNode = kxoTreeNodes.SingleOrDefault();
                 _protocol.FetchedTarget(kxoTreeNode);
 
                 if (migrationOfLinkedNode && kxoTreeNode != null)

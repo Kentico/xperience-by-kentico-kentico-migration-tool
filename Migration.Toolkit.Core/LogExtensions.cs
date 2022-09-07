@@ -47,28 +47,28 @@ public static class LogExtensions
     public static ILogger<T> LogEntitySetAction<T, TEntity>(this ILogger<T> logger, bool newInstance, TEntity entity)
     {
         var entityIdentityPrint = Printer.GetEntityIdentityPrint(entity);
-        logger.LogInformation("Entity {EntityType} was {Action}, {EntityIdentityPrint}", ReflectionHelper<T>.CurrentType.Name, newInstance ? "inserted" : "updated", entityIdentityPrint);
+        logger.LogInformation("Command {Command}: {Action} {EntityIdentityPrint}", ReflectionHelper<T>.CurrentType.Name, newInstance ? "inserted" : "updated", entityIdentityPrint);
         return logger;
     }
     
     public static ILogger<T> LogEntitySetError<T, TEntity>(this ILogger<T> logger, Exception exception, bool newInstance, TEntity entity)
     {
         var entityIdentityPrint = Printer.GetEntityIdentityPrint(entity);
-        logger.LogError(exception, "Entity {EntityType} failed during {Action}, {EntityIdentityPrint}", ReflectionHelper<T>.CurrentType.Name, newInstance ? "insert" : "update", entityIdentityPrint);
+        logger.LogError(exception, "Command {Command}: failed during {Action}, {EntityIdentityPrint}", ReflectionHelper<T>.CurrentType.Name, newInstance ? "insert" : "update", entityIdentityPrint);
         return logger;
     }
     
     public static ILogger<T> LogEntitiesSetError<T, TEntity>(this ILogger<T> logger, Exception exception, bool newInstance, IEnumerable<TEntity> entities)
     {
         var entityIdentityPrint = Printer.GetEntityIdentityPrints(entities);
-        logger.LogError(exception, "Entities {EntityType} failed during {Action}, {EntityIdentityPrint}", ReflectionHelper<T>.CurrentType.Name, newInstance ? "insert" : "update", entityIdentityPrint);
+        logger.LogError(exception, "Command {Command}: failed during {Action}, {EntityIdentityPrint}", ReflectionHelper<T>.CurrentType.Name, newInstance ? "insert" : "update", entityIdentityPrint);
         return logger;
     }
     
     public static ILogger<T> LogErrorMissingDependency<T, TEntity>(this ILogger<T> logger, TEntity entity, string dependencyName, object dependencyValue, Type dependencyType)
     {
         var entityIdentityPrint = Printer.GetEntityIdentityPrint(entity);
-        logger.LogError("Entity {EntityType} {EntityIdentityPrint} is missing dependency {FieldName}={Value} of type {DependencyType}", ReflectionHelper<T>.CurrentType.Name, entityIdentityPrint, dependencyName, dependencyValue, dependencyType.Name);
+        logger.LogError("Command {Command}: {EntityIdentityPrint} is missing dependency {FieldName}={Value} of type {DependencyType}", ReflectionHelper<T>.CurrentType.Name, entityIdentityPrint, dependencyName, dependencyValue, dependencyType.Name);
         return logger;
     }
 }
