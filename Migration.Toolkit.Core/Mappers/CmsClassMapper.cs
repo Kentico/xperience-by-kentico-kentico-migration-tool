@@ -6,28 +6,30 @@ using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.Core.Services.CmsClass;
+using FcText = Migration.Toolkit.KX13.Auxiliary.Kx13FormControls.UserControlForText;
+using FcLongText = Migration.Toolkit.KX13.Auxiliary.Kx13FormControls.UserControlForLongText;
 
 namespace Migration.Toolkit.Core.Mappers;
-
-using Migration.Toolkit.KX13.Auxiliary;
-using Migration.Toolkit.KX13.Models;
-using Migration.Toolkit.KXP.Api.Auxiliary;
 
 public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassInfo>
 {
     private const string CLASS_FIELD_CONTROL_NAME = "controlname";
-    private const string KENTICO_ADMINISTRATION_TEXTAREA = "Kentico.Administration.TextArea";
+    private const string CLASS_FIELD_SETTINGS_ROOTPATH = "RootPath";
+    private const string CLASS_FIELD_SETTINGS_MAXIMUMASSETS = "MaximumAssets";
+    private const string CLASS_FIELD_SETTINGS_MAXIMUMPAGES = "MaximumPages";
+    private const string FIELD_SETTING_MAXIMUMASSETS_FALLBACK = "99";
+    private const string FIELD_SETTING_MAXIMUMPAGES_FALLBACK = "99";
+    private const string FIELD_SETTING_ROOTPATH_FALLBACK = "/";
+    private const int FIELD_SIZE_ZERO = 0;
 
     private readonly ILogger<CmsClassMapper> _logger;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
-    private readonly ClassService _classService;
+    
 
-    public CmsClassMapper(ILogger<CmsClassMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext, ClassService classService,
-        IProtocol protocol) : base(logger, primaryKeyMappingContext, protocol)
+    public CmsClassMapper(ILogger<CmsClassMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext, IProtocol protocol) : base(logger, primaryKeyMappingContext, protocol)
     {
         _logger = logger;
         _primaryKeyMappingContext = primaryKeyMappingContext;
-        _classService = classService;
     }
 
     protected override DataClassInfo? CreateNewInstance(KX13.Models.CmsClass source, MappingHelper mappingHelper, AddFailure addFailure) =>
@@ -44,7 +46,7 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
 
         if (source.ClassIsDocumentType)
         {
-            MapClassDocumentTypeFields(source, target);    
+            MapClassDocumentTypeFields(source, target);
         }
 
         if (source.ClassIsForm ?? false)
@@ -150,7 +152,7 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
         return target;
     }
 
-    private void MapClassFormFields(CmsClass source, DataClassInfo target)
+    private void MapClassFormFields(KX13M.CmsClass source, DataClassInfo target)
     {
         var classStructureInfo = new ClassStructureInfo(source.ClassName, source.ClassXmlSchema, source.ClassTableName);
         var formInfo = new FormInfo(source.ClassFormDefinition);
@@ -160,135 +162,15 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
             foreach (var columnName in columnNames)
             {
                 var field = formInfo.GetFormField(columnName);
-                var controlName = field.Settings[CLASS_FIELD_CONTROL_NAME]?.ToString()?.ToLowerInvariant();
-                var columnType = field.DataType;
-
-                switch (columnType)
-                {
-                    case Kx13FieldDataType.ALL:
-                    {
-                        field.DataType = FieldDataType.ALL;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.Unknown:
-                    {
-                        field.DataType = FieldDataType.Unknown;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.Text:
-                    {
-                        // TODO tomas.krch: 2022-08-24 size, etc..
-                        field.DataType = FieldDataType.Text;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.LongText:
-                    {
-                        field.DataType = FieldDataType.LongText;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.Integer:
-                    {
-                        field.DataType = FieldDataType.Integer;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.LongInteger:
-                    {
-                        field.DataType = FieldDataType.LongInteger;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.Double:
-                    {
-                        field.DataType = FieldDataType.Double;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.DateTime:
-                    {
-                        field.DataType = FieldDataType.DateTime;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.Boolean:
-                    {
-                        field.DataType = FieldDataType.Boolean;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.DocAttachments:
-                    case Kx13FieldDataType.File:
-                    {
-                        field.Settings.Clear();
-                        field.SettingsMacroTable.Clear();
-                        field.DataType = FieldDataType.Assets;
-                        field.Settings[CLASS_FIELD_CONTROL_NAME] = FormComponents.AdminAssetSelectorComponent;
-                        field.Settings["MaximumAssets"] = "99";
-                        formInfo.UpdateFormField(columnName, field);
-                        break;
-                    }
-
-                    case Kx13FieldDataType.Guid:
-                    {
-                        field.DataType = FieldDataType.Guid;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.Binary:
-                    {
-                        field.DataType = FieldDataType.Binary;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.Xml:
-                    {
-                        field.DataType = FieldDataType.Xml;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.Decimal:
-                    {
-                        field.DataType = FieldDataType.Decimal;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.TimeSpan:
-                    {
-                        field.DataType = FieldDataType.TimeSpan;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.Date:
-                    {
-                        field.DataType = FieldDataType.Date;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.DocRelationships:
-                    {
-                        field.Settings.Clear();
-                        field.SettingsMacroTable.Clear();
-                        field.Settings[CLASS_FIELD_CONTROL_NAME] = FormComponents.AdminPageSelectorComponent;
-                        field.Settings["MaximumPages"] = "99";
-                        field.Settings["RootPath"] = "/";
-                        field.DataType = FieldDataType.Pages;
-                        field.Size = 0;
-                        formInfo.UpdateFormField(columnName, field);
-                        break;
-                    }
-                }
+                ConvertSingleField(field, formInfo, columnName, FieldMappingInstance.Default);
             }
         }
 
         target.ClassXmlSchema = classStructureInfo.GetXmlSchema();
         target.ClassFormDefinition = formInfo.GetXmlDefinition();
     }
-    
-    private void MapClassDocumentTypeFields(CmsClass source, DataClassInfo target)
+
+    private void MapClassDocumentTypeFields(KX13M.CmsClass source, DataClassInfo target)
     {
         var classStructureInfo = new ClassStructureInfo(source.ClassName, source.ClassXmlSchema, source.ClassTableName);
         var formInfo = new FormInfo(source.ClassFormDefinition);
@@ -299,130 +181,79 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
             {
                 var field = formInfo.GetFormField(columnName);
                 // var controlName = field.Settings[CLASS_FIELD_CONTROL_NAME]?.ToString()?.ToLowerInvariant();
-                var columnType = field.DataType;
+                ConvertSingleField(field, formInfo, columnName, FieldMappingInstance.Default);
+            }
+        }
 
-                switch (columnType)
+        target.ClassXmlSchema = classStructureInfo.GetXmlSchema();
+        target.ClassFormDefinition = formInfo.GetXmlDefinition();
+    }
+
+    private static void ConvertSingleField(FormFieldInfo field, FormInfo formInfo, string columnName, Dictionary<string, DataTypeModel> dataTypeModels)
+    {
+        var columnType = field.DataType;
+        var controlName = field.Settings[CLASS_FIELD_CONTROL_NAME]?.ToString()?.ToLowerInvariant();
+
+        static void PerformActionsOnField(FormFieldInfo field, string[] actions)
+        {
+            foreach (var action in actions)
+            {
+                switch (action)
                 {
-                    case Kx13FieldDataType.ALL:
-                    {
-                        field.DataType = FieldDataType.ALL;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.Unknown:
-                    {
-                        field.DataType = FieldDataType.Unknown;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.Text:
-                    {
-                        // TODO tomas.krch: 2022-08-24 size, etc..
-                        field.DataType = FieldDataType.Text;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.LongText:
-                    {
-                        field.DataType = FieldDataType.LongText;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.Integer:
-                    {
-                        field.DataType = FieldDataType.Integer;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.LongInteger:
-                    {
-                        field.DataType = FieldDataType.LongInteger;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.Double:
-                    {
-                        field.DataType = FieldDataType.Double;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.DateTime:
-                    {
-                        field.DataType = FieldDataType.DateTime;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.Boolean:
-                    {
-                        field.DataType = FieldDataType.Boolean;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.DocAttachments:
-                    case Kx13FieldDataType.File:
+                    case TcaDirective.ClearSettings:
                     {
                         field.Settings.Clear();
+                        break;
+                    }
+                    case TcaDirective.ClearMacroTable:
+                    {
                         field.SettingsMacroTable.Clear();
-                        field.DataType = FieldDataType.Assets;
-                        field.Settings[CLASS_FIELD_CONTROL_NAME] = FormComponents.AdminAssetSelectorComponent;
-                        field.Settings["MaximumAssets"] = "99";
-                        formInfo.UpdateFormField(columnName, field);
                         break;
                     }
-
-                    case Kx13FieldDataType.Guid:
+                    case TcaDirective.ConvertToAsset:
                     {
-                        field.DataType = FieldDataType.Guid;
+                        // field.DataType = FieldDataType.Assets;
+                        field.Settings[CLASS_FIELD_SETTINGS_MAXIMUMASSETS] = FIELD_SETTING_MAXIMUMASSETS_FALLBACK; // setting is missing in source instance, target instance requires it
                         break;
                     }
-
-                    case Kx13FieldDataType.Binary:
+                    case TcaDirective.ConvertToPages:
                     {
-                        field.DataType = FieldDataType.Binary;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.Xml:
-                    {
-                        field.DataType = FieldDataType.Xml;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.Decimal:
-                    {
-                        field.DataType = FieldDataType.Decimal;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.TimeSpan:
-                    {
-                        field.DataType = FieldDataType.TimeSpan;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.Date:
-                    {
-                        field.DataType = FieldDataType.Date;
-                        break;
-                    }
-
-                    case Kx13FieldDataType.DocRelationships:
-                    {
-                        field.Settings.Clear();
-                        field.SettingsMacroTable.Clear();
-                        field.Settings[CLASS_FIELD_CONTROL_NAME] = FormComponents.AdminPageSelectorComponent;
-                        field.Settings["MaximumPages"] = "99";
-                        field.Settings["RootPath"] = "/";
-                        field.DataType = FieldDataType.Pages;
-                        field.Size = 0;
-                        formInfo.UpdateFormField(columnName, field);
+                        field.Settings[CLASS_FIELD_SETTINGS_MAXIMUMPAGES] = FIELD_SETTING_MAXIMUMPAGES_FALLBACK; // setting is missing in source instance, target instance requires it
+                        field.Settings[CLASS_FIELD_SETTINGS_ROOTPATH] = FIELD_SETTING_ROOTPATH_FALLBACK; // TODO tk: 2022-08-31 describe why?
+                        field.Size = FIELD_SIZE_ZERO; // TODO tk: 2022-08-31 describe why?
+                        // field.DataType = FieldDataType.Pages;
                         break;
                     }
                 }
             }
         }
 
-        target.ClassXmlSchema = classStructureInfo.GetXmlSchema();
-        target.ClassFormDefinition = formInfo.GetXmlDefinition();
+        if (dataTypeModels.TryGetValue(columnType, out var typeMapping))
+        {
+            field.DataType = typeMapping.TargetDataType;
+            if (controlName != null &&
+                typeMapping is { FormComponents: { } } &&
+                (typeMapping.FormComponents.TryGetValue(controlName, out var targetControlMapping) ||
+                 typeMapping.FormComponents.TryGetValue(SfcDirective.CatchAnyNonMatching, out targetControlMapping)))
+            {
+                var (targetFormComponent, actions) = targetControlMapping;
+                if (targetControlMapping.TargetFormComponent == TfcDirective.CopySourceControl)
+                {
+                    field.Settings[CLASS_FIELD_CONTROL_NAME] = controlName;
+                    PerformActionsOnField(field, actions);
+                }
+                else if (targetFormComponent == TfcDirective.ClearFieldControl)
+                {
+                    field.Settings.Remove(CLASS_FIELD_CONTROL_NAME);
+                }
+                else if(targetFormComponent == TfcDirective.DoNothing)
+                {
+                    field.Settings[CLASS_FIELD_CONTROL_NAME] = targetFormComponent;
+                    PerformActionsOnField(field, actions);
+                }
+
+                formInfo.UpdateFormField(columnName, field);
+            }
+        }
     }
 }
