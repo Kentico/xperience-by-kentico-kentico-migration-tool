@@ -95,7 +95,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
 
             var kx13CmsTrees = kx13Context.CmsTrees
                 .Include(t => t.NodeParent)
-                .Include(t => t.CmsDocuments.Where(x => x.DocumentCulture == sourceCultureCode))
+                .Include(t => t.CmsDocuments)
                 .Include(t => t.NodeClass)
                 .Include(t => t.CmsPageUrlPaths)
                 .Include(t => t.NodeLinkedNode)
@@ -129,7 +129,12 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                     Debug.Assert(kx13CmsTree != null, nameof(kx13CmsTree) + " != null");
                     Debug.Assert(linkedNode != null, nameof(linkedNode) + " != null");
 
-                    var originalCmsDocument = linkedNode.CmsDocuments.Single();
+                    var originalCmsDocument = linkedNode.CmsDocuments.SingleOrDefault(x => x.DocumentCulture == sourceCultureCode);
+                    if (originalCmsDocument == null)
+                    {
+                        continue;
+                    }
+                    
                     originalCmsDocument.DocumentGuid = Guid.NewGuid();
                     originalCmsDocument.DocumentId = 0;
 
@@ -141,9 +146,26 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                     _logger.LogTrace("Linked node with NodeGuid {NodeGuid} was materialized", kx13CmsTree.NodeGuid);
                 }
                 
-                var kx13CmsDocument = kx13CmsTree.CmsDocuments.SingleOrDefault();
-                Debug.Assert(kx13CmsDocument != null, nameof(kx13CmsDocument) + " != null");
-                
+                var kx13CmsDocument = kx13CmsTree.CmsDocuments.SingleOrDefault(x => x.DocumentCulture == sourceCultureCode);
+                if (kx13CmsDocument == null)
+                {
+                    if (!kx13CmsTree.CmsDocuments.Any())
+                    {
+                        var handbookReference = HandbookReferences
+                            .InvalidSourceData<KX13M.CmsTree>()
+                            .NeedsManualAction()
+                            .WithMessage($"Invalid source TreeNode - contains no documents.");
+                        _protocol.Append(handbookReference);
+                        _logger.LogError(handbookReference.ToString());    
+                    }
+                    else
+                    {
+                        // this is OK - Node doesn't need to contain document for particular selected culture
+                    }
+                    
+                    continue;
+                }
+
                 if (classEntityConfiguration.ExcludeCodeNames.Contains(kx13CmsTree.NodeClass.ClassName, StringComparer.InvariantCultureIgnoreCase))
                 {
                     _protocol.Warning(HandbookReferences.EntityExplicitlyExcludedByCodeName(kx13CmsTree.NodeClass.ClassName, "PageType"), kx13CmsTree);
@@ -215,10 +237,15 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                     continue;
                 }
 
-                var kxoTreeNode = new DocumentQuery(kx13CmsTree.NodeClass.ClassName)
-                    .WithGuid(kx13CmsTree.CmsDocuments.Single().DocumentGuid.GetValueOrDefault())
-                    .SingleOrDefault();
+                
+                var kxoTreeNodes = new DocumentQuery(kx13CmsTree.NodeClass.ClassName)
+                    .Culture(targetCultureCode)
+                    .Where("NodeLinkedNodeId IS NULL") // Linked nodes are not supported at this time in target instance
+                    .WhereEquals("NodeGUID", kx13CmsTree.NodeGuid)
+                    .ToList();
 
+                Debug.Assert(kxoTreeNodes.Count <= 1, "kxoTreeNodes.Count <= 1");
+                var kxoTreeNode = kxoTreeNodes.SingleOrDefault();
                 _protocol.FetchedTarget(kxoTreeNode);
 
                 if (migrationOfLinkedNode && kxoTreeNode != null)

@@ -41,7 +41,7 @@ public class RequestHandlingBehavior<TRequest, TResponse>: IPipelineBehavior<TRe
         }
         finally
         {
-            _logger.LogInformation("Handled {CommandName} in elapsed: {Elapsed}", typeof(TResponse).Name, sw.Elapsed);    
+            _logger.LogInformation("Handled {CommandName} in elapsed: {Elapsed}", typeof(TRequest).Name, sw.Elapsed);    
         }
     }
 }
