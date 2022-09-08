@@ -168,6 +168,13 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
         targetId = -1;
         try
         {
+            if (sourceType == typeof(KX13M.CmsResource))
+            {
+                var kx13Guid = kx13Context.CmsResources.Where(c => c.ResourceId == sourceId).Select(x => x.ResourceGuid).Single();
+                targetId = kxpContext.CmsResources.Where(x => x.ResourceGuid == kx13Guid).Select(x => x.ResourceId).Single();
+                return true;
+            }
+        
             if (sourceType == typeof(KX13.Models.CmsClass))
             {
                 var kx13Guid = kx13Context.CmsClasses.Where(c => c.ClassId == sourceId).Select(x => x.ClassGuid).Single();
@@ -178,8 +185,7 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
             if (sourceType == typeof(KX13.Models.CmsUser))
             {
                 var kx13User = kx13Context.CmsUsers.Where(c => c.UserId == sourceId).Select(x => new { x.UserGuid, x.UserName }).Single();
-                targetId = kxpContext.CmsUsers.Where(x => x.UserGuid == kx13User.UserGuid || x.UserName == kx13User.UserName).Select(x => x.UserId)
-                    .Single();
+                targetId = kxpContext.CmsUsers.Where(x => x.UserGuid == kx13User.UserGuid || x.UserName == kx13User.UserName).Select(x => x.UserId).Single();
                 return true;
             }
 

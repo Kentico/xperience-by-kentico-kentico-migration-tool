@@ -128,6 +128,7 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
         }
         else
         {
+            // TODO tomas.krch: 2022-09-08 in future releases this will be supported
             _logger.LogWarning("Migration of CMSResource is currently not supported. Resource with source ID '{ResourceId}'. Resource field {ResourceField}", source.ClassResourceId, nameof(source.ClassResourceId));
             Protocol.Append(HandbookReferences
                 .NotCurrentlySupportedSkip<KX13M.CmsResource>()
