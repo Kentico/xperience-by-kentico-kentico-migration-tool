@@ -56,8 +56,11 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
         var siteIdExplicitMapping = _toolkitConfiguration.RequireExplicitMapping<CmsSite>(s => s.SiteId);
         var migratedSiteIds = siteIdExplicitMapping.Keys.ToList();
 
-        var cmsClassesDocumentTypes = kx13Context.CmsClasses.Include(c => c.Sites)
-                .Where(x => x.ClassIsDocumentType).OrderBy(x => x.ClassId).AsEnumerable()
+        var cmsClassesDocumentTypes = kx13Context.CmsClasses
+                .Include(c => c.Sites)
+                .Where(x => x.ClassIsDocumentType)
+                .OrderBy(x => x.ClassId)
+                .AsEnumerable()
             ;
 
         using var kx13Classes = EnumerableHelper.CreateDeferrableItemWrapper(cmsClassesDocumentTypes);

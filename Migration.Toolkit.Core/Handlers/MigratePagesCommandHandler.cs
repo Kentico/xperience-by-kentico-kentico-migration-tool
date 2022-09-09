@@ -166,15 +166,16 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                     continue;
                 }
 
-                if (classEntityConfiguration.ExcludeCodeNames.Contains(kx13CmsTree.NodeClass.ClassName, StringComparer.InvariantCultureIgnoreCase))
+                var nodeClassClassName = kx13CmsTree.NodeClass.ClassName;
+                if (classEntityConfiguration.ExcludeCodeNames.Contains(nodeClassClassName, StringComparer.InvariantCultureIgnoreCase))
                 {
-                    _protocol.Warning(HandbookReferences.EntityExplicitlyExcludedByCodeName(kx13CmsTree.NodeClass.ClassName, "PageType"), kx13CmsTree);
-                    _logger.LogWarning("Page: page of class {ClassName} was skipped => it is explicitly excluded in configuration", kx13CmsTree.NodeClass.ClassName);
+                    _protocol.Warning(HandbookReferences.EntityExplicitlyExcludedByCodeName(nodeClassClassName, "PageType"), kx13CmsTree);
+                    _logger.LogWarning("Page: page of class {ClassName} was skipped => it is explicitly excluded in configuration", nodeClassClassName);
                     continue;    
                 }
                 
                 int? mappedParentNodeId;
-                if (kx13CmsTree.NodeClass.ClassName == CLASS_CMS_ROOT)
+                if (nodeClassClassName == CLASS_CMS_ROOT)
                 {
                     mappedParentNodeId = MapTargetRootNodeId(targetSiteId, targetCultureCode);
                     
@@ -237,23 +238,42 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                     continue;
                 }
 
-                
-                var kxoTreeNodes = new DocumentQuery(kx13CmsTree.NodeClass.ClassName)
-                    .Culture(targetCultureCode)
-                    .Where("NodeLinkedNodeId IS NULL") // Linked nodes are not supported at this time in target instance
-                    .WhereEquals("NodeGUID", kx13CmsTree.NodeGuid)
-                    .ToList();
+                List<TreeNode> kxoTreeNodes;
+                try
+                {
+                    kxoTreeNodes = new DocumentQuery(nodeClassClassName)
+                        .Culture(targetCultureCode)
+                        .Where("NodeLinkedNodeId IS NULL") // Linked nodes are not supported at this time in target instance
+                        .WhereEquals("NodeGUID", kx13CmsTree.NodeGuid)
+                        .ToList();
+                }
+                catch (DocumentTypeNotExistsException ex)
+                {
+                    _logger.LogError(ex, "Unable to find requested document class '{NodeClass}', check if page type is assigned to migrated site", nodeClassClassName);
+                    _protocol.Append(HandbookReferences
+                        .MissingRequiredDependency<KX13M.CmsClass>(nameof(DataClassInfo.ClassName), nodeClassClassName)
+                        .NeedsManualAction()
+                        .WithData(new
+                        {
+                            SourceDocumentClassName = nodeClassClassName,
+                            SourceCmsDocumentId = kx13CmsDocument.DocumentId,
+                            SourceDocumentGuid = kx13CmsDocument.DocumentGuid,
+                            SourcePageName = kx13CmsDocument.DocumentName,
+                            SourceParentNodeId = kx13CmsTree.NodeParentId,
+                        }));
+                    continue;
+                }
 
                 Debug.Assert(kxoTreeNodes.Count <= 1, "kxoTreeNodes.Count <= 1");
                 var kxoTreeNode = kxoTreeNodes.SingleOrDefault();
                 _protocol.FetchedTarget(kxoTreeNode);
 
-                if (migrationOfLinkedNode && kxoTreeNode != null)
-                {
-                    _logger.LogWarning("Linked node is already materialized in target instance, if you want to migrate again delete it in target instance");
-                    _protocol.Append(HandbookReferences.LinkedDataAlreadyMaterializedInTargetInstance.WithData(new { kx13CmsTree.NodeGuid, kx13CmsTree.NodeAliasPath }));
-                    continue;
-                }
+                // if (migrationOfLinkedNode && kxoTreeNode != null)
+                // {
+                //     _logger.LogWarning("Linked node is already materialized in target instance, if you want to migrate again delete it in target instance");
+                //     _protocol.Append(HandbookReferences.LinkedDataAlreadyMaterializedInTargetInstance.WithData(new { kx13CmsTree.NodeGuid, kx13CmsTree.NodeAliasPath }));
+                //     continue;
+                // }
 
                 var kxoTreeNodeParent = new DocumentQuery()
                     .Where(nameof(TreeNode.NodeID), QueryOperator.Equals, mappedParentNodeId)
