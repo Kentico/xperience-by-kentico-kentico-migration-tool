@@ -27,7 +27,7 @@ public static partial class TcaDirective
 public static class TfcDirective
 {
     public const string CopySourceControl = "#copy-source-control#";
-    public const string ClearFieldControl = "#clear-field-control#";
+    // public const string ClearFieldControl = "#clear-field-control#"; not acceptable
     public const string DoNothing = "#leave-it-as-it-is#";
 }
 
@@ -48,13 +48,13 @@ public static class FieldMappingInstance
         {
             Kx13FieldDataType.ALL, new DataTypeModel(FieldDataType.ALL, new()
             {
-                { SfcDirective.CatchAnyNonMatching, new TargetComponent(TfcDirective.ClearFieldControl)}
+                { SfcDirective.CatchAnyNonMatching, new TargetComponent(TfcDirective.CopySourceControl)}
             })
         },
         {
             Kx13FieldDataType.Unknown, new DataTypeModel(FieldDataType.Unknown, new()
             {
-                { SfcDirective.CatchAnyNonMatching, new TargetComponent(TfcDirective.ClearFieldControl)}
+                { SfcDirective.CatchAnyNonMatching, new TargetComponent(TfcDirective.CopySourceControl)}
             })
         },
         {
@@ -72,7 +72,7 @@ public static class FieldMappingInstance
         {
             Kx13FieldDataType.LongText, new DataTypeModel(FieldDataType.LongText, new()
             {
-                { FcLongText.HtmlAreaControl, new TargetComponent(FormComponents.AdminTextInputComponent)},
+                { FcLongText.HtmlAreaControl, new TargetComponent(FormComponents.AdminRichTextEditorComponent)},
                 { FcLongText.TextBoxControl, new TargetComponent(FormComponents.AdminTextInputComponent)},
                 { FcLongText.DropDownListControl, new TargetComponent(FormComponents.AdminDropDownComponent)},
                 { FcLongText.TextAreaControl, new TargetComponent(FormComponents.AdminTextAreaComponent)},
@@ -94,13 +94,13 @@ public static class FieldMappingInstance
         {
             Kx13FieldDataType.Double, new DataTypeModel(FieldDataType.Double, new()
             {
-                { SfcDirective.CatchAnyNonMatching, new TargetComponent(FormComponents.AdminNumberInputComponent)}
+                { SfcDirective.CatchAnyNonMatching, new TargetComponent(TfcDirective.CopySourceControl)}
             })
         },
         {
             Kx13FieldDataType.Decimal, new DataTypeModel(FieldDataType.Decimal, new()
             {
-                { SfcDirective.CatchAnyNonMatching, new TargetComponent(FormComponents.AdminNumberInputComponent)}
+                { SfcDirective.CatchAnyNonMatching, new TargetComponent(TfcDirective.CopySourceControl)}
             })
         },
         {
@@ -118,7 +118,7 @@ public static class FieldMappingInstance
         {
             Kx13FieldDataType.TimeSpan, new DataTypeModel(FieldDataType.TimeSpan, new()
             {
-                { SfcDirective.CatchAnyNonMatching, new TargetComponent(TfcDirective.DoNothing)}
+                { SfcDirective.CatchAnyNonMatching, new TargetComponent(TfcDirective.CopySourceControl)}
             })
         },
         {
@@ -142,7 +142,7 @@ public static class FieldMappingInstance
         {
             Kx13FieldDataType.Guid, new DataTypeModel(FieldDataType.Guid, new()
             {
-                { SfcDirective.CatchAnyNonMatching, new TargetComponent(TfcDirective.ClearFieldControl)}
+                { SfcDirective.CatchAnyNonMatching, new TargetComponent(TfcDirective.CopySourceControl)}
             })
         },
         {

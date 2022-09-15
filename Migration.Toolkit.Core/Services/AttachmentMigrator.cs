@@ -68,7 +68,7 @@ public class AttachmentMigrator
         }
     }
 
-    public MigrateAttachmentResult MigrateAttachment(Guid kx13CmsAttachmentGuid)
+    public MigrateAttachmentResult MigrateAttachment(Guid kx13CmsAttachmentGuid, string additionalPath)
     {
         using var kx13Context = _kx13ContextFactory.CreateDbContext();
         var attachment = kx13Context.CmsAttachments.SingleOrDefault(a => a.AttachmentGuid == kx13CmsAttachmentGuid);
@@ -82,7 +82,7 @@ public class AttachmentMigrator
             return new MigrateAttachmentResult(false, true);
         }
 
-        return MigrateAttachment(attachment);
+        return MigrateAttachment(attachment, additionalPath);
     }
 
     private readonly ConcurrentDictionary<int, CmsSite> _targetSites = new();
@@ -142,7 +142,7 @@ public class AttachmentMigrator
             librarySubFolder = kx13AttachmentDocument.DocumentNode.NodeAliasPath;
         }
 
-        if (!string.IsNullOrWhiteSpace(additionalMediaPath))
+        if (!string.IsNullOrWhiteSpace(additionalMediaPath) && (kx13CmsAttachment.AttachmentIsUnsorted != true || kx13CmsAttachment.AttachmentGroupGuid != null))
         {
             librarySubFolder = System.IO.Path.Combine(librarySubFolder, additionalMediaPath);
         }
