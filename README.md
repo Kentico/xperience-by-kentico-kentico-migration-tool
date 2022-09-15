@@ -44,6 +44,7 @@ Currently, the Migration toolkit supports the following types of data:
 	* Xperience by Kentico currently does not support multilingual sites. You need to select one culture from which the content of pages is migrated.
 	* Only pages that are **published** on the source instance are migrated.
 	* Includes the **Former URLs** of pages, but not Alternative URLs, which are currently not supported in Xperience by Kentico.
+	* Linked pages are currently not supported in Xperience by Kentico. The migration creates standard page copies for any linked pages on the source instance.
 	* Page permissions (ACLs) are currently not supported in Xperience by Kentico, so are not migrated.
   * **Page attachments**
 	* Page attachments are not supported in Xperience by Kentico. Attachments are migrated into media libraries. See [`Migration.Toolkit.CLI/README.md - Attachments`](./Migration.Toolkit.CLI/README.md#Attachments) for detailed information about the conversion process.
