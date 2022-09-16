@@ -175,7 +175,7 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
                         {
                             if (value is Guid attachmentGuid)
                             {
-                                var (success, _, mediaFileInfo, mediaLibraryInfo) = _attachmentMigrator.MigrateAttachment(attachmentGuid);
+                                var (success, _, mediaFileInfo, mediaLibraryInfo) = _attachmentMigrator.MigrateAttachment(attachmentGuid, $"__{columnName}");
                                 if (success && mediaFileInfo != null)
                                 {
                                     target.SetValueAsJson(columnName, new[]
@@ -196,7 +196,7 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
                             }
                             else if (value is string attachmentGuidStr && Guid.TryParse(attachmentGuidStr, out attachmentGuid))
                             {
-                                var (success, _, mediaFileInfo, mediaLibraryInfo) = _attachmentMigrator.MigrateAttachment(attachmentGuid);
+                                var (success, _, mediaFileInfo, mediaLibraryInfo) = _attachmentMigrator.MigrateAttachment(attachmentGuid, $"__{columnName}");
                                 if (success && mediaFileInfo != null)
                                 {
                                     target.SetValueAsJson(columnName, new[]
@@ -267,6 +267,7 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
             }
             else
             {
+                // TODO tk: 2022-09-15 log what is misising also log to protocol 
                 _logger.LogWarning("Coupled data is missing for source document {DocumentId} of class {ClassName}", sourceDocument.DocumentId,
                     cmsTree.NodeClass.ClassName);
             }

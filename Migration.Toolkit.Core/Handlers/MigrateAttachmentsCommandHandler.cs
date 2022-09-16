@@ -35,6 +35,12 @@ public class MigrateAttachmentsCommandHandler : IRequestHandler<MigrateAttachmen
 
         foreach (var kx13CmsAttachment in kx13CmsAttachments)
         {
+            if (kx13CmsAttachment.AttachmentIsUnsorted != true || kx13CmsAttachment.AttachmentGroupGuid != null)
+            {
+                // those must be migrated with pages
+                continue;
+            }
+            
             var (_, canContinue, _, _) = _attachmentMigrator.MigrateAttachment(kx13CmsAttachment);
             if (!canContinue)
                 break;

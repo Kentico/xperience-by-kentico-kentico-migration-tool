@@ -238,19 +238,22 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
                  typeMapping.FormComponents.TryGetValue(SfcDirective.CatchAnyNonMatching, out targetControlMapping)))
             {
                 var (targetFormComponent, actions) = targetControlMapping;
-                if (targetControlMapping.TargetFormComponent == TfcDirective.CopySourceControl)
+                switch (targetFormComponent)
                 {
-                    field.Settings[CLASS_FIELD_CONTROL_NAME] = controlName;
-                    PerformActionsOnField(field, actions);
-                }
-                else if (targetFormComponent == TfcDirective.ClearFieldControl)
-                {
-                    field.Settings.Remove(CLASS_FIELD_CONTROL_NAME);
-                }
-                else if(targetFormComponent == TfcDirective.DoNothing)
-                {
-                    field.Settings[CLASS_FIELD_CONTROL_NAME] = targetFormComponent;
-                    PerformActionsOnField(field, actions);
+                    case TfcDirective.CopySourceControl:
+                        field.Settings[CLASS_FIELD_CONTROL_NAME] = controlName;
+                        PerformActionsOnField(field, actions);
+                        break;
+                    case TfcDirective.DoNothing:
+                        field.Settings[CLASS_FIELD_CONTROL_NAME] = targetFormComponent;
+                        PerformActionsOnField(field, actions);
+                        break;
+                    default:
+                    {
+                        field.Settings[CLASS_FIELD_CONTROL_NAME] = targetFormComponent;
+                        PerformActionsOnField(field, actions);
+                        break;
+                    }
                 }
 
                 formInfo.UpdateFormField(columnName, field);
