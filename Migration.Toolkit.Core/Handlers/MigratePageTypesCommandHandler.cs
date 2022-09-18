@@ -3,6 +3,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using CMS.DataEngine;
+using CMS.DocumentEngine;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -12,6 +13,7 @@ using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.Helpers;
 using Migration.Toolkit.Core.MigrationProtocol;
+using Migration.Toolkit.Core.Services;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KX13.Models;
 using Migration.Toolkit.KXP.Api;
@@ -27,6 +29,7 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
     private readonly KxpClassFacade _kxpClassFacade;
     private readonly IProtocol _protocol;
     private readonly ToolkitConfiguration _toolkitConfiguration;
+    private readonly PageTemplateMigrator _pageTemplateMigrator;
 
     public MigratePageTypesCommandHandler(
         ILogger<MigratePageTypesCommandHandler> logger,
@@ -35,7 +38,8 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
         PrimaryKeyMappingContext primaryKeyMappingContext,
         KxpClassFacade kxpClassFacade,
         IProtocol protocol,
-        ToolkitConfiguration toolkitConfiguration
+        ToolkitConfiguration toolkitConfiguration,
+        PageTemplateMigrator pageTemplateMigrator
     )
     {
         _logger = logger;
@@ -45,6 +49,7 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
         _kxpClassFacade = kxpClassFacade;
         _protocol = protocol;
         _toolkitConfiguration = toolkitConfiguration;
+        _pageTemplateMigrator = pageTemplateMigrator;
     }
 
     public async Task<CommandResult> Handle(MigratePageTypesCommand request, CancellationToken cancellationToken)
@@ -123,7 +128,22 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
             }
         }
 
+        await MigratePageTemplateConfigurations(migratedSiteIds, cancellationToken);
+
         return new GenericCommandResult();
+    }
+
+    private async Task MigratePageTemplateConfigurations(List<int> migratedSiteIds, CancellationToken cancellationToken)
+    {
+        await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
+        
+        var kx13PageTemplateConfigurations = kx13Context.CmsPageTemplateConfigurations
+            .Where(x => migratedSiteIds.Contains(x.PageTemplateConfigurationSiteId));
+
+        foreach (var kx13PageTemplateConfiguration in kx13PageTemplateConfigurations)
+        {
+            await _pageTemplateMigrator.MigratePageTemplateConfigurationAsync(kx13PageTemplateConfiguration);
+        }
     }
 
     private void MigrateClassSiteMappings(Dictionary<int, int> siteIdMapping, int dcId, [DisallowNull] int? dataClassId, CmsClass kx13Class)

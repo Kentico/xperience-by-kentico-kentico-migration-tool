@@ -163,7 +163,7 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
             foreach (var columnName in columnNames)
             {
                 var field = formInfo.GetFormField(columnName);
-                ConvertSingleField(field, formInfo, columnName, FieldMappingInstance.Default);
+                ConvertSingleField(field, formInfo, columnName, FieldMappingInstance.Default.DataTypeMappings);
             }
         }
 
@@ -182,7 +182,7 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
             {
                 var field = formInfo.GetFormField(columnName);
                 // var controlName = field.Settings[CLASS_FIELD_CONTROL_NAME]?.ToString()?.ToLowerInvariant();
-                ConvertSingleField(field, formInfo, columnName, FieldMappingInstance.Default);
+                ConvertSingleField(field, formInfo, columnName, FieldMappingInstance.Default.DataTypeMappings);
             }
         }
 

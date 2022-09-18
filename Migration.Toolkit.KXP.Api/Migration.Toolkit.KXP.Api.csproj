@@ -13,8 +13,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Kentico.Xperience.Admin" Version="22.0.4" />
-      <PackageReference Include="Kentico.Xperience.Core" Version="22.0.4" />
+      <PackageReference Include="Kentico.Xperience.Admin" Version="22.1.3" />
+      <PackageReference Include="Kentico.Xperience.Core" Version="22.1.3" />
     </ItemGroup>
 
 </Project>

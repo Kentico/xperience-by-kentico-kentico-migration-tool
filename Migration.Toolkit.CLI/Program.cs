@@ -11,6 +11,7 @@ using Migration.Toolkit.Core;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.Services;
+using Migration.Toolkit.Core.Services.Ipc;
 using Migration.Toolkit.KX13;
 using Migration.Toolkit.KXP;
 using Migration.Toolkit.KXP.Api;
@@ -350,6 +351,26 @@ while (argsQ.TryDequeue(out var arg))
 }
 
 kxpContext.Dispose();
+
+var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+var ipc = scope.ServiceProvider.GetRequiredService<IpcService>();
+var sourceInstanceContext = scope.ServiceProvider.GetRequiredService<SourceInstanceContext>();
+try
+{
+    if (sourceInstanceContext.IsQuerySourceInstanceEnabled())
+    {
+        var ipcConfigured = await ipc.IsConfiguredAsync();
+        if (ipcConfigured)
+        {
+            await sourceInstanceContext.RequestSourceInstanceInfo();
+        }    
+    }
+}
+catch (Exception ex)
+{
+    logger.LogCritical(ex, "Check if opt-in feature 'QuerySourceInstanceApi' is configured correctly and all connections configured are reachable and hosted on localhost");
+    return;
+}
 
 var satisfiedDependencies = new HashSet<Type>();
 var dependenciesSatisfied = true;

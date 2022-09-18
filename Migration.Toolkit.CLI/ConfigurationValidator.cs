@@ -73,6 +73,58 @@ public static class ConfigurationValidator
             yield return new ValidationMessage(ValidationMessageType.Error, string.Format(Resources.ConfigurationValidator_GetValidationErrors_UseOmActivitySiteRelationAutofix_MustFit, Printer.PrintEnumValues<AutofixEnum>(", "))
             );
         }
+
+        #region Opt-in features validation
+
+        var optInFeatures = settings?.GetSection(ConfigurationNames.OptInFeatures);
+        if (optInFeatures is not null)
+        {
+            var querySourceInstanceApi = optInFeatures?.GetSection(ConfigurationNames.QuerySourceInstanceApi);
+            if (querySourceInstanceApi is not null)
+            {
+                var qsiEnabled = querySourceInstanceApi.GetValue<bool?>(ConfigurationNames.Enabled);
+                if (qsiEnabled is true)
+                {
+                    var connections = querySourceInstanceApi.GetSection(ConfigurationNames.Connections).GetChildren();
+                    foreach (var connection in connections)
+                    {
+                        var siteName = connection.GetValue<string>(ConfigurationNames.SourceInstanceSiteName);
+                        var siteUri = connection.GetValue<string>(ConfigurationNames.SourceInstanceUri);
+                        var secret = connection.GetValue<string>(ConfigurationNames.Secret);
+                        
+                        if (Uri.TryCreate(siteUri, UriKind.Absolute, out var sourceSiteUri))
+                        {
+                            if (!sourceSiteUri.IsLoopback)
+                            {   
+                                yield return new ValidationMessage(ValidationMessageType.Error, 
+                                    "Source instance Uri invalid format, following formats are supported: http://localhost:5531, https://localhost/MySite");    
+                            }
+                            
+                            // OK
+                        }
+                        else
+                        {
+                            yield return new ValidationMessage(ValidationMessageType.Error, 
+                                "Source instance Uri invalid format, following formats are supported: http://localhost:5531, https://localhost/MySite");
+                        }
+
+                        if (string.IsNullOrWhiteSpace(siteName))
+                        {
+                            yield return new ValidationMessage(ValidationMessageType.Error, 
+                                "Source instance site name cannot be null or empty, change it to valid sitename.");
+                        }
+
+                        if (string.IsNullOrWhiteSpace(secret))
+                        {
+                            yield return new ValidationMessage(ValidationMessageType.Error, 
+                                "Source instance secret cannot be null or whitespace, set it to random hardly guessed string.");
+                        }
+                    }
+                }
+            }
+        }
+
+        #endregion
     }
 
     #region "Helper methods"

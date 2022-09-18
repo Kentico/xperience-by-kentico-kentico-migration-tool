@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Reflection;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +14,8 @@ using Migration.Toolkit.KXP;
 using Migration.Toolkit.KXP.Api;
 using Migration.Toolkit.KXP.Context;
 using Migration.Toolkit.TestConsole;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 ConsoleHelper.EnableVirtualTerminalProcessing();
 
@@ -58,10 +61,97 @@ var tableTypeLookupService = scope.ServiceProvider.GetRequiredService<TableRefle
 // var mediatr = scope.ServiceProvider.GetRequiredService<IMediator>();
 var kxpContext = scope.ServiceProvider.GetRequiredService<IDbContextFactory<KxpContext>>().CreateDbContext();
 
-var sb = new StringBuilder();
-GenHelper.AppendFieldMappingDefinitionAsMarkdown(sb);
-var def = sb.ToString();
-Console.WriteLine(def);
+var json = @"{
+    ""editableAreas"": [
+    {
+    ""identifier"": ""ContactUs"",
+    ""sections"": [
+    {
+        ""identifier"": ""737e5d34-f1de-42bb-a4df-588f4dffb9b6"",
+        ""type"": ""DancingGoat.SingleColumnSection"",
+        ""properties"": {
+            ""theme"": null
+        },
+        ""zones"": [
+        {
+            ""identifier"": ""a78772f4-9850-464d-8f6a-0400e71a6b05"",
+            ""widgets"": [
+            {
+                ""identifier"": ""ccd51ab9-b7e2-4a93-a5c6-172cb8e270b7"",
+                ""type"": ""Kentico.FormWidget"",
+                ""variants"": [
+                {
+                    ""identifier"": ""77a99ac8-d93f-4cf9-bfb1-45b16f5dedcf"",
+                    ""properties"": {
+                        ""selectedForm"": ""DancingGoatCoreContactUsNew"",
+                        ""anotherf"": ""DancingGoatCoreContactUsNew""
+                    }
+                }
+                ]
+            }
+            ]
+        }
+        ]
+    }
+    ]
+}
+]
+}";
+
+
+// var editableAreas = JsonConvert.DeserializeObject<EditableAreasConfiguration>(json);
+//
+// foreach (var area in editableAreas.EditableAreas)
+// {
+//     foreach (var section in area.Sections)
+//     {
+//         // TODO tomas.krch: 2022-09-12 section properties
+//         // section.Properties
+//         Console.WriteLine($"{section.TypeIdentifier}");
+//         Console.WriteLine($"{section.Properties}");
+//
+//         foreach (var zone in section.Zones)
+//         {
+//             foreach (var widget in zone.Widgets)
+//             {
+//                 Console.WriteLine($"{widget.TypeIdentifier}");
+//                 foreach (var widgetVariant in widget.Variants)
+//                 {
+//                     // TODO tomas.krch: 2022-09-12 widgetVariant.Properties
+//                     Console.WriteLine($"{widgetVariant.Properties}");
+//                 }
+//             }
+//         }
+//     }
+// }
+
+
+var jo = JObject.Parse(json);
+
+var allProperties = jo.SelectTokens("$..properties").ToList();
+foreach (var properties in allProperties)
+{
+    Console.WriteLine("-----------------------");
+    var propertiesContainer = properties.Parent;
+    Console.WriteLine($"{propertiesContainer}");
+    
+    var propsOf = propertiesContainer.Parent.Parent.Parent;
+    Console.WriteLine($"{propsOf}");
+    
+    var c = 1;
+}
+// dynamic dynJson = JsonConvert.DeserializeObject(json);
+// foreach (var item in dynJson)
+// {
+//     Console.WriteLine("{0} {1} {2} {3}\n", item.id, item.displayName, 
+//         item.slug, item.imageUrl);
+// }
+
+
+// var sb = new StringBuilder();
+// GenHelper.AppendFieldMappingDefinitionAsMarkdown(sb);
+// var def = sb.ToString();
+// Console.WriteLine(def);
 
 // var countryMigrator = scope.ServiceProvider.GetRequiredService<CountryMigrator>();
 //

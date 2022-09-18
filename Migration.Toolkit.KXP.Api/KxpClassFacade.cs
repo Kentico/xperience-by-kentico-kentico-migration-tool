@@ -2,19 +2,12 @@ namespace Migration.Toolkit.KXP.Api;
 
 using System.Diagnostics;
 using CMS.DataEngine;
-using Microsoft.Extensions.Logging;
 
 public class KxpClassFacade
 {
-    private readonly ILogger<KxpClassFacade> _logger;
-    private readonly KxpApiInitializer _kxpApiInitializer;
-
-    public KxpClassFacade(ILogger<KxpClassFacade> logger, KxpApiInitializer kxpApiInitializer)
+    public KxpClassFacade(KxpApiInitializer kxpApiInitializer)
     {
-        _logger = logger;
-        _kxpApiInitializer = kxpApiInitializer;
-
-        _kxpApiInitializer.EnsureApiIsInitialized();
+        kxpApiInitializer.EnsureApiIsInitialized();
     }
     
     public DataClassInfo SetClass(DataClassInfo dataClassInfo)

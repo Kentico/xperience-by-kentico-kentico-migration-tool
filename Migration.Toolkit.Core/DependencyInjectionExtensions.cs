@@ -19,6 +19,7 @@ using Migration.Toolkit.Core.Services.CmsRelationship;
 namespace Migration.Toolkit.Core;
 
 using CMS.Globalization;
+using Migration.Toolkit.Core.Services.Ipc;
 using Migration.Toolkit.KXP.Models;
 
 public static class DependencyInjectionExtensions
@@ -33,15 +34,17 @@ public static class DependencyInjectionExtensions
         services.AddTransient<CmsRelationshipService>();
         services.AddTransient<CoupledDataService>();
         services.AddScoped<AttachmentMigrator>();
+        services.AddScoped<PageTemplateMigrator>();
         services.AddScoped<CountryMigrator>();
         services.AddScoped<ClassService>();
         
         services.AddMediatR(typeof(DependencyInjectionExtensions));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestHandlingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CommandConstraintBehavior<,>));
-        
 
         services.AddSingleton(s => new TableReflectionService(s.GetRequiredService<ILogger<TableReflectionService>>()));
+        services.AddSingleton<SourceInstanceContext>();
+        services.AddTransient<IpcService>();
 
         services.AddScoped<PrimaryKeyMappingContext>();
         services.AddScoped<IPrimaryKeyLocatorService, PrimaryKeyLocatorService>();
@@ -81,6 +84,8 @@ public static class DependencyInjectionExtensions
         services.AddTransient<IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo>, MediaFileInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsCountry, CountryInfo>, CountryInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsState, StateInfo>, StateInfoMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsPageTemplateConfiguration, PageTemplateConfigurationInfo>, PageTemplateConfigurationMapper>();
+        // TODO tk: 2022-09-13 services.AddTransient<IEntityMapper<KX13M.CmsLayout, LayoutInfo>, PageTemplateConfigurationMapper>();
 
         return services;
     }
