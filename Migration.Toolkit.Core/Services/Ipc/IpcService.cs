@@ -7,8 +7,8 @@ using Newtonsoft.Json;
 
 public class IpcService
 {
-    private const string IPC_PING_PATH = "/ToolkitGetAllDefinitions/ping";
-    private const string IPC_DISCOVERED_INFO_PATH = "/ToolkitGetAllDefinitions";
+    private const string IPC_PING_PATH = "/ToolkitApi/Test";
+    private const string IPC_DISCOVERED_INFO_PATH = "/ToolkitApi/GetAllDefinitions";
 
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly ILogger<IpcService> _logger;

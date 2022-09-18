@@ -16,6 +16,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.TestConso
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.KXP.Extensions", "Migration.Toolkit.KXP.Extensions\Migration.Toolkit.KXP.Extensions.csproj", "{B601194D-192B-4539-8AB0-9813130EFAD7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KX13.NET48.Extensions", "KX13.NET48.Extensions\KX13.NET48.Extensions.csproj", "{C7F08A26-2674-4961-8030-C711DF01A3C0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KX13.Extensions", "KX13.Extensions\KX13.Extensions.csproj", "{EA37FE22-A945-4170-A364-2AD76A4247F2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Instance.Extensions", "Instance.Extensions", "{D06721D3-6E2D-4235-B146-2BB80DF2DBA9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Experiments", "Experiments", "{ECDC90AD-5A66-4C0E-BD87-C328E3B6A287}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,5 +62,18 @@ Global
 		{B601194D-192B-4539-8AB0-9813130EFAD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B601194D-192B-4539-8AB0-9813130EFAD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B601194D-192B-4539-8AB0-9813130EFAD7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7F08A26-2674-4961-8030-C711DF01A3C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7F08A26-2674-4961-8030-C711DF01A3C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7F08A26-2674-4961-8030-C711DF01A3C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7F08A26-2674-4961-8030-C711DF01A3C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA37FE22-A945-4170-A364-2AD76A4247F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA37FE22-A945-4170-A364-2AD76A4247F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA37FE22-A945-4170-A364-2AD76A4247F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA37FE22-A945-4170-A364-2AD76A4247F2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EA37FE22-A945-4170-A364-2AD76A4247F2} = {D06721D3-6E2D-4235-B146-2BB80DF2DBA9}
+		{C7F08A26-2674-4961-8030-C711DF01A3C0} = {D06721D3-6E2D-4235-B146-2BB80DF2DBA9}
+		{DD3C628C-A38F-423F-B930-3A0F7270BF92} = {ECDC90AD-5A66-4C0E-BD87-C328E3B6A287}
 	EndGlobalSection
 EndGlobal

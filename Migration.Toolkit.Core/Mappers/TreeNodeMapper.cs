@@ -26,6 +26,9 @@ public record CmsTreeMapperSource(KX13M.CmsTree CmsTree, string SourceCultureCod
 public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
 {
     private const string CLASS_FIELD_CONTROL_NAME = "controlname";
+    private const string COLUMN_NAME_DOCUMENT_PAGE_BUILDER_WIDGETS = "DocumentPageBuilderWidgets";
+    private const string COLUMN_NAME_DOCUMENT_PAGE_TEMPLATE_CONFIGURATION = "DocumentPageTemplateConfiguration";
+    
     private readonly ILogger<TreeNodeMapper> _logger;
     private readonly CoupledDataService _coupledDataService;
     private readonly ClassService _classService;
@@ -149,7 +152,7 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
                     }
 
                     // target.PageTemplateConfigurationTemplate = JsonConvert.SerializeObject(pageTemplateConfiguration);
-                    target.SetValue("DocumentPageTemplateConfiguration", JsonConvert.SerializeObject(pageTemplateConfiguration));
+                    target.SetValue(COLUMN_NAME_DOCUMENT_PAGE_TEMPLATE_CONFIGURATION, JsonConvert.SerializeObject(pageTemplateConfiguration));
                 }
             }
 
@@ -162,14 +165,14 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
                 }
 
                 //target.PageTemplateConfigurationWidgets = JsonConvert.SerializeObject(areas);
-                target.SetValue("DocumentPageBuilderWidgets", JsonConvert.SerializeObject(areas)); //sourceDocument.DocumentPageBuilderWidgets);
+                target.SetValue(COLUMN_NAME_DOCUMENT_PAGE_BUILDER_WIDGETS, JsonConvert.SerializeObject(areas)); //sourceDocument.DocumentPageBuilderWidgets);
             }
         }
         else
         {
             // simply copy if no info is available
-            target.SetValue("DocumentPageBuilderWidgets", sourceDocument.DocumentPageBuilderWidgets); 
-            target.SetValue("DocumentPageTemplateConfiguration", sourceDocument.DocumentPageTemplateConfiguration);
+            target.SetValue(COLUMN_NAME_DOCUMENT_PAGE_BUILDER_WIDGETS, sourceDocument.DocumentPageBuilderWidgets); 
+            target.SetValue(COLUMN_NAME_DOCUMENT_PAGE_TEMPLATE_CONFIGURATION, sourceDocument.DocumentPageTemplateConfiguration);
         }
         
         if (mappingHelper.TranslateRequiredId<KX13M.CmsUser>(u => u.UserId, sourceDocument.DocumentCreatedByUserId, out var createdByUserId))
