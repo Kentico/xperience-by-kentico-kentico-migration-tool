@@ -4,8 +4,8 @@ public class SourceInstanceDiscoveredInfo
 {
     public Dictionary<string, List<EditingFormControlModel>>? WidgetProperties { get; set; }
     public Dictionary<string, List<EditingFormControlModel>>? PageTemplateProperties { get; set; }
-    
     public Dictionary<string, List<EditingFormControlModel>>? SectionProperties { get; set; }
+    public string SiteName { get; set; }
 }
 
 public class EditingFormControlModel

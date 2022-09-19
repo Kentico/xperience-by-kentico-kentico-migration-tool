@@ -17,7 +17,6 @@ public class ConfigurationNames
     public const string ExplicitPrimaryKeyMapping = "ExplicitPrimaryKeyMapping";
     
     public const string SourceInstanceUri = "SourceInstanceUri";
-    public const string SourceInstanceSiteName = "SourceInstanceSiteName";
     public const string Secret = "Secret"; 
 
     #region "Section names"

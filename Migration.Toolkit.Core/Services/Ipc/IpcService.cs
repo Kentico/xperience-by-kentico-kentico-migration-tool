@@ -112,7 +112,7 @@ public class IpcService
                 var responseBody = await response.Content.ReadAsStringAsync();
                 if (JsonConvert.DeserializeObject<SourceInstanceDiscoveredInfo>(responseBody) is {} deserializedResponse)
                 {
-                    discoveredInfoList.Add(connectionInfo.SourceInstanceSiteName, deserializedResponse);
+                    discoveredInfoList.Add(deserializedResponse.SiteName, deserializedResponse);
                 }
                 else
                 {

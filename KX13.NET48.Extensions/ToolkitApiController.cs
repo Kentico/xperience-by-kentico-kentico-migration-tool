@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Web.Mvc;
+using CMS.SiteProvider;
 using Kentico.Forms.Web.Mvc;
 using Kentico.PageBuilder.Web.Mvc;
 using Kentico.PageBuilder.Web.Mvc.PageTemplates;
@@ -20,6 +21,8 @@ public class ToolkitApiController : Controller
         public Dictionary<string, List<EditingFormControlModel>> WidgetProperties { get; set; }
         public Dictionary<string, List<EditingFormControlModel>> PageTemplateProperties { get; set; }
         public Dictionary<string, List<EditingFormControlModel>> SectionProperties { get; set; }
+        
+        public string SiteName { get; set; }
     }
 
     public class BodyModel
@@ -66,7 +69,8 @@ public class ToolkitApiController : Controller
         {
             WidgetProperties = widgetPropertiesResult,
             PageTemplateProperties = pageTemplatePropertiesResult,
-            SectionProperties = sectionPropertiesResult
+            SectionProperties = sectionPropertiesResult,
+            SiteName = SiteContext.CurrentSiteName
         };
 
         var allWidgetDefinitions = new ComponentDefinitionProvider<WidgetDefinition>().GetAll();

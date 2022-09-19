@@ -88,7 +88,6 @@ public static class ConfigurationValidator
                     var connections = querySourceInstanceApi.GetSection(ConfigurationNames.Connections).GetChildren();
                     foreach (var connection in connections)
                     {
-                        var siteName = connection.GetValue<string>(ConfigurationNames.SourceInstanceSiteName);
                         var siteUri = connection.GetValue<string>(ConfigurationNames.SourceInstanceUri);
                         var secret = connection.GetValue<string>(ConfigurationNames.Secret);
                         
@@ -106,12 +105,6 @@ public static class ConfigurationValidator
                         {
                             yield return new ValidationMessage(ValidationMessageType.Error, 
                                 "Source instance Uri invalid format, following formats are supported: http://localhost:5531, https://localhost/MySite");
-                        }
-
-                        if (string.IsNullOrWhiteSpace(siteName))
-                        {
-                            yield return new ValidationMessage(ValidationMessageType.Error, 
-                                "Source instance site name cannot be null or empty, change it to valid sitename.");
                         }
 
                         if (string.IsNullOrWhiteSpace(secret))

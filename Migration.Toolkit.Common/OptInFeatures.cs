@@ -24,10 +24,7 @@ public class SourceInstanceInfo
 {
     [JsonPropertyName(ConfigurationNames.SourceInstanceUri)]
     public Uri? SourceInstanceUri { get; set; } = null!;
-    
-    [JsonPropertyName(ConfigurationNames.SourceInstanceSiteName)]
-    public string SourceInstanceSiteName { get; set; } = null!;
-    
+
     [JsonPropertyName(ConfigurationNames.Secret)]
     public string Secret { get; set; } = null!;
 }
