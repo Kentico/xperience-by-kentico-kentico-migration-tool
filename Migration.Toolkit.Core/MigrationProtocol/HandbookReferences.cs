@@ -132,4 +132,25 @@ public static class HandbookReferences
         });
 
     #endregion
+
+    #region Form components
+
+    public static HandbookReference FormComponentNotSupportedInLegacyMode(string componentIdentifier, string recommendedNewFormComponent) => new HandbookReference("FormComponentNotSupportedInLegacyMode")
+        .NeedsManualAction()
+        .WithMessage($"Component is no longer supported in target instance, use NewRecommendedComponentIdentifier - data will be migrated to fit")
+        .WithData(new
+        {
+            ComponentIdentifier = componentIdentifier,
+            NewRecommendedComponentIdentifier = recommendedNewFormComponent,
+        });
+    
+    public static HandbookReference FormComponentCustom(string componentIdentifier) => new HandbookReference("CustomFormComponent")
+        .NeedsManualAction()
+        .WithMessage($"Custom form component used - don't forget to migrate code")
+        .WithData(new
+        {
+            ComponentIdentifier = componentIdentifier,
+        });
+
+    #endregion
 }

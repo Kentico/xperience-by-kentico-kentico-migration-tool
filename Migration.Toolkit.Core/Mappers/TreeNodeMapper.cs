@@ -14,18 +14,27 @@ using Migration.Toolkit.Core.Services.CmsRelationship;
 namespace Migration.Toolkit.Core.Mappers;
 
 using CMS.MediaLibrary;
+using Migration.Toolkit.Core.Services.Ipc;
+using Migration.Toolkit.KX13.Auxiliary;
 using Migration.Toolkit.KX13.Models;
+using Migration.Toolkit.KXP.Api.Auxiliary;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 public record CmsTreeMapperSource(KX13M.CmsTree CmsTree, string SourceCultureCode, string TargetCultureCode);
 
 public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
 {
     private const string CLASS_FIELD_CONTROL_NAME = "controlname";
+    private const string COLUMN_NAME_DOCUMENT_PAGE_BUILDER_WIDGETS = "DocumentPageBuilderWidgets";
+    private const string COLUMN_NAME_DOCUMENT_PAGE_TEMPLATE_CONFIGURATION = "DocumentPageTemplateConfiguration";
+    
     private readonly ILogger<TreeNodeMapper> _logger;
     private readonly CoupledDataService _coupledDataService;
     private readonly ClassService _classService;
     private readonly AttachmentMigrator _attachmentMigrator;
     private readonly CmsRelationshipService _relationshipService;
+    private readonly SourceInstanceContext _sourceInstanceContext;
 
     public TreeNodeMapper(
         ILogger<TreeNodeMapper> logger,
@@ -34,7 +43,8 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
         IProtocol protocol,
         ClassService classService,
         AttachmentMigrator attachmentMigrator,
-        CmsRelationshipService relationshipService
+        CmsRelationshipService relationshipService,
+        SourceInstanceContext sourceInstanceContext
     ) : base(logger, pkContext, protocol)
     {
         _logger = logger;
@@ -42,6 +52,7 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
         _classService = classService;
         _attachmentMigrator = attachmentMigrator;
         _relationshipService = relationshipService;
+        _sourceInstanceContext = sourceInstanceContext;
     }
 
     protected override TreeNode? CreateNewInstance(CmsTreeMapperSource source, MappingHelper mappingHelper, AddFailure addFailure)
@@ -122,6 +133,48 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
         target.DocumentGUID = sourceDocument.DocumentGuid.GetValueOrDefault();
         // target.DocumentWorkflowStepID = sourceDocument.DocumentWorkflowStepId;
 
+        
+        
+        if (_sourceInstanceContext.HasInfo)
+        {
+            if (sourceDocument.DocumentPageTemplateConfiguration != null)
+            {
+                var pageTemplateConfiguration = JsonConvert.DeserializeObject<Migration.Toolkit.Core.Services.CmsClass.PageTemplateConfiguration>(sourceDocument.DocumentPageTemplateConfiguration);
+                if (pageTemplateConfiguration?.Identifier != null)
+                {
+                    _logger.LogTrace("Walk page template configuration {Identifier}", pageTemplateConfiguration.Identifier);
+
+                    var pageTemplateConfigurationFcs =
+                        _sourceInstanceContext.GetPageTemplateFormComponents(source.CmsTree.NodeSiteId, pageTemplateConfiguration?.Identifier);
+                    if (pageTemplateConfiguration.Properties is { Count: > 0 })
+                    {
+                        WalkProperties(pageTemplateConfiguration.Properties, pageTemplateConfigurationFcs);
+                    }
+
+                    // target.PageTemplateConfigurationTemplate = JsonConvert.SerializeObject(pageTemplateConfiguration);
+                    target.SetValue(COLUMN_NAME_DOCUMENT_PAGE_TEMPLATE_CONFIGURATION, JsonConvert.SerializeObject(pageTemplateConfiguration));
+                }
+            }
+
+            if (sourceDocument.DocumentPageBuilderWidgets != null)
+            {
+                var areas = JsonConvert.DeserializeObject<Migration.Toolkit.Core.Services.CmsClass.EditableAreasConfiguration>(sourceDocument.DocumentPageBuilderWidgets);
+                if (areas?.EditableAreas is { Count : > 0 })
+                {
+                    WalkAreas(source.CmsTree.NodeSiteId, areas.EditableAreas);
+                }
+
+                //target.PageTemplateConfigurationWidgets = JsonConvert.SerializeObject(areas);
+                target.SetValue(COLUMN_NAME_DOCUMENT_PAGE_BUILDER_WIDGETS, JsonConvert.SerializeObject(areas)); //sourceDocument.DocumentPageBuilderWidgets);
+            }
+        }
+        else
+        {
+            // simply copy if no info is available
+            target.SetValue(COLUMN_NAME_DOCUMENT_PAGE_BUILDER_WIDGETS, sourceDocument.DocumentPageBuilderWidgets); 
+            target.SetValue(COLUMN_NAME_DOCUMENT_PAGE_TEMPLATE_CONFIGURATION, sourceDocument.DocumentPageTemplateConfiguration);
+        }
+        
         if (mappingHelper.TranslateRequiredId<KX13M.CmsUser>(u => u.UserId, sourceDocument.DocumentCreatedByUserId, out var createdByUserId))
         {
             target.SetValue(nameof(target.DocumentCreatedByUserID), createdByUserId);
@@ -149,6 +202,133 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
         return target;
     }
 
+    #region "Page template & page widget walkers"
+
+    
+    private void WalkAreas(int siteId, List<EditableAreaConfiguration> areas)
+    {
+        foreach (var area in areas)
+        {
+            _logger.LogTrace("Walk area {Identifier}", area.Identifier);
+
+            if (area.Sections is { Count: > 0 })
+            {
+                WalkSections(siteId, area.Sections);
+            }
+        }
+    }
+
+    private void WalkSections(int siteId, List<SectionConfiguration> sections)
+    {
+        foreach (var section in sections)
+        {
+            _logger.LogTrace("Walk section {TypeIdentifier}|{Identifier}", section.TypeIdentifier, section.Identifier);
+
+            // TODO tk: 2022-09-14 find other acronym for FormComponents
+            var sectionFcs = _sourceInstanceContext.GetSectionFormComponents(siteId, section.TypeIdentifier);
+            WalkProperties(section.Properties, sectionFcs);
+
+            if (section.Zones is { Count: > 0 })
+            {
+                WalkZones(siteId, section.Zones);
+            }
+        }
+    }
+
+    private void WalkZones(int siteId, List<ZoneConfiguration> zones)
+    {
+        foreach (var zone in zones)
+        {
+            _logger.LogTrace("Walk zone {Name}|{Identifier}", zone.Name, zone.Identifier);
+
+            if (zone.Widgets is { Count: > 0 })
+            {
+                WalkWidgets(siteId, zone.Widgets);
+            }
+        }
+    }
+
+    private void WalkWidgets(int siteId, List<WidgetConfiguration> widgets)
+    {
+        foreach (var widget in widgets)
+        {
+            _logger.LogTrace("Walk widget {TypeIdentifier}|{Identifier}", widget.TypeIdentifier, widget.Identifier);
+
+            var widgetFcs = _sourceInstanceContext.GetWidgetPropertyFormComponents(siteId, widget.TypeIdentifier);
+            foreach (var variant in widget.Variants)
+            {
+                _logger.LogTrace("Walk widget variant {Name}|{Identifier}", variant.Name, variant.Identifier);
+
+                if (variant.Properties is { Count: > 0 })
+                {
+                    WalkProperties(variant.Properties, widgetFcs);
+                }
+            }
+        }
+    }
+
+    private void WalkProperties(JObject properties, List<EditingFormControlModel>? formControlModels)
+    {
+        
+        foreach (var (key, value) in properties)
+        {
+            _logger.LogTrace("Walk property {Name}|{Identifier}", key, value?.ToString());
+
+            var editingFcm = formControlModels?.FirstOrDefault(x => x.PropertyName.Equals(key, StringComparison.InvariantCultureIgnoreCase));
+            if (editingFcm != null)
+            {
+                if (FieldMappingInstance.Default.NotSupportedInKxpLegacyMode
+                        .SingleOrDefault(x => x.OldFormComponent == editingFcm.FormComponentIdentifier) is var (oldFormComponent, newFormComponent))
+                {
+                    Protocol.Append(HandbookReferences.FormComponentNotSupportedInLegacyMode(oldFormComponent, newFormComponent));
+                    _logger.LogTrace("Editing form component found {FormComponentName} => no longer supported {Replacement}", editingFcm.FormComponentIdentifier, newFormComponent);
+
+                    switch (oldFormComponent)
+                    {
+                        case Kx13FormComponents.Kentico_AttachmentSelector when newFormComponent == FormComponents.AdminAssetSelectorComponent:
+                        {
+                            if (value?.ToObject<List<AttachmentSelectorItem>>() is { Count: > 0 } items)
+                            {
+                                properties[key] = JToken.FromObject(items.Select(x => new AssetRelatedItem
+                                {
+                                    Identifier = x.FileGuid
+                                }).ToList());
+                            }
+                            _logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
+                            break;
+                        }
+                        case Kx13FormComponents.Kentico_PageSelector when newFormComponent == FormComponents.AdminPageSelectorComponent:
+                        {
+                            if (value?.ToObject<List<PageSelectorItem>>() is { Count: > 0 } items)
+                            {
+                                properties[key] = JToken.FromObject(items.Select(x => new PageRelatedItem
+                                {
+                                    NodeGuid = x.NodeGuid
+                                }).ToList());
+                            }
+                            _logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
+                            break;
+                        }
+                    }
+                }
+                else if (FieldMappingInstance.Default.SupportedInKxpLegacyMode.Contains(editingFcm.FormComponentIdentifier))
+                {
+                    // OK
+                    _logger.LogTrace("Editing form component found {FormComponentName} => supported in legacy mode", editingFcm.FormComponentIdentifier);
+                }
+                else
+                {
+                    // TODO tk: 2022-09-14 leave message that data needs to be migrated
+                    // unknown control, probably custom
+                    Protocol.Append(HandbookReferences.FormComponentCustom(editingFcm.FormComponentIdentifier));
+                    _logger.LogTrace("Editing form component found {FormComponentName} => custom or inlined component, don't forget to migrate code accordingly", editingFcm.FormComponentIdentifier);
+                }
+            }
+        }
+    }
+
+    #endregion
+    
     private void MapCoupledDataFieldValues(TreeNode target, CmsTree cmsTree, DocumentFieldsInfo fieldsInfo, CmsDocument sourceDocument,
         List<string> columnNames,
         FormInfo formInfo)

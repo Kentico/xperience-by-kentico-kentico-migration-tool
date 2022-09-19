@@ -94,4 +94,12 @@ public class ToolkitConfiguration
 
         EntityConfigurations.SetEntityConfiguration<TEntityType>(entityConfiguration);
     }
+
+
+    #region Opt-in features
+
+    [JsonPropertyName(ConfigurationNames.OptInFeatures)]
+    public OptInFeatures? OptInFeatures { get; set; }
+
+    #endregion
 }
