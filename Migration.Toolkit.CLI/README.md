@@ -68,18 +68,48 @@ Migration.Toolkit.CLI.exe migrate --siteId 1 --culture en-US --sites --users
 
 #### Page types
 
- * Xperience by Kentico currently does not support:
-   * Macro expressions in page type field default values or other settings. Page type fields containing macros will not work correctly after the migration.
-   * Page type inheritance. You cannot migrate page types that inherit fields from other types.
-   * Categories for page type fields. Field categories are not migrated with page types.
- * The Migration toolkit attempts to map the _Data type_ and _Form control_ of page type fields to an appropriate equivalent in Xperience by Kentico. This is not always possible, and cannot be done for custom data types or form controls. We recommend that you check your page type fields after the migration and adjust them if necessary.
-   * The [Form components](https://docs.xperience.io/x/5ASiCQ) used by page type fields in Xperience by Kentico often store data differently than their equivalent Form control in Xperience 13. To ensure that content is displayed correctly on page, you may need to manually adjust your website's implementation to match the new data format. See [Selector components in Xperience by Kentico](https://docs.xperience.io/x/wIfWCQ) to learn more about some of the most common form components.
+Xperience by Kentico currently does not support:
+  * Macro expressions in page type field default values or other settings. Page type fields containing macros will not work correctly after the migration.
+  * Page type inheritance. You cannot migrate page types that inherit fields from other types.
+  * Categories for page type fields. Field categories are not migrated with page types.
+
+The Migration toolkit attempts to map the _Data type_ and _Form control_ of page type fields to an appropriate equivalent in Xperience by Kentico. This is not always possible, and cannot be done for custom data types or form controls. We recommend that you check your page type fields after the migration and adjust them if necessary.
+   
+The following table describes how the Migration toolkit maps the data types and form controls/components of page type fields:
+
+| KX13 Data type            | XbK Data type            | KX13 Form control             | XbK Form component    |
+| ------------------------- | ------------------------ | ----------------------------- | --------------------- |
+| Text                      | Text                     | Text box                      | Text input            |
+| Text                      | Text                     | Drop-down list                | Dropdown selector     |
+| Text                      | Text                     | Radio buttons                 | Radio button group    |
+| Text                      | Text                     | Text area                     | Text area             |
+| Text                      | Text                     | _other_                       | Text input            |
+| Long text                 | Long text                | Rich text editor              | Rich text editor      |
+| Long text                 | Long text                | Text box                      | Text input            |
+| Long text                 | Long text                | Drop-down list                | Dropdown selector     |
+| Long text                 | Long text                | Text area                     | Text area             |
+| Long text                 | Long text                | _other_                       | Rich text editor      |
+| Integer number            | Integer number           | _any_                         | Number input          |
+| Long integer number       | Long integer number      | _any_                         | Number input          |
+| Floating-point number     | Floating-point number    | _any_                         | Number input          |
+| Decimal number            | Decimal number           | _any_                         | Decimal number input  |
+| Date and time             | Date and time            | _any_                         | Datetime input        |
+| Date                      | Date                     | _any_                         | Date input            |
+| Time interval             | Time interval            | _any_                         | None (not supported)  |
+| Boolean (Yes/No)          | Boolean (Yes/No)         | _any_                         | Checkbox              |
+| Attachments               | Media files              | _any_ (Attachments)           | Media file selector<br />(the [attachments](#attachments) are converted to media files)    |
+| File                      | Media files              | _any_ (Direct uploader)       | Media file selector<br />(the [attachments](#attachments) are converted to media files)    |
+| Unique identifier (Guid)  | Unique identifier (Guid) | _any_                         | None (not supported)  |
+| Pages                     | Pages                    | _any_ (Pages)                 | Page selector         |
+
+Some [Form components](https://docs.xperience.io/x/5ASiCQ) used by page type fields in Xperience by Kentico store data differently than their equivalent Form control in Xperience 13. To ensure that content is displayed correctly on page, you may need to manually adjust your website's implementation to match the new data format. See [Editing components in Xperience by Kentico](https://docs.xperience.io/x/wIfWCQ) to learn more about some of the most common components and selectors.
 
 ### Pages
 
   * Xperience by Kentico currently does not support multilingual sites. The content of pages is migrated from the culture specified in the `migrate --culture` parameter.
   * Only pages that are **published** on the source instance are migrated. After the migration, all pages are in the published workflow step.
   * Migration includes the URL paths and Former URLs of pages, but not Alternative URLs, which are currently not supported in Xperience by Kentico.
+  * Linked pages are currently not supported in Xperience by Kentico. The migration creates standard page copies for any linked pages on the source instance.
   * Page permissions (ACLs) are currently not supported in Xperience by Kentico, so are not migrated.
 
 #### Media libraries
