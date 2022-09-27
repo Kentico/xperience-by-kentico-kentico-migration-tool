@@ -14,7 +14,6 @@ namespace Migration.Toolkit.KX13.Models
             ComAddresses = new HashSet<ComAddress>();
             ComOrderAddresses = new HashSet<ComOrderAddress>();
             ComTaxClassStates = new HashSet<ComTaxClassState>();
-            CustomtableSalesTerritoryStates = new HashSet<CustomtableSalesTerritoryState>();
             OmAccounts = new HashSet<OmAccount>();
             OmContacts = new HashSet<OmContact>();
         }
@@ -43,8 +42,6 @@ namespace Migration.Toolkit.KX13.Models
         public virtual ICollection<ComOrderAddress> ComOrderAddresses { get; set; }
         [InverseProperty("State")]
         public virtual ICollection<ComTaxClassState> ComTaxClassStates { get; set; }
-        [InverseProperty("State")]
-        public virtual ICollection<CustomtableSalesTerritoryState> CustomtableSalesTerritoryStates { get; set; }
         [InverseProperty("AccountState")]
         public virtual ICollection<OmAccount> OmAccounts { get; set; }
         [InverseProperty("ContactState")]

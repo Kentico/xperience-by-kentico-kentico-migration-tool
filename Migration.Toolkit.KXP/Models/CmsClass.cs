@@ -46,7 +46,6 @@ namespace Migration.Toolkit.KXP.Models
         public bool? ClassShowAsSystemTable { get; set; }
         public bool? ClassUsePublishFromTo { get; set; }
         public bool? ClassShowTemplateSelection { get; set; }
-        public bool? ClassIsMenuItemType { get; set; }
         [StringLength(100)]
         public string? ClassNodeAliasSource { get; set; }
         public DateTime ClassLastModified { get; set; }
@@ -85,7 +84,6 @@ namespace Migration.Toolkit.KXP.Models
         [StringLength(200)]
         public string? ClassUrlpattern { get; set; }
         public bool ClassUsesPageBuilder { get; set; }
-        public bool ClassIsNavigationItem { get; set; }
         [Column("ClassHasURL")]
         public bool ClassHasUrl { get; set; }
         public bool ClassHasMetadata { get; set; }

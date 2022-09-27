@@ -21,7 +21,7 @@ namespace Migration.Toolkit.KX13.Models
         public string? PageTemplateConfigurationDescription { get; set; }
         [Column("PageTemplateConfigurationThumbnailGUID")]
         public Guid? PageTemplateConfigurationThumbnailGuid { get; set; }
-        public string? PageTemplateConfigurationTemplate { get; set; } = null!;
+        public string PageTemplateConfigurationTemplate { get; set; } = null!;
         public string? PageTemplateConfigurationWidgets { get; set; }
 
         [ForeignKey("PageTemplateConfigurationSiteId")]

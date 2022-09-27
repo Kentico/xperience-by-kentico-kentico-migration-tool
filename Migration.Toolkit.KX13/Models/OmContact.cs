@@ -75,71 +75,11 @@ namespace Migration.Toolkit.KX13.Models
         public bool? ContactSalesForceLeadReplicationDisabled { get; set; }
         public DateTime? ContactSalesForceLeadReplicationDateTime { get; set; }
         public DateTime? ContactSalesForceLeadReplicationSuspensionDateTime { get; set; }
-        [StringLength(160)]
+        [StringLength(100)]
         public string? ContactCompanyName { get; set; }
         public bool? ContactSalesForceLeadReplicationRequired { get; set; }
         [Column("ContactPersonaID")]
         public int? ContactPersonaId { get; set; }
-        [StringLength(450)]
-        public string? FirstUserAgent { get; set; }
-        [Column("FirstIPAddress")]
-        [StringLength(100)]
-        public string? FirstIpaddress { get; set; }
-        [StringLength(2048)]
-        public string? FirstRequestUrl { get; set; }
-        public string? KenticoUrlReferrer { get; set; }
-        [StringLength(450)]
-        public string? KenticoContactRegionName { get; set; }
-        [StringLength(20)]
-        public string? KenticoContactRegionCode { get; set; }
-        [StringLength(20)]
-        public string? KenticoContactPostalCode { get; set; }
-        [StringLength(200)]
-        public string? KenticoContactCampaignSource { get; set; }
-        [StringLength(200)]
-        public string? KenticoContactCampaignContent { get; set; }
-        public bool? NeedRecalculation { get; set; }
-        public int? ProfileScore { get; set; }
-        public int? EngagementScore { get; set; }
-        public int? TotalScore { get; set; }
-        public int? Zone { get; set; }
-        public Guid? DynamicsLeadGuid { get; set; }
-        public Guid? DynamicsContactGuid { get; set; }
-        [StringLength(200)]
-        public string? DynamicsAccountType { get; set; }
-        [StringLength(200)]
-        public string? DynamicsAccountStatus { get; set; }
-        public bool? LegitimateInterest { get; set; }
-        [StringLength(200)]
-        public string? DynamicsActivePartnerships { get; set; }
-        public DateTime? DynamicsDateOfSync { get; set; }
-        public bool? PairedWithDynamicsCrm { get; set; }
-        public DateTime? FirstPairDate { get; set; }
-        public int? PairedBy { get; set; }
-        public bool? IsArchived { get; set; }
-        public DateTime? ArchivationDate { get; set; }
-        public bool? HasFreeEmail { get; set; }
-        public int? SameDomainContacts { get; set; }
-        [Column("AreYouLookingForCMS")]
-        [StringLength(10)]
-        public string? AreYouLookingForCms { get; set; }
-        [StringLength(50)]
-        public string? Role { get; set; }
-        [StringLength(200)]
-        public string? KenticoContactBusinessType { get; set; }
-        [StringLength(1)]
-        public string? MarketingAutomationVariant { get; set; }
-        [Column("KontentIntercomUserID")]
-        [StringLength(50)]
-        public string? KontentIntercomUserId { get; set; }
-        [Column("KontentGoogleAnalyticsUserID")]
-        [StringLength(50)]
-        public string? KontentGoogleAnalyticsUserId { get; set; }
-        [Column("KontentAmplitudeUserID")]
-        [StringLength(500)]
-        public string? KontentAmplitudeUserId { get; set; }
-        [StringLength(200)]
-        public string? PromoCode { get; set; }
 
         [ForeignKey("ContactCountryId")]
         [InverseProperty("OmContacts")]
