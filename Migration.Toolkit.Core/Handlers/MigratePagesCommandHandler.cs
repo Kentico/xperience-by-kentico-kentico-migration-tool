@@ -22,7 +22,7 @@ using Migration.Toolkit.KXP.Context;
 public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, CommandResult>
 {
     private const string CLASS_CMS_ROOT = "CMS.Root";
-    
+
     private readonly ILogger<MigratePagesCommandHandler> _logger;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
     private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
@@ -58,7 +58,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
 
     [SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Local")]
     private record PageUrlPathKey(int PageUrlPathSiteId, string PageUrlPathUrlPathHash, string PageUrlPathCulture);
-    
+
     private CmsTree? GetFullSourceCmsTree(int siteId, string cultureCode, Guid nodeGuid)
     {
         using var kx13Context = _kx13ContextFactory.CreateDbContext();
@@ -88,9 +88,9 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
         foreach (var (sourceSiteId, targetSiteId) in siteMappings)
         {
             _logger.LogInformation("Migrating pages for site {SourceSiteId} to target site {TargetSiteId}", sourceSiteId, targetSiteId);
-            
+
             var (targetSiteInfo, targetCultureCode) = _siteFacade.GetSiteInfo(targetSiteId, sourceCultureCode);
-            
+
             await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
             var kx13CmsTrees = kx13Context.CmsTrees
@@ -106,11 +106,11 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                 .ThenBy(t => t.NodeId)
                 .AsSplitQuery()
                 .AsNoTrackingWithIdentityResolution();
-            
+
             foreach (var kx13CmsTreeOriginal in kx13CmsTrees)
             {
                 _protocol.FetchedSource(kx13CmsTreeOriginal);
-                
+
                 var kx13CmsTree = kx13CmsTreeOriginal;
                 var migrationOfLinkedNode = false;
                 if (kx13CmsTree.NodeLinkedNode != null)
@@ -134,7 +134,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                     {
                         continue;
                     }
-                    
+
                     originalCmsDocument.DocumentGuid = Guid.NewGuid();
                     originalCmsDocument.DocumentId = 0;
 
@@ -142,10 +142,10 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                     kx13CmsTree.NodeLinkedNodeId = null;
                     kx13CmsTree.NodeLinkedNodeSiteId = null;
                     migrationOfLinkedNode = true;
-                    
+
                     _logger.LogTrace("Linked node with NodeGuid {NodeGuid} was materialized", kx13CmsTree.NodeGuid);
                 }
-                
+
                 var kx13CmsDocument = kx13CmsTree.CmsDocuments.SingleOrDefault(x => x.DocumentCulture == sourceCultureCode);
                 if (kx13CmsDocument == null)
                 {
@@ -156,13 +156,13 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                             .NeedsManualAction()
                             .WithMessage($"Invalid source TreeNode - contains no documents.");
                         _protocol.Append(handbookReference);
-                        _logger.LogError(handbookReference.ToString());    
+                        _logger.LogError(handbookReference.ToString());
                     }
                     else
                     {
                         // this is OK - Node doesn't need to contain document for particular selected culture
                     }
-                    
+
                     continue;
                 }
 
@@ -170,15 +170,16 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                 if (classEntityConfiguration.ExcludeCodeNames.Contains(nodeClassClassName, StringComparer.InvariantCultureIgnoreCase))
                 {
                     _protocol.Warning(HandbookReferences.EntityExplicitlyExcludedByCodeName(nodeClassClassName, "PageType"), kx13CmsTree);
-                    _logger.LogWarning("Page: page of class {ClassName} was skipped => it is explicitly excluded in configuration", nodeClassClassName);
-                    continue;    
+                    _logger.LogWarning("Page: page of class {ClassName} was skipped => it is explicitly excluded in configuration",
+                        nodeClassClassName);
+                    continue;
                 }
-                
+
                 int? mappedParentNodeId;
                 if (nodeClassClassName == CLASS_CMS_ROOT)
                 {
                     mappedParentNodeId = MapTargetRootNodeId(targetSiteId, targetCultureCode);
-                    
+
                     if (mappedParentNodeId == null)
                     {
                         _logger.LogError("Unable to locate target instance page root node");
@@ -216,11 +217,15 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
 
                 if (!isPublished)
                 {
-                    _logger.LogWarning("Source page {PageGuid} is not published => skipping", kx13CmsDocument.DocumentGuid);
-                    _protocol.Warning(HandbookReferences.SourcePageIsNotPublished(kx13CmsDocument.DocumentGuid ?? Guid.Empty), kx13CmsDocument);
+                    var handbookRef = HandbookReferences
+                        .SourcePageIsNotPublished(kx13CmsDocument.DocumentGuid ?? Guid.Empty)
+                        .WithIdentityPrint(kx13CmsDocument);
+
+                    _logger.LogWarning("Source page {PageGuid} is not published => skipping ({HandbookRef})", kx13CmsDocument.DocumentGuid, handbookRef.ToString());
+                    _protocol.Warning(handbookRef, kx13CmsDocument);
                     continue;
                 }
-                
+
                 mappedParentNodeId = _primaryKeyMappingContext.MapFromSourceOrNull<CmsTree>(t => t.NodeId, kx13CmsTree.NodeParentId);
                 if (mappedParentNodeId == null)
                 {
@@ -236,6 +241,16 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                         }));
                     _logger.LogWarning("Document with guid '{PageGuid}' has missing parent in target instance", kx13CmsDocument.DocumentGuid);
                     continue;
+                }
+
+                if (kx13CmsTreeOriginal is { NodeSkuid: not null })
+                {
+                    _logger.LogWarning("Page has SKU bound, SKU info will be discarded");
+                    _protocol.Append(HandbookReferences.NotCurrentlySupportedSkip()
+                        .WithMessage("Page has SKU bound, SKU info will be discarded")
+                        .WithIdentityPrint(kx13CmsTreeOriginal)
+                        .WithData(new { NodeSKUID = kx13CmsTreeOriginal.NodeSkuid })
+                    );
                 }
 
                 List<TreeNode> kxoTreeNodes;
@@ -279,7 +294,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                     .Where(nameof(TreeNode.NodeID), QueryOperator.Equals, mappedParentNodeId)
                     .Culture(targetCultureCode)
                     .Single();
-                
+
                 var source = new CmsTreeMapperSource(kx13CmsTree, sourceCultureCode, targetCultureCode);
                 var mapped = _nodeMapper.Map(source, kxoTreeNode);
                 _protocol.MappedTarget(mapped);
@@ -301,7 +316,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                             LogIntegration = false,
                             UpdatePaths = false,
                         };
-                        
+
                         treeNode.TreeProvider = treeProvider;
                         if (newInstance)
                         {
@@ -320,14 +335,14 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
 
                         _protocol.Success(kx13CmsTree, treeNode, mapped);
                         _logger.LogEntitySetAction(newInstance, treeNode);
-                        
+
                         _primaryKeyMappingContext.SetMapping<CmsTree>(
                             r => r.NodeId,
                             kx13CmsTree.NodeId,
                             treeNode.NodeID
                         );
                     }
-                    
+
                     catch (Exception ex)
                     {
                         _protocol.Append(HandbookReferences
@@ -338,9 +353,9 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                         _logger.LogEntitySetError(ex, newInstance, treeNode);
                     }
                 }
-            }    
+            }
         }
-        
+
 
         return new GenericCommandResult();
     }
@@ -366,7 +381,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
     {
         using var kx13Context = _kx13ContextFactory.CreateDbContext();
         using var kxpContext = _kxpContextFactory.CreateDbContext();
-        
+
         var pageUrlPathsByHash =
             kxpContext.CmsPageUrlPaths.Include(x => x.PageUrlPathNode)
                 .ToDictionary(x => new PageUrlPathKey(x.PageUrlPathSiteId, x.PageUrlPathUrlPathHash, x.PageUrlPathCulture));
@@ -377,14 +392,14 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
         foreach (var kx13PageUrlPath in kx13PageUrlPaths)
         {
             var pageUrlPathKey = new PageUrlPathKey(treeNode.NodeSiteID, kx13PageUrlPath.PageUrlPathUrlPathHash, treeNode.DocumentCulture);
-            
+
             var exists = PageUrlPathInfoProvider.ProviderObject.Get(kx13PageUrlPath.PageUrlPathGuid) != null;
             if (exists)
             {
-                _logger.LogWarning("PageUrlPath skipped, already exists in target instance: {Info}", pageUrlPathKey);
+                _logger.LogInformation("PageUrlPath skipped, already exists in target instance: {Info}", pageUrlPathKey);
                 continue;
             }
-            
+
             var pageUrlPath = PageUrlPathInfo.New();
             pageUrlPath.PageUrlPathCulture = treeNode.DocumentCulture;
             pageUrlPath.PageUrlPathNodeID = treeNode.NodeID;
@@ -410,21 +425,15 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                 _logger.LogEntitySetAction(true, pageUrlPath);
             }
             // TODO tk: 2022-07-14 verify if check is needed when kentico api is used
-            /*Violation in unique index or Violation in unique constraint */ 
+            /*Violation in unique index or Violation in unique constraint */
             catch (DbUpdateException dbUpdateException) when (dbUpdateException.InnerException is SqlException { Number: 2601 or 2627 } sqlException)
             {
                 _logger.LogEntitySetError(sqlException, true, pageUrlPath);
                 _protocol.Append(HandbookReferences.DbConstraintBroken(sqlException, pageUrlPath)
-                    .WithData(new
-                    {
-                        pageUrlPath.PageUrlPathUrlPathHash,
-                        pageUrlPath.PageUrlPathUrlPath
-                    })
+                    .WithData(new { pageUrlPath.PageUrlPathUrlPathHash, pageUrlPath.PageUrlPathUrlPath })
                     .WithMessage($"Failed to migrate page, page url conflicts with other. PageNodeGuid: {kx13CmsTree.NodeGuid}. Needs manual migration.")
                 );
             }
-
-            
         }
     }
 }
