@@ -37,4 +37,6 @@ public static class Extensions
 
     public static int? NullIfZero(this int? value) => value == 0 ? null : value;
     public static int? NullIfZero(this int value) => value == 0 ? null : value;
+
+    public static string? NullIf(this string? s, string value) => s == value ? null : s;
 }

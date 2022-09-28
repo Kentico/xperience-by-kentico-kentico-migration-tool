@@ -22,25 +22,25 @@
         <value>Section 'Settings' is required</value>
     </data>
     <data name="ConfigurationValidator_GetValidationErrors_SourceConnectionString_IsRequired" xml:space="preserve">
-        <value>Configuration value in path 'Settings.SourceConnectionString' is required</value>
+        <value>Configuration value in path 'Settings.KxConnectionString' is required</value>
     </data>
     <data name="ConfigurationValidator_GetValidationErrors_SourceCmsDirPath_IsRecommended" xml:space="preserve">
-        <value>Configuration value in path 'Settings.SourceCmsDirPath' is empty, it is recommended to set source instance filesystem path</value>
+        <value>Configuration value in path 'Settings.KxCmsDirPath' is empty, it is recommended to set source instance filesystem path</value>
     </data>
     <data name="ConfigurationValidator_GetValidationErrors_TargetConnectionString_IsRequired" xml:space="preserve">
-        <value>Configuration value in path 'Settings.TargetConnectionString' is required</value>
+        <value>Configuration value in path 'Settings.XbKConnectionString' is required</value>
     </data>
     <data name="ConfigurationValidator_GetValidationErrors_TargetCmsDirPath_IsRequired" xml:space="preserve">
-        <value>Configuration value in path 'Settings.TargetCmsDirPath' is required</value>
+        <value>Configuration value in path 'Settings.XbKDirPath' is required</value>
     </data>
     <data name="ConfigurationValidator_GetValidationErrors_TargetKxpApiSettings_IsRequired" xml:space="preserve">
-        <value>Section 'Settings.TargetKxpApiSettings' is required</value>
+        <value>Section 'Settings.XbKApiSettings' is required</value>
     </data>
     <data name="ConfigurationValidator_GetValidationErrors_ConnectionStrings_IsRequired" xml:space="preserve">
-        <value>Section 'Settings.TargetKxpApiSettings.ConnectionStrings' is required</value>
+        <value>Section 'Settings.XbKApiSettings.ConnectionStrings' is required</value>
     </data>
     <data name="ConfigurationValidator_GetValidationErrors_CmsConnectionString_IsRequired" xml:space="preserve">
-        <value>Configuration value in path  'Settings.TargetKxpApiSettings.ConnectionStrings.CMSConnectionString' is required</value>
+        <value>Configuration value in path  'Settings.XbKApiSettings.ConnectionStrings.CMSConnectionString' is required</value>
     </data>
     <data name="ConfigurationValidator_GetValidationErrors_UseOmActivitySiteRelationAutofix_MustFit" xml:space="preserve">
         <value>Configuration value in path 'Settings.UseOmActivitySiteRelationAutofix' must fit one of: {0}</value>

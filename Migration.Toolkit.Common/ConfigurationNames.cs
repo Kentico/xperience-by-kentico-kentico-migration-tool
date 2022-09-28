@@ -2,10 +2,19 @@ namespace Migration.Toolkit.Common;
 
 public class ConfigurationNames
 {
+    [Obsolete("Use 'XbKConnectionString' instead.")]
     public const string SourceConnectionString = "SourceConnectionString";
+    public const string KxConnectionString = "KxConnectionString";
+    [Obsolete("Use 'XbKConnectionString' instead.")]
     public const string SourceCmsDirPath = "SourceCmsDirPath";
+    public const string KxCmsDirPath = "KxCmsDirPath";
+
+    [Obsolete("Use 'XbKConnectionString' instead.")]
     public const string TargetConnectionString = "TargetConnectionString";
+    public const string XbKConnectionString = "XbKConnectionString";
+    [Obsolete("Use 'XbKDirPath' instead.")]
     public const string TargetCmsDirPath = "TargetCmsDirPath";
+    public const string XbKDirPath = "XbKDirPath";
     public const string MigrateOnlyMediaFileInfo = "MigrateOnlyMediaFileInfo";
     public const string UseOmActivityNodeRelationAutofix = "UseOmActivityNodeRelationAutofix";
     public const string UseOmActivitySiteRelationAutofix = "UseOmActivitySiteRelationAutofix";
@@ -32,8 +41,9 @@ public class ConfigurationNames
 
     [Obsolete("Use TargetKxpApiSettings const instead")]
     public const string TargetKxoApiSettings = "TargetKxoApiSettings";
-
+    [Obsolete("Use XbKApiSettings const instead")]
     public const string TargetKxpApiSettings = "TargetKxpApiSettings";
+    public const string XbKApiSettings = "XbKApiSettings";
 
     #endregion
     

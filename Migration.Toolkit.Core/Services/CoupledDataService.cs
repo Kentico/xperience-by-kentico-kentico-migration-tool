@@ -18,7 +18,7 @@ public class CoupledDataService
         ArgumentNullException.ThrowIfNull(primaryKeyColumn);
         ArgumentNullException.ThrowIfNull(coupledDataId);
         
-        using var targetConnection = new SqlConnection(_configuration.SourceConnectionString);
+        using var targetConnection = new SqlConnection(_configuration.KxConnectionString);
         using var command = targetConnection.CreateCommand();
         var query = $"SELECT * FROM {tableName} WHERE {primaryKeyColumn} = @{primaryKeyColumn}";
         command.CommandText = query;
