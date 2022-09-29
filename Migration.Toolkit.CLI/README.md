@@ -164,13 +164,13 @@ Add the options under the `Settings` section in the configuration file.
 
 | Configuration                                                           | Description                                                                                                          |
 |-----------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
-| SourceConnectionString                                         | The connection string to the source Kentico Xperience 13 database.                                                            |
-| SourceCmsDirPath                                               | The absolute file system path of the **CMS** folder in the source Kentico Xperience 13 administration project. Required to migrate media library files. |
-| TargetConnectionString                                         | The connection string to the target Xperience by Kentico database.                                                               |
-| TargetCmsDirPath                                               | The absolute file system path of the root of the target Xperience by Kentico project. Required to migrate media library and page attachment files. |
-| TargetKxpApiSettings                                           | Configuration options set for the API when creating migrated objects in the target application.<br /><br />The `ConnectionStrings.CMSConnectionString`option is required - set the connection string to the target Xperience by Kentico database (the same value as `TargetConnectionString`).              |
+| KxConnectionString                                         | The connection string to the source Kentico Xperience 13 database.                                                            |
+| KxCmsDirPath                                               | The absolute file system path of the **CMS** folder in the source Kentico Xperience 13 administration project. Required to migrate media library files. |
+| XbKConnectionString                                         | The connection string to the target Xperience by Kentico database.                                                               |
+| XbKDirPath                                               | The absolute file system path of the root of the target Xperience by Kentico project. Required to migrate media library and page attachment files. |
+| XbKApiSettings                                           | Configuration options set for the API when creating migrated objects in the target application.<br /><br />The `ConnectionStrings.CMSConnectionString`option is required - set the connection string to the target Xperience by Kentico database (the same value as `XbKConnectionString`).              |
 | MigrationProtocolPath                                          | The absolute file system path of the location where the [migration protocol file](./MIGRATION_PROTOCOL_REFERENCE.md) is generated.<br /><br />For example: `"C:\\Logs\\Migration.Toolkit.Protocol.log"`                       |
-| MigrateOnlyMediaFileInfo                                       | If set to `true`, only the database representations of media files are migrated, without the files in the media folder in the project's file system. For example, enable this option if your media library files are mapped to a shared directory or Cloud storage.<br /><br />If `false`, media files are migrated based on the `SourceCmsDirPath` location.  |
+| MigrateOnlyMediaFileInfo                                       | If set to `true`, only the database representations of media files are migrated, without the files in the media folder in the project's file system. For example, enable this option if your media library files are mapped to a shared directory or Cloud storage.<br /><br />If `false`, media files are migrated based on the `KxCmsDirPath` location.  |
 | UseOmActivityNodeRelationAutofix                               | Determines how the migration handles references from Contact management activities to non-existing pages.<br /><br />Possible options:<br />`DiscardData` - faulty references are removed,<br />`AttemptFix` - references are updated to the IDs of corresponding pages created by the migration,<br />`Error` - an error is reported and the reference can be translated or otherwise handled manually                                                             |
 | UseOmActivitySiteRelationAutofix                               | Determines how the migration handles site references from Contact management activities.<br /><br />Possible options: `DiscardData`,`AttemptFix`,`Error` |
 | EntityConfigurations                                           | Contains options that allow you to fine-tune the migration of specific object types.                                                   |
@@ -195,11 +195,11 @@ Add the options under the `Settings` section in the configuration file.
     "pathFormat": "logs/log.txt"
   },
   "Settings": {
-    "SourceConnectionString": "Data Source=myserver;Initial Catalog=Xperience13;Integrated Security=True;Persist Security Info=False;Connect Timeout=120;Encrypt=False;Current Language=English;",
-    "SourceCmsDirPath": "C:\\inetpub\\wwwroot\\Xperience13\\CMS",
-    "TargetConnectionString": "Data Source=myserver;Initial Catalog=XperienceByKentico;Integrated Security=True;Persist Security Info=False;Connect Timeout=120;Encrypt=False;Current Language=English;",
-    "TargetCmsDirPath": "C:\\inetpub\\wwwroot\\XP_Target",    
-    "TargetKxpApiSettings": {
+    "KxConnectionString": "Data Source=myserver;Initial Catalog=Xperience13;Integrated Security=True;Persist Security Info=False;Connect Timeout=120;Encrypt=False;Current Language=English;",
+    "KxCmsDirPath": "C:\\inetpub\\wwwroot\\Xperience13\\CMS",
+    "XbKConnectionString": "Data Source=myserver;Initial Catalog=XperienceByKentico;Integrated Security=True;Persist Security Info=False;Connect Timeout=120;Encrypt=False;Current Language=English;",
+    "XbKDirPath": "C:\\inetpub\\wwwroot\\XP_Target",    
+    "XbKApiSettings": {
       "ConnectionStrings": {
         "CMSConnectionString": "Data Source=myserver;Initial Catalog=XperienceByKentico;Integrated Security=True;Persist Security Info=False;Connect Timeout=120;Encrypt=False;Current Language=English;"
       }
