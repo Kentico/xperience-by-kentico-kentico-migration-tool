@@ -78,11 +78,14 @@ if (anyValidationErrors)
     return;
 }
 
-
-var settings = config.GetRequiredSection(ConfigurationNames.Settings).Get<ToolkitConfiguration>();
+var settingsSection = config.GetRequiredSection(ConfigurationNames.Settings);
+var settings = settingsSection.Get<ToolkitConfiguration>();
 settings.EntityConfigurations ??= new EntityConfigurations();
 
 var services = new ServiceCollection();
+
+// TODO tk: 2022-09-28 use IOption<TConfig> pattern
+// services.Configure<ToolkitConfiguration>(settingsSection);
 
 services
     .AddLogging(builder =>
@@ -101,12 +104,13 @@ services.UseKx13DbContext(settings);
 services.UseKxpDbContext(settings);
 
 var kxpApiSettings = 
-    config.GetRequiredSection(ConfigurationNames.Settings).GetSection(ConfigurationNames.TargetKxpApiSettings) ??
-#pragma warning disable CS0618
-    config.GetRequiredSection(ConfigurationNames.Settings).GetSection(ConfigurationNames.TargetKxoApiSettings);
+    settingsSection.GetSection(ConfigurationNames.XbKApiSettings) ??
+#pragma warning disable CS0618 // usage of obsolete symbol is related to backwards compatibility maintenance 
+    settingsSection.GetSection(ConfigurationNames.TargetKxpApiSettings) ??
+    settingsSection.GetSection(ConfigurationNames.TargetKxoApiSettings);
 #pragma warning restore CS0618
 
-services.UseKxpApi(kxpApiSettings, settings.TargetCmsDirPath);
+services.UseKxpApi(kxpApiSettings, settings.XbKDirPath);
 services.AddSingleton(settings);
 services.UseToolkitCore();
 

@@ -96,7 +96,7 @@ namespace Migration.Toolkit.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Configuration value in path  &apos;Settings.TargetKxpApiSettings.ConnectionStrings.CMSConnectionString&apos; is required.
+        ///   Looks up a localized string similar to Configuration value in path  &apos;Settings.XbKApiSettings.ConnectionStrings.CMSConnectionString&apos; is required.
         /// </summary>
         public static string ConfigurationValidator_GetValidationErrors_CmsConnectionString_IsRequired {
             get {
@@ -105,7 +105,7 @@ namespace Migration.Toolkit.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Section &apos;Settings.TargetKxpApiSettings.ConnectionStrings&apos; is required.
+        ///   Looks up a localized string similar to Section &apos;Settings.XbKApiSettings.ConnectionStrings&apos; is required.
         /// </summary>
         public static string ConfigurationValidator_GetValidationErrors_ConnectionStrings_IsRequired {
             get {
@@ -123,7 +123,7 @@ namespace Migration.Toolkit.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Configuration value in path &apos;Settings.SourceCmsDirPath&apos; is empty, it is recommended to set source instance filesystem path.
+        ///   Looks up a localized string similar to Configuration value in path &apos;Settings.KxCmsDirPath&apos; is empty, it is recommended to set source instance filesystem path.
         /// </summary>
         public static string ConfigurationValidator_GetValidationErrors_SourceCmsDirPath_IsRecommended {
             get {
@@ -132,7 +132,7 @@ namespace Migration.Toolkit.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Configuration value in path &apos;Settings.SourceConnectionString&apos; is required.
+        ///   Looks up a localized string similar to Configuration value in path &apos;Settings.KxConnectionString&apos; is required.
         /// </summary>
         public static string ConfigurationValidator_GetValidationErrors_SourceConnectionString_IsRequired {
             get {
@@ -141,7 +141,7 @@ namespace Migration.Toolkit.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Configuration value in path &apos;Settings.TargetCmsDirPath&apos; is required.
+        ///   Looks up a localized string similar to Configuration value in path &apos;Settings.XbKDirPath&apos; is required.
         /// </summary>
         public static string ConfigurationValidator_GetValidationErrors_TargetCmsDirPath_IsRequired {
             get {
@@ -150,7 +150,7 @@ namespace Migration.Toolkit.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Configuration value in path &apos;Settings.TargetConnectionString&apos; is required.
+        ///   Looks up a localized string similar to Configuration value in path &apos;Settings.XbKConnectionString&apos; is required.
         /// </summary>
         public static string ConfigurationValidator_GetValidationErrors_TargetConnectionString_IsRequired {
             get {
@@ -159,7 +159,7 @@ namespace Migration.Toolkit.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Section &apos;Settings.TargetKxpApiSettings&apos; is required.
+        ///   Looks up a localized string similar to Section &apos;Settings.XbKApiSettings&apos; is required.
         /// </summary>
         public static string ConfigurationValidator_GetValidationErrors_TargetKxpApiSettings_IsRequired {
             get {

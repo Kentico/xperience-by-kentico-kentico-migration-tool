@@ -3,6 +3,9 @@ using System.Text.Json.Serialization;
 
 namespace Migration.Toolkit.Common;
 
+using System.Runtime.Serialization;
+using Microsoft.Extensions.Configuration;
+
 /// <summary>
 /// Autofix enum 
 /// </summary>
@@ -16,31 +19,128 @@ public enum AutofixEnum
 
 public class ToolkitConfiguration
 {
-    [JsonPropertyName(ConfigurationNames.SourceConnectionString)]
-    public string SourceConnectionString { get; set; } = null!;
-
-    [JsonPropertyName(ConfigurationNames.SourceCmsDirPath)]
-    public string? SourceCmsDirPath { get; set; }
+    #region Connection string of source instance
     
-    [JsonPropertyName(ConfigurationNames.TargetConnectionString)]
-    public string TargetConnectionString { get; set; } = null!;
-    
-    [JsonPropertyName(ConfigurationNames.TargetCmsDirPath)]
-    public string TargetCmsDirPath { get; set; } = null!;
+    private string? _kxConnectionString;
 
-    [JsonPropertyName(ConfigurationNames.EntityConfigurations)]
+    [ConfigurationKeyName(ConfigurationNames.SourceConnectionString)]
+    [Obsolete("Use KxConnectionString instead")]
+    public string? ObsoleteSourceConnectionString { get; set; }
+
+    [ConfigurationKeyName(ConfigurationNames.KxConnectionString)]
+    public string KxConnectionString
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_kxConnectionString.NullIf(ConfigurationNames.TodoPlaceholder)))
+            {
+#pragma warning disable CS0618 // usage is related to resolving deprecation and backwards compatibility
+                return ObsoleteSourceConnectionString!;
+#pragma warning restore CS0618
+            }
+            
+            return _kxConnectionString!;
+        }
+        set => _kxConnectionString = value;
+    }
+
+    #endregion
+
+    #region Path to CMS dir of source instance
+
+    private string? _kxCmsDirPath;
+
+    [ConfigurationKeyName(ConfigurationNames.SourceCmsDirPath)]
+    [Obsolete("Use KxCmsDirPath instead")]
+    public string? ObsoleteSourceCmsDirPath { get; set; }
+
+    [ConfigurationKeyName(ConfigurationNames.KxCmsDirPath)]
+    public string? KxCmsDirPath
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_kxCmsDirPath.NullIf(ConfigurationNames.TodoPlaceholder)))
+            {
+#pragma warning disable CS0618
+                return ObsoleteSourceCmsDirPath;
+#pragma warning restore CS0618
+            }
+            
+            return _kxCmsDirPath;
+        }
+        set => _kxCmsDirPath = value;
+    }
+
+    #endregion
+
+    #region Connection string of target instance
+    
+    private string? _xbKConnectionString;
+
+    [ConfigurationKeyName(ConfigurationNames.TargetConnectionString)]
+    [Obsolete("Use XbKConnectionString instead")]
+    public string? ObsoleteTargetConnectionString { get; set; }
+
+    [ConfigurationKeyName(ConfigurationNames.XbKConnectionString)]
+    public string? XbKConnectionString
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_xbKConnectionString.NullIf(ConfigurationNames.TodoPlaceholder)))
+            {
+#pragma warning disable CS0618 // usage is related to resolving deprecation and backwards compatibility
+                return ObsoleteTargetConnectionString;
+#pragma warning restore CS0618
+            }
+            
+            return _xbKConnectionString;
+        }
+        set => _xbKConnectionString = value;
+    }
+
+    #endregion
+
+    #region Path to root directory of target instance
+
+    private string? _xbKDirPath = null;
+   
+
+    [ConfigurationKeyName(ConfigurationNames.TargetCmsDirPath)]
+    [Obsolete("Use XbKDirPath instead")]
+    public string? ObsoleteTargetCmsDirPath { get; set; } = null;
+
+    [ConfigurationKeyName(ConfigurationNames.XbKDirPath)]
+    public string? XbKDirPath
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_xbKDirPath.NullIf(ConfigurationNames.TodoPlaceholder)))
+            {
+#pragma warning disable CS0618 // usage is related to resolving deprecation and backwards compatibility
+                return ObsoleteTargetCmsDirPath;
+#pragma warning restore CS0618
+            }
+            
+            return _xbKDirPath;
+        }
+        set => _xbKDirPath = value;
+    }
+
+    #endregion
+
+    [ConfigurationKeyName(ConfigurationNames.EntityConfigurations)]
     public EntityConfigurations EntityConfigurations { get; set; } = new();
     
-    [JsonPropertyName(ConfigurationNames.MigrateOnlyMediaFileInfo)]
+    [ConfigurationKeyName(ConfigurationNames.MigrateOnlyMediaFileInfo)]
     public bool? MigrateOnlyMediaFileInfo { get; set; } = true;
 
-    [JsonPropertyName(ConfigurationNames.UseOmActivityNodeRelationAutofix)]
+    [ConfigurationKeyName(ConfigurationNames.UseOmActivityNodeRelationAutofix)]
     public AutofixEnum? UseOmActivityNodeRelationAutofix { get; set; } = AutofixEnum.Error;
     
-    [JsonPropertyName(ConfigurationNames.UseOmActivitySiteRelationAutofix)]
+    [ConfigurationKeyName(ConfigurationNames.UseOmActivitySiteRelationAutofix)]
     public AutofixEnum? UseOmActivitySiteRelationAutofix { get; set; } = AutofixEnum.Error;
     
-    [JsonPropertyName(ConfigurationNames.MigrationProtocolPath)]
+    [ConfigurationKeyName(ConfigurationNames.MigrationProtocolPath)]
     public string? MigrationProtocolPath { get; set; }
 
     public Dictionary<int, int> RequireExplicitMapping<TEntityType>(Expression<Func<TEntityType, object>> keyNameSelector)
@@ -98,7 +198,7 @@ public class ToolkitConfiguration
 
     #region Opt-in features
 
-    [JsonPropertyName(ConfigurationNames.OptInFeatures)]
+    [ConfigurationKeyName(ConfigurationNames.OptInFeatures)]
     public OptInFeatures? OptInFeatures { get; set; }
 
     #endregion

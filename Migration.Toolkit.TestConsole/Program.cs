@@ -48,7 +48,7 @@ services
 
 services.UseKx13DbContext(settings);
 services.UseKxpDbContext(settings);
-services.UseKxpApi(config.GetRequiredSection("Settings").GetRequiredSection("TargetKxoApiSettings"), settings.TargetCmsDirPath);
+services.UseKxpApi(config.GetRequiredSection("Settings").GetRequiredSection(ConfigurationNames.XbKApiSettings), settings.XbKDirPath);
 services.AddSingleton(settings);
 services.UseToolkitCore();
 

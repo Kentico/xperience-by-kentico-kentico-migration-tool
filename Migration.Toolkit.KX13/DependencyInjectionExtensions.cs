@@ -9,7 +9,7 @@ public static class DependencyInjectionExtensions
 {
     public static IServiceCollection UseKx13DbContext(this IServiceCollection services, ToolkitConfiguration toolkitConfiguration)
     {
-        services.AddDbContextFactory<KX13Context>(options => options.UseSqlServer(toolkitConfiguration.SourceConnectionString));
+        services.AddDbContextFactory<KX13Context>(options => options.UseSqlServer(toolkitConfiguration.KxConnectionString));
         return services;
     }
 }

@@ -25,28 +25,46 @@ public static class ConfigurationValidator
         {
             yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_Settings_IsRequired);
         }
-        
-        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.SourceConnectionString)))
+
+        if (
+            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.SourceConnectionString)) &&
+            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.KxConnectionString))
+        )
         {
             yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_SourceConnectionString_IsRequired);
         }
 
-        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.SourceCmsDirPath)))
+        if (
+            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.SourceCmsDirPath)) &&
+            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.KxCmsDirPath))
+        )
         {
-            yield return new ValidationMessage(ValidationMessageType.Warning, Resources.ConfigurationValidator_GetValidationErrors_SourceCmsDirPath_IsRecommended);
+            yield return new ValidationMessage(ValidationMessageType.Warning,
+                Resources.ConfigurationValidator_GetValidationErrors_SourceCmsDirPath_IsRecommended);
         }
 
-        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.TargetConnectionString)))
+        if (
+            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.TargetConnectionString)) &&
+            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.XbKConnectionString))
+        )
         {
             yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_TargetConnectionString_IsRequired);
         }
 
-        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.TargetCmsDirPath)))
+        if (
+            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.TargetCmsDirPath)) &&
+            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.XbKDirPath))
+           )
         {
-            yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_TargetCmsDirPath_IsRequired);
+            yield return new ValidationMessage(ValidationMessageType.Error,
+                Resources.ConfigurationValidator_GetValidationErrors_TargetCmsDirPath_IsRequired);
         }
 
-        var targetKxpApiSettings = settings?.GetSection(ConfigurationNames.TargetKxpApiSettings);
+        var targetKxpApiSettings =
+                settings?.GetSection(ConfigurationNames.XbKApiSettings) ??
+                settings?.GetSection(ConfigurationNames.TargetKxpApiSettings)
+            ;
+        
         if (targetKxpApiSettings is null)
         {
             yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_TargetKxpApiSettings_IsRequired);
@@ -70,8 +88,7 @@ public static class ConfigurationValidator
 
         if (!StringIsNullOrFitsOneOf<AutofixEnum>(connectionStrings?.GetValue<string>(ConfigurationNames.UseOmActivitySiteRelationAutofix)))
         {
-            yield return new ValidationMessage(ValidationMessageType.Error, string.Format(Resources.ConfigurationValidator_GetValidationErrors_UseOmActivitySiteRelationAutofix_MustFit, Printer.PrintEnumValues<AutofixEnum>(", "))
-            );
+            yield return new ValidationMessage(ValidationMessageType.Error, string.Format(Resources.ConfigurationValidator_GetValidationErrors_UseOmActivitySiteRelationAutofix_MustFit, Printer.PrintEnumValues<AutofixEnum>(", ")));
         }
 
         #region Opt-in features validation

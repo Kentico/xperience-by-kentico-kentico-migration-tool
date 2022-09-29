@@ -22,7 +22,7 @@ public class BulkDataCopyService
 
     public bool CheckIfDataExistsInTargetTable(string tableName)
     {
-        using var targetConnection = new SqlConnection(_configuration.TargetConnectionString);
+        using var targetConnection = new SqlConnection(_configuration.XbKConnectionString);
         using var command = targetConnection.CreateCommand();
         var query = $"SELECT COUNT(*) FROM {tableName}";
         command.CommandText = query;
@@ -35,10 +35,10 @@ public class BulkDataCopyService
     public bool CheckForTableColumnsDifferences(string tableName, Dictionary<string, string>? checkedColumns, out List<(string? sourceColumn, string? targetColumn)> columnsWithFailedCheck)
     {
         var anyFailedColumnCheck = false;
-        var sourceTableColumns = GetSqlTableColumns(tableName, _configuration.SourceConnectionString)
+        var sourceTableColumns = GetSqlTableColumns(tableName, _configuration.KxConnectionString)
             .Where(c => checkedColumns?.Keys.Any(k=> k.Equals(c.ColumnName, StringComparison.InvariantCultureIgnoreCase)) ?? true)
             .Select(x => x.ColumnName).OrderBy(x => x);
-        var targetTableColumns = GetSqlTableColumns(tableName, _configuration.TargetConnectionString)
+        var targetTableColumns = GetSqlTableColumns(tableName, _configuration.XbKConnectionString)
             .Where(c => checkedColumns?.Values.Any(k=> k.Equals(c.ColumnName, StringComparison.InvariantCultureIgnoreCase)) ?? true)
             .Select(x => x.ColumnName).OrderBy(x => x);
 
@@ -79,12 +79,12 @@ public class BulkDataCopyService
         
         _logger.LogInformation("Copy of {TableName} started", tableName);
 
-        var sourceColumns = GetSqlTableColumns(tableName, _configuration.SourceConnectionString, columns)
+        var sourceColumns = GetSqlTableColumns(tableName, _configuration.KxConnectionString, columns)
             .ToArray();
 
-        using var sourceConnection = new SqlConnection(_configuration.SourceConnectionString);
+        using var sourceConnection = new SqlConnection(_configuration.KxConnectionString);
         using var sourceCommand = sourceConnection.CreateCommand();
-        using var sqlBulkCopy = new SqlBulkCopy(_configuration.TargetConnectionString, SqlBulkCopyOptions.KeepIdentity);
+        using var sqlBulkCopy = new SqlBulkCopy(_configuration.XbKConnectionString, SqlBulkCopyOptions.KeepIdentity);
 
         sqlBulkCopy.BulkCopyTimeout = 1200;
         sqlBulkCopy.BatchSize = batchSize;

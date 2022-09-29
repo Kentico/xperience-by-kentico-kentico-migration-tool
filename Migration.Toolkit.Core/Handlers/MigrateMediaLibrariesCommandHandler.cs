@@ -162,9 +162,9 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
                 string? sourceMediaLibraryPath = null;
                 var loadMediaFileData = false;
                 if (!_toolkitConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(true) &&
-                    !string.IsNullOrWhiteSpace(_toolkitConfiguration.SourceCmsDirPath))
+                    !string.IsNullOrWhiteSpace(_toolkitConfiguration.KxCmsDirPath))
                 {
-                    sourceMediaLibraryPath = Path.Join(_toolkitConfiguration.SourceCmsDirPath, sourceMediaLibrary.LibrarySite.SiteName, DIR_MEDIA, sourceMediaLibrary.LibraryFolder);
+                    sourceMediaLibraryPath = Path.Join(_toolkitConfiguration.KxCmsDirPath, sourceMediaLibrary.LibrarySite.SiteName, DIR_MEDIA, sourceMediaLibrary.LibraryFolder);
                     loadMediaFileData = true;
                 }
 
