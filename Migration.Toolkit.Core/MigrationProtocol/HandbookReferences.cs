@@ -36,7 +36,7 @@ public static class HandbookReferences
     public static HandbookReference InvalidSourceCmsVersion() => new HandbookReference("InvalidSourceCmsVersion")
         .NeedsManualAction()
         ;
-    
+
     public static HandbookReference CommandConstraintBroken(string constraintName) => new HandbookReference("CommandConstraintBroken")
         .WithMessage($"Command constraint '{constraintName}' broken.")
         .NeedsManualAction()
@@ -124,6 +124,9 @@ public static class HandbookReferences
             Type = ReflectionHelper<TSource>.CurrentType.Name
         });
 
+    public static HandbookReference NotCurrentlySupportedSkip() =>
+        new HandbookReference("NotCurrentlySupportedSkip");
+
     public static HandbookReference InvalidSourceData<TSource>() => new HandbookReference("InvalidSourceData")
         .NeedsManualAction()
         .WithData(new
@@ -143,7 +146,7 @@ public static class HandbookReferences
             ComponentIdentifier = componentIdentifier,
             NewRecommendedComponentIdentifier = recommendedNewFormComponent,
         });
-    
+
     public static HandbookReference FormComponentCustom(string componentIdentifier) => new HandbookReference("CustomFormComponent")
         .NeedsManualAction()
         .WithMessage($"Custom form component used - don't forget to migrate code")
