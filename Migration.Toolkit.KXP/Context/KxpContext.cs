@@ -92,19 +92,8 @@ namespace Migration.Toolkit.KXP.Context
         public virtual DbSet<CmsWorkflowStepRole> CmsWorkflowStepRoles { get; set; } = null!;
         public virtual DbSet<CmsWorkflowStepUser> CmsWorkflowStepUsers { get; set; } = null!;
         public virtual DbSet<CmsWorkflowTransition> CmsWorkflowTransitions { get; set; } = null!;
-        public virtual DbSet<DancingGoatCoreAboutUsSection> DancingGoatCoreAboutUsSections { get; set; } = null!;
-        public virtual DbSet<DancingGoatCoreArticle> DancingGoatCoreArticles { get; set; } = null!;
-        public virtual DbSet<DancingGoatCoreCafe> DancingGoatCoreCaves { get; set; } = null!;
-        public virtual DbSet<DancingGoatCoreCoffee> DancingGoatCoreCoffees { get; set; } = null!;
-        public virtual DbSet<DancingGoatCoreContact> DancingGoatCoreContacts { get; set; } = null!;
-        public virtual DbSet<DancingGoatCoreHomeSection> DancingGoatCoreHomeSections { get; set; } = null!;
-        public virtual DbSet<DancingGoatCoreNavigationItem> DancingGoatCoreNavigationItems { get; set; } = null!;
-        public virtual DbSet<DancingGoatCoreReference> DancingGoatCoreReferences { get; set; } = null!;
-        public virtual DbSet<DancingGoatCoreSocialLink> DancingGoatCoreSocialLinks { get; set; } = null!;
         public virtual DbSet<ExportHistory> ExportHistories { get; set; } = null!;
         public virtual DbSet<ExportTask> ExportTasks { get; set; } = null!;
-        public virtual DbSet<FormDancingGoatCoreCoffeeSampleList> FormDancingGoatCoreCoffeeSampleLists { get; set; } = null!;
-        public virtual DbSet<FormDancingGoatCoreContactUsNew> FormDancingGoatCoreContactUsNews { get; set; } = null!;
         public virtual DbSet<IntegrationConnector> IntegrationConnectors { get; set; } = null!;
         public virtual DbSet<IntegrationSyncLog> IntegrationSyncLogs { get; set; } = null!;
         public virtual DbSet<IntegrationSynchronization> IntegrationSynchronizations { get; set; } = null!;
@@ -1591,97 +1580,6 @@ namespace Migration.Toolkit.KXP.Context
                     .HasConstraintName("FK_CMS_WorkflowTransition_TransitionWorkflowID_CMS_Workflow");
             });
 
-            modelBuilder.Entity<DancingGoatCoreAboutUsSection>(entity =>
-            {
-                entity.Property(e => e.AboutUsSectionHeading).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.AboutUsSectionText).HasDefaultValueSql("(N'')");
-            });
-
-            modelBuilder.Entity<DancingGoatCoreArticle>(entity =>
-            {
-                entity.Property(e => e.ArticleSummary).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.ArticleText).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.ArticleTitle).HasDefaultValueSql("(N'')");
-            });
-
-            modelBuilder.Entity<DancingGoatCoreCafe>(entity =>
-            {
-                entity.Property(e => e.CafeCity).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.CafeCountry).HasDefaultValueSql("(N'USA')");
-
-                entity.Property(e => e.CafeIsCompanyCafe).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.CafeName).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.CafePhone).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.CafeStreet).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.CafeZipCode).HasDefaultValueSql("(N'')");
-            });
-
-            modelBuilder.Entity<DancingGoatCoreCoffee>(entity =>
-            {
-                entity.Property(e => e.CoffeeDescription).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.CoffeeShortDescription).HasDefaultValueSql("(N'')");
-            });
-
-            modelBuilder.Entity<DancingGoatCoreContact>(entity =>
-            {
-                entity.Property(e => e.ContactCity).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.ContactCountry).HasDefaultValueSql("(N'USA')");
-
-                entity.Property(e => e.ContactEmail).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.ContactName).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.ContactPhone).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.ContactStreet).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.ContactZipCode).HasDefaultValueSql("(N'')");
-            });
-
-            modelBuilder.Entity<DancingGoatCoreHomeSection>(entity =>
-            {
-                entity.Property(e => e.HomeSectionHeading).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.HomeSectionText).HasDefaultValueSql("(N'')");
-            });
-
-            modelBuilder.Entity<DancingGoatCoreNavigationItem>(entity =>
-            {
-                entity.Property(e => e.LinkTo).HasDefaultValueSql("(N'')");
-            });
-
-            modelBuilder.Entity<DancingGoatCoreReference>(entity =>
-            {
-                entity.Property(e => e.ReferenceDescription).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.ReferenceImage).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.ReferenceName).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.ReferenceText).HasDefaultValueSql("(N'')");
-            });
-
-            modelBuilder.Entity<DancingGoatCoreSocialLink>(entity =>
-            {
-                entity.Property(e => e.SocialLinkIcon).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.SocialLinkName).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.SocialLinkTitle).HasDefaultValueSql("(N'Follow us')");
-
-                entity.Property(e => e.SocialLinkUrl).HasDefaultValueSql("(N'')");
-            });
-
             modelBuilder.Entity<ExportHistory>(entity =>
             {
                 entity.HasKey(e => e.ExportId)
@@ -1709,38 +1607,6 @@ namespace Migration.Toolkit.KXP.Context
                     .WithMany(p => p.ExportTasks)
                     .HasForeignKey(d => d.TaskSiteId)
                     .HasConstraintName("FK_Export_Task_TaskSiteID_CMS_Site");
-            });
-
-            modelBuilder.Entity<FormDancingGoatCoreCoffeeSampleList>(entity =>
-            {
-                entity.Property(e => e.Address).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.City).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.Country).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.Email).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.FirstName).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.FormInserted).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-
-                entity.Property(e => e.FormUpdated).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-
-                entity.Property(e => e.LastName).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.Zipcode).HasDefaultValueSql("(N'')");
-            });
-
-            modelBuilder.Entity<FormDancingGoatCoreContactUsNew>(entity =>
-            {
-                entity.Property(e => e.FormInserted).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-
-                entity.Property(e => e.FormUpdated).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-
-                entity.Property(e => e.UserEmail).HasDefaultValueSql("(N'')");
-
-                entity.Property(e => e.UserMessage).HasDefaultValueSql("(N'')");
             });
 
             modelBuilder.Entity<IntegrationConnector>(entity =>

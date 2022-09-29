@@ -25,6 +25,8 @@ namespace Migration.Toolkit.KXP.Models
         public Guid? PageTemplateConfigurationThumbnailGuid { get; set; }
         public string PageTemplateConfigurationTemplate { get; set; } = null!;
         public string? PageTemplateConfigurationWidgets { get; set; }
+        [StringLength(200)]
+        public string? PageTemplateConfigurationIcon { get; set; }
 
         [ForeignKey("PageTemplateConfigurationSiteId")]
         [InverseProperty("CmsPageTemplateConfigurations")]

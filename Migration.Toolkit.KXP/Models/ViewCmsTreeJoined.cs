@@ -86,6 +86,5 @@ namespace Migration.Toolkit.KXP.Models
         public string? DocumentPageTemplateConfiguration { get; set; }
         [Column("DocumentABTestConfiguration")]
         public string? DocumentAbtestConfiguration { get; set; }
-        public bool DocumentShowInMenu { get; set; }
     }
 }
