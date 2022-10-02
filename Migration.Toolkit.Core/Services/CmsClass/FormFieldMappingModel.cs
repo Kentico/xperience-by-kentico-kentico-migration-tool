@@ -25,7 +25,7 @@ public static partial class TcaDirective
 }
 
 /// <summary>
-/// Tfc = Target form component 
+/// Tfc = Target form component
 /// </summary>
 public static class TfcDirective
 {
@@ -33,10 +33,12 @@ public static class TfcDirective
 
     // public const string ClearFieldControl = "#clear-field-control#"; not acceptable
     public const string DoNothing = "#leave-it-as-it-is#";
+
+    public const string Clear = "#clear#";
 }
 
 /// <summary>
-/// Sfc = source form control 
+/// Sfc = source form control
 /// </summary>
 public static class SfcDirective
 {
@@ -52,13 +54,13 @@ public static class FieldMappingInstance
             {
                 Kx13FieldDataType.ALL, new DataTypeModel(FieldDataType.ALL, new()
                 {
-                    { SfcDirective.CatchAnyNonMatching, new TargetComponent(TfcDirective.CopySourceControl) }
+                    { SfcDirective.CatchAnyNonMatching, new TargetComponent(TfcDirective.Clear) }
                 })
             },
             {
                 Kx13FieldDataType.Unknown, new DataTypeModel(FieldDataType.Unknown, new()
                 {
-                    { SfcDirective.CatchAnyNonMatching, new TargetComponent(TfcDirective.CopySourceControl) }
+                    { SfcDirective.CatchAnyNonMatching, new TargetComponent(TfcDirective.Clear) }
                 })
             },
             {
@@ -122,7 +124,7 @@ public static class FieldMappingInstance
             {
                 Kx13FieldDataType.TimeSpan, new DataTypeModel(FieldDataType.TimeSpan, new()
                 {
-                    { SfcDirective.CatchAnyNonMatching, new TargetComponent(TfcDirective.CopySourceControl) }
+                    { SfcDirective.CatchAnyNonMatching, new TargetComponent(TfcDirective.Clear) }
                 })
             },
             {
@@ -146,19 +148,19 @@ public static class FieldMappingInstance
             {
                 Kx13FieldDataType.Guid, new DataTypeModel(FieldDataType.Guid, new()
                 {
-                    { SfcDirective.CatchAnyNonMatching, new TargetComponent(TfcDirective.CopySourceControl) }
+                    { SfcDirective.CatchAnyNonMatching, new TargetComponent(TfcDirective.Clear) }
                 })
             },
             {
                 Kx13FieldDataType.Binary, new DataTypeModel(FieldDataType.Binary, new()
                 {
-                    { SfcDirective.CatchAnyNonMatching, new TargetComponent(TfcDirective.DoNothing) }
+                    { SfcDirective.CatchAnyNonMatching, new TargetComponent(TfcDirective.Clear) }
                 })
             },
             {
                 Kx13FieldDataType.Xml, new DataTypeModel(FieldDataType.Xml, new()
                 {
-                    { SfcDirective.CatchAnyNonMatching, new TargetComponent(TfcDirective.DoNothing) }
+                    { SfcDirective.CatchAnyNonMatching, new TargetComponent(FormComponents.AdminNumberWithLabelComponent) }
                 })
             },
             {
