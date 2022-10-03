@@ -24,7 +24,7 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
 
     private readonly ILogger<CmsClassMapper> _logger;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
-    
+
 
     public CmsClassMapper(ILogger<CmsClassMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext, IProtocol protocol) : base(logger, primaryKeyMappingContext, protocol)
     {
@@ -245,7 +245,11 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
                         PerformActionsOnField(field, actions);
                         break;
                     case TfcDirective.DoNothing:
-                        field.Settings[CLASS_FIELD_CONTROL_NAME] = targetFormComponent;
+                        PerformActionsOnField(field, actions);
+                        break;
+                    case TfcDirective.Clear:
+                        field.Visible = false;
+                        field.Settings.Clear();
                         PerformActionsOnField(field, actions);
                         break;
                     default:
