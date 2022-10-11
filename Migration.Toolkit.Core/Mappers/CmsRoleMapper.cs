@@ -24,8 +24,8 @@ public class CmsRoleMapper : EntityMapperBase<KX13.Models.CmsRole, CmsRole>
         target.RoleDisplayName = source.RoleDisplayName;
         target.RoleName = source.RoleName;
         target.RoleDescription = source.RoleDescription;
-        
-        if (mappingHelper.TranslateId<KX13.Models.CmsSite>(c => c.SiteId, source.SiteId, out var siteId))
+
+        if (mappingHelper.TranslateIdAllowNulls<KX13.Models.CmsSite>(c => c.SiteId, source.SiteId, out var siteId))
         {
             target.SiteId = siteId;
         }

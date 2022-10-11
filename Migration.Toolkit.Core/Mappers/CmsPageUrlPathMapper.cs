@@ -9,15 +9,12 @@ using Migration.Toolkit.KXP.Models;
 
 public class CmsPageUrlPathMapper : EntityMapperBase<KX13.Models.CmsPageUrlPath, CmsPageUrlPath>
 {
-    private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
-
     public CmsPageUrlPathMapper(
         ILogger<CmsPageUrlPathMapper> logger,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol
     ) : base(logger, primaryKeyMappingContext, protocol)
     {
-        _primaryKeyMappingContext = primaryKeyMappingContext;
     }
 
     protected override CmsPageUrlPath? CreateNewInstance(KX13.Models.CmsPageUrlPath source, MappingHelper mappingHelper, AddFailure addFailure) => new();

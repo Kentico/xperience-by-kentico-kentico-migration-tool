@@ -6,6 +6,8 @@ using Migration.Toolkit.Common.Helpers;
 namespace Migration.Toolkit.Core.Helpers;
 
 using CMS.Globalization;
+using CMS.Membership;
+using CMS.Modules;
 using Migration.Toolkit.KXP.Models;
 
 public static class Printer
@@ -60,6 +62,9 @@ public static class Printer
             CountryInfo item => FormatModel($"ID={item.CountryID}, GUID={item.CountryGUID}, Name={item.CountryName}"),
             StateInfo item => FormatModel($"ID={item.StateID}, GUID={item.StateGUID}, Name={item.StateName}"),
             TreeNode item => FormatModel($"NodeID={item.NodeID}, DocumentID={item.DocumentID}, NodeGUID={item.NodeGUID}, DocumentGUID={item.DocumentGUID}, DocumentCulture={item.DocumentCulture}, DocumentName={item.DocumentName}"),
+            ResourceInfo item => FormatModel($"ID={item.ResourceID}, Guid={item.ResourceGUID} Name={item.ResourceName}"),
+            CMS.FormEngine.AlternativeFormInfo item => FormatModel($"ID={item.FormID}, Guid={item.FormGUID} Name={item.FormName}"),
+            UserInfo item => FormatModel($"ID={item.UserID}, Guid={item.UserGUID} Name={item.UserName}"),
 
             CmsForm item => FormatModel($"ID={item.FormId}, GUID={item.FormGuid}, Name={item.FormName}"),
             CmsUser item => FormatModel($"ID={item.UserId}, GUID={item.UserGuid}, Name={item.UserName}"),
@@ -80,8 +85,9 @@ public static class Printer
             KX13M.CmsState item => FormatModel($"ID={item.StateId}, GUID={item.StateGuid}, Name={item.StateName}"),
             KX13M.CmsTree item => FormatModel($"NodeID={item.NodeId}, NodeGUID={item.NodeGuid}, NodeName={item.NodeName}, NodeAliasPath={item.NodeAliasPath}"),
             KX13M.CmsDocument item => FormatModel($"NodeID={item.DocumentNodeId}, DocumentID={item.DocumentId}, DocumentGUID={item.DocumentGuid}, DocumentCulture={item.DocumentCulture}, DocumentName={item.DocumentName}"),
+            KX13M.CmsResource item => FormatModel($"ID={item.ResourceId}, GUID={item.ResourceGuid}, Name={item.ResourceName}"),
 
-            null => $"<null> of {currentTypeName}",
+            null => $"<null> ref of {currentTypeName}",
             _ => Fallback(model)
         };
     }

@@ -1,5 +1,7 @@
 namespace Migration.Toolkit.Core.Handlers;
 
+using CMS.Activities;
+using CMS.ContactManagement;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -11,6 +13,7 @@ using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.Core.Services;
 using Migration.Toolkit.Core.Services.BulkCopy;
 using Migration.Toolkit.KX13.Models;
+using Migration.Toolkit.KXP.Api;
 using Migration.Toolkit.KXP.Context;
 
 public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateContactManagementCommand, CommandResult>, IDisposable
@@ -20,6 +23,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly CountryMigrator _countryMigrator;
+    private readonly KxpClassFacade _kxpClassFacade;
     private readonly IProtocol _protocol;
     private readonly KxpContext _kxpContext;
 
@@ -30,6 +34,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         CountryMigrator countryMigrator,
+        KxpClassFacade kxpClassFacade,
         IProtocol protocol
     )
     {
@@ -39,15 +44,16 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _countryMigrator = countryMigrator;
+        _kxpClassFacade = kxpClassFacade;
         _protocol = protocol;
     }
 
     public Task<CommandResult> Handle(MigrateContactManagementCommand request, CancellationToken cancellationToken)
     {
         var migratedSiteIds = _toolkitConfiguration.RequireExplicitMapping<CmsSite>(s => s.SiteId).Keys.ToList();
-        
+
         _countryMigrator.MigrateCountriesAndStates();
-        
+
         if (MigrateContacts() is { } ccr) return Task.FromResult(ccr);
         if (MigrateContactActivities(migratedSiteIds) is { } acr) return Task.FromResult(acr);
 
@@ -92,6 +98,11 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
             // No support 2022-07-07  { nameof(OmContact.ContactSalesForceLeadReplicationRequired), nameof(KXO.Models.OmContact.ContactSalesForceLeadReplicationRequired) },
         };
 
+        foreach (var cfi in _kxpClassFacade.GetCustomizedFieldInfos(ContactInfo.TYPEINFO.ObjectClassName))
+        {
+            requiredColumnsForContactMigration.Add(cfi.FieldName, cfi.FieldName);
+        }
+
         // if (_bulkDataCopyService.CheckIfDataExistsInTargetTable("OM_Contact"))
         // {
         //     _protocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable("OM_Contact"));
@@ -118,7 +129,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
 
         var bulkCopyRequest = new BulkCopyRequest("OM_Contact",
             s => true,// s => s != "ContactID",
-            _ => true, 
+            _ => true,
             50000,
             requiredColumnsForContactMigration.Keys.ToList(),
             ContactValueInterceptor,
@@ -127,7 +138,16 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         );
 
         _logger.LogTrace("Bulk data copy request: {Request}", bulkCopyRequest);
-        _bulkDataCopyService.CopyTableToTable(bulkCopyRequest);
+        try
+        {
+            _bulkDataCopyService.CopyTableToTable(bulkCopyRequest);
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError(ex, "Failed to migrate contacts");
+            return new CommandFailureResult();
+        }
+
         return null;
     }
 
@@ -162,7 +182,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
                 }
             }
         }
-        
+
         if (columnName.Equals(nameof(KXP.Models.OmContact.ContactStateId), StringComparison.InvariantCultureIgnoreCase) && value is int sourceStateId)
         {
             switch (_primaryKeyMappingContext.MapSourceId<CmsState>(u => u.StateId, sourceStateId.NullIfZero()))
@@ -177,7 +197,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
                 }
             }
         }
-        
+
         if (columnName.Equals(nameof(KXP.Models.OmContact.ContactCountryId), StringComparison.InvariantCultureIgnoreCase) && value is int sourceCountryId)
         {
             switch (_primaryKeyMappingContext.MapSourceId<CmsCountry>(u => u.CountryId, sourceCountryId.NullIfZero()))
@@ -192,8 +212,8 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
                 }
             }
         }
-        
-        
+
+
 
         return ValueInterceptorResult.DoNothing;
     }
@@ -226,6 +246,11 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
             { nameof(OmActivity.ActivityUrlhash), nameof(KXP.Models.OmActivity.ActivityUrlhash) },
             { nameof(OmActivity.ActivityUtmcontent), nameof(KXP.Models.OmActivity.ActivityUtmcontent) },
         };
+
+        foreach (var cfi in _kxpClassFacade.GetCustomizedFieldInfos(ActivityInfo.TYPEINFO.ObjectClassName))
+        {
+            requiredColumnsForContactMigration.Add(cfi.FieldName, cfi.FieldName);
+        }
 
         // TODO tk: 2022-07-07 replace table data
         // if (_bulkDataCopyService.CheckIfDataExistsInTargetTable("OM_Activity"))
@@ -262,7 +287,16 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         );
 
         _logger.LogTrace("Bulk data copy request: {Request}", bulkCopyRequest);
-        _bulkDataCopyService.CopyTableToTable(bulkCopyRequest);
+
+        try
+        {
+            _bulkDataCopyService.CopyTableToTable(bulkCopyRequest);
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError(ex, "Failed to migrate activities");
+            return new CommandFailureResult();
+        }
         return null;
     }
 

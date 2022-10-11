@@ -87,7 +87,7 @@ public class OmContactMapper : EntityMapperBase<KX13.Models.OmContact, OmContact
         }
 
         target.ContactSalesForceLeadId = source.ContactSalesForceLeadId;
-        if (mappingHelper.TranslateId<KX13M.CmsUser>(u => u.UserId, source.ContactOwnerUserId, out var userId))
+        if (mappingHelper.TranslateIdAllowNulls<KX13M.CmsUser>(u => u.UserId, source.ContactOwnerUserId, out var userId))
         {
             target.ContactOwnerUserId = userId;
         }

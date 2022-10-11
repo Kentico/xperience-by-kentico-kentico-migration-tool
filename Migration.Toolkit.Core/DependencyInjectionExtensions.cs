@@ -18,7 +18,10 @@ using Migration.Toolkit.Core.Services.CmsRelationship;
 
 namespace Migration.Toolkit.Core;
 
+using CMS.FormEngine;
 using CMS.Globalization;
+using CMS.Membership;
+using CMS.Modules;
 using Migration.Toolkit.Core.Services.Ipc;
 using Migration.Toolkit.KXP.Models;
 
@@ -29,7 +32,7 @@ public static class DependencyInjectionExtensions
         services.AddSingleton<IProtocol, Protocol>();
         services.AddSingleton<IMigrationProtocol, TextMigrationProtocol>();
         services.AddSingleton<IMigrationProtocol, DebugMigrationProtocol>();
-        
+
         services.AddTransient<BulkDataCopyService>();
         services.AddTransient<CmsRelationshipService>();
         services.AddTransient<CoupledDataService>();
@@ -37,7 +40,7 @@ public static class DependencyInjectionExtensions
         services.AddScoped<PageTemplateMigrator>();
         services.AddScoped<CountryMigrator>();
         services.AddScoped<ClassService>();
-        
+
         services.AddMediatR(typeof(DependencyInjectionExtensions));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestHandlingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CommandConstraintBehavior<,>));
@@ -60,7 +63,8 @@ public static class DependencyInjectionExtensions
         services.AddTransient<MigrateSettingKeysCommandHandler>();
         services.AddTransient<MigrateSitesCommandHandler>();
         services.AddTransient<MigrateUsersCommandHandler>();
-        
+        services.AddTransient<MigrateContactManagementCommandHandler>();
+
         // mappers
         services.AddTransient<IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo>, CmsAttachmentMapper>();
         services.AddTransient<IEntityMapper<CmsTreeMapperSource, TreeNode>, TreeNodeMapper>();
@@ -71,12 +75,16 @@ public static class DependencyInjectionExtensions
         services.AddTransient<IEntityMapper<KX13M.CmsForm, BizFormInfo>, CmsFormMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsForm, CmsForm>, CmsFormMapperEf>();
         services.AddTransient<IEntityMapper<KX13M.CmsPageUrlPath, CmsPageUrlPath>, CmsPageUrlPathMapper>();
-        services.AddTransient<IEntityMapper<KX13M.CmsResource, CmsResource>, CmsResourceMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsResource, ResourceInfo>, ResourceMapper>();
+        services.AddTransient<IEntityMapper<AlternativeFormMapperSource, AlternativeFormInfo>, AlternativeFormMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsRole, CmsRole>, CmsRoleMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsSettingsCategory, CmsSettingsCategory>, CmsSettingsCategoryMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsSettingsKey, CmsSettingsKey>, CmsSettingsKeyMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsSite, CmsSite>, CmsSiteMapper>();
-        services.AddTransient<IEntityMapper<KX13M.CmsUser, CmsUser>, CmsUserMapper>();
+        // services.AddTransient<IEntityMapper<KX13M.CmsUser, CmsUser>, CmsUserMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsUser, UserInfo>, UserInfoMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsUserRole, UserRoleInfo>, UserRoleInfoMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsUserSite, UserSiteInfo>, UserSiteInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.MediaLibrary, MediaLibraryInfo>, MediaLibraryInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.OmContact, OmContact>, OmContactMapper>();
         services.AddTransient<IEntityMapper<KX13M.OmContactGroup, OmContactGroup>, OmContactGroupMapper>();

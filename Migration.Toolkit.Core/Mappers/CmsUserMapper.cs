@@ -30,7 +30,7 @@ public class CmsUserMapper : EntityMapperBase<KX13.Models.CmsUser, CmsUser>
             _logger.LogTrace("Assertion failed, entity key mismatch");
             throw new InvalidOperationException("Assertion failed, entity key mismatch.");
         }
-        
+
         target.UserName = source.UserName;
         target.FirstName = source.FirstName;
         target.LastName = source.LastName;

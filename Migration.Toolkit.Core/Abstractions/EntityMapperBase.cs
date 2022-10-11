@@ -11,7 +11,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
     private readonly ILogger _logger;
     private readonly PrimaryKeyMappingContext _pkContext;
     protected readonly IProtocol Protocol;
-    
+
     protected EntityMapperBase(ILogger logger, PrimaryKeyMappingContext pkContext, IProtocol protocol)
     {
         _logger = logger;
@@ -23,7 +23,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
     {
         var failures = new List<IModelMappingResult<TTargetEntity>>();
         var mappingHelper = new MappingHelper(_pkContext, failures.Add);
-        
+
         if (source is null)
         {
             _logger.LogTrace("Source entity is not defined");
@@ -37,7 +37,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
             target = CreateNewInstance(source, mappingHelper, failures.Add);
             if (target == null || object.Equals(target, default) || failures.Count > 0)
             {
-                return new AggregatedResult<TTargetEntity>(failures).Log(_logger, Protocol);                
+                return new AggregatedResult<TTargetEntity>(failures).Log(_logger, Protocol);
             }
 
             newInstance = true;
@@ -45,8 +45,8 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
 
         var mappedResult = MapInternal(source, target, newInstance, mappingHelper, failures.Add);
 
-        return failures.Count > 0 
-            ? new AggregatedResult<TTargetEntity>(failures).Log(_logger, Protocol) 
+        return failures.Count > 0
+            ? new AggregatedResult<TTargetEntity>(failures).Log(_logger, Protocol)
             : new MapperResultSuccess<TTargetEntity>(mappedResult, newInstance).Log(_logger, Protocol);
     }
 
@@ -76,12 +76,12 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
             var failure = HandbookReferences
                     .SourceValueIsRequired<TSourceEntity>(valueName)
                     .AsFailure<TTargetEntity>()
-                ;    
-                
+                ;
+
             _addFailure(failure);
             return Guid.Empty;
         }
-        
+
         public int Require(int? value, string valueName)
         {
             if (value is { } v)
@@ -92,12 +92,12 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
             var failure = HandbookReferences
                     .SourceValueIsRequired<TSourceEntity>(valueName)
                     .AsFailure<TTargetEntity>()
-                ;    
-                
+                ;
+
             _addFailure(failure);
             return -1;
         }
-        
+
         public bool Require(bool? value, string valueName)
         {
             if (value is { } v)
@@ -108,12 +108,12 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
             var failure = HandbookReferences
                     .SourceValueIsRequired<TSourceEntity>(valueName)
                     .AsFailure<TTargetEntity>()
-                ;    
-                
+                ;
+
             _addFailure(failure);
             return false;
         }
-        
+
         public DateTime Require(DateTime? value, string valueName)
         {
             if (value is { } v)
@@ -124,20 +124,20 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
             var failure = HandbookReferences
                     .SourceValueIsRequired<TSourceEntity>(valueName)
                     .AsFailure<TTargetEntity>()
-                ;    
-                
+                ;
+
             _addFailure(failure);
             return DateTime.MinValue;
         }
 
-        public bool TranslateId<TKeyOwner>(Expression<Func<TKeyOwner, object>> keyNameSelector, int? sourceId, out int? translatedId)
+        public bool TranslateIdAllowNulls<TKeyOwner>(Expression<Func<TKeyOwner, object>> keyNameSelector, int? sourceId, out int? translatedId)
         {
             if (sourceId == null)
             {
                 translatedId = null;
                 return true;
             }
-            
+
             translatedId = _primaryKeyMappingContext.MapFromSourceOrNull(keyNameSelector, sourceId);
             if (!translatedId.HasValue)
             {
@@ -146,15 +146,15 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
                         .MissingRequiredDependency<TKeyOwner>(memberName, sourceId)
                         .NeedsManualAction()
                         .AsFailure<TTargetEntity>()
-                    ;    
-                
+                    ;
+
                 _addFailure(failure);
                 return false;
             }
 
             return true;
         }
-        
+
         public bool TryTranslateId<TKeyOwner>(Expression<Func<TKeyOwner, object>> keyNameSelector, int? sourceId, out int? translatedId)
         {
             translatedId = _primaryKeyMappingContext.MapFromSourceOrNull(keyNameSelector, sourceId);
@@ -162,7 +162,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
             {
                 return false;
             }
-            
+
             return true;
         }
 
@@ -178,7 +178,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
                     .MissingRequiredDependency<TKeyOwner>(memberName, sourceId)
                     .NeedsManualAction()
                     .AsFailure<TTargetEntity>()
-                ;    
+                ;
             _addFailure(failure);
             return false;
         }

@@ -95,6 +95,15 @@ public static class HandbookReferences
                 Exception = exception.ToString(),
             });
 
+    public static HandbookReference ErrorSavingTargetInstance<TTarget>(Exception exception) =>
+        new HandbookReference("ErrorSavingTargetInstance")
+            .NeedsManualAction()
+            .WithData(new
+            {
+                TargetEntityType = typeof(TTarget).FullName,
+                Exception = exception.ToString(),
+            });
+
     public static HandbookReference MissingConfiguration<TCommand>(string configurationName) =>
         new HandbookReference("MissingConfiguration")
             .NeedsManualAction()
@@ -120,6 +129,12 @@ public static class HandbookReferences
 
     public static HandbookReference NotCurrentlySupportedSkip<TSource>() =>
         new HandbookReference("NotCurrentlySupportedSkip").WithData(new
+        {
+            Type = ReflectionHelper<TSource>.CurrentType.Name
+        });
+
+    public static HandbookReference NotSupportedSkip<TSource>() =>
+        new HandbookReference("NotSupportedSkip").WithData(new
         {
             Type = ReflectionHelper<TSource>.CurrentType.Name
         });

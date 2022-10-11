@@ -11,9 +11,9 @@ public class KxpApiInitializer
     {
         _logger = logger;
     }
-    
+
     private bool _apiInitializationCalled = false;
-    
+
     public bool EnsureApiIsInitialized()
     {
         if (!_apiInitializationCalled)
@@ -27,7 +27,7 @@ public class KxpApiInitializer
             else
             {
                 _apiInitializationCalled = true;
-                _logger.LogInformation("Kxp api initialization finished");    
+                _logger.LogInformation("Kxp api initialization finished");
             }
         }
         else

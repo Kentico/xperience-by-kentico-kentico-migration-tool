@@ -10,10 +10,10 @@ using Migration.Toolkit.KXP.Models;
 public class CmsSettingsKeyMapper : EntityMapperBase<Migration.Toolkit.KX13.Models.CmsSettingsKey, CmsSettingsKey>
 {
     private const string SOURCE_KEY_NAME = "CMSDefaultUserID";
-    
+
     public CmsSettingsKeyMapper(ILogger<CmsSettingsKeyMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : base(logger, pkContext, protocol)
     {
-        
+
     }
 
     protected override CmsSettingsKey CreateNewInstance(KX13.Models.CmsSettingsKey source, MappingHelper mappingHelper, AddFailure addFailure) => new();
@@ -35,7 +35,7 @@ public class CmsSettingsKeyMapper : EntityMapperBase<Migration.Toolkit.KX13.Mode
             // target.KeyIsGlobal = source.KeyIsGlobal;
             // target.KeyIsCustom = source.KeyIsCustom;
             target.KeyFormControlSettings = source.KeyFormControlSettings;
-            target.KeyExplanationText = source.KeyExplanationText;    
+            target.KeyExplanationText = source.KeyExplanationText;
         }
         else
         {
@@ -70,8 +70,8 @@ public class CmsSettingsKeyMapper : EntityMapperBase<Migration.Toolkit.KX13.Mode
                 target.KeyValue = source.KeyValue;
                 break;
         }
-        
-        if (mappingHelper.TranslateId<KX13.Models.CmsSite>(s => s.SiteId, source.SiteId, out var siteId))
+
+        if (mappingHelper.TranslateIdAllowNulls<KX13.Models.CmsSite>(s => s.SiteId, source.SiteId, out var siteId))
         {
             target.SiteId = siteId;
         }
@@ -94,7 +94,7 @@ public class CmsSettingsKeyMapper : EntityMapperBase<Migration.Toolkit.KX13.Mode
         //         }
         //     }
         // }
-        
+
         return target;
     }
 }

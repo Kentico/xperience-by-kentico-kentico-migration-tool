@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Reflection;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -103,9 +103,9 @@ services
 services.UseKx13DbContext(settings);
 services.UseKxpDbContext(settings);
 
-var kxpApiSettings = 
+var kxpApiSettings =
     settingsSection.GetSection(ConfigurationNames.XbKApiSettings) ??
-#pragma warning disable CS0618 // usage of obsolete symbol is related to backwards compatibility maintenance 
+#pragma warning disable CS0618 // usage of obsolete symbol is related to backwards compatibility maintenance
     settingsSection.GetSection(ConfigurationNames.TargetKxpApiSettings) ??
     settingsSection.GetSection(ConfigurationNames.TargetKxoApiSettings);
 #pragma warning restore CS0618
@@ -193,7 +193,8 @@ void PrintCommandDescriptions()
     WriteCommandDesc($"starts migration of {Green(MigrateSitesCommand.MonikerFriendly)}", $"migrate --{MigrateSitesCommand.Moniker}");
     WriteCommandDesc($"starts migration of {Green(MigrateUsersCommand.MonikerFriendly)}", $"migrate --{MigrateUsersCommand.Moniker}");
     WriteCommandDesc($"starts migration of {Green(MigrateAttachmentsCommand.MonikerFriendly)}", $"migrate --{MigrateAttachmentsCommand.Moniker}");
-    
+    WriteCommandDesc($"starts migration of {Green(MigrateCustomModulesCommand.MonikerFriendly)}", $"migrate --{MigrateCustomModulesCommand.Moniker}");
+
     // WriteCommandDesc($"starts migration of {Green(MigrateWebFarmsCommand.MonikerFriendly)}", $"migrate --{MigrateWebFarmsCommand.Moniker}");
     // Console.WriteLine($"Run with option {Yellow("--dry")} to execute command without persistence");
 }
@@ -208,7 +209,7 @@ var bypassDependencyCheck = false;
 while (argsQ.TryDequeue(out var arg))
 {
     var cultureCode = "";
-    
+
     // TODO tk: 2022-06-23 ! konfigurovat site přes SiteName (ponechat aktuální přístup)
     if (RequireNumberParameter("--siteId", out var siteId) && siteId is int sid && kxpContext.CmsSites.OrderBy(x => x.SiteId).FirstOrDefault()?.SiteId is int targetSiteId)
     {
@@ -235,12 +236,12 @@ while (argsQ.TryDequeue(out var arg))
     {
         continue;
     }
-    
+
     if (arg == "--site")
     {
         continue;
     }
-    
+
     if (arg == "--bypass-dependency-check")
     {
         bypassDependencyCheck = true;
@@ -330,7 +331,13 @@ while (argsQ.TryDequeue(out var arg))
         commands.Add(new MigrateUsersCommand());
         continue;
     }
-    
+
+    if (arg == $"--{MigrateCustomModulesCommand.Moniker}")
+    {
+        commands.Add(new MigrateCustomModulesCommand());
+        continue;
+    }
+
     if (arg == $"--{MigrateAttachmentsCommand.Moniker}")
     {
         if (RequireParameter("--culture", out var culture))
@@ -367,7 +374,7 @@ try
         if (ipcConfigured)
         {
             await sourceInstanceContext.RequestSourceInstanceInfo();
-        }    
+        }
     }
 }
 catch (Exception ex)
@@ -375,6 +382,9 @@ catch (Exception ex)
     logger.LogCritical(ex, "Check if opt-in feature 'QuerySourceInstanceApi' is configured correctly and all connections configured are reachable and hosted on localhost");
     return;
 }
+
+// sort commands
+commands = commands.OrderBy(x => x.Rank).ToList();
 
 var satisfiedDependencies = new HashSet<Type>();
 var dependenciesSatisfied = true;
@@ -417,7 +427,7 @@ foreach (var command in commands)
         Console.WriteLine($"Command {command.GetType().Name} failed critically.");
         break;
     }
-    
+
     Console.WriteLine($"Command {command.GetType().Name} is completed");
 }
 
