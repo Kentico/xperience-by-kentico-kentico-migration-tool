@@ -124,10 +124,8 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
                 continue;
             }
 
-            // TODO tk: 2022-10-10 deal with custom tables
-
             var kx13ResourceName = kx13Class.ClassResource?.ResourceName;
-            if (kx13ResourceName != null && Kx13SystemResource.All.Contains(kx13ResourceName))
+            if (kx13ResourceName != null && Kx13SystemResource.All.Contains(kx13ResourceName) && !Kx13SystemResource.ConvertToNonSysResource.Contains(kx13ResourceName))
             {
                 if (!Kx13SystemClass.Customizable.Contains(kx13Class.ClassName))
                 {
@@ -274,16 +272,37 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
 
             _protocol.FetchedTarget(xbkResource);
 
+            var sysResourceInclude = Kx13SystemResource.ConvertToNonSysResource.Contains(kx13CmsResource.ResourceName);
             var isSystemResource = Kx13SystemResource.All.Contains(kx13CmsResource.ResourceName);
             if (isSystemResource)
             {
-                _logger.LogDebug("CMSResource is system resource ({Resource})", Printer.GetEntityIdentityPrint(kx13CmsResource));
-
-                var kx13Classes = await GetResourceClasses(kx13CmsResource.ResourceId, cancellationToken);
-                if (kx13Classes.Any(x => Kx13SystemClass.Customizable.Contains(x.ClassName)))
+                if (sysResourceInclude)
                 {
-                    _logger.LogDebug("CMSResource ({Resource}) contains customizable classes", Printer.GetEntityIdentityPrint(kx13CmsResource));
-                    if (xbkResource != null)
+                    _logger.LogDebug("CMSResource is system resource ({Resource}) and is included in migration", Printer.GetEntityIdentityPrint(kx13CmsResource));
+                }
+                else
+                {
+                    _logger.LogDebug("CMSResource is system resource ({Resource})", Printer.GetEntityIdentityPrint(kx13CmsResource));
+
+                    var kx13Classes = await GetResourceClasses(kx13CmsResource.ResourceId, cancellationToken);
+                    if (kx13Classes.Any(x => Kx13SystemClass.Customizable.Contains(x.ClassName)))
+                    {
+                        _logger.LogDebug("CMSResource ({Resource}) contains customizable classes", Printer.GetEntityIdentityPrint(kx13CmsResource));
+                        if (xbkResource != null)
+                        {
+                            var handbookRef = HandbookReferences
+                                .NotSupportedSkip<KX13M.CmsResource>()
+                                .WithIdentityPrint(kx13CmsResource);
+
+                            _logger.LogInformation("CMSResource is system resource and exists in target instance ({Resource}) => skipping", Printer.GetEntityIdentityPrint(kx13CmsResource));
+                            _protocol.Append(handbookRef);
+                            continue;
+                        }
+
+                        _logger.LogInformation("CMSResource is system resource and NOT exists in target instance ({Resource}), contains customizable classes => will be migrated",
+                            Printer.GetEntityIdentityPrint(kx13CmsResource));
+                    }
+                    else
                     {
                         var handbookRef = HandbookReferences
                             .NotSupportedSkip<KX13M.CmsResource>()
@@ -293,19 +312,6 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
                         _protocol.Append(handbookRef);
                         continue;
                     }
-
-                    _logger.LogInformation("CMSResource is system resource and NOT exists in target instance ({Resource}), contains customizable classes => will be migrated",
-                        Printer.GetEntityIdentityPrint(kx13CmsResource));
-                }
-                else
-                {
-                    var handbookRef = HandbookReferences
-                        .NotSupportedSkip<KX13M.CmsResource>()
-                        .WithIdentityPrint(kx13CmsResource);
-
-                    _logger.LogInformation("CMSResource is system resource and exists in target instance ({Resource}) => skipping", Printer.GetEntityIdentityPrint(kx13CmsResource));
-                    _protocol.Append(handbookRef);
-                    continue;
                 }
             }
             else

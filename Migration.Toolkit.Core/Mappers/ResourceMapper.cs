@@ -44,11 +44,11 @@ public class ResourceMapper : EntityMapperBase<KX13M.CmsResource, ResourceInfo>
             _logger.LogInformation("Patching CMS Resource 'Licences': name changed to '{ResourceNamePatched}'", XbkSystemResource.CMS_Licenses);
         }
 
-        if (!XbkSystemResource.All.Contains(target.ResourceName))
+        if (!XbkSystemResource.All.Contains(target.ResourceName) || Kx13SystemResource.ConvertToNonSysResource.Contains(target.ResourceName))
         {
             // custom resource
 
-            if (target.ResourceName.StartsWith("CMS."))
+            if (target.ResourceName.StartsWith("CMS.", StringComparison.InvariantCultureIgnoreCase))
             {
                 var targetResourceNamePatched = target.ResourceName.Substring(4, target.ResourceName.Length - 4);
                 _logger.LogInformation("Patching CMS Resource '{ResourceName}': name changed to '{ResourceNamePatched}'",  target.ResourceName, targetResourceNamePatched);

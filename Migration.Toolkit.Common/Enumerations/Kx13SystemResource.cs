@@ -67,4 +67,6 @@ public static class Kx13SystemResource
         CMS_Synchronization, CMS_Taxonomy, CMS_TranslationServices, CMS_UIPersonalization, CMS_Users, CMS_WebAnalytics, CMS_WebFarm, CMS_Widgets, CMS_WIFIntegration, CMS_WorkflowEngine,
         CMS_WYSIWYGEditor, Licenses,
     }, StringComparer.InvariantCultureIgnoreCase);
+
+    public static HashSet<string> ConvertToNonSysResource = new(new[] { cms_customsystemmodule }, StringComparer.CurrentCultureIgnoreCase);
 }
