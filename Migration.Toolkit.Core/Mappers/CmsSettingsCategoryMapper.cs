@@ -24,7 +24,7 @@ public class CmsSettingsCategoryMapper : EntityMapperBase<Migration.Toolkit.KX13
 
     protected override CmsSettingsCategory? CreateNewInstance(KX13.Models.CmsSettingsCategory source, MappingHelper mappingHelper,
         AddFailure addFailure) => new();
-    
+
 
     protected override CmsSettingsCategory MapInternal(KX13.Models.CmsSettingsCategory source, CmsSettingsCategory target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
@@ -67,7 +67,7 @@ public class CmsSettingsCategoryMapper : EntityMapperBase<Migration.Toolkit.KX13
                 }
             }
         }
-        else if(mappingHelper.TranslateId<KX13.Models.CmsResource>(r => r.ResourceId, source.CategoryResourceId, out var categoryResourceId))
+        else if(mappingHelper.TranslateIdAllowNulls<KX13.Models.CmsResource>(r => r.ResourceId, source.CategoryResourceId, out var categoryResourceId))
         {
             target.CategoryResourceId = categoryResourceId;
         }
@@ -88,7 +88,7 @@ public class CmsSettingsCategoryMapper : EntityMapperBase<Migration.Toolkit.KX13
                 }
             }
         }
-        else if(mappingHelper.TranslateId<KX13M.CmsCategory>(c => c.CategoryId, source.CategoryParentId, out var categoryParentId))
+        else if(mappingHelper.TranslateIdAllowNulls<KX13M.CmsCategory>(c => c.CategoryId, source.CategoryParentId, out var categoryParentId))
         {
             target.CategoryParentId = categoryParentId;
         }

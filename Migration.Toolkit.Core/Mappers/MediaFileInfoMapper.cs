@@ -31,7 +31,7 @@ public class MediaFileInfoMapper: EntityMapperBase<MediaFileInfoMapperSource, Me
         {
             if (source.File != null)
             {
-                return new MediaFileInfo(source.File, source.TargetLibraryId, source.LibrarySubFolder ?? "", 0, 0, 0, siteId);    
+                return new MediaFileInfo(source.File, source.TargetLibraryId, source.LibrarySubFolder ?? "", 0, 0, 0, siteId);
             }
 
             return new MediaFileInfo();
@@ -40,7 +40,7 @@ public class MediaFileInfoMapper: EntityMapperBase<MediaFileInfoMapperSource, Me
         var error = HandbookReferences
             .FailedToCreateTargetInstance<MediaFileInfo>()
             .WithData(source);
-            
+
         addFailure(new MapperResultFailure<MediaFileInfo>(error));
         return null;
     }
@@ -48,7 +48,7 @@ public class MediaFileInfoMapper: EntityMapperBase<MediaFileInfoMapperSource, Me
     protected override MediaFileInfo MapInternal(MediaFileInfoMapperSource args, MediaFileInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         var (mediaFile, targetLibraryId, file, _, migrateOnlyMediaFileInfo) = args;
-        
+
         target.FileName = mediaFile.FileName;
         target.FileTitle = mediaFile.FileTitle;
         target.FileDescription = mediaFile.FileDescription;
@@ -62,26 +62,31 @@ public class MediaFileInfoMapper: EntityMapperBase<MediaFileInfoMapperSource, Me
         target.FileModifiedWhen = mediaFile.FileModifiedWhen;
         KenticoHelper.CopyCustomData(target.FileCustomData, mediaFile.FileCustomData);
 
+        foreach (var generalizedCustomizedColumn in target.Generalized.CustomizedColumns)
+        {
+            // TODO tk: 2022-10-11 sync customized columns
+        }
+
         target.FileLibraryID = targetLibraryId;
-        
+
         if (mappingHelper.TranslateRequiredId<KX13.Models.CmsSite>(c => c.SiteId, mediaFile.FileSiteId, out var siteId))
         {
             target.FileSiteID = siteId;
         }
-        
-        if (mappingHelper.TranslateId<KX13.Models.CmsUser>(c => c.UserId, mediaFile.FileCreatedByUserId, out var createdByUserId))
+
+        if (mappingHelper.TranslateIdAllowNulls<KX13.Models.CmsUser>(c => c.UserId, mediaFile.FileCreatedByUserId, out var createdByUserId))
         {
             target.SetValue(nameof(target.FileCreatedByUserID), createdByUserId);
         }
-        
-        if (mappingHelper.TranslateId<KX13.Models.CmsUser>(c => c.UserId, mediaFile.FileModifiedByUserId, out var modifiedByUserId))
+
+        if (mappingHelper.TranslateIdAllowNulls<KX13.Models.CmsUser>(c => c.UserId, mediaFile.FileModifiedByUserId, out var modifiedByUserId))
         {
             target.SetValue(nameof(target.FileModifiedByUserID), modifiedByUserId);
         }
-        
+
         if (string.IsNullOrWhiteSpace(target.FilePath))
         {
-            target.FilePath = mediaFile.FilePath;    
+            target.FilePath = mediaFile.FilePath;
         }
 
         if (file == null && !migrateOnlyMediaFileInfo)

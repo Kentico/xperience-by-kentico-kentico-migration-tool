@@ -17,7 +17,8 @@ public class MediaLibraryInfoMapper : EntityMapperBase<KX13.Models.MediaLibrary,
     {
     }
 
-    protected override MediaLibraryInfo? CreateNewInstance(KX13.Models.MediaLibrary source, MappingHelper mappingHelper, AddFailure addFailure) => new();
+    protected override MediaLibraryInfo? CreateNewInstance(KX13.Models.MediaLibrary source, MappingHelper mappingHelper, AddFailure addFailure) =>
+        MediaLibraryInfo.New();
 
     protected override MediaLibraryInfo MapInternal(KX13.Models.MediaLibrary source, MediaLibraryInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
@@ -27,12 +28,12 @@ public class MediaLibraryInfoMapper : EntityMapperBase<KX13.Models.MediaLibrary,
         target.LibraryDescription = source.LibraryDescription;
         target.LibraryFolder = source.LibraryFolder;
         target.LibraryGUID = mappingHelper.Require(source.LibraryGuid, nameof(source.LibraryGuid));
-        
+
         target.LibraryName = source.LibraryName;
         target.LibraryDisplayName = source.LibraryDisplayName;
         target.LibraryDescription = source.LibraryDescription;
         target.LibraryFolder = source.LibraryFolder;
-        
+
         var libraryAccess = mappingHelper.Require(source.LibraryAccess, nameof(source.LibraryAccess));
         target.FileCreate = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 1);
         target.FileDelete = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 2);
@@ -41,10 +42,10 @@ public class MediaLibraryInfoMapper : EntityMapperBase<KX13.Models.MediaLibrary,
         target.FolderDelete = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 5);
         target.FolderModify = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 6);
         target.Access = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 7);
-        
+
         target.LibraryLastModified = mappingHelper.Require(source.LibraryLastModified, nameof(source.LibraryLastModified));
         target.LibraryUseDirectPathForContent = source.LibraryUseDirectPathForContent ?? true;
-        
+
         target.LibraryTeaserPath = source.LibraryTeaserPath;
         target.LibraryTeaserGUID = source.LibraryTeaserGuid ?? Guid.Empty;
 

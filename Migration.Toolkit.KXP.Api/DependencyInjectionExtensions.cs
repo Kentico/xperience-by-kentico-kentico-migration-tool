@@ -11,7 +11,7 @@ public static class DependencyInjectionExtensions
         Service.Use<IConfiguration>(configuration);
         if (applicationPhysicalPath != null && Directory.Exists(applicationPhysicalPath))
         {
-            CMS.Base.SystemContext.WebApplicationPhysicalPath = applicationPhysicalPath;    
+            CMS.Base.SystemContext.WebApplicationPhysicalPath = applicationPhysicalPath;
         }
 
         services.AddSingleton<KxpApiInitializer>();

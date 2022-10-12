@@ -6,30 +6,19 @@ using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.Core.Services.CmsClass;
-using FcText = Migration.Toolkit.KX13.Auxiliary.Kx13FormControls.UserControlForText;
-using FcLongText = Migration.Toolkit.KX13.Auxiliary.Kx13FormControls.UserControlForLongText;
 
 namespace Migration.Toolkit.Core.Mappers;
 
+using Migration.Toolkit.Common.Enumerations;
+using Migration.Toolkit.KX13.Models;
+
 public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassInfo>
 {
-    private const string CLASS_FIELD_CONTROL_NAME = "controlname";
-    private const string CLASS_FIELD_SETTINGS_ROOTPATH = "RootPath";
-    private const string CLASS_FIELD_SETTINGS_MAXIMUMASSETS = "MaximumAssets";
-    private const string CLASS_FIELD_SETTINGS_MAXIMUMPAGES = "MaximumPages";
-    private const string FIELD_SETTING_MAXIMUMASSETS_FALLBACK = "99";
-    private const string FIELD_SETTING_MAXIMUMPAGES_FALLBACK = "99";
-    private const string FIELD_SETTING_ROOTPATH_FALLBACK = "/";
-    private const int FIELD_SIZE_ZERO = 0;
-
     private readonly ILogger<CmsClassMapper> _logger;
-    private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
-
 
     public CmsClassMapper(ILogger<CmsClassMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext, IProtocol protocol) : base(logger, primaryKeyMappingContext, protocol)
     {
         _logger = logger;
-        _primaryKeyMappingContext = primaryKeyMappingContext;
     }
 
     protected override DataClassInfo? CreateNewInstance(KX13.Models.CmsClass source, MappingHelper mappingHelper, AddFailure addFailure) =>
@@ -44,15 +33,31 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
         target.ClassIsDocumentType = source.ClassIsDocumentType;
         target.ClassIsCoupledClass = source.ClassIsCoupledClass;
 
-        if (source.ClassIsDocumentType)
+        var isCustomizableSystemClass = false;
+        var classIsCustom = true;
+        if (source.ClassResource?.ResourceName is { } resourceName)
         {
-            MapClassDocumentTypeFields(source, target);
+
+            isCustomizableSystemClass = source.ClassShowAsSystemTable.GetValueOrDefault(false) &&
+                                        Kx13SystemResource.All.Contains(resourceName);
+
+            classIsCustom = !Kx13SystemResource.All.Contains(resourceName);
+
+            _logger.LogDebug("{ClassName} is {@Properties}", source.ClassName, new
+            {
+                isCustomizableSystemClass,
+                classIsCustom,
+                source.ClassResourceId,
+                source.ClassResource?.ResourceName
+            });
         }
 
-        if (source.ClassIsForm ?? false)
-        {
-            MapClassFormFields(source, target);
-        }
+        MapFormDefinitionFields(source, target, isCustomizableSystemClass, classIsCustom);
+
+        // TODO tk: 2022-10-06 raise question about ClassIsPage
+        target.ClassIsPage = source.ClassIsDocumentType; // = source
+        // TODO tk: 2022-10-06 raise question about ClassHasUnmanagedDbSchema
+        target.ClassHasUnmanagedDbSchema = false;
 
         target.ClassNodeNameSource = source.ClassNodeNameSource;
         target.ClassTableName = source.ClassTableName;
@@ -65,7 +70,6 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
         target.ClassLastModified = source.ClassLastModified;
         target.ClassGUID = source.ClassGuid;
         // target.ClassIsProduct = source.ClassIsProduct.UseKenticoDefault();
-        target.ClassIsCustomTable = source.ClassIsCustomTable;
         target.ClassShowColumns = source.ClassShowColumns;
 
         // target.ClassContactMapping = source.ClassContactMapping;
@@ -114,31 +118,17 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
         // target.ClassSKUDefaultDepartmentID = source.ClassSkudefaultDepartmentId;
         // target.ClassSKUDefaultProductType = source.ClassSkudefaultProductType;
 
-        if (mappingHelper.TranslateId<KX13.Models.CmsClass>(c => c.ClassId, source.ClassInheritsFromClassId.NullIfZero(), out var classId))
+        if (mappingHelper.TranslateIdAllowNulls<KX13.Models.CmsClass>(c => c.ClassId, source.ClassInheritsFromClassId.NullIfZero(), out var classId))
         {
             target.ClassInheritsFromClassID = classId.UseKenticoDefault();
         }
 
-        if (mappingHelper.TryTranslateId<KX13.Models.CmsResource>(c => c.ResourceId, source.ClassResourceId, out var resourceId))
+        if (mappingHelper.TranslateIdAllowNulls<KX13.Models.CmsResource>(c => c.ResourceId, source.ClassResourceId, out var resourceId))
         {
             if (resourceId.HasValue)
             {
                 target.ClassResourceID = resourceId.Value;
             }
-        }
-        else
-        {
-            // TODO tomas.krch: 2022-09-08 in future releases this will be supported
-            _logger.LogWarning("Migration of CMSResource is currently not supported. Resource with source ID '{ResourceId}'. Resource field {ResourceField}", source.ClassResourceId, nameof(source.ClassResourceId));
-            Protocol.Append(HandbookReferences
-                .NotCurrentlySupportedSkip<KX13M.CmsResource>()
-                .WithMessage($"Migration of CMSResource is currently not supported. Resource with source ID '{source.ClassResourceId}'. Resource field {nameof(source.ClassResourceId)}")
-                .WithData(new
-                {
-                    SourceClassId = source.ClassId,
-                    SourceClassResourceId =source.ClassResourceId
-                })
-            );
         }
 
         // TODO tk: 2022-05-30 domain validation failed (Field name: ClassSearchIndexDataSource)
@@ -153,115 +143,194 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
         return target;
     }
 
-    private void MapClassFormFields(KX13M.CmsClass source, DataClassInfo target)
+    private void MapFormDefinitionFields(CmsClass source, DataClassInfo target, bool isCustomizableSystemClass, bool classIsCustom)
     {
         var classStructureInfo = new ClassStructureInfo(source.ClassName, source.ClassXmlSchema, source.ClassTableName);
-        var formInfo = new FormInfo(source.ClassFormDefinition);
-        if (source.ClassIsCoupledClass)
+
+        var patcher = new FormDefinitionPatcher(
+            _logger,
+            source.ClassFormDefinition,
+            FieldMappingInstance.Default.DataTypeMappings,
+            source.ClassIsForm.GetValueOrDefault(false),
+            source.ClassIsDocumentType,
+            isCustomizableSystemClass,
+            classIsCustom
+        );
+
+        patcher.PatchFields();
+        patcher.RemoveCategories(); // TODO tk: 2022-10-11 remove when supported
+
+        var result = patcher.GetPatched();
+        if (isCustomizableSystemClass)
         {
-            var columnNames = formInfo.GetColumnNames();
-            foreach (var columnName in columnNames)
-            {
-                var field = formInfo.GetFormField(columnName);
-                ConvertSingleField(field, formInfo, columnName, FieldMappingInstance.Default.DataTypeMappings);
-            }
+            result = FormHelper.MergeFormDefinitions(target.ClassFormDefinition, result);
         }
+
+        var formInfo = new FormInfo(result); //(source.ClassFormDefinition);
+
+        // temporary fix until system category is supported
+
+        // var columnNames = formInfo.GetColumnNames();
+        //
+        // foreach (var columnName in columnNames)
+        // {
+        //     var field = formInfo.GetFormField(columnName);
+        //     ConvertSingleField(field, formInfo, columnName, FieldMappingInstance.Default.DataTypeMappings);
+        // }
 
         target.ClassXmlSchema = classStructureInfo.GetXmlSchema();
         target.ClassFormDefinition = formInfo.GetXmlDefinition();
     }
 
-    private void MapClassDocumentTypeFields(KX13M.CmsClass source, DataClassInfo target)
-    {
-        var classStructureInfo = new ClassStructureInfo(source.ClassName, source.ClassXmlSchema, source.ClassTableName);
-        var formInfo = new FormInfo(source.ClassFormDefinition);
-        if (source.ClassIsCoupledClass)
-        {
-            var columnNames = formInfo.GetColumnNames();
-            foreach (var columnName in columnNames)
-            {
-                var field = formInfo.GetFormField(columnName);
-                // var controlName = field.Settings[CLASS_FIELD_CONTROL_NAME]?.ToString()?.ToLowerInvariant();
-                ConvertSingleField(field, formInfo, columnName, FieldMappingInstance.Default.DataTypeMappings);
-            }
-        }
+    // private void MapCustomModuleFormFields(CmsClass source, DataClassInfo target, bool isCustomizableSystemClass, bool classIsCustom)
+    // {
+    //     var classStructureInfo = new ClassStructureInfo(source.ClassName, source.ClassXmlSchema, source.ClassTableName);
+    //
+    //     var patcher = new FormDefinitionPatcher(
+    //         _logger,
+    //         source.ClassFormDefinition,
+    //         FieldMappingInstance.Default.DataTypeMappings,
+    //         source.ClassIsForm.GetValueOrDefault(false),
+    //         source.ClassIsDocumentType,
+    //         isCustomizableSystemClass,
+    //         classIsCustom
+    //     );
+    //
+    //     patcher.PatchFields();
+    //     patcher.RemoveCategories();
+    //     var result = patcher.GetPatched();
+    //     if (isCustomizableSystemClass)
+    //     {
+    //         result = FormHelper.MergeFormDefinitions(target.ClassFormDefinition, result);
+    //     }
+    //
+    //     var formInfo = new FormInfo(result); //(source.ClassFormDefinition);
+    //
+    //     // temporary fix until system category is supported
+    //
+    //     // var columnNames = formInfo.GetColumnNames();
+    //     //
+    //     // foreach (var columnName in columnNames)
+    //     // {
+    //     //     var field = formInfo.GetFormField(columnName);
+    //     //     ConvertSingleField(field, formInfo, columnName, FieldMappingInstance.Default.DataTypeMappings);
+    //     // }
+    //
+    //     target.ClassXmlSchema = classStructureInfo.GetXmlSchema();
+    //     target.ClassFormDefinition = formInfo.GetXmlDefinition();
+    // }
+    //
+    // private void MapClassFormFields(KX13M.CmsClass source, DataClassInfo target)
+    // {
+    //     var classStructureInfo = new ClassStructureInfo(source.ClassName, source.ClassXmlSchema, source.ClassTableName);
+    //     var formInfo = new FormInfo(source.ClassFormDefinition);
+    //     if (source.ClassIsCoupledClass)
+    //     {
+    //         var columnNames = formInfo.GetColumnNames();
+    //         foreach (var columnName in columnNames)
+    //         {
+    //             var field = formInfo.GetFormField(columnName);
+    //             ConvertSingleField(field, formInfo, columnName, FieldMappingInstance.Default.DataTypeMappings);
+    //         }
+    //     }
+    //
+    //     target.ClassXmlSchema = classStructureInfo.GetXmlSchema();
+    //     target.ClassFormDefinition = formInfo.GetXmlDefinition();
+    // }
+    //
+    // private void MapClassDocumentTypeFields(KX13M.CmsClass source, DataClassInfo target)
+    // {
+    //     var classStructureInfo = new ClassStructureInfo(source.ClassName, source.ClassXmlSchema, source.ClassTableName);
+    //     var formInfo = new FormInfo(source.ClassFormDefinition);
+    //     if (source.ClassIsCoupledClass)
+    //     {
+    //         var columnNames = formInfo.GetColumnNames();
+    //         foreach (var columnName in columnNames)
+    //         {
+    //             var field = formInfo.GetFormField(columnName);
+    //             // var controlName = field.Settings[CLASS_FIELD_CONTROL_NAME]?.ToString()?.ToLowerInvariant();
+    //             ConvertSingleField(field, formInfo, columnName, FieldMappingInstance.Default.DataTypeMappings);
+    //         }
+    //     }
+    //
+    //     target.ClassXmlSchema = classStructureInfo.GetXmlSchema();
+    //     target.ClassFormDefinition = formInfo.GetXmlDefinition();
+    // }
 
-        target.ClassXmlSchema = classStructureInfo.GetXmlSchema();
-        target.ClassFormDefinition = formInfo.GetXmlDefinition();
-    }
-
-    private static void ConvertSingleField(FormFieldInfo field, FormInfo formInfo, string columnName, Dictionary<string, DataTypeModel> dataTypeModels)
-    {
-        var columnType = field.DataType;
-        var controlName = field.Settings[CLASS_FIELD_CONTROL_NAME]?.ToString()?.ToLowerInvariant();
-
-        static void PerformActionsOnField(FormFieldInfo field, string[] actions)
-        {
-            foreach (var action in actions)
-            {
-                switch (action)
-                {
-                    case TcaDirective.ClearSettings:
-                    {
-                        field.Settings.Clear();
-                        break;
-                    }
-                    case TcaDirective.ClearMacroTable:
-                    {
-                        field.SettingsMacroTable.Clear();
-                        break;
-                    }
-                    case TcaDirective.ConvertToAsset:
-                    {
-                        // field.DataType = FieldDataType.Assets;
-                        field.Settings[CLASS_FIELD_SETTINGS_MAXIMUMASSETS] = FIELD_SETTING_MAXIMUMASSETS_FALLBACK; // setting is missing in source instance, target instance requires it
-                        break;
-                    }
-                    case TcaDirective.ConvertToPages:
-                    {
-                        field.Settings[CLASS_FIELD_SETTINGS_MAXIMUMPAGES] = FIELD_SETTING_MAXIMUMPAGES_FALLBACK; // setting is missing in source instance, target instance requires it
-                        field.Settings[CLASS_FIELD_SETTINGS_ROOTPATH] = FIELD_SETTING_ROOTPATH_FALLBACK; // TODO tk: 2022-08-31 describe why?
-                        field.Size = FIELD_SIZE_ZERO; // TODO tk: 2022-08-31 describe why?
-                        // field.DataType = FieldDataType.Pages;
-                        break;
-                    }
-                }
-            }
-        }
-
-        if (dataTypeModels.TryGetValue(columnType, out var typeMapping))
-        {
-            field.DataType = typeMapping.TargetDataType;
-            if (controlName != null &&
-                typeMapping is { FormComponents: { } } &&
-                (typeMapping.FormComponents.TryGetValue(controlName, out var targetControlMapping) ||
-                 typeMapping.FormComponents.TryGetValue(SfcDirective.CatchAnyNonMatching, out targetControlMapping)))
-            {
-                var (targetFormComponent, actions) = targetControlMapping;
-                switch (targetFormComponent)
-                {
-                    case TfcDirective.CopySourceControl:
-                        field.Settings[CLASS_FIELD_CONTROL_NAME] = controlName;
-                        PerformActionsOnField(field, actions);
-                        break;
-                    case TfcDirective.DoNothing:
-                        PerformActionsOnField(field, actions);
-                        break;
-                    case TfcDirective.Clear:
-                        field.Visible = false;
-                        field.Settings.Clear();
-                        PerformActionsOnField(field, actions);
-                        break;
-                    default:
-                    {
-                        field.Settings[CLASS_FIELD_CONTROL_NAME] = targetFormComponent;
-                        PerformActionsOnField(field, actions);
-                        break;
-                    }
-                }
-
-                formInfo.UpdateFormField(columnName, field);
-            }
-        }
-    }
+    // private static void ConvertSingleField(FormFieldInfo field, FormInfo formInfo, string columnName, Dictionary<string, DataTypeModel> dataTypeModels)
+    // {
+    //     var columnType = field.DataType;
+    //     var controlName = field.Settings[CLASS_FIELD_CONTROL_NAME]?.ToString()?.ToLowerInvariant();
+    //
+    //     static void PerformActionsOnField(FormFieldInfo field, string[] actions)
+    //     {
+    //         foreach (var action in actions)
+    //         {
+    //             switch (action)
+    //             {
+    //                 case TcaDirective.ClearSettings:
+    //                 {
+    //                     field.Settings.Clear();
+    //                     break;
+    //                 }
+    //                 case TcaDirective.ClearMacroTable:
+    //                 {
+    //                     field.SettingsMacroTable.Clear();
+    //                     break;
+    //                 }
+    //                 case TcaDirective.ConvertToAsset:
+    //                 {
+    //                     // field.DataType = FieldDataType.Assets;
+    //                     field.Settings[CLASS_FIELD_SETTINGS_MAXIMUMASSETS] = FIELD_SETTING_MAXIMUMASSETS_FALLBACK; // setting is missing in source instance, target instance requires it
+    //                     break;
+    //                 }
+    //                 case TcaDirective.ConvertToPages:
+    //                 {
+    //                     field.Settings[CLASS_FIELD_SETTINGS_MAXIMUMPAGES] = FIELD_SETTING_MAXIMUMPAGES_FALLBACK; // setting is missing in source instance, target instance requires it
+    //                     field.Settings[CLASS_FIELD_SETTINGS_ROOTPATH] = FIELD_SETTING_ROOTPATH_FALLBACK; // TODO tk: 2022-08-31 describe why?
+    //                     field.Size = FIELD_SIZE_ZERO; // TODO tk: 2022-08-31 describe why?
+    //                     // field.DataType = FieldDataType.Pages;
+    //                     break;
+    //                 }
+    //             }
+    //         }
+    //     }
+    //
+    //     if (dataTypeModels.TryGetValue(columnType, out var typeMapping))
+    //     {
+    //         field.DataType = typeMapping.TargetDataType;
+    //         if (controlName != null &&
+    //             typeMapping is { FormComponents: { } } &&
+    //             (typeMapping.FormComponents.TryGetValue(controlName, out var targetControlMapping) ||
+    //              typeMapping.FormComponents.TryGetValue(SfcDirective.CatchAnyNonMatching, out targetControlMapping)))
+    //         {
+    //             var (targetFormComponent, actions) = targetControlMapping;
+    //             switch (targetFormComponent)
+    //             {
+    //                 case TfcDirective.CopySourceControl:
+    //                     field.Settings[CLASS_FIELD_CONTROL_NAME] = controlName;
+    //                     PerformActionsOnField(field, actions);
+    //                     break;
+    //                 case TfcDirective.DoNothing:
+    //                     PerformActionsOnField(field, actions);
+    //                     break;
+    //                 case TfcDirective.Clear:
+    //                     field.Visible = false;
+    //                     field.Properties["Visible"] = false;
+    //                     field.Settings.Clear();
+    //                     field.Properties.Clear();
+    //                     PerformActionsOnField(field, actions);
+    //                     break;
+    //                 default:
+    //                 {
+    //                     field.Settings[CLASS_FIELD_CONTROL_NAME] = targetFormComponent;
+    //                     PerformActionsOnField(field, actions);
+    //                     break;
+    //                 }
+    //             }
+    //
+    //             formInfo.UpdateFormField(columnName, field);
+    //         }
+    //     }
+    // }
 }

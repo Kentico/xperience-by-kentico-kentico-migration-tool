@@ -365,6 +365,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
         try
         {
             return new DocumentQuery(CLASS_CMS_ROOT)
+                .Where("NodeAliasPath", QueryOperator.Equals, "/")
                 .OnSite(new SiteInfoIdentifier(targetSiteId))
                 .Culture(cultureCode)
                 .SingleOrDefault()
