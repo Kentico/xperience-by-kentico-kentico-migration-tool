@@ -436,5 +436,3 @@ if (!args.Contains("--nowait"))
     Console.WriteLine(Resources.ProgramAwaitingExitMessage);
     Console.ReadKey();
 }
-
-
