@@ -431,5 +431,10 @@ foreach (var command in commands)
     Console.WriteLine($"Command {command.GetType().Name} is completed");
 }
 
-Console.WriteLine(Resources.ProgramAwaitingExitMessage);
-Console.ReadKey();
+if (!args.Contains("--nowait"))
+{
+    Console.WriteLine(Resources.ProgramAwaitingExitMessage);
+    Console.ReadKey();
+}
+
+
