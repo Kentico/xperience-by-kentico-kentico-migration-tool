@@ -28,7 +28,7 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
     private const string CLASS_FIELD_CONTROL_NAME = "controlname";
     private const string COLUMN_NAME_DOCUMENT_PAGE_BUILDER_WIDGETS = "DocumentPageBuilderWidgets";
     private const string COLUMN_NAME_DOCUMENT_PAGE_TEMPLATE_CONFIGURATION = "DocumentPageTemplateConfiguration";
-    
+
     private readonly ILogger<TreeNodeMapper> _logger;
     private readonly CoupledDataService _coupledDataService;
     private readonly ClassService _classService;
@@ -79,6 +79,7 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
         // target.NodeLevel = source.NodeLevel;
         target.NodeName = cmsTree.NodeName;
         target.SetValue(nameof(TreeNode.NodeOrder), cmsTree.NodeOrder);
+        target.NodeIsPage = true;
 
         if (mappingHelper.TranslateRequiredId<KX13M.CmsUser>(u => u.UserId, cmsTree.NodeOwner, out var ownerUserId))
         {
@@ -133,8 +134,8 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
         target.DocumentGUID = sourceDocument.DocumentGuid.GetValueOrDefault();
         // target.DocumentWorkflowStepID = sourceDocument.DocumentWorkflowStepId;
 
-        
-        
+
+
         if (_sourceInstanceContext.HasInfo)
         {
             if (sourceDocument.DocumentPageTemplateConfiguration != null)
@@ -171,10 +172,10 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
         else
         {
             // simply copy if no info is available
-            target.SetValue(COLUMN_NAME_DOCUMENT_PAGE_BUILDER_WIDGETS, sourceDocument.DocumentPageBuilderWidgets); 
+            target.SetValue(COLUMN_NAME_DOCUMENT_PAGE_BUILDER_WIDGETS, sourceDocument.DocumentPageBuilderWidgets);
             target.SetValue(COLUMN_NAME_DOCUMENT_PAGE_TEMPLATE_CONFIGURATION, sourceDocument.DocumentPageTemplateConfiguration);
         }
-        
+
         if (mappingHelper.TranslateRequiredId<KX13M.CmsUser>(u => u.UserId, sourceDocument.DocumentCreatedByUserId, out var createdByUserId))
         {
             target.SetValue(nameof(target.DocumentCreatedByUserID), createdByUserId);
@@ -188,7 +189,7 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
         // target.DocumentPublishedVersionHistoryID = sourceDocument.DocumentPublishedVersionHistoryId;
         // target.DocumentCheckedOutByUserID = sourceDocument.DocumentCreatedByUserId;
         target.DocumentWorkflowCycleGUID = sourceDocument.DocumentWorkflowCycleGuid.GetValueOrDefault();
-        // target.CoupledClassIDColumn = 
+        // target.CoupledClassIDColumn =
 
         var formInfo = new FormInfo(cmsTree.NodeClass.ClassFormDefinition);
         var fieldsInfo = new DocumentFieldsInfo(cmsTree.NodeClass.ClassName);
@@ -204,7 +205,7 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
 
     #region "Page template & page widget walkers"
 
-    
+
     private void WalkAreas(int siteId, List<EditableAreaConfiguration> areas)
     {
         foreach (var area in areas)
@@ -269,7 +270,7 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
 
     private void WalkProperties(JObject properties, List<EditingFormControlModel>? formControlModels)
     {
-        
+
         foreach (var (key, value) in properties)
         {
             _logger.LogTrace("Walk property {Name}|{Identifier}", key, value?.ToString());
@@ -328,7 +329,7 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
     }
 
     #endregion
-    
+
     private void MapCoupledDataFieldValues(TreeNode target, CmsTree cmsTree, DocumentFieldsInfo fieldsInfo, CmsDocument sourceDocument,
         List<string> columnNames,
         FormInfo formInfo)
@@ -342,7 +343,7 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
         {
             var field = formInfo.GetFormField(columnName);
             var controlName = field.Settings[CLASS_FIELD_CONTROL_NAME]?.ToString()?.ToLowerInvariant();
-            
+
             Debug.Assert(coupledDataRow != null, nameof(coupledDataRow) + " != null");
 
             if (coupledDataRow.TryGetValue(columnName, out var value))
@@ -447,7 +448,7 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
             }
             else
             {
-                // TODO tk: 2022-09-15 log what is misising also log to protocol 
+                // TODO tk: 2022-09-15 log what is misising also log to protocol
                 _logger.LogWarning("Coupled data is missing for source document {DocumentId} of class {ClassName}", sourceDocument.DocumentId,
                     cmsTree.NodeClass.ClassName);
             }
