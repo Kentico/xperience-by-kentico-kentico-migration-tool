@@ -9,20 +9,33 @@ using Migration.Toolkit.KX13.Models;
 
 namespace Migration.Toolkit.Core.Mappers;
 
+using System.Data;
+using Microsoft.Data.SqlClient;
+using Migration.Toolkit.Common;
+using Migration.Toolkit.KXP.Api;
+
 public record MediaFileInfoMapperSource(MediaFile MediaFile, int TargetLibraryId, IUploadedFile? File, string? LibrarySubFolder,
     bool MigrateOnlyMediaFileInfo);
 
 public class MediaFileInfoMapper: EntityMapperBase<MediaFileInfoMapperSource, MediaFileInfo>
 {
+    private readonly ILogger<MediaFileInfoMapper> _logger;
+    private readonly KxpClassFacade _classFacade;
     private readonly IProtocol _protocol;
+    private readonly ToolkitConfiguration _toolkitConfiguration;
 
     public MediaFileInfoMapper(
         ILogger<MediaFileInfoMapper> logger,
         PrimaryKeyMappingContext primaryKeyMappingContext,
-        IProtocol protocol
+        KxpClassFacade classFacade,
+        IProtocol protocol,
+        ToolkitConfiguration toolkitConfiguration
         ): base(logger, primaryKeyMappingContext, protocol)
     {
+        _logger = logger;
+        _classFacade = classFacade;
         _protocol = protocol;
+        _toolkitConfiguration = toolkitConfiguration;
     }
 
 
@@ -62,10 +75,7 @@ public class MediaFileInfoMapper: EntityMapperBase<MediaFileInfoMapperSource, Me
         target.FileModifiedWhen = mediaFile.FileModifiedWhen;
         KenticoHelper.CopyCustomData(target.FileCustomData, mediaFile.FileCustomData);
 
-        foreach (var generalizedCustomizedColumn in target.Generalized.CustomizedColumns)
-        {
-            // TODO tk: 2022-10-11 sync customized columns
-        }
+        MigrateCustomizedFields(target, mediaFile);
 
         target.FileLibraryID = targetLibraryId;
 
@@ -105,5 +115,46 @@ public class MediaFileInfoMapper: EntityMapperBase<MediaFileInfoMapperSource, Me
         }
 
         return target;
+    }
+
+    private void MigrateCustomizedFields(MediaFileInfo target, MediaFile mediaFile)
+    {
+        var customizedFields = _classFacade.GetCustomizedFieldInfos(MediaFileInfo.TYPEINFO.ObjectClassName).ToList();
+        if (customizedFields.Count <= 0) return;
+
+        try
+        {
+            var query =
+                $"SELECT {string.Join(", ", customizedFields.Select(x => x.FieldName))} FROM {MediaFileInfo.TYPEINFO.ClassStructureInfo.TableName} WHERE {MediaFileInfo.TYPEINFO.ClassStructureInfo.IDColumn} = @id";
+
+            using var conn = new SqlConnection(_toolkitConfiguration.KxConnectionString);
+            using var cmd = conn.CreateCommand();
+
+            cmd.CommandText = query;
+            cmd.CommandType = CommandType.Text;
+            cmd.CommandTimeout = 3;
+            cmd.Parameters.AddWithValue("id", mediaFile.FileId);
+
+            conn.Open();
+
+            using var reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                foreach (var customizedFieldInfo in customizedFields)
+                {
+                    _logger.LogDebug("Map customized field '{FieldName}'", customizedFieldInfo.FieldName);
+                    target.SetValue(customizedFieldInfo.FieldName, reader.GetValue(customizedFieldInfo.FieldName));
+                }
+            }
+            else
+            {
+                // failed!
+                _logger.LogError("Failed to load MediaFileInfo custom data from source database");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to load MediaFileInfo custom data from source database");
+        }
     }
 }
