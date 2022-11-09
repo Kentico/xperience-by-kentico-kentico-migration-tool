@@ -65,8 +65,9 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
         // await MigrateCmsRoles(kx13Context, cancellationToken, migratedSiteIds);
 
         var kx13CmsUsers = kx13Context.CmsUsers
-                .Include(u => u.CmsUserRoles.Where(x => migratedSiteIds.Contains(x.Role.SiteId!.Value) || x.Role.SiteId == null))
-                .ThenInclude(ur => ur.Role)
+                .Where(u => new[] { 2, 3 }.Contains(u.UserPrivilegeLevel))
+                // .Include(u => u.CmsUserRoles.Where(x => migratedSiteIds.Contains(x.Role.SiteId!.Value) || x.Role.SiteId == null))
+                // .ThenInclude(ur => ur.Role)
             ;
 
         foreach (var kx13User in kx13CmsUsers)
@@ -112,7 +113,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
                  var xbkUserId = _primaryKeyMappingContext.RequireMapFromSource<KX13M.CmsUser>(u => u.UserId, kx13User.UserId);
 
                  await MigrateUserSites(kx13User.UserId, xbkUserId, migratedSiteIds, cancellationToken);
-                 // await MigrateUserRoles(kx13User.UserId, xbkUserId, cancellationToken);
+                 // TODO tomas.krch: 2022-11-09 to be specified  await MigrateUserRoles(kx13User.UserId, xbkUserId, cancellationToken);
              }
         }
 
