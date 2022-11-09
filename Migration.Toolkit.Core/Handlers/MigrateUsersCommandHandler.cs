@@ -62,7 +62,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
 
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
-        await MigrateCmsRoles(kx13Context, cancellationToken, migratedSiteIds);
+        // await MigrateCmsRoles(kx13Context, cancellationToken, migratedSiteIds);
 
         var kx13CmsUsers = kx13Context.CmsUsers
                 .Include(u => u.CmsUserRoles.Where(x => migratedSiteIds.Contains(x.Role.SiteId!.Value) || x.Role.SiteId == null))
@@ -112,7 +112,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
                  var xbkUserId = _primaryKeyMappingContext.RequireMapFromSource<KX13M.CmsUser>(u => u.UserId, kx13User.UserId);
 
                  await MigrateUserSites(kx13User.UserId, xbkUserId, migratedSiteIds, cancellationToken);
-                 await MigrateUserRoles(kx13User.UserId, xbkUserId, cancellationToken);
+                 // await MigrateUserRoles(kx13User.UserId, xbkUserId, cancellationToken);
              }
         }
 

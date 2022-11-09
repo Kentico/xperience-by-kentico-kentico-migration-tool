@@ -50,13 +50,15 @@ if ($ProjectName -eq $null -or $ProjectName -eq '') {
 [System.IO.Directory]::CreateDirectory($commandOutputDir) | Out-Null;
 
 try {
+    Write-Output "Set location $toolkitDir"
     set-location $toolkitDir   
 
     Write-Output "Starting transcript"
     Start-Transcript -Path $commandOutputLog -NoClobber -Append 
 
     # build toolkit
-    dotnet publish -o "$toolkitBuildDir"    
+    Write-Output "dotnet publish -c Release -f net6.0 --self-contained false --runtime win-x64 -o '$toolkitBuildDir'"    
+    dotnet publish -c Release -f net6.0 --self-contained false --runtime win-x64 -o "$toolkitBuildDir" 
 
     # install XbK
     if($InstallXbK -eq $true) {

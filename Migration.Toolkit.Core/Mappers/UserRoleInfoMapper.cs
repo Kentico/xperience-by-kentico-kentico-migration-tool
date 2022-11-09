@@ -28,7 +28,7 @@ public class UserRoleInfoMapper: EntityMapperBase<KX13M.CmsUserRole, UserRoleInf
             target.UserID = xbkUserId;
         }
 
-        target.ValidTo = source.ValidTo.GetValueOrDefault();
+        // target.ValidTo = source.ValidTo.GetValueOrDefault();
 
         return target;
     }
