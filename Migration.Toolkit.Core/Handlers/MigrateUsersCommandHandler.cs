@@ -88,7 +88,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
 
             _protocol.FetchedTarget(xbkUserInfo);
 
-            if (kx13User.UserPrivilegeLevel == 3 && xbkUserInfo != null)
+            if (kx13User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.GlobalAdmin && xbkUserInfo != null)
             {
                 _protocol.Append(HandbookReferences.CmsUserAdminUserSkip.WithIdentityPrint(xbkUserInfo));
                 _logger.LogInformation("User with guid {UserGuid} is administrator, you need to update administrators manually => skipping", kx13User.UserGuid);
