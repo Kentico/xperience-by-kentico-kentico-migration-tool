@@ -10,6 +10,7 @@ using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
+using Migration.Toolkit.KXP.Api.Enums;
 using Migration.Toolkit.KXP.Context;
 using Migration.Toolkit.KXP.Models;
 
@@ -64,9 +65,12 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
 
         // await MigrateCmsRoles(kx13Context, cancellationToken, migratedSiteIds);
 
+        var migratedPrivilegeLevels = new[] { (int)UserPrivilegeLevelEnum.Editor, (int)UserPrivilegeLevelEnum.Admin, (int)UserPrivilegeLevelEnum.GlobalAdmin };
+
         var kx13CmsUsers = kx13Context.CmsUsers
-                .Include(u => u.CmsUserRoles.Where(x => migratedSiteIds.Contains(x.Role.SiteId!.Value) || x.Role.SiteId == null))
-                .ThenInclude(ur => ur.Role)
+                .Where(u => migratedPrivilegeLevels.Contains(u.UserPrivilegeLevel))
+                // .Include(u => u.CmsUserRoles.Where(x => migratedSiteIds.Contains(x.Role.SiteId!.Value) || x.Role.SiteId == null))
+                // .ThenInclude(ur => ur.Role)
             ;
 
         foreach (var kx13User in kx13CmsUsers)
@@ -84,7 +88,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
 
             _protocol.FetchedTarget(xbkUserInfo);
 
-            if (kx13User.UserPrivilegeLevel == 3 && xbkUserInfo != null)
+            if (kx13User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.GlobalAdmin && xbkUserInfo != null)
             {
                 _protocol.Append(HandbookReferences.CmsUserAdminUserSkip.WithIdentityPrint(xbkUserInfo));
                 _logger.LogInformation("User with guid {UserGuid} is administrator, you need to update administrators manually => skipping", kx13User.UserGuid);
@@ -112,7 +116,7 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
                  var xbkUserId = _primaryKeyMappingContext.RequireMapFromSource<KX13M.CmsUser>(u => u.UserId, kx13User.UserId);
 
                  await MigrateUserSites(kx13User.UserId, xbkUserId, migratedSiteIds, cancellationToken);
-                 // await MigrateUserRoles(kx13User.UserId, xbkUserId, cancellationToken);
+                 // TODO tomas.krch: 2022-11-09 to be specified  await MigrateUserRoles(kx13User.UserId, xbkUserId, cancellationToken);
              }
         }
 
