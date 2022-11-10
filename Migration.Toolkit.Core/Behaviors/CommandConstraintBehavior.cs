@@ -1,6 +1,7 @@
 namespace Migration.Toolkit.Core.Behaviors;
 
 using MediatR;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
@@ -16,7 +17,7 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
     private const string CmsHotfixDataVersionKey = "CMSHotfixDataVersion";
     private const string CmsDbVersionKey = "CMSDBVersion";
     private const string CmsDataVersionKey = "CMSDataVersion";
-    
+
     private readonly ILogger<CommandConstraintBehavior<TRequest, TResponse>> _logger;
     private readonly IMigrationProtocol _protocol;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
@@ -53,7 +54,7 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
             _logger.LogCritical(ex, "Error occured while checking command constraints");
             return (TResponse)(CommandResult)new CommandCheckFailedResult(false);
         }
-        
+
         return await next();
     }
 
@@ -63,7 +64,7 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
         const string supportedVersion = "13.0.64";
         if (SemanticVersion.TryParse(supportedVersion, out var minimalVersion))
         {
-            criticalCheckPassed &= CheckVersion(kx13Context, minimalVersion);    
+            criticalCheckPassed &= CheckVersion(kx13Context, minimalVersion);
         }
 
         var sites = _toolkitConfiguration.RequireExplicitMapping<KX13M.CmsSite>(s => s.SiteId);
@@ -80,6 +81,8 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
         {
             criticalCheckPassed &= CheckCulture(cultureReliantCommand, sourceSites, sites);
         }
+
+        criticalCheckPassed &= CheckDbCollations();
 
         return criticalCheckPassed;
     }
@@ -101,7 +104,7 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
             }));
             criticalCheckPassed = false;
         }
-        
+
         void VersionKeyNotFound(string keyName)
         {
             _logger.LogCritical("CMS version not found - SettingsKeyName '{Key}'. Ensure Kentico version is at least '{SupportedVersion}'", keyName, minimalVersion.ToString());
@@ -122,7 +125,7 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
                 CurrentVersion = currentVersion,
                 SupportedVersion = minimalVersion.ToString()
             }));
-            criticalCheckPassed = false; 
+            criticalCheckPassed = false;
         }
 
         void LowHotfix(string keyName, int currentHotfix)
@@ -137,7 +140,7 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
         }
 
         #endregion
-        
+
         if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == CmsDataVersionKey) is { } cmsDataVersion)
         {
             if (SemanticVersion.TryParse(cmsDataVersion.KeyValue, out var cmsDataVer))
@@ -273,5 +276,24 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
         }
 
         return criticalCheckPassed;
+    }
+
+    // TODO tk: 2022-11-02 create global rule
+    private bool CheckDbCollations()
+    {
+        var kxCollation = GetDbCollationName(_toolkitConfiguration.KxConnectionString ?? throw new InvalidOperationException("KxConnectionString is required"));
+        var xbkCollation = GetDbCollationName(_toolkitConfiguration.XbKConnectionString ?? throw new InvalidOperationException("XbKConnectionString is required"));
+
+        return kxCollation == xbkCollation;
+    }
+
+    private string? GetDbCollationName(string connectionString)
+    {
+        using var sqlConnection = new SqlConnection(connectionString);
+        using var sqlCommand = sqlConnection.CreateCommand();
+        sqlCommand.CommandText = "SELECT DATABASEPROPERTYEX(DB_NAME(), 'Collation')";
+
+        sqlConnection.Open();
+        return sqlCommand.ExecuteScalar() as string;
     }
 }
