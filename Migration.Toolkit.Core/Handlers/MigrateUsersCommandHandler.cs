@@ -10,6 +10,7 @@ using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
+using Migration.Toolkit.KXP.Api.Enums;
 using Migration.Toolkit.KXP.Context;
 using Migration.Toolkit.KXP.Models;
 
@@ -64,8 +65,10 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
 
         // await MigrateCmsRoles(kx13Context, cancellationToken, migratedSiteIds);
 
+        var migratedPrivilegeLevels = new[] { (int)UserPrivilegeLevelEnum.Editor, (int)UserPrivilegeLevelEnum.Admin, (int)UserPrivilegeLevelEnum.GlobalAdmin };
+
         var kx13CmsUsers = kx13Context.CmsUsers
-                .Where(u => new[] { 2, 3 }.Contains(u.UserPrivilegeLevel))
+                .Where(u => migratedPrivilegeLevels.Contains(u.UserPrivilegeLevel))
                 // .Include(u => u.CmsUserRoles.Where(x => migratedSiteIds.Contains(x.Role.SiteId!.Value) || x.Role.SiteId == null))
                 // .ThenInclude(ur => ur.Role)
             ;
