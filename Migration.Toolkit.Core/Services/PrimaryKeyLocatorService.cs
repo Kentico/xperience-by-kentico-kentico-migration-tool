@@ -44,12 +44,12 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
     {
         using var kxpContext = _kxpContextFactory.CreateDbContext();
         using var kx13Context = _kx13ContextFactory.CreateDbContext();
-        
+
         var sourceType = typeof(T);
         var memberName = keyNameSelector.GetMemberName();
 
         _logger.LogTrace("Preload of entity {Entity} member {MemberName} mapping requested", sourceType.Name, memberName);
-        
+
         if (sourceType == typeof(KX13.Models.CmsUser) && memberName == nameof(KX13M.CmsUser.UserId))
         {
             var sourceUsers = kx13Context.CmsUsers.Select(x => new { x.UserId, x.UserGuid, x.UserName }).ToList();
@@ -61,12 +61,12 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
                 (a, b) => new SourceTargetKeyMapping(a.UserId, b.UserId),
                 new KeyEqualityComparerWithLambda<CmsUserKey>((ak, bk) => (ak?.UserGuid == bk?.UserGuid || ak?.UserName == bk?.UserName) && ak != null && bk != null)
             );
-            
+
             foreach (var resultingMapping in result)
             {
                 yield return resultingMapping;
             }
-            
+
             yield break;
         }
 
@@ -84,12 +84,12 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
                 b => b.ContactGuid,
                 (a, b) => new SourceTargetKeyMapping(a.ContactId, b.ContactId)
             );
-            
+
             foreach (var resultingMapping in result)
             {
                 yield return resultingMapping;
             }
-            
+
             yield break;
         }
 
@@ -103,15 +103,15 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
                 b => b.NodeGuid,
                 (a, b) => new SourceTargetKeyMapping(a.NodeId, b.NodeId)
             );
-            
+
             foreach (var resultingMapping in result)
             {
                 yield return resultingMapping;
             }
-            
+
             yield break;
         }
-        
+
         if (sourceType == typeof(KX13.Models.CmsState) && memberName == nameof(KX13M.CmsState.StateId))
         {
             var source = kx13Context.CmsStates.Select(x => new { x.StateId, x.StateName }).ToList();
@@ -122,15 +122,15 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
                 b => b.StateName,
                 (a, b) => new SourceTargetKeyMapping(a.StateId, b.StateId)
             );
-            
+
             foreach (var resultingMapping in result)
             {
                 yield return resultingMapping;
             }
-            
+
             yield break;
         }
-        
+
         if (sourceType == typeof(KX13.Models.CmsCountry) && memberName == nameof(KX13M.CmsCountry.CountryId))
         {
             var source = kx13Context.CmsCountries.Select(x => new { x.CountryId, x.CountryName }).ToList();
@@ -141,16 +141,16 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
                 b => b.CountryName,
                 (a, b) => new SourceTargetKeyMapping(a.CountryId, b.CountryId)
             );
-            
+
             foreach (var resultingMapping in result)
             {
                 yield return resultingMapping;
             }
-            
+
             yield break;
         }
-        
-            
+
+
 
         throw new NotImplementedException();
     }
@@ -163,7 +163,7 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
         // var memberName = keyNameSelector.GetMemberName();
         // var entityType = kx13Context.Model.FindEntityType(typeof(T));
 
-        // TODO tk: 2022-05-18 can be done smarter => deferred to optimizations 
+        // TODO tk: 2022-05-18 can be done smarter => deferred to optimizations
         var sourceType = typeof(T);
         targetId = -1;
         try
@@ -174,7 +174,7 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
                 targetId = kxpContext.CmsResources.Where(x => x.ResourceGuid == kx13Guid).Select(x => x.ResourceId).Single();
                 return true;
             }
-        
+
             if (sourceType == typeof(KX13.Models.CmsClass))
             {
                 var kx13Guid = kx13Context.CmsClasses.Where(c => c.ClassId == sourceId).Select(x => x.ClassGuid).Single();
@@ -186,6 +186,13 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
             {
                 var kx13User = kx13Context.CmsUsers.Where(c => c.UserId == sourceId).Select(x => new { x.UserGuid, x.UserName }).Single();
                 targetId = kxpContext.CmsUsers.Where(x => x.UserGuid == kx13User.UserGuid || x.UserName == kx13User.UserName).Select(x => x.UserId).Single();
+                return true;
+            }
+
+            if (sourceType == typeof(KX13M.CmsRole))
+            {
+                var kx13User = kx13Context.CmsRoles.Where(c => c.RoleId == sourceId).Select(x => new { x.RoleGuid }).Single();
+                targetId = kxpContext.CmsRoles.Where(x => x.RoleGuid == kx13User.RoleGuid).Select(x => x.RoleId).Single();
                 return true;
             }
 

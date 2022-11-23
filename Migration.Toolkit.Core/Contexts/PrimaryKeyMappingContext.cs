@@ -12,7 +12,7 @@ public record MapSourceIdResult(bool Success, int? MappedId);
 public class PrimaryKeyMappingContext
 {
     private readonly Dictionary<string, int> _mappings = new(StringComparer.OrdinalIgnoreCase);
-    
+
     private readonly ILogger<PrimaryKeyMappingContext> _logger;
     private readonly IPrimaryKeyLocatorService _primaryKeyLocatorService;
     private readonly ToolkitConfiguration _toolkitConfiguration;
@@ -40,7 +40,7 @@ public class PrimaryKeyMappingContext
 
         return null;
     }
-    
+
     private static string CreateKey<T>(Expression<Func<T, object>> keyNameSelector, int sourceId)
     {
         return $"{typeof(T).FullName}.{keyNameSelector.GetMemberName()}.{sourceId}";
@@ -66,6 +66,7 @@ public class PrimaryKeyMappingContext
     {
         var fullKeyName = CreateKey(keyNameSelector, sourceId);
         _mappings[fullKeyName] = targetId;
+        _logger.LogTrace("{Key}: {SourceValue}=>{TargetValue}", fullKeyName, sourceId, targetId);
     }
 
     public int RequireMapFromSource<T>(Expression<Func<T, object>> keyNameSelector, int sourceId)
@@ -147,7 +148,7 @@ public class PrimaryKeyMappingContext
         {
             return null;
         }
-        
+
         var memberName = keyNameSelector.GetMemberName();
         var fullKeyName = CreateKey(keyNameSelector, sid);
         if (sid == 0)
@@ -168,7 +169,7 @@ public class PrimaryKeyMappingContext
             return resultId;
         }
 
-       
+
 
         _logger.LogTrace("TryLocate {Key}", fullKeyName);
         if (_primaryKeyLocatorService.TryLocate(keyNameSelector, sid, out var targetId))
@@ -248,7 +249,7 @@ public class PrimaryKeyMappingContext
             return new MapSourceIdResult(true, resultId);
         }
 
-        
+
 
         _logger.LogTrace("TryLocate {Key}", fullKeyName);
         if (useLocator && _primaryKeyLocatorService.TryLocate(keyNameSelector, sid, out var targetId))
