@@ -43,10 +43,10 @@ public class XbKApiContextBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
             throw new InvalidOperationException($"Target XbK doesn't contain default administrator account ('{UserInfoProvider.DEFAULT_ADMIN_USERNAME}')");
         }
 
-        using (new CMSActionContext(defaultAdmin) { User = defaultAdmin })
+        using (new CMSActionContext(defaultAdmin) { User = defaultAdmin, UseGlobalAdminContext = true })
         {
-            MembershipContext.AuthenticatedUser = defaultAdmin;
-
+            // TODO tk: 2022-11-25 revise in future
+            // MembershipContext.AuthenticatedUser = defaultAdmin;
 
             _logger.LogInformation("Using CMSActionContext of user '{UserName}'", UserInfoProvider.DEFAULT_ADMIN_USERNAME);
             return await next();
