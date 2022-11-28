@@ -44,6 +44,8 @@ public static class DependencyInjectionExtensions
         services.AddMediatR(typeof(DependencyInjectionExtensions));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestHandlingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CommandConstraintBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(XbKApiContextBehavior<,>));
+
 
         services.AddSingleton(s => new TableReflectionService(s.GetRequiredService<ILogger<TableReflectionService>>()));
         services.AddSingleton<SourceInstanceContext>();
@@ -77,7 +79,7 @@ public static class DependencyInjectionExtensions
         services.AddTransient<IEntityMapper<KX13M.CmsPageUrlPath, CmsPageUrlPath>, CmsPageUrlPathMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsResource, ResourceInfo>, ResourceMapper>();
         services.AddTransient<IEntityMapper<AlternativeFormMapperSource, AlternativeFormInfo>, AlternativeFormMapper>();
-        services.AddTransient<IEntityMapper<KX13M.CmsRole, CmsRole>, CmsRoleMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsRole, RoleInfo>, RoleInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsSettingsCategory, CmsSettingsCategory>, CmsSettingsCategoryMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsSettingsKey, CmsSettingsKey>, CmsSettingsKeyMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsSite, CmsSite>, CmsSiteMapper>();

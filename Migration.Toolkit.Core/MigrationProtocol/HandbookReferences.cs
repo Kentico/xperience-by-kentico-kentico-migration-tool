@@ -53,6 +53,13 @@ public static class HandbookReferences
                 SourceValue = sourceValue
             });
 
+    public static HandbookReference MissingRequiredDependency<TSourceDependency>() =>
+        new HandbookReference("MissingRequiredDependency")
+            .WithData(new
+            {
+                DependencyType = typeof(TSourceDependency).Name,
+            });
+
     public static HandbookReference SourceEntityIsNull<TSource>() =>
         new HandbookReference("SourceEntityIsNull")
             .WithData(new

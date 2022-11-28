@@ -5,21 +5,22 @@ using Migration.Toolkit.Core.MigrationProtocol;
 
 namespace Migration.Toolkit.Core.Mappers;
 
+using CMS.Membership;
 using Migration.Toolkit.KXP.Models;
 
-public class CmsRoleMapper : EntityMapperBase<KX13.Models.CmsRole, CmsRole>
+public class RoleInfoMapper : EntityMapperBase<KX13.Models.CmsRole, RoleInfo>
 {
-    public CmsRoleMapper(
-        ILogger<CmsRoleMapper> logger,
+    public RoleInfoMapper(
+        ILogger<RoleInfoMapper> logger,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol
     ) : base(logger, primaryKeyMappingContext, protocol)
     {
     }
 
-    protected override CmsRole? CreateNewInstance(KX13.Models.CmsRole source, MappingHelper mappingHelper, AddFailure addFailure) => new();
+    protected override RoleInfo? CreateNewInstance(KX13.Models.CmsRole source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
-    protected override CmsRole MapInternal(KX13.Models.CmsRole source, CmsRole target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override RoleInfo MapInternal(KX13.Models.CmsRole source, RoleInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         target.RoleDisplayName = source.RoleDisplayName;
         target.RoleName = source.RoleName;
@@ -27,12 +28,12 @@ public class CmsRoleMapper : EntityMapperBase<KX13.Models.CmsRole, CmsRole>
 
         if (mappingHelper.TranslateIdAllowNulls<KX13.Models.CmsSite>(c => c.SiteId, source.SiteId, out var siteId))
         {
-            target.SiteId = siteId;
+            target.SiteID = siteId ?? 0;
         }
 
-        target.RoleGuid = source.RoleGuid;
+        target.RoleGUID = source.RoleGuid;
         target.RoleLastModified = source.RoleLastModified;
-        target.RoleIsDomain = source.RoleIsDomain;
+        // target. = source.RoleIsDomain;
 
         return target;
     }

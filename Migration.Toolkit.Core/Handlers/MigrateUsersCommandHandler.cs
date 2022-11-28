@@ -14,29 +14,27 @@ using Migration.Toolkit.KXP.Api.Enums;
 using Migration.Toolkit.KXP.Context;
 using Migration.Toolkit.KXP.Models;
 
-public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, CommandResult>, IDisposable
+public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, CommandResult>, IDisposable
 {
     private const string USER_PUBLIC = "public";
 
     private readonly ILogger<MigrateUsersCommandHandler> _logger;
-    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
     private readonly IEntityMapper<KX13.Models.CmsUser, UserInfo> _userInfoMapper;
-    private readonly IEntityMapper<KX13M.CmsRole, CmsRole> _roleMapper;
+    private readonly IEntityMapper<KX13M.CmsRole, RoleInfo> _roleMapper;
     private readonly IEntityMapper<KX13M.CmsUserRole, UserRoleInfo> _userRoleMapper;
     private readonly IEntityMapper<KX13M.CmsUserSite, UserSiteInfo> _userSiteMapper;
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IProtocol _protocol;
 
-    private KxpContext _kxpContext;
+    private static int[] MigratedAdminUserPrivilegeLevels => new[] { (int)UserPrivilegeLevelEnum.Editor, (int)UserPrivilegeLevelEnum.Admin, (int)UserPrivilegeLevelEnum.GlobalAdmin };
 
     public MigrateUsersCommandHandler(
         ILogger<MigrateUsersCommandHandler> logger,
-        IDbContextFactory<KxpContext> kxpContextFactory,
         IDbContextFactory<KX13Context> kx13ContextFactory,
         IEntityMapper<KX13M.CmsUser, UserInfo> userInfoMapper,
-        IEntityMapper<KX13M.CmsRole, CmsRole> roleMapper,
+        IEntityMapper<KX13M.CmsRole, RoleInfo> roleMapper,
         IEntityMapper<KX13M.CmsUserRole, UserRoleInfo> userRoleMapper,
         IEntityMapper<KX13M.CmsUserSite, UserSiteInfo> userSiteMapper,
         ToolkitConfiguration toolkitConfiguration,
@@ -45,7 +43,6 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
     )
     {
         _logger = logger;
-        _kxpContextFactory = kxpContextFactory;
         _kx13ContextFactory = kx13ContextFactory;
         _userInfoMapper = userInfoMapper;
         _roleMapper = roleMapper;
@@ -54,7 +51,6 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
         _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _protocol = protocol;
-        _kxpContext = _kxpContextFactory.CreateDbContext();
     }
 
     public async Task<CommandResult> Handle(MigrateUsersCommand request, CancellationToken cancellationToken)
@@ -63,26 +59,14 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
 
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
-        // await MigrateCmsRoles(kx13Context, cancellationToken, migratedSiteIds);
-
-        var migratedPrivilegeLevels = new[] { (int)UserPrivilegeLevelEnum.Editor, (int)UserPrivilegeLevelEnum.Admin, (int)UserPrivilegeLevelEnum.GlobalAdmin };
-
         var kx13CmsUsers = kx13Context.CmsUsers
-                .Where(u => migratedPrivilegeLevels.Contains(u.UserPrivilegeLevel))
-                // .Include(u => u.CmsUserRoles.Where(x => migratedSiteIds.Contains(x.Role.SiteId!.Value) || x.Role.SiteId == null))
-                // .ThenInclude(ur => ur.Role)
+                .Where(u => MigratedAdminUserPrivilegeLevels.Contains(u.UserPrivilegeLevel))
             ;
 
         foreach (var kx13User in kx13CmsUsers)
         {
             _protocol.FetchedSource(kx13User);
             _logger.LogTrace("Migrating user {UserName} with UserGuid {UserGuid}", kx13User.UserName, kx13User.UserGuid);
-
-            // var kxoUser = await _kxpContext.CmsUsers
-            //         .Include(u => u.CmsUserRoles)
-            //         .ThenInclude(ur => ur.Role)
-            //         .FirstOrDefaultAsync(u => u.UserGuid == kx13User.UserGuid, cancellationToken)
-            //     ;
 
             var xbkUserInfo = UserInfoProvider.ProviderObject.Get(kx13User.UserGuid);
 
@@ -104,82 +88,37 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
                 {
                     _primaryKeyMappingContext.SetMapping<KX13M.CmsUser>(r => r.UserId, kx13User.UserId, xbkUserInfo.UserID);
                 }
+
                 continue;
             }
 
             var mapped = _userInfoMapper.Map(kx13User, xbkUserInfo);
             _protocol.MappedTarget(mapped);
 
-             var userSaveSuccess = await SaveUserUsingKenticoApi(cancellationToken, mapped, kx13User);
-             if (userSaveSuccess)
-             {
-                 var xbkUserId = _primaryKeyMappingContext.RequireMapFromSource<KX13M.CmsUser>(u => u.UserId, kx13User.UserId);
+            var userSaveSuccess = await SaveUserUsingKenticoApi(cancellationToken, mapped, kx13User);
+            if (userSaveSuccess)
+            {
+                var xbkUserId = _primaryKeyMappingContext.RequireMapFromSource<KX13M.CmsUser>(u => u.UserId, kx13User.UserId);
 
-                 await MigrateUserSites(kx13User.UserId, xbkUserId, migratedSiteIds, cancellationToken);
-                 // TODO tomas.krch: 2022-11-09 to be specified  await MigrateUserRoles(kx13User.UserId, xbkUserId, cancellationToken);
-             }
+                await MigrateUserSites(kx13User.UserId, xbkUserId, migratedSiteIds, cancellationToken);
+            }
         }
+
+        await MigrateUserCmsRoles(kx13Context, cancellationToken, migratedSiteIds);
 
         return new GenericCommandResult();
-    }
-
-    private async Task MigrateUserRoles(int kx13UserUserId, int xbkUserId, CancellationToken cancellationToken)
-    {
-        await using var kx13DbContext = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
-
-        var kx13UserRoles = kx13DbContext.CmsUserRoles.Where(x => x.UserId == kx13UserUserId);
-
-        foreach (var kx13UserRole in kx13UserRoles)
-        {
-            _protocol.FetchedSource(kx13UserRole);
-            if (!_primaryKeyMappingContext.TryRequireMapFromSource<KX13M.CmsRole>(u => u.RoleId, kx13UserRole.RoleId, out var xbkRoleId))
-            {
-                var handbookRef = HandbookReferences
-                    .MissingRequiredDependency<KXP.Models.CmsRole>(nameof(UserRoleInfo.RoleID), kx13UserRole.RoleId)
-                    .NeedsManualAction();
-
-                _protocol.Append(handbookRef);
-                _logger.LogWarning("Unable to locate role in arget instance with source RoleID '{RoleID}'", kx13UserRole.RoleId);
-                continue;
-            }
-
-            var xbkUserRole = UserRoleInfoProvider.ProviderObject.Get(xbkUserId, xbkRoleId);
-            _protocol.FetchedTarget(xbkUserRole);
-
-            var mapped = _userRoleMapper.Map(kx13UserRole, xbkUserRole);
-            _protocol.MappedTarget(mapped);
-
-            if (mapped is { Success : true })
-            {
-                var (userRoleInfo, newInstance) = mapped;
-                ArgumentNullException.ThrowIfNull(userRoleInfo);
-
-                try
-                {
-                    UserRoleInfoProvider.ProviderObject.Set(userRoleInfo);
-
-                    _protocol.Success(kx13UserRole, userRoleInfo, mapped);
-                    _logger.LogEntitySetAction(newInstance, userRoleInfo);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogEntitySetError(ex, newInstance, userRoleInfo);
-                    _protocol.Append(HandbookReferences.ErrorSavingTargetInstance<UserRoleInfo>(ex)
-                        .WithData(new { kx13UserRole.UserRoleId, kx13UserRole.UserId, kx13UserRole.RoleId, })
-                        .WithMessage("Failed to migrate user role")
-                    );
-                }
-            }
-        }
     }
 
     private async Task MigrateUserSites(int kx13UserUserId, int xbkUserId, List<int> migratedSiteIds, CancellationToken cancellationToken)
     {
         await using var kx13DbContext = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
-        var kx13UserSites = kx13DbContext.CmsUserSites.Where(x => x.UserId == kx13UserUserId);
+        var kx13UserSites = kx13DbContext.CmsUserSites
+            .Where(x => x.UserId == kx13UserUserId)
+            .AsNoTracking()
+            .AsAsyncEnumerable();
 
-        foreach (var kx13UserSite in kx13UserSites)
+        await foreach (var kx13UserSite in kx13UserSites.WithCancellation(cancellationToken))
         {
             _protocol.FetchedSource(kx13UserSite);
             if (!migratedSiteIds.Contains(kx13UserSite.SiteId)) continue;
@@ -238,9 +177,16 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
                     .WithData(new { kx13User.UserName, kx13User.UserGuid, kx13User.UserId, })
                     .WithMessage("Failed to migrate user, target database broken.")
                 );
-
-                await _kxpContext.DisposeAsync();
-                _kxpContext = await _kxpContextFactory.CreateDbContextAsync(cancellationToken);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogEntitySetError(ex, newInstance, userInfo);
+                _protocol.Append(HandbookReferences
+                    .ErrorCreatingTargetInstance<UserInfo>(ex)
+                    .NeedsManualAction()
+                    .WithIdentityPrint(userInfo)
+                );
                 return false;
             }
 
@@ -251,54 +197,141 @@ public class MigrateUsersCommandHandler: IRequestHandler<MigrateUsersCommand, Co
         return false;
     }
 
-    private async Task MigrateCmsRoles(KX13Context kx13Context, CancellationToken cancellationToken, List<int> migratedSiteIds)
+    private async Task MigrateUserCmsRoles(KX13Context kx13Context, CancellationToken cancellationToken, List<int> migratedSiteIds)
     {
         var kx13CmsRoles = kx13Context.CmsRoles
-            .Where(x => migratedSiteIds.Contains(x.SiteId!.Value) || x.SiteId == null);
+            // .Include(r => r.CmsUserRoles)
+            .Where(r =>
+                r.CmsUserRoles.Any(ur => MigratedAdminUserPrivilegeLevels.Contains(ur.User.UserPrivilegeLevel)) &&
+                migratedSiteIds.Contains(r.SiteId!.Value))
+            .AsNoTracking()
+            .AsAsyncEnumerable();
 
-        foreach (var kx13CmsRole in kx13CmsRoles)
+        await foreach (var kx13CmsRole in kx13CmsRoles.WithCancellation(cancellationToken))
         {
             _protocol.FetchedSource(kx13CmsRole);
 
-            var kxoCmsRole = await _kxpContext.CmsRoles
-                .FirstOrDefaultAsync(x => x.RoleGuid == kx13CmsRole.RoleGuid, cancellationToken: cancellationToken);
+            var (success, targetSiteId) = _primaryKeyMappingContext.MapSourceId<KX13M.CmsSite>(s => s.SiteId, kx13CmsRole.SiteId);
+            if (!success)
+            {
+                _logger.LogTrace("Role site '{SourceSiteID}' is not included in migration => skipping", kx13CmsRole.SiteId);
+                continue;
+            }
+            // if (_primaryKeyMappingContext.MapFromSourceOrNull<KX13M.CmsSite>(s => s.SiteId, kx13CmsRole.SiteId) is not int targetSiteId)
+            // {
+            //     _logger.LogTrace("Role site '{SourceSiteID}' is not included in migration => skipping", kx13CmsRole.SiteId);
+            //     continue;
+            // }
 
-            _protocol.FetchedTarget(kxoCmsRole);
+            // if (kx13CmsRole.CmsUserRoles.Any(ur => MigratedAdminUserPrivilegeLevels.Contains(ur.User.UserPrivilegeLevel)))
+            // {
+            //     _logger.LogTrace("Role '{RoleName}' not contains users with privilege level ({PrivilegeLevels}) => skipping", kx13CmsRole.RoleName, string.Join(",", MigratedAdminUserPrivilegeLevels));
+            //     continue;
+            // }
 
-            var mapped = _roleMapper.Map(kx13CmsRole, kxoCmsRole);
+            var xbkRoleInfo = RoleInfoProvider.GetRoleInfo(kx13CmsRole.RoleName, targetSiteId ?? 0);
+
+            _protocol.FetchedTarget(xbkRoleInfo);
+
+            var mapped = _roleMapper.Map(kx13CmsRole, xbkRoleInfo);
             _protocol.MappedTarget(mapped);
 
-            if (mapped is { Success : true } result)
+            if (mapped is not (var roleInfo, var newInstance) { Success : true })
             {
-                var (cmsRole, newInstance) = result;
-                ArgumentNullException.ThrowIfNull(cmsRole, nameof(cmsRole));
+                continue;
+            }
 
-                if (newInstance)
-                {
-                    _kxpContext.CmsRoles.Add(cmsRole);
-                }
-                else
-                {
-                    _kxpContext.CmsRoles.Update(cmsRole);
-                }
+            ArgumentNullException.ThrowIfNull(roleInfo, nameof(roleInfo));
+            try
+            {
+                RoleInfoProvider.ProviderObject.Set(roleInfo);
 
-                await _kxpContext.SaveChangesAsync(cancellationToken);
-
-                _protocol.Success(kx13CmsRole, cmsRole, mapped);
-                _logger.LogEntitySetAction(newInstance, cmsRole);
+                _protocol.Success(kx13CmsRole, roleInfo, mapped);
+                _logger.LogEntitySetAction(newInstance, roleInfo);
 
                 _primaryKeyMappingContext.SetMapping<KX13M.CmsRole>(
                     r => r.RoleId,
                     kx13CmsRole.RoleId,
-                    cmsRole.RoleId
+                    roleInfo.RoleID
                 );
             }
-            // TODO tk: 2022-07-15 handle error
+            catch (Exception ex)
+            {
+                _logger.LogEntitySetError(ex, newInstance, roleInfo);
+                _protocol.Append(HandbookReferences
+                    .ErrorCreatingTargetInstance<RoleInfo>(ex)
+                    .NeedsManualAction()
+                    .WithIdentityPrint(roleInfo)
+                );
+                continue;
+            }
+
+            await MigrateUserRole(kx13CmsRole.RoleId);
+        }
+    }
+
+    private async Task MigrateUserRole(int kx13RoleId)
+    {
+        var kx13Context = await _kx13ContextFactory.CreateDbContextAsync();
+        var kx13UserRoles = kx13Context.CmsUserRoles
+            .Where(ur =>
+                ur.RoleId == kx13RoleId &&
+                MigratedAdminUserPrivilegeLevels.Contains(ur.User.UserPrivilegeLevel)
+            )
+            .AsNoTracking()
+            .AsAsyncEnumerable();
+
+        await foreach (var kx13UserRole in kx13UserRoles)
+        {
+            _protocol.FetchedSource(kx13UserRole);
+            if (!_primaryKeyMappingContext.TryRequireMapFromSource<KX13M.CmsRole>(u => u.RoleId, kx13RoleId, out var xbkRoleId))
+            {
+                var handbookRef = HandbookReferences
+                    .MissingRequiredDependency<KXP.Models.CmsRole>(nameof(UserRoleInfo.RoleID), kx13UserRole.RoleId)
+                    .NeedsManualAction();
+
+                _protocol.Append(handbookRef);
+                _logger.LogWarning("Unable to locate role in target instance with source RoleID '{RoleID}'", kx13UserRole.RoleId);
+                continue;
+            }
+
+            if (!_primaryKeyMappingContext.TryRequireMapFromSource<KX13M.CmsUser>(u => u.UserId, kx13UserRole.UserId, out var xbkUserId))
+            {
+                continue;
+            }
+
+            var xbkUserRole = UserRoleInfoProvider.ProviderObject.Get(xbkUserId, xbkRoleId);
+            _protocol.FetchedTarget(xbkUserRole);
+
+            var mapped = _userRoleMapper.Map(kx13UserRole, xbkUserRole);
+            _protocol.MappedTarget(mapped);
+
+            if (mapped is { Success : true })
+            {
+                var (userRoleInfo, newInstance) = mapped;
+                ArgumentNullException.ThrowIfNull(userRoleInfo);
+
+                try
+                {
+                    UserRoleInfoProvider.ProviderObject.Set(userRoleInfo);
+
+                    _protocol.Success(kx13UserRole, userRoleInfo, mapped);
+                    _logger.LogEntitySetAction(newInstance, userRoleInfo);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogEntitySetError(ex, newInstance, userRoleInfo);
+                    _protocol.Append(HandbookReferences.ErrorSavingTargetInstance<UserRoleInfo>(ex)
+                        .WithData(new { kx13UserRole.UserRoleId, kx13UserRole.UserId, kx13UserRole.RoleId, })
+                        .WithMessage("Failed to migrate user role")
+                    );
+                }
+            }
         }
     }
 
     public void Dispose()
     {
-        _kxpContext.Dispose();
+
     }
 }

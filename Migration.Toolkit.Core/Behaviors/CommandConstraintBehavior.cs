@@ -82,7 +82,7 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
             criticalCheckPassed &= CheckCulture(cultureReliantCommand, sourceSites, sites);
         }
 
-        criticalCheckPassed &= CheckDbCollations();
+        // criticalCheckPassed &= CheckDbCollations();
 
         return criticalCheckPassed;
     }
@@ -283,8 +283,13 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
     {
         var kxCollation = GetDbCollationName(_toolkitConfiguration.KxConnectionString ?? throw new InvalidOperationException("KxConnectionString is required"));
         var xbkCollation = GetDbCollationName(_toolkitConfiguration.XbKConnectionString ?? throw new InvalidOperationException("XbKConnectionString is required"));
+        var collationAreSame = kxCollation == xbkCollation;
+        if (!collationAreSame)
+        {
+            _logger.LogCritical("Source db collation '{SourceDbCollation}' is not same as target db collation {TargetDbCollation} => same collations are required", kxCollation, xbkCollation);
+        }
 
-        return kxCollation == xbkCollation;
+        return collationAreSame;
     }
 
     private string? GetDbCollationName(string connectionString)

@@ -182,21 +182,28 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
                     var r = (xbkDataClass.ClassTableName, xbkDataClass.ClassGUID, autoIncrementColumns);
                     _logger.LogTrace("Class '{ClassGuild}' Resolved as: {Result}", kx13Class.ClassGuid, r);
 
-                    // check if data is present in target tables
-                    if (_bulkDataCopyService.CheckIfDataExistsInTargetTable(xbkDataClass.ClassTableName))
+                    try
                     {
-                        _logger.LogWarning("Data exists in target coupled data table '{TableName}' - cannot migrate, skipping form data migration", r.ClassTableName);
-                        _protocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable(xbkDataClass.ClassTableName));
-                        continue;
+                        // check if data is present in target tables
+                        if (_bulkDataCopyService.CheckIfDataExistsInTargetTable(xbkDataClass.ClassTableName))
+                        {
+                            _logger.LogWarning("Data exists in target coupled data table '{TableName}' - cannot migrate, skipping form data migration", r.ClassTableName);
+                            _protocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable(xbkDataClass.ClassTableName));
+                            continue;
+                        }
+
+                        var bulkCopyRequest = new BulkCopyRequest(
+                            xbkDataClass.ClassTableName, s => !autoIncrementColumns.Contains(s), _ => true,
+                            20000
+                        );
+
+                        _logger.LogTrace("Bulk data copy request: {Request}", bulkCopyRequest);
+                        _bulkDataCopyService.CopyTableToTable(bulkCopyRequest);
                     }
-
-                    var bulkCopyRequest = new BulkCopyRequest(
-                        xbkDataClass.ClassTableName, s => !autoIncrementColumns.Contains(s), _ => true,
-                        20000
-                    );
-
-                    _logger.LogTrace("Bulk data copy request: {Request}", bulkCopyRequest);
-                    _bulkDataCopyService.CopyTableToTable(bulkCopyRequest);
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex,"Error while copying data to table");
+                    }
                 }
 
                 #endregion
