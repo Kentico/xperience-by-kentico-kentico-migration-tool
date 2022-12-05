@@ -257,7 +257,15 @@ public class FormDefinitionPatcher
                     }
                     case FIELD_ELEM_SETTINGS:
                     {
-                        PatchSettings(fieldChildNode);
+                        if (_altForm)
+                        {
+                            PatchSettings(fieldChildNode);
+                        }
+                        else
+                        {
+                            // XbK Resource / Module class no longer supports visual representation
+                            ClearSettings(fieldChildNode);
+                        }
                         break;
                     }
                     default:
@@ -277,6 +285,21 @@ public class FormDefinitionPatcher
                 field.Add(new XAttribute(FIELD_ATTR_ENABLED, visible.Value));
                 _logger.LogDebug("Set field '{Field}' attribute '{Attribute}' to value '{Value}' from attribute '{SourceAttribute}'", fieldDescriptor, FIELD_ATTR_ENABLED, visible, FIELD_ATTR_VISIBLE);
             }
+        }
+    }
+
+    private void ClearSettings(XElement settingsElem)
+    {
+        var elementsToRemove = settingsElem.Elements().ToList();
+        foreach (var element in elementsToRemove)
+        {
+            _logger.LogDebug("Removing settings element '{ElementName}'", element.Name);
+            element.Remove();
+        }
+
+        if (!settingsElem.Elements().Any())
+        {
+            settingsElem.Remove();
         }
     }
 
