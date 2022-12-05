@@ -22,7 +22,7 @@ The Migration toolkit transfers content and other data from **Kentico Xperience 
 ### Target
 
   * The toolkit is periodically updated to support migration to the **latest version** of Xperience by Kentico. However, there may be time gaps between Xperience by Kentico releases and Migration toolkit updates.
-	* Currently, Xperience by Kentico **22.2.0** is tested and supported.
+	* Currently, Xperience by Kentico **22.3.2** is tested and supported.
   * The target instance's database and file system must be accessible from the environment where you run the Migration toolkit.
   * To avoid conflicts and inconsistencies, the target instance must not contain any data apart from an empty site and/or data from the source site created by previous runs of the Migration toolkit.
 
@@ -34,13 +34,14 @@ The Migration toolkit only supports content and objects **stored in the database
 
 Currently, the Migration toolkit supports the following types of data:
   * **Sites**
-  * **Page types**
-    * The Migration toolkit attempts to map the _Data type_ and _Form control_ of page type fields to an appropriate equivalent in Xperience by Kentico. This is not always possible, and cannot be done for custom data types or form controls. We recommend that you check your page type fields after the migration and adjust them if necessary.
+  * **Content types** (_Page types_ in Kentico Xperience 13)
+    * The Migration toolkit attempts to map the _Data type_ and _Form control_ of page type fields to an appropriate equivalent in Xperience by Kentico. This is not always possible, and cannot be done for custom data types or form controls. We recommend that you check your content type fields after the migration and adjust them if necessary.
 	* Only page types assigned to the migrated site on the source instance are included.
 	* Xperience by Kentico currently does not support:
-      * Macro expressions in page type field default values or other settings. Page type fields containing macros will not work correctly after the migration.
+      * Macro expressions in page type field default values or other settings. Content type fields containing macros will not work correctly after the migration.
 	  * Page type inheritance. You cannot migrate page types that inherit fields from other types.
 	  * Categories for page type fields. Field categories are not migrated with page types.
+	* All migrated Content types have the **Page** feature enabled (the migration never creates non-page content items).
   * **Pages**
 	* Xperience by Kentico currently does not support multilingual sites. You need to select one culture from which the content of pages is migrated.
 	* Only pages that are **published** on the source instance are migrated.
@@ -57,12 +58,24 @@ Currently, the Migration toolkit supports the following types of data:
   * **Users**
 	* Xperience by Kentico currently does not support registration and authentication of users on the live site. User accounts only control access to the administration interface.
 	* Users in Xperience by Kentico must have an email address. Migration is only supported for users who have a unique email address value on the source instance.
-	* The migration currently does not support custom user fields.
+	* Custom user fields can be migrated together with _modules classes_.
   * **Contacts**
-    * The migration currently does not support custom contact fields.
+    * Custom contact fields can be migrated together with _modules classes_.
   * **Activities**  
   * **Consents and consent agreements**
 	* Only one culture version of consent texts is migrated, according to the culture selected during the migration.
+  * **Modules and classes**
+    * The migration includes the following:
+	  * Custom modules
+	  * All classes belonging under custom modules
+	  * All data stored within custom module classes
+	  * The following customizable system classes and their custom fields: _User_, _Media file_, _Contact management - Account_ (however, accounts are currently not supported in Xperience by Kentico), _Contact management - Contact_
+	* Module and class migration does NOT include:
+	  * UI elements and all related user interface settings. The administration of Xperience by Kentico uses a different technology stack than Kentico Xperience 13, and is incompatible. To learn how to build the administration UI, see [Extend the administration interface](https://docs.xperience.io/x/GwKQC) and [Example - Offices management application](https://docs.xperience.io/x/hIFwCg).
+	  * Alternative forms under classes and UI-related configuration of class fields (field labels, Form controls, etc.). You need to manually create appropriate [UI forms](https://docs.xperience.io/x/V6rWCQ) in Xperience by Kentico after the migration.
+	  * Custom settings under modules, which are are currently not supported in Xperience by Kentico
+	  * Module permissions (permissions work differently in Xperience by Kentico, see [Role management](https://docs.xperience.io/x/7IVwCg) and [UI page permission checks](https://docs.xperience.io/x/8IKyCg))
+	  * As with all object types, the migration toolkit does not transfer code files to the target project. You need to manually move all code files generated for your custom classes (_Info_, _InfoProvider_, etc.).
   * **Setting values**
     * Xperience by Kentico uses a sub-set of the settings available in Kentico Xperience 13. The migration only transfers the values of settings that exist in Xperience by Kentico.
   * **Countries and states**
@@ -81,7 +94,7 @@ The following types of data exist in Xperience by Kentico, but are currently **n
   * **License keys**
     * Unnecessary, since Xperience by Kentico uses a new license key format.
  
- Additionally, object values or other content containing **Macros** will not work correctly after the migration. Macros in general are currently not supported in Xperience by Kentico.
+ Additionally, object values or other content containing **Macros** will not work correctly after the migration. Macros in general are currently not supported for most data in Xperience by Kentico.
 	
 
 <!-- GETTING STARTED -->
