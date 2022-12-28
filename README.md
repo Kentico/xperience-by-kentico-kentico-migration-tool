@@ -56,9 +56,11 @@ Currently, the Migration toolkit supports the following types of data:
   * **Forms**
     * The migration does not include the content of form autoresponder and notification emails. You can migrate form autoresponders to Xperience by Kentico manually by copying your HTML code and content into Email templates and Emails. See [Emails](https://docs.xperience.io/x/IaDWCQ).
   * **Users**
-	* Xperience by Kentico currently does not support registration and authentication of users on the live site. User accounts only control access to the administration interface.
+	* Xperience by Kentico currently does not support registration and authentication of users on the live site. User accounts only control access to the administration interface. Consequently, only users whose _Privilege level_ is set to _Editor_ and above are migrated (_Users_ -> edit a user -> _General_ tab).
 	* Users in Xperience by Kentico must have an email address. Migration is only supported for users who have a unique email address value on the source instance.
 	* Custom user fields can be migrated together with _modules classes_.
+  * **Roles**
+    * Only roles that have at least one user whose _Privilege level_ is set to _Editor_ and above are migrated.
   * **Contacts**
     * Custom contact fields can be migrated together with _modules classes_.
   * **Activities**  
