@@ -44,7 +44,7 @@ Migration.Toolkit.CLI.exe migrate --siteId 1 --culture en-US --sites --users
 | `--culture <cultureCode>`   | Specifies the culture code from which content is migrated, for example _en-US_. Multilingual migration is currently not supported.  |    |
 | `--sites`                   | Enables migration of the [site](https://docs.xperience.io/x/34HFC). The site's basic properties are transferred to the target instance. Requires the `siteId` parameter to be specified. |  |
 | `--custom-modules`          | Enables migration of custom modules, [custom module classes and their data](https://docs.xperience.io/x/AKDWCQ), and [custom fields in supported system classes](https://docs.xperience.io/x/V6rWCQ).<br /><br />See: [Migration details for specific object types - Custom modules and classes](#custom-modules-and-classes)  | `--sites` |
-| `--users`                   | Enables migration of [users](https://docs.xperience.io/x/8ILWCQ).<br /><br />See: [Migration details for specific object types - Users](#users) | `--sites`, `--custom-modules` |
+| `--users`                   | Enables migration of [users](https://docs.xperience.io/x/8ILWCQ) and [roles](https://docs.xperience.io/x/7IVwCg).<br /><br />See: [Migration details for specific object types - Users](#users) | `--sites`, `--custom-modules` |
 | `--settings-keys`           | Enables migration of values for [settings](https://docs.xperience.io/x/7YjFC) that are available in Xperience by Kentico. | `--sites`                             |
 | `--page-types`              | Enables migration of [content types](https://docs.xperience.io/x/gYHWCQ) (originally _page types_ in Kentico Xperience 13) and [preset page templates](https://docs.xperience.io/x/KZnWCQ) (originally _custom page templates_). Required to migrate Pages.<br /><br />See: [Migration details for specific object types - Content types](#content-types)  | `--sites`              |
 | `--pages`                   | Enables migration of [pages](https://docs.xperience.io/x/bxzfBw).<br /><br />The target instance must not contain pages other than those created by previous runs of the Migration toolkit. Requires the `--culture` parameter to be specified.<br /><br />See: [Migration details for specific object types - Pages](#pages) | `--sites`, `--users`, `--page-types` |
@@ -184,12 +184,18 @@ You can migrate form autoresponders to Xperience by Kentico manually by copying 
 
 #### Users
 
+**Note**: Xperience by Kentico currently does not support registration and authentication of users on the live site. User accounts only control access to the administration interface. Consequently, only users whose _Privilege level_ is set to _Editor_ and above are migrated (_Users_ -> edit a user -> _General_ tab).
+
+The command migrates all users with access to the administration interface. Note the following expected behavior: 
   * The 'administrator' user account is not updated by the migration, only transferred from the source if it does not exist on the target instance.
   * The 'public' system user is updated, and all bindings (e.g. the site binding) are mapped automatically on the target instance.
   * Site bindings are updated automatically for all migrated users.
   * Users in Xperience by Kentico must have an email address. Migration is only supported for users who have a **unique** email address value on the source instance.
   * Custom user fields can be migrated together with _modules classes_.
-  * **Note**: Xperience by Kentico currently does not support registration and authentication of users on the live site. User accounts only control access to the administration interface.
+
+Additionally, the command migrates all roles and user-role bindings that fulfill the following criteria:
+  * The role is assigned to at least one user whose _Privilege level_ is _Editor_ or higher.
+
 
 #### Contacts
 
