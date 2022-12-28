@@ -22,7 +22,7 @@ The Migration toolkit transfers content and other data from **Kentico Xperience 
 ### Target
 
   * The toolkit is periodically updated to support migration to the **latest version** of Xperience by Kentico. However, there may be time gaps between Xperience by Kentico releases and Migration toolkit updates.
-	* Currently, Xperience by Kentico **22.3.2** is tested and supported.
+	* Currently, Xperience by Kentico **23.0.3** is tested and supported.
   * The target instance's database and file system must be accessible from the environment where you run the Migration toolkit.
   * To avoid conflicts and inconsistencies, the target instance must not contain any data apart from an empty site and/or data from the source site created by previous runs of the Migration toolkit.
 
