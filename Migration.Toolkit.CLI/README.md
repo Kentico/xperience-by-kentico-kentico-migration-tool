@@ -196,6 +196,8 @@ The command migrates all users with access to the administration interface. Note
 Additionally, the command migrates all roles and user-role bindings that fulfill the following criteria:
   * The role is assigned to at least one user whose _Privilege level_ is _Editor_ or higher.
 
+Because Xperience by Kentico uses a different [permission model](https://docs.xperience.io/x/7IVwCg), no existing role permissions or UI personalization settings are migrated. After the migration, the permissions for each role must be configured again.
+
 
 #### Contacts
 
