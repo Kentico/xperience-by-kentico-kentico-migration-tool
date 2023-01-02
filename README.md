@@ -61,6 +61,7 @@ Currently, the Migration toolkit supports the following types of data:
 	* Custom user fields can be migrated together with _modules classes_.
   * **Roles**
     * Only roles that have at least one user whose _Privilege level_ is set to _Editor_ and above are migrated.
+    * Because Xperience by Kentico uses a different [permission model](https://docs.xperience.io/x/7IVwCg), no existing role permissions or UI personalization settings are migrated. After the migration, the permissions for each role must be configured again.
   * **Contacts**
     * Custom contact fields can be migrated together with _modules classes_.
   * **Activities**  
