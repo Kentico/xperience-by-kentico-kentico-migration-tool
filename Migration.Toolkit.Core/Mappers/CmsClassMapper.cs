@@ -10,15 +10,18 @@ using Migration.Toolkit.Core.Services.CmsClass;
 namespace Migration.Toolkit.Core.Mappers;
 
 using Migration.Toolkit.Common.Enumerations;
+using Migration.Toolkit.Core.Services;
 using Migration.Toolkit.KX13.Models;
 
 public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassInfo>
 {
     private readonly ILogger<CmsClassMapper> _logger;
+    private readonly FieldMigrationService _fieldMigrationService;
 
-    public CmsClassMapper(ILogger<CmsClassMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext, IProtocol protocol) : base(logger, primaryKeyMappingContext, protocol)
+    public CmsClassMapper(ILogger<CmsClassMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext, IProtocol protocol, FieldMigrationService fieldMigrationService) : base(logger, primaryKeyMappingContext, protocol)
     {
         _logger = logger;
+        _fieldMigrationService = fieldMigrationService;
     }
 
     protected override DataClassInfo? CreateNewInstance(KX13.Models.CmsClass source, MappingHelper mappingHelper, AddFailure addFailure) =>
@@ -150,7 +153,7 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
         var patcher = new FormDefinitionPatcher(
             _logger,
             source.ClassFormDefinition,
-            FieldMappingInstance.Default.DataTypeMappings,
+            _fieldMigrationService,
             source.ClassIsForm.GetValueOrDefault(false),
             source.ClassIsDocumentType,
             isCustomizableSystemClass,

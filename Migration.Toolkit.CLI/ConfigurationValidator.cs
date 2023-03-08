@@ -64,7 +64,7 @@ public static class ConfigurationValidator
                 settings?.GetSection(ConfigurationNames.XbKApiSettings) ??
                 settings?.GetSection(ConfigurationNames.TargetKxpApiSettings)
             ;
-        
+
         if (targetKxpApiSettings is null)
         {
             yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_TargetKxpApiSettings_IsRequired);
@@ -107,28 +107,63 @@ public static class ConfigurationValidator
                     {
                         var siteUri = connection.GetValue<string>(ConfigurationNames.SourceInstanceUri);
                         var secret = connection.GetValue<string>(ConfigurationNames.Secret);
-                        
+
                         if (Uri.TryCreate(siteUri, UriKind.Absolute, out var sourceSiteUri))
                         {
                             if (!sourceSiteUri.IsLoopback)
-                            {   
-                                yield return new ValidationMessage(ValidationMessageType.Error, 
-                                    "Source instance Uri invalid format, following formats are supported: http://localhost:5531, https://localhost/MySite");    
+                            {
+                                yield return new ValidationMessage(ValidationMessageType.Error,
+                                    "Source instance Uri invalid format, following formats are supported: http://localhost:5531, https://localhost/MySite");
                             }
-                            
+
                             // OK
                         }
                         else
                         {
-                            yield return new ValidationMessage(ValidationMessageType.Error, 
+                            yield return new ValidationMessage(ValidationMessageType.Error,
                                 "Source instance Uri invalid format, following formats are supported: http://localhost:5531, https://localhost/MySite");
                         }
 
                         if (string.IsNullOrWhiteSpace(secret))
                         {
-                            yield return new ValidationMessage(ValidationMessageType.Error, 
+                            yield return new ValidationMessage(ValidationMessageType.Error,
                                 "Source instance secret cannot be null or whitespace, set it to random hardly guessed string.");
                         }
+                    }
+                }
+            }
+
+            var customMigrationModel = optInFeatures?.GetValue<CustomMigrationModel>(ConfigurationNames.CustomMigration);
+            if (customMigrationModel is { FieldMigrations.Length: > 0 })
+            {
+                ValidationMessage Required(int item, string fieldName)
+                {
+                    return new ValidationMessage(
+                        ValidationMessageType.Error,
+                        $"Custom DataType migration at index [{item}] is missing value '{fieldName}', supply value or remove whole DataType migration."
+                    );
+                }
+
+                var fieldMigrations = customMigrationModel.FieldMigrations;
+
+                for (var i = 0; i < fieldMigrations.Length; i++)
+                {
+                    var current = fieldMigrations[i];
+                    if (string.IsNullOrWhiteSpace(current.SourceDataType))
+                    {
+                        yield return Required(i, nameof(ConfigurationNames.SourceDataType));
+                    }
+                    if (string.IsNullOrWhiteSpace(current.TargetDataType))
+                    {
+                        yield return Required(i, nameof(ConfigurationNames.TargetDataType));
+                    }
+                    if (string.IsNullOrWhiteSpace(current.SourceFormControl))
+                    {
+                        yield return Required(i, nameof(ConfigurationNames.SourceFormControl));
+                    }
+                    if (string.IsNullOrWhiteSpace(current.TargetFormComponent))
+                    {
+                        yield return Required(i, nameof(ConfigurationNames.TargetFormComponent));
                     }
                 }
             }

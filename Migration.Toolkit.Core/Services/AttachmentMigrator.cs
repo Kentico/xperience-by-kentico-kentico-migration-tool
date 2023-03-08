@@ -57,6 +57,23 @@ public class AttachmentMigrator
     public record MigrateAttachmentResult(bool Success, bool CanContinue, MediaFileInfo? MediaFileInfo = null,
         MediaLibraryInfo? MediaLibraryInfo = null);
 
+    public MigrateAttachmentResult TryMigrateAttachmentByPath(string documentPath, string additionalPath)
+    {
+        if(string.IsNullOrWhiteSpace(documentPath)) return new MigrateAttachmentResult(false, false);
+        documentPath = $"/{documentPath.Trim('/')}";
+
+        using var kx13Context = _kx13ContextFactory.CreateDbContext();
+        var attachment =
+            kx13Context.CmsAttachments
+                .Include(a => a.AttachmentDocument)
+                .ThenInclude(d => d.DocumentNode)
+                .FirstOrDefault(a => documentPath.StartsWith(a.AttachmentDocument.DocumentNode.NodeAliasPath));
+
+        return attachment != null
+            ? MigrateAttachment(attachment, additionalPath)
+            : new MigrateAttachmentResult(false, false);
+    }
+
     public IEnumerable<MigrateAttachmentResult> MigrateGroupedAttachments(int documentId, Guid attachmentGroupGuid, string fieldName)
     {
         using var kx13Context = _kx13ContextFactory.CreateDbContext();
@@ -108,7 +125,7 @@ public class AttachmentMigrator
         var kx13AttachmentDocument = kx13CmsAttachment.AttachmentDocumentId is int attachmentDocumentId
             ? GetKx13CmsDocument(attachmentDocumentId)
             : null;
-        
+
         var targetSiteId = _primaryKeyMappingContext.RequireMapFromSource<KX13.Models.CmsSite>(s => s.SiteId, kx13CmsAttachment.AttachmentSiteId);
         var targetSite = _targetSites.GetOrAdd(targetSiteId, i =>
         {
@@ -245,15 +262,15 @@ public class AttachmentMigrator
 
     private static readonly Regex SanitizationRegex =
         RegexHelper.GetRegex("[^-_a-z0-9]", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.CultureInvariant);
-    
+
     private static readonly Regex LibraryPathValidationRegex =
         RegexHelper.GetRegex("^[-_a-z0-9]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.CultureInvariant);
-    
+
     private static int MediaLibraryFactory((string libraryName, int siteId) arg, MediaLibraryFactoryContext context)
     {
         var (libraryName, siteId) = arg;
         var tml = context.DbContext.MediaLibraries.SingleOrDefault(ml => ml.LibrarySiteId == siteId && ml.LibraryName == libraryName);
-        
+
         var libraryDirectory = context.TargetLibraryCodeName;
         if (!LibraryPathValidationRegex.IsMatch(libraryDirectory))
         {

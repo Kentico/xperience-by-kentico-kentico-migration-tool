@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 using Microsoft.Extensions.Configuration;
 
 /// <summary>
-/// Autofix enum 
+/// Autofix enum
 /// </summary>
 /// <remarks>do not update value names, they are used in json configuration</remarks>
 public enum AutofixEnum
@@ -20,7 +20,7 @@ public enum AutofixEnum
 public class ToolkitConfiguration
 {
     #region Connection string of source instance
-    
+
     private string? _kxConnectionString;
 
     [ConfigurationKeyName(ConfigurationNames.SourceConnectionString)]
@@ -38,7 +38,7 @@ public class ToolkitConfiguration
                 return ObsoleteSourceConnectionString!;
 #pragma warning restore CS0618
             }
-            
+
             return _kxConnectionString!;
         }
         set => _kxConnectionString = value;
@@ -65,7 +65,7 @@ public class ToolkitConfiguration
                 return ObsoleteSourceCmsDirPath;
 #pragma warning restore CS0618
             }
-            
+
             return _kxCmsDirPath;
         }
         set => _kxCmsDirPath = value;
@@ -74,7 +74,7 @@ public class ToolkitConfiguration
     #endregion
 
     #region Connection string of target instance
-    
+
     private string? _xbKConnectionString;
 
     [ConfigurationKeyName(ConfigurationNames.TargetConnectionString)]
@@ -92,7 +92,7 @@ public class ToolkitConfiguration
                 return ObsoleteTargetConnectionString;
 #pragma warning restore CS0618
             }
-            
+
             return _xbKConnectionString;
         }
         set => _xbKConnectionString = value;
@@ -103,7 +103,7 @@ public class ToolkitConfiguration
     #region Path to root directory of target instance
 
     private string? _xbKDirPath = null;
-   
+
 
     [ConfigurationKeyName(ConfigurationNames.TargetCmsDirPath)]
     [Obsolete("Use XbKDirPath instead")]
@@ -120,7 +120,7 @@ public class ToolkitConfiguration
                 return ObsoleteTargetCmsDirPath;
 #pragma warning restore CS0618
             }
-            
+
             return _xbKDirPath;
         }
         set => _xbKDirPath = value;
@@ -130,16 +130,16 @@ public class ToolkitConfiguration
 
     [ConfigurationKeyName(ConfigurationNames.EntityConfigurations)]
     public EntityConfigurations EntityConfigurations { get; set; } = new();
-    
+
     [ConfigurationKeyName(ConfigurationNames.MigrateOnlyMediaFileInfo)]
     public bool? MigrateOnlyMediaFileInfo { get; set; } = true;
 
     [ConfigurationKeyName(ConfigurationNames.UseOmActivityNodeRelationAutofix)]
     public AutofixEnum? UseOmActivityNodeRelationAutofix { get; set; } = AutofixEnum.Error;
-    
+
     [ConfigurationKeyName(ConfigurationNames.UseOmActivitySiteRelationAutofix)]
     public AutofixEnum? UseOmActivitySiteRelationAutofix { get; set; } = AutofixEnum.Error;
-    
+
     [ConfigurationKeyName(ConfigurationNames.MigrationProtocolPath)]
     public string? MigrationProtocolPath { get; set; }
 
@@ -156,7 +156,7 @@ public class ToolkitConfiguration
         {
             if (int.TryParse(kvp.Key, out var id))
             {
-                return id;    
+                return id;
             }
 
             throw new InvalidOperationException(string.Format(Resources.Exception_MappingIsRequired, typeof(TEntityType).Name, memberName));
@@ -166,7 +166,7 @@ public class ToolkitConfiguration
             {
                 return id;
             }
-            
+
             throw new InvalidOperationException(string.Format(Resources.Exception_MappingIsRequired, typeof(TEntityType).Name, memberName));
         });
     }
@@ -175,7 +175,7 @@ public class ToolkitConfiguration
     {
         var memberName = keyNameSelector.GetMemberName();
         EntityConfigurations ??= new EntityConfigurations();
-        
+
         var entityConfiguration = EntityConfigurations.GetEntityConfiguration<TEntityType>();
         var mapping = entityConfiguration.ExplicitPrimaryKeyMapping;
         if (!mapping.ContainsKey(memberName))

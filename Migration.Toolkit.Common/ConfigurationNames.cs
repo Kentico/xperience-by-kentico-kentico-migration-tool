@@ -24,9 +24,9 @@ public class ConfigurationNames
 
     public const string ExcludeCodeNames = "ExcludeCodeNames";
     public const string ExplicitPrimaryKeyMapping = "ExplicitPrimaryKeyMapping";
-    
+
     public const string SourceInstanceUri = "SourceInstanceUri";
-    public const string Secret = "Secret"; 
+    public const string Secret = "Secret";
 
     #region "Section names"
 
@@ -35,9 +35,18 @@ public class ConfigurationNames
     public const string Settings = "Settings";
     public const string Logging = "Logging";
     public const string EntityConfigurations = "EntityConfigurations";
-    
+
     public const string OptInFeatures = "OptInFeatures";
     public const string QuerySourceInstanceApi = "QuerySourceInstanceApi";
+
+    public const string CustomMigration = "CustomMigration";
+
+    public const string SourceDataType = "SourceDataType";
+    public const string TargetDataType = "TargetDataType";
+    public const string SourceFormControl = "SourceFormControl";
+    public const string TargetFormComponent = "TargetFormComponent";
+    public const string Actions = "Actions";
+    public const string FieldNameRegex = "FieldNameRegex";
 
     [Obsolete("Use TargetKxpApiSettings const instead")]
     public const string TargetKxoApiSettings = "TargetKxoApiSettings";
@@ -46,6 +55,6 @@ public class ConfigurationNames
     public const string XbKApiSettings = "XbKApiSettings";
 
     #endregion
-    
+
     public const string TodoPlaceholder = "[TODO]";
 }
