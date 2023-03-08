@@ -67,7 +67,7 @@ public class AttachmentMigrator
             kx13Context.CmsAttachments
                 .Include(a => a.AttachmentDocument)
                 .ThenInclude(d => d.DocumentNode)
-                .FirstOrDefault(a => documentPath.StartsWith(a.AttachmentDocument.DocumentNode.NodeAliasPath));
+                .FirstOrDefault(a => a.AttachmentDocument.DocumentNode.NodeAliasPath == documentPath);
 
         return attachment != null
             ? MigrateAttachment(attachment, additionalPath)
