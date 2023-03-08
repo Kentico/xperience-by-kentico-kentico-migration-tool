@@ -169,7 +169,7 @@ public class PageTemplateConfigurationMapper : EntityMapperBase<KX13M.CmsPageTem
             var editingFcm = formControlModels?.FirstOrDefault(x => x.PropertyName.Equals(key, StringComparison.InvariantCultureIgnoreCase));
             if (editingFcm != null)
             {
-                if (FieldMappingInstance.Default.NotSupportedInKxpLegacyMode
+                if (FieldMappingInstance.BuiltInModel.NotSupportedInKxpLegacyMode
                         .SingleOrDefault(x => x.OldFormComponent == editingFcm.FormComponentIdentifier) is var (oldFormComponent, newFormComponent))
                 {
                     Protocol.Append(HandbookReferences.FormComponentNotSupportedInLegacyMode(oldFormComponent, newFormComponent));
@@ -206,7 +206,7 @@ public class PageTemplateConfigurationMapper : EntityMapperBase<KX13M.CmsPageTem
                         }
                     }
                 }
-                else if (FieldMappingInstance.Default.SupportedInKxpLegacyMode.Contains(editingFcm.FormComponentIdentifier))
+                else if (FieldMappingInstance.BuiltInModel.SupportedInKxpLegacyMode.Contains(editingFcm.FormComponentIdentifier))
                 {
                     // OK
                     _logger.LogTrace("Editing form component found {FormComponentName} => supported in legacy mode",

@@ -17,7 +17,7 @@ public class KxpMediaFileFacade
     public void SetMediaFile(MediaFileInfo mfi, bool newInstance)
     {
         Debug.Assert((newInstance && mfi.FileID == 0) || (!newInstance && mfi.FileID != 0), "newInstance && mfi.FileID == 0");
-        
+
         if (newInstance)
         {
             mfi.Insert();
@@ -28,23 +28,32 @@ public class KxpMediaFileFacade
             mfi.Update();
         }
     }
-    
+
     public MediaFileInfo? GetMediaFile(Guid mediaFileGuid)
     {
         return MediaFileInfoProvider.GetMediaFiles("").Where(nameof(MediaFileInfo.FileGUID), QueryOperator.Equals, mediaFileGuid).SingleOrDefault();
     }
 
+    // TODO tomas.krch: 2023-03-07 flaky feature - can be supported only at cost of performance & data integrity hit
+    // public MediaFileInfo? GetMediaFileByPath(string siteName, string? path)
+    // {
+    //     if (string.IsNullOrWhiteSpace(path)) return null;
+    //     // TODO tomas.krch: 2023-03-07 split media file path to library path and media file
+    //     MediaFileInfoProvider.GetMediaFileInfo(siteName, )
+    //     return MediaFileInfoProvider.GetMediaFiles("").Where(nameof(MediaFileInfo.FileGUID), QueryOperator.Equals, mediaFileGuid).SingleOrDefault();
+    // }
+
     public MediaLibraryInfo GetMediaLibraryInfo(Guid mediaLibraryGuid)
     {
         return MediaLibraryInfoProvider.ProviderObject.Get(mediaLibraryGuid);
     }
-    
+
     public void EnsureMediaFilePathExistsInLibrary(MediaFileInfo mfi, int libraryId, string siteName)
     {
         var librarySubDir = Path.GetDirectoryName(mfi.FilePath);
         MediaLibraryInfoProvider.CreateMediaLibraryFolder(siteName, libraryId, librarySubDir, false, false);
     }
-    
+
     public MediaLibraryInfo CreateMediaLibrary(int siteId, string libraryFolder, string libraryDescription, string libraryName, string libraryDisplayName)
     {
         // Creates a new media library object
@@ -59,16 +68,16 @@ public class KxpMediaFileFacade
 
         // Saves the new media library to the database
         MediaLibraryInfo.Provider.Set(newLibrary);
-        
-        return newLibrary; 
+
+        return newLibrary;
     }
-    
+
     public MediaLibraryInfo SetMediaLibrary(MediaLibraryInfo mfi)
     {
         MediaLibraryInfo.Provider.Set(mfi);
-        
+
         Debug.Assert(mfi.LibraryID != 0, "mfi.LibraryID != 0");
-        
-        return mfi; 
+
+        return mfi;
     }
 }

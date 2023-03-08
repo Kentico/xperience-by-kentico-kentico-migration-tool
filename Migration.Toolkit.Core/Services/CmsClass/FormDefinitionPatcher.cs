@@ -3,7 +3,9 @@ namespace Migration.Toolkit.Core.Services.CmsClass;
 using System.Diagnostics;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using CMS.DataEngine.Query;
 using Microsoft.Extensions.Logging;
+using Migration.Toolkit.KX13.Auxiliary;
 
 public class FormDefinitionPatcher
 {
@@ -33,7 +35,7 @@ public class FormDefinitionPatcher
 
     private readonly ILogger _logger;
     private readonly string _formDefinitionXml;
-    private readonly Dictionary<string, DataTypeModel> _defaultDataTypeMappings;
+    private readonly FieldMigrationService _fieldMigrationService;
     private readonly bool _classIsForm;
     private readonly bool _classIsDocumentType;
     private readonly bool _discardSysFields;
@@ -43,7 +45,7 @@ public class FormDefinitionPatcher
 
     public FormDefinitionPatcher(ILogger logger,
         string formDefinitionXml,
-        Dictionary<string, DataTypeModel> defaultDataTypeMappings,
+        FieldMigrationService fieldMigrationService,
         bool classIsForm,
         bool classIsDocumentType,
         bool discardSysFields,
@@ -52,7 +54,7 @@ public class FormDefinitionPatcher
     {
         _logger = logger;
         _formDefinitionXml = formDefinitionXml;
-        _defaultDataTypeMappings = defaultDataTypeMappings;
+        _fieldMigrationService = fieldMigrationService;
         _classIsForm = classIsForm;
         _classIsDocumentType = classIsDocumentType;
         _discardSysFields = discardSysFields;
@@ -156,7 +158,7 @@ public class FormDefinitionPatcher
         var isPk = bool.TryParse(isPkAttr?.Value, out var isPkParsed) && isPkParsed;
         var system = bool.TryParse(systemAttr?.Value, out var sysParsed) && sysParsed;
 
-        var fieldDescriptor = (columnAttr ?? guidAttr)?.Value ?? "<no guild or column>";
+        var fieldDescriptor = (columnAttr ?? guidAttr)?.Value ?? "<no guid or column>";
 
         if (_discardSysFields && (system || isPk))
         {
@@ -175,45 +177,39 @@ public class FormDefinitionPatcher
         }
 
 
-        if (_defaultDataTypeMappings.TryGetValue(columnType, out var typeMapping))
-        {
-            _logger.LogDebug("Field {FieldDescriptor} DataType: {SourceDataType} => {TargetDataType}", fieldDescriptor, columnType, typeMapping.TargetDataType);
-            columnTypeAttr?.SetValue(typeMapping.TargetDataType);
+        var controlNameElem = field.XPathSelectElement($"{FIELD_ELEM_SETTINGS}/{SETTINGS_ELEM_CONTROLNAME}");
+        var controlName = controlNameElem?.Value;
 
-            var controlNameElem = field.XPathSelectElement($"{FIELD_ELEM_SETTINGS}/{SETTINGS_ELEM_CONTROLNAME}");
-            var controlName = controlNameElem?.Value;
-            if (controlName != null && controlNameElem != null &&
-                typeMapping is { FormComponents: { } } &&
-                (typeMapping.FormComponents.TryGetValue(controlName, out var targetControlMapping) ||
-                 typeMapping.FormComponents.TryGetValue(SfcDirective.CatchAnyNonMatching, out targetControlMapping)))
+        var (sourceDataType, targetDataType, sourceFormControl, targetFormComponent, actions, fieldNameRegex)
+            = _fieldMigrationService.GetFieldMigration(columnType, controlName, columnAttr?.Value);
+
+        _logger.LogDebug("Field {FieldDescriptor} DataType: {SourceDataType} => {TargetDataType}", fieldDescriptor, columnType, targetDataType);
+        columnTypeAttr?.SetValue(targetDataType);
+        switch (targetFormComponent)
+        {
+            case TfcDirective.DoNothing:
+                _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective}", fieldDescriptor, targetFormComponent);
+                PerformActionsOnField(field, fieldDescriptor, actions);
+                break;
+            case TfcDirective.Clear:
+                _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective}", fieldDescriptor, targetFormComponent);
+                field.RemoveNodes();
+                break;
+            case TfcDirective.CopySourceControl:
+                // TODO tk: 2022-10-06 support only for custom controls
+                _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective} => {ControlName}", fieldDescriptor, targetFormComponent, controlName);
+                controlNameElem?.SetValue(controlName);
+                PerformActionsOnField(field, fieldDescriptor, actions);
+                break;
+            default:
             {
-                var (targetFormComponentOrTca, actions) = targetControlMapping;
-                switch (targetFormComponentOrTca)
-                {
-                    case TfcDirective.DoNothing:
-                        _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective}", fieldDescriptor, targetFormComponentOrTca);
-                        PerformActionsOnField(field, fieldDescriptor, actions);
-                        break;
-                    case TfcDirective.Clear:
-                        _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective}", fieldDescriptor, targetFormComponentOrTca);
-                        field.RemoveNodes();
-                        break;
-                    case TfcDirective.CopySourceControl:
-                        // TODO tk: 2022-10-06 support only for custom controls
-                        _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective} => {ControlName}", fieldDescriptor, targetFormComponentOrTca, controlName);
-                        controlNameElem.SetValue(controlName);
-                        PerformActionsOnField(field, fieldDescriptor, actions);
-                        break;
-                    default:
-                    {
-                        _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:NONE => from control '{ControlName}' => {TargetFormComponent}", fieldDescriptor, controlName, targetFormComponentOrTca);
-                        controlNameElem.SetValue(targetFormComponentOrTca);
-                        PerformActionsOnField(field, fieldDescriptor, actions);
-                        break;
-                    }
-                }
+                _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:NONE => from control '{ControlName}' => {TargetFormComponent}", fieldDescriptor, controlName, targetFormComponent);
+                controlNameElem?.SetValue(targetFormComponent);
+                PerformActionsOnField(field, fieldDescriptor, actions);
+                break;
             }
         }
+
 
         if (!_classIsForm && !_classIsDocumentType)
         {
@@ -341,8 +337,10 @@ public class FormDefinitionPatcher
         }
     }
 
-    private void PerformActionsOnField(XElement field, string fieldDescriptor, string[] actions)
+    private void PerformActionsOnField(XElement field, string fieldDescriptor, string[]? actions)
     {
+        if (actions == null) return;
+
         foreach (var action in actions)
         {
             _logger.LogDebug("Field {FieldDescriptor} Action: {Action}", fieldDescriptor, action);
@@ -380,90 +378,4 @@ public class FormDefinitionPatcher
             }
         }
     }
-
-    // private void PatchFieldAttribute(XAttribute fieldAttribute)
-    // {
-    //     _logger.LogDebug("Patching attribute '{AttributeName}'", fieldAttribute.Name);
-    //
-    //     switch (fieldAttribute.Name.ToString())
-    //     {
-    //         case "column":
-    //         {
-    //             break;
-    //         }
-    //         case "columntype":
-    //         {
-    //             break;
-    //         }
-    //         case "guid":
-    //         {
-    //             break;
-    //         }
-    //         case "isPK":
-    //         {
-    //             break;
-    //         }
-    //         case "allowempty":
-    //         {
-    //             break;
-    //         }
-    //         case "system":
-    //         {
-    //             break;
-    //         }
-    //         case "columnprecision":
-    //         {
-    //             break;
-    //         }
-    //         case "dummy":
-    //         {
-    //             break;
-    //         }
-    //         case "order":
-    //         {
-    //             break;
-    //         }
-    //         case "columnsize":
-    //         {
-    //             break;
-    //         }
-    //         case "isunique":
-    //         {
-    //             break;
-    //         }
-    //         case "translatefield":
-    //         {
-    //             break;
-    //         }
-    //         case "spellcheck":
-    //         {
-    //             break;
-    //         }
-    //         case "displayinsimplemode":
-    //         {
-    //             break;
-    //         }
-    //         case "inheritable":
-    //         {
-    //             break;
-    //         }
-    //         case "reftype":
-    //         {
-    //             break;
-    //         }
-    //         case "enabled":
-    //         {
-    //             break;
-    //         }
-    //         case "visible":
-    //         {
-    //             break;
-    //         }
-    //         default:
-    //         {
-    //             Debugger.Break();
-    //             break;
-    //         }
-    //     }
-    // }
 }

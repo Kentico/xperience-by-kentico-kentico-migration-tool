@@ -3,10 +3,12 @@ namespace Migration.Toolkit.Core.Mappers;
 using CMS.DataEngine;
 using CMS.FormEngine;
 using Microsoft.Extensions.Logging;
+using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Enumerations;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrationProtocol;
+using Migration.Toolkit.Core.Services;
 using Migration.Toolkit.Core.Services.CmsClass;
 
 public record AlternativeFormMapperSource(KX13M.CmsAlternativeForm AlternativeForm, DataClassInfo XbkFormClass);
@@ -14,10 +16,12 @@ public record AlternativeFormMapperSource(KX13M.CmsAlternativeForm AlternativeFo
 public class AlternativeFormMapper : EntityMapperBase<AlternativeFormMapperSource, AlternativeFormInfo>
 {
     private readonly ILogger<AlternativeFormMapper> _logger;
+    private readonly FieldMigrationService _fieldMigrationService;
 
-    public AlternativeFormMapper(ILogger<AlternativeFormMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : base(logger, pkContext, protocol)
+    public AlternativeFormMapper(ILogger<AlternativeFormMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol, FieldMigrationService fieldMigrationService) : base(logger, pkContext, protocol)
     {
         _logger = logger;
+        _fieldMigrationService = fieldMigrationService;
     }
 
     protected override AlternativeFormInfo? CreateNewInstance(AlternativeFormMapperSource source, MappingHelper mappingHelper, AddFailure addFailure)
@@ -51,7 +55,7 @@ public class AlternativeFormMapper : EntityMapperBase<AlternativeFormMapperSourc
         var patcher = new FormDefinitionPatcher(
             _logger,
             mergedDefinition,
-            FieldMappingInstance.Default.DataTypeMappings,
+            _fieldMigrationService,
             source.FormClass.ClassIsForm.GetValueOrDefault(false),
             source.FormClass.ClassIsDocumentType,
             false,

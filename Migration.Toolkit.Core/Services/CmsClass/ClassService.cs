@@ -15,8 +15,8 @@ public class ClassService
         _logger = logger;
         _kx13ContextFactory = kx13ContextFactory;
     }
-    
-    private ConcurrentDictionary<string, KX13M.CmsFormUserControl?> _userControlsCache = new(StringComparer.InvariantCultureIgnoreCase);
+
+    private readonly ConcurrentDictionary<string, KX13M.CmsFormUserControl?> _userControlsCache = new(StringComparer.InvariantCultureIgnoreCase);
     public KX13M.CmsFormUserControl? GetFormControlDefinition(string userControlCodeName)
     {
         var kx13Context = _kx13ContextFactory.CreateDbContext();

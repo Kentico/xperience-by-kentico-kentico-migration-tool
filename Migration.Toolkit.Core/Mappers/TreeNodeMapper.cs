@@ -14,9 +14,11 @@ using Migration.Toolkit.Core.Services.CmsRelationship;
 namespace Migration.Toolkit.Core.Mappers;
 
 using CMS.MediaLibrary;
+using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.Core.Services.Ipc;
 using Migration.Toolkit.KX13.Auxiliary;
 using Migration.Toolkit.KX13.Models;
+using Migration.Toolkit.KXP.Api;
 using Migration.Toolkit.KXP.Api.Auxiliary;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -35,6 +37,8 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
     private readonly AttachmentMigrator _attachmentMigrator;
     private readonly CmsRelationshipService _relationshipService;
     private readonly SourceInstanceContext _sourceInstanceContext;
+    private readonly FieldMigrationService _fieldMigrationService;
+    private readonly KxpMediaFileFacade _mediaFileFacade;
 
     public TreeNodeMapper(
         ILogger<TreeNodeMapper> logger,
@@ -44,7 +48,9 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
         ClassService classService,
         AttachmentMigrator attachmentMigrator,
         CmsRelationshipService relationshipService,
-        SourceInstanceContext sourceInstanceContext
+        SourceInstanceContext sourceInstanceContext,
+        FieldMigrationService fieldMigrationService,
+        KxpMediaFileFacade mediaFileFacade
     ) : base(logger, pkContext, protocol)
     {
         _logger = logger;
@@ -53,6 +59,8 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
         _attachmentMigrator = attachmentMigrator;
         _relationshipService = relationshipService;
         _sourceInstanceContext = sourceInstanceContext;
+        _fieldMigrationService = fieldMigrationService;
+        _mediaFileFacade = mediaFileFacade;
     }
 
     protected override TreeNode? CreateNewInstance(CmsTreeMapperSource source, MappingHelper mappingHelper, AddFailure addFailure)
@@ -133,8 +141,6 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
         // target.DocumentWorkflowActionStatus = sourceDocument.DocumentWorkflowActionStatus;
         target.DocumentGUID = sourceDocument.DocumentGuid.GetValueOrDefault();
         // target.DocumentWorkflowStepID = sourceDocument.DocumentWorkflowStepId;
-
-
 
         if (_sourceInstanceContext.HasInfo)
         {
@@ -270,7 +276,6 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
 
     private void WalkProperties(JObject properties, List<EditingFormControlModel>? formControlModels)
     {
-
         foreach (var (key, value) in properties)
         {
             _logger.LogTrace("Walk property {Name}|{Identifier}", key, value?.ToString());
@@ -278,7 +283,7 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
             var editingFcm = formControlModels?.FirstOrDefault(x => x.PropertyName.Equals(key, StringComparison.InvariantCultureIgnoreCase));
             if (editingFcm != null)
             {
-                if (FieldMappingInstance.Default.NotSupportedInKxpLegacyMode
+                if (FieldMappingInstance.BuiltInModel.NotSupportedInKxpLegacyMode
                         .SingleOrDefault(x => x.OldFormComponent == editingFcm.FormComponentIdentifier) is var (oldFormComponent, newFormComponent))
                 {
                     Protocol.Append(HandbookReferences.FormComponentNotSupportedInLegacyMode(oldFormComponent, newFormComponent));
@@ -312,7 +317,7 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
                         }
                     }
                 }
-                else if (FieldMappingInstance.Default.SupportedInKxpLegacyMode.Contains(editingFcm.FormComponentIdentifier))
+                else if (FieldMappingInstance.BuiltInModel.SupportedInKxpLegacyMode.Contains(editingFcm.FormComponentIdentifier))
                 {
                     // OK
                     _logger.LogTrace("Editing form component found {FormComponentName} => supported in legacy mode", editingFcm.FormComponentIdentifier);
@@ -348,97 +353,132 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
 
             if (coupledDataRow.TryGetValue(columnName, out var value))
             {
+                MediaFileInfo?[]? mfis = null;
+                bool hasMigratedMediaFile = false;
+
+                // TODO tomas.krch: 2023-03-07 store original URL/link to media/resource
+                var fieldMigration = _fieldMigrationService.GetFieldMigration(field.DataType, controlName, columnName);
+                if (fieldMigration.Actions?.Contains(TcaDirective.ConvertToAsset) ?? false)
+                {
+                    if (value is string link &&
+                        MediaHelper.MatchMediaLink(link) is (_, var mediaLinkKind, var mediaKind, var path, var mediaGuid) {Success:true})
+                    {
+                        if (mediaLinkKind == MediaLinkKind.Path)
+                        {
+                            // path needs to be converted to GUID
+                            if (mediaKind == MediaKind.Attachment && path != null &&
+                                _attachmentMigrator.TryMigrateAttachmentByPath(path, $"__{columnName}") is (_, _, var mediaFileInfo, _) { Success: true })
+                            {
+                                mfis = new [] { mediaFileInfo };
+                                hasMigratedMediaFile = true;
+                            }
+
+                            if (mediaKind == MediaKind.MediaFile)
+                            {
+                                //  _mediaFileFacade.GetMediaFile()
+                                // TODO tomas.krch: 2023-03-07 get media file by path
+                                // attachmentDocument.DocumentNode.NodeAliasPath
+                            }
+                        }
+
+                        if (mediaGuid is { } mg)
+                        {
+                            if (mediaKind == MediaKind.Attachment &&
+                                _attachmentMigrator.MigrateAttachment(mg, $"__{columnName}") is (_, _, var mediaFileInfo, _) { Success: true })
+                            {
+                                mfis = new [] { mediaFileInfo };
+                                hasMigratedMediaFile = true;
+                            }
+
+                            if (mediaKind == MediaKind.MediaFile &&  _mediaFileFacade.GetMediaFile(mg) is {} mfi)
+                            {
+                                mfis = new [] { mfi };
+                                hasMigratedMediaFile = true;
+                                // TODO tomas.krch: 2023-03-07 get migrated media file
+                            }
+                        }
+                    }
+                    else if (_classService.GetFormControlDefinition(controlName) is { } formControl)
+                    {
+                        switch (formControl)
+                        {
+                            case { UserControlForFile: true }:
+                            {
+                                if (value is Guid attachmentGuid)
+                                {
+                                    var (success, _, mediaFileInfo, mediaLibraryInfo) = _attachmentMigrator.MigrateAttachment(attachmentGuid, $"__{columnName}");
+                                    if (success && mediaFileInfo != null)
+                                    {
+                                        mfis = new [] { mediaFileInfo };
+                                        hasMigratedMediaFile = true;
+                                    }
+                                }
+                                else if (value is string attachmentGuidStr && Guid.TryParse(attachmentGuidStr, out attachmentGuid))
+                                {
+                                    var (success, _, mediaFileInfo, mediaLibraryInfo) = _attachmentMigrator.MigrateAttachment(attachmentGuid, $"__{columnName}");
+                                    if (success && mediaFileInfo != null)
+                                    {
+                                        mfis = new [] { mediaFileInfo };
+                                        hasMigratedMediaFile = true;
+                                    }
+                                }
+
+                                break;
+                            }
+                            case { UserControlForDocAttachments: true }:
+                            {
+                                var migratedAttachments =
+                                    _attachmentMigrator.MigrateGroupedAttachments(sourceDocument.DocumentId, field.Guid, field.Name);
+
+                                mfis = migratedAttachments
+                                    .Where(x => x.MediaFileInfo != null)
+                                    .Select(x => x.MediaFileInfo).ToArray();
+                                hasMigratedMediaFile = true;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Unable to map value based on selected migration '{Migration}', value: '{Value}'", fieldMigration, value);
+                        continue;
+                    }
+
+                    if (hasMigratedMediaFile && mfis is { Length: > 0 })
+                    {
+                        target.SetValueAsJson(columnName,
+                            mfis.Select(x => new AssetRelatedItem
+                            {
+                                Identifier = x.FileGUID,
+                                Dimensions = new AssetDimensions
+                                {
+                                    Height = x.FileImageHeight,
+                                    Width = x.FileImageWidth,
+                                },
+                                Name = x.FileName,
+                                Size = x.FileSize
+                            })
+                        );
+                    }
+
+                    continue;
+                }
+
                 if (controlName != null)
                 {
-                    switch (_classService.GetFormControlDefinition(controlName))
+                    // _classService.GetFormControlDefinition(controlName) is { UserControlForDocRelationships: true } ||
+                    if (fieldMigration.Actions?.Contains(TcaDirective.ConvertToPages) ?? false)
                     {
-                        case { UserControlForFile: true }:
-                        {
-                            if (value is Guid attachmentGuid)
-                            {
-                                var (success, _, mediaFileInfo, mediaLibraryInfo) = _attachmentMigrator.MigrateAttachment(attachmentGuid, $"__{columnName}");
-                                if (success && mediaFileInfo != null)
-                                {
-                                    target.SetValueAsJson(columnName, new[]
-                                    {
-                                        new AssetRelatedItem
-                                        {
-                                            Identifier = mediaFileInfo.FileGUID,
-                                            Dimensions = new AssetDimensions
-                                            {
-                                                Height = mediaFileInfo.FileImageHeight,
-                                                Width = mediaFileInfo.FileImageWidth,
-                                            },
-                                            Name = mediaFileInfo.FileName,
-                                            Size = mediaFileInfo.FileSize
-                                        }
-                                    });
-                                }
-                            }
-                            else if (value is string attachmentGuidStr && Guid.TryParse(attachmentGuidStr, out attachmentGuid))
-                            {
-                                var (success, _, mediaFileInfo, mediaLibraryInfo) = _attachmentMigrator.MigrateAttachment(attachmentGuid, $"__{columnName}");
-                                if (success && mediaFileInfo != null)
-                                {
-                                    target.SetValueAsJson(columnName, new[]
-                                    {
-                                        new AssetRelatedItem
-                                        {
-                                            Identifier = mediaFileInfo.FileGUID,
-                                            Dimensions = new AssetDimensions
-                                            {
-                                                Height = mediaFileInfo.FileImageHeight,
-                                                Width = mediaFileInfo.FileImageWidth,
-                                            },
-                                            Name = mediaFileInfo.FileName,
-                                            Size = mediaFileInfo.FileSize
-                                        }
-                                    });
-                                }
-                            }
+                        // relation to other document
+                        var convertedRelation = _relationshipService.GetNodeRelationships(cmsTree.NodeId)
+                            .Select(r => new PageRelatedItem { NodeGuid = r.RightNode.NodeGuid });
 
-                            break;
-                        }
-                        case { UserControlForDocAttachments: true }:
-                        {
-                            var migratedAttachments =
-                                _attachmentMigrator.MigrateGroupedAttachments(sourceDocument.DocumentId, field.Guid, field.Name);
-
-                            var assets = migratedAttachments
-                                .Where(x => x.MediaFileInfo != null)
-                                .Select(x => new AssetRelatedItem
-                                {
-                                    Identifier = x.MediaFileInfo.FileGUID,
-                                    Dimensions = new AssetDimensions
-                                    {
-                                        Height = x.MediaFileInfo.FileImageHeight,
-                                        Width = x.MediaFileInfo.FileImageWidth,
-                                    },
-                                    Name = x.MediaFileInfo.FileName,
-                                    Size = x.MediaFileInfo.FileSize
-                                });
-
-                            target.SetValueAsJson(columnName, assets);
-
-                            break;
-                        }
-                        case { UserControlForDocRelationships: true }:
-                        {
-                            // relation to other document
-
-                            var convertedRelation = _relationshipService.GetNodeRelationships(cmsTree.NodeId)
-                                .Select(r => new PageRelatedItem
-                                {
-                                    NodeGuid = r.RightNode.NodeGuid
-                                });
-
-                            target.SetValueAsJson(columnName, convertedRelation);
-                            break;
-                        }
-                        default:
-                            // leave as is
-                            target.SetValue(columnName, value);
-                            break;
+                        target.SetValueAsJson(columnName, convertedRelation);
+                    }
+                    else
+                    {
+                        // leave as is
+                        target.SetValue(columnName, value);
                     }
                 }
                 else
@@ -449,8 +489,7 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
             else
             {
                 // TODO tk: 2022-09-15 log what is misising also log to protocol
-                _logger.LogWarning("Coupled data is missing for source document {DocumentId} of class {ClassName}", sourceDocument.DocumentId,
-                    cmsTree.NodeClass.ClassName);
+                _logger.LogWarning("Coupled data is missing for source document {DocumentId} of class {ClassName}", sourceDocument.DocumentId, cmsTree.NodeClass.ClassName);
             }
         }
     }
