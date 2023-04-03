@@ -26,7 +26,6 @@ namespace Migration.Toolkit.KXP.Models
         public DateTime FormLastModified { get; set; }
         [Column("FormCoupledClassID")]
         public int? FormCoupledClassId { get; set; }
-        public bool? FormHideNewParentFields { get; set; }
         [StringLength(400)]
         public string? FormCustomizedColumns { get; set; }
         public bool? FormIsCustom { get; set; }

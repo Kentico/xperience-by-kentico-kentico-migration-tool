@@ -19,10 +19,11 @@ namespace Migration.Toolkit.KXP.Models
         public OmContact()
         {
             CmsConsentAgreements = new HashSet<CmsConsentAgreement>();
+            EmailLibraryEmailMarketingRecipients = new HashSet<EmailLibraryEmailMarketingRecipient>();
+            EmailLibraryEmailSubscriptionConfirmations = new HashSet<EmailLibraryEmailSubscriptionConfirmation>();
             OmAccountAccountPrimaryContacts = new HashSet<OmAccount>();
             OmAccountAccountSecondaryContacts = new HashSet<OmAccount>();
             OmAccountContacts = new HashSet<OmAccountContact>();
-            OmMemberships = new HashSet<OmMembership>();
             OmVisitorToContacts = new HashSet<OmVisitorToContact>();
         }
 
@@ -93,14 +94,16 @@ namespace Migration.Toolkit.KXP.Models
         public virtual OmContactStatus? ContactStatus { get; set; }
         [InverseProperty("ConsentAgreementContact")]
         public virtual ICollection<CmsConsentAgreement> CmsConsentAgreements { get; set; }
+        [InverseProperty("EmailMarketingRecipientContact")]
+        public virtual ICollection<EmailLibraryEmailMarketingRecipient> EmailLibraryEmailMarketingRecipients { get; set; }
+        [InverseProperty("EmailSubscriptionConfirmationContact")]
+        public virtual ICollection<EmailLibraryEmailSubscriptionConfirmation> EmailLibraryEmailSubscriptionConfirmations { get; set; }
         [InverseProperty("AccountPrimaryContact")]
         public virtual ICollection<OmAccount> OmAccountAccountPrimaryContacts { get; set; }
         [InverseProperty("AccountSecondaryContact")]
         public virtual ICollection<OmAccount> OmAccountAccountSecondaryContacts { get; set; }
         [InverseProperty("Contact")]
         public virtual ICollection<OmAccountContact> OmAccountContacts { get; set; }
-        [InverseProperty("Contact")]
-        public virtual ICollection<OmMembership> OmMemberships { get; set; }
         [InverseProperty("VisitorToContactContact")]
         public virtual ICollection<OmVisitorToContact> OmVisitorToContacts { get; set; }
     }

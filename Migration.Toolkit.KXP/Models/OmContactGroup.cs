@@ -11,6 +11,9 @@ namespace Migration.Toolkit.KXP.Models
     {
         public OmContactGroup()
         {
+            EmailLibraryEmailSubscriptionConfirmations = new HashSet<EmailLibraryEmailSubscriptionConfirmation>();
+            EmailLibraryRecipientListSettings = new HashSet<EmailLibraryRecipientListSetting>();
+            EmailLibrarySendConfigurations = new HashSet<EmailLibrarySendConfiguration>();
             OmContactGroupMembers = new HashSet<OmContactGroupMember>();
         }
 
@@ -28,7 +31,14 @@ namespace Migration.Toolkit.KXP.Models
         [Column("ContactGroupGUID")]
         public Guid? ContactGroupGuid { get; set; }
         public int? ContactGroupStatus { get; set; }
+        public bool? ContactGroupIsRecipientList { get; set; }
 
+        [InverseProperty("EmailSubscriptionConfirmationRecipientList")]
+        public virtual ICollection<EmailLibraryEmailSubscriptionConfirmation> EmailLibraryEmailSubscriptionConfirmations { get; set; }
+        [InverseProperty("RecipientListSettingsRecipientList")]
+        public virtual ICollection<EmailLibraryRecipientListSetting> EmailLibraryRecipientListSettings { get; set; }
+        [InverseProperty("SendConfigurationRecipientList")]
+        public virtual ICollection<EmailLibrarySendConfiguration> EmailLibrarySendConfigurations { get; set; }
         [InverseProperty("ContactGroupMemberContactGroup")]
         public virtual ICollection<OmContactGroupMember> OmContactGroupMembers { get; set; }
     }

@@ -10,7 +10,6 @@ namespace Migration.Toolkit.KXP.Models
     [Index("ClassName", Name = "IX_CMS_Class_ClassName", IsUnique = true)]
     [Index("ClassName", "ClassGuid", Name = "IX_CMS_Class_ClassName_ClassGUID")]
     [Index("ClassResourceId", Name = "IX_CMS_Class_ClassResourceID")]
-    [Index("ClassShowAsSystemTable", "ClassIsCustomTable", "ClassIsCoupledClass", "ClassIsDocumentType", Name = "IX_CMS_Class_ClassShowAsSystemTable_ClassIsCustomTable_ClassIsCoupledClass_ClassIsDocumentType")]
     public partial class CmsClass
     {
         public CmsClass()
@@ -18,13 +17,10 @@ namespace Migration.Toolkit.KXP.Models
             CmsAlternativeFormFormClasses = new HashSet<CmsAlternativeForm>();
             CmsAlternativeFormFormCoupledClasses = new HashSet<CmsAlternativeForm>();
             CmsForms = new HashSet<CmsForm>();
-            CmsPermissions = new HashSet<CmsPermission>();
             CmsQueries = new HashSet<CmsQuery>();
-            CmsTransformations = new HashSet<CmsTransformation>();
             CmsTrees = new HashSet<CmsTree>();
             CmsVersionHistories = new HashSet<CmsVersionHistory>();
             CmsWorkflowScopes = new HashSet<CmsWorkflowScope>();
-            Sites = new HashSet<CmsSite>();
         }
 
         [Key]
@@ -34,7 +30,6 @@ namespace Migration.Toolkit.KXP.Models
         public string ClassDisplayName { get; set; } = null!;
         [StringLength(100)]
         public string ClassName { get; set; } = null!;
-        public bool ClassUsesVersioning { get; set; }
         public bool ClassIsDocumentType { get; set; }
         public bool ClassIsCoupledClass { get; set; }
         public string ClassXmlSchema { get; set; } = null!;
@@ -51,21 +46,10 @@ namespace Migration.Toolkit.KXP.Models
         public DateTime ClassLastModified { get; set; }
         [Column("ClassGUID")]
         public Guid ClassGuid { get; set; }
-        public bool ClassIsCustomTable { get; set; }
         [StringLength(1000)]
         public string? ClassShowColumns { get; set; }
-        [StringLength(200)]
-        public string? ClassSearchTitleColumn { get; set; }
-        [StringLength(200)]
-        public string? ClassSearchContentColumn { get; set; }
-        [StringLength(200)]
-        public string? ClassSearchImageColumn { get; set; }
-        [StringLength(200)]
-        public string? ClassSearchCreationDateColumn { get; set; }
-        public string? ClassSearchSettings { get; set; }
         [Column("ClassInheritsFromClassID")]
         public int? ClassInheritsFromClassId { get; set; }
-        public bool? ClassSearchEnabled { get; set; }
         public string? ClassContactMapping { get; set; }
         public bool? ClassContactOverwriteEnabled { get; set; }
         [StringLength(100)]
@@ -87,7 +71,8 @@ namespace Migration.Toolkit.KXP.Models
         [Column("ClassHasURL")]
         public bool ClassHasUrl { get; set; }
         public bool ClassHasMetadata { get; set; }
-        public int? ClassSearchIndexDataSource { get; set; }
+        public bool ClassIsPage { get; set; }
+        public bool ClassHasUnmanagedDbSchema { get; set; }
 
         [ForeignKey("ClassResourceId")]
         [InverseProperty("CmsClasses")]
@@ -99,20 +84,12 @@ namespace Migration.Toolkit.KXP.Models
         [InverseProperty("FormClass")]
         public virtual ICollection<CmsForm> CmsForms { get; set; }
         [InverseProperty("Class")]
-        public virtual ICollection<CmsPermission> CmsPermissions { get; set; }
-        [InverseProperty("Class")]
         public virtual ICollection<CmsQuery> CmsQueries { get; set; }
-        [InverseProperty("TransformationClass")]
-        public virtual ICollection<CmsTransformation> CmsTransformations { get; set; }
         [InverseProperty("NodeClass")]
         public virtual ICollection<CmsTree> CmsTrees { get; set; }
         [InverseProperty("VersionClass")]
         public virtual ICollection<CmsVersionHistory> CmsVersionHistories { get; set; }
         [InverseProperty("ScopeClass")]
         public virtual ICollection<CmsWorkflowScope> CmsWorkflowScopes { get; set; }
-
-        [ForeignKey("ClassId")]
-        [InverseProperty("Classes")]
-        public virtual ICollection<CmsSite> Sites { get; set; }
     }
 }

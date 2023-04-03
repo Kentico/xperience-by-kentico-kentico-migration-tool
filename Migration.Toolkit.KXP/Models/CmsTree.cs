@@ -46,7 +46,6 @@ namespace Migration.Toolkit.KXP.Models
         [Column("NodeGUID")]
         public Guid NodeGuid { get; set; }
         public int? NodeOrder { get; set; }
-        public bool? IsSecuredNode { get; set; }
         [Column("NodeLinkedNodeID")]
         public int? NodeLinkedNodeId { get; set; }
         public int? NodeOwner { get; set; }
@@ -57,6 +56,8 @@ namespace Migration.Toolkit.KXP.Models
         public bool? NodeHasLinks { get; set; }
         [Column("NodeOriginalNodeID")]
         public int? NodeOriginalNodeId { get; set; }
+        public bool? NodeIsPage { get; set; }
+        public bool NodeIsSecured { get; set; }
 
         [ForeignKey("NodeClassId")]
         [InverseProperty("CmsTrees")]

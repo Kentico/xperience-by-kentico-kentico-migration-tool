@@ -13,7 +13,6 @@ namespace Migration.Toolkit.KXP.Models
         public MediaLibrary()
         {
             MediaFiles = new HashSet<MediaFile>();
-            MediaLibraryRolePermissions = new HashSet<MediaLibraryRolePermission>();
         }
 
         [Key]
@@ -43,7 +42,5 @@ namespace Migration.Toolkit.KXP.Models
         public virtual CmsSite LibrarySite { get; set; } = null!;
         [InverseProperty("FileLibrary")]
         public virtual ICollection<MediaFile> MediaFiles { get; set; }
-        [InverseProperty("Library")]
-        public virtual ICollection<MediaLibraryRolePermission> MediaLibraryRolePermissions { get; set; }
     }
 }

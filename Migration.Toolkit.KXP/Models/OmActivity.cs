@@ -49,8 +49,6 @@ namespace Migration.Toolkit.KXP.Models
         [Column("ActivityABVariantName")]
         [StringLength(200)]
         public string? ActivityAbvariantName { get; set; }
-        [Column("ActivityURLHash")]
-        public long ActivityUrlhash { get; set; }
         [Column("ActivityUTMContent")]
         [StringLength(200)]
         public string? ActivityUtmcontent { get; set; }

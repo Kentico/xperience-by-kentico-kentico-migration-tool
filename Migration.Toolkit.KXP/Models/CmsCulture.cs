@@ -14,9 +14,7 @@ namespace Migration.Toolkit.KXP.Models
         public CmsCulture()
         {
             CmsResourceTranslations = new HashSet<CmsResourceTranslation>();
-            CmsUserCultures = new HashSet<CmsUserCulture>();
             CmsWorkflowScopes = new HashSet<CmsWorkflowScope>();
-            Indices = new HashSet<CmsSearchIndex>();
             Sites = new HashSet<CmsSite>();
         }
 
@@ -39,14 +37,9 @@ namespace Migration.Toolkit.KXP.Models
 
         [InverseProperty("TranslationCulture")]
         public virtual ICollection<CmsResourceTranslation> CmsResourceTranslations { get; set; }
-        [InverseProperty("Culture")]
-        public virtual ICollection<CmsUserCulture> CmsUserCultures { get; set; }
         [InverseProperty("ScopeCulture")]
         public virtual ICollection<CmsWorkflowScope> CmsWorkflowScopes { get; set; }
 
-        [ForeignKey("IndexCultureId")]
-        [InverseProperty("IndexCultures")]
-        public virtual ICollection<CmsSearchIndex> Indices { get; set; }
         [ForeignKey("CultureId")]
         [InverseProperty("Cultures")]
         public virtual ICollection<CmsSite> Sites { get; set; }
