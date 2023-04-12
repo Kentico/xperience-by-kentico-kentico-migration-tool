@@ -51,7 +51,7 @@ public class KxpMediaFileFacade
     public void EnsureMediaFilePathExistsInLibrary(MediaFileInfo mfi, int libraryId, string siteName)
     {
         var librarySubDir = Path.GetDirectoryName(mfi.FilePath);
-        MediaLibraryInfoProvider.CreateMediaLibraryFolder(siteName, libraryId, librarySubDir, false, false);
+        MediaLibraryInfoProvider.CreateMediaLibraryFolder(siteName, libraryId, librarySubDir, false);
     }
 
     public MediaLibraryInfo CreateMediaLibrary(int siteId, string libraryFolder, string libraryDescription, string libraryName, string libraryDisplayName)

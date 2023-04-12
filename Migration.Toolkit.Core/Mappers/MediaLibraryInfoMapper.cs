@@ -33,16 +33,6 @@ public class MediaLibraryInfoMapper : EntityMapperBase<KX13.Models.MediaLibrary,
         target.LibraryDisplayName = source.LibraryDisplayName;
         target.LibraryDescription = source.LibraryDescription;
         target.LibraryFolder = source.LibraryFolder;
-
-        var libraryAccess = mappingHelper.Require(source.LibraryAccess, nameof(source.LibraryAccess));
-        target.FileCreate = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 1);
-        target.FileDelete = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 2);
-        target.FileModify = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 3);
-        target.FolderCreate = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 4);
-        target.FolderDelete = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 5);
-        target.FolderModify = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 6);
-        target.Access = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 7);
-
         target.LibraryLastModified = mappingHelper.Require(source.LibraryLastModified, nameof(source.LibraryLastModified));
         target.LibraryUseDirectPathForContent = source.LibraryUseDirectPathForContent ?? true;
 
@@ -53,6 +43,16 @@ public class MediaLibraryInfoMapper : EntityMapperBase<KX13.Models.MediaLibrary,
         {
             target.LibrarySiteID = siteId;
         }
+        
+        // OBSOLETE
+        // var libraryAccess = mappingHelper.Require(source.LibraryAccess, nameof(source.LibraryAccess));
+        // target.FileCreate = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 1);
+        // target.FileDelete = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 2);
+        // target.FileModify = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 3);
+        // target.FolderCreate = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 4);
+        // target.FolderDelete = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 5);
+        // target.FolderModify = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 6);
+        // target.Access = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 7);
 
         return target;
     }

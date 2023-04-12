@@ -313,7 +313,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                             UpdateUser = false,
                             UpdateTimeStamps = false,
                             LogEvents = false,
-                            LogIntegration = false,
+                            // OBSOLETE: LogIntegration = false,
                             UpdatePaths = false,
                         };
 

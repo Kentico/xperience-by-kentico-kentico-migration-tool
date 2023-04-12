@@ -121,11 +121,7 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
             var kxoDataClass = _kxpClassFacade.GetClass(kx13Class.ClassGuid);
             _protocol.FetchedTarget(kxoDataClass);
 
-            var dataClassId = SaveUsingKxoApi(kx13Class, kxoDataClass);
-            if (dataClassId is { } dcId)
-            {
-                MigrateClassSiteMappings(siteIdExplicitMapping, dcId, dataClassId, kx13Class);
-            }
+            SaveUsingKxoApi(kx13Class, kxoDataClass);
         }
 
         await MigratePageTemplateConfigurations(migratedSiteIds, cancellationToken);
@@ -143,38 +139,6 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
         foreach (var kx13PageTemplateConfiguration in kx13PageTemplateConfigurations)
         {
             await _pageTemplateMigrator.MigratePageTemplateConfigurationAsync(kx13PageTemplateConfiguration);
-        }
-    }
-
-    private void MigrateClassSiteMappings(Dictionary<int, int> siteIdMapping, int dcId, [DisallowNull] int? dataClassId, CmsClass kx13Class)
-    {
-        foreach (var (sourceSiteId, targetSiteId) in siteIdMapping)
-        {
-            try
-            {
-                var classSiteInfo = ClassSiteInfo.New();
-                classSiteInfo.ClassID = dcId;
-                classSiteInfo.SiteID = targetSiteId;
-                ClassSiteInfoProvider.ProviderObject.Set(classSiteInfo);
-
-                _protocol.Success(new { dataClassId, targetSiteId }, classSiteInfo, null);
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError(exception, "Failed to create target instance");
-                _protocol.Append(HandbookReferences
-                    .ErrorCreatingTargetInstance<ClassSiteInfo>(exception)
-                    .NeedsManualAction()
-                    .WithData(new
-                    {
-                        exception,
-                        sourceSiteId,
-                        targetSiteId,
-                        dataClassId,
-                        sourceClassId = kx13Class.ClassId
-                    })
-                );
-            }
         }
     }
 

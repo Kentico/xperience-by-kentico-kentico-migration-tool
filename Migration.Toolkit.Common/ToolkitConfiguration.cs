@@ -143,6 +143,9 @@ public class ToolkitConfiguration
     [ConfigurationKeyName(ConfigurationNames.MigrationProtocolPath)]
     public string? MigrationProtocolPath { get; set; }
 
+    [ConfigurationKeyName(ConfigurationNames.MemberIncludeUserSystemFields)]
+    public string? MemberIncludeUserSystemFields { get; set; }
+    
     public Dictionary<int, int> RequireExplicitMapping<TEntityType>(Expression<Func<TEntityType, object>> keyNameSelector)
     {
         var memberName = keyNameSelector.GetMemberName();

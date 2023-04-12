@@ -192,6 +192,7 @@ void PrintCommandDescriptions()
     WriteCommandDesc($"starts migration of {Green(MigrateMediaLibrariesCommand.MonikerFriendly)}", $"migrate --{MigrateMediaLibrariesCommand.Moniker}");
     WriteCommandDesc($"starts migration of {Green(MigrateSitesCommand.MonikerFriendly)}", $"migrate --{MigrateSitesCommand.Moniker}");
     WriteCommandDesc($"starts migration of {Green(MigrateUsersCommand.MonikerFriendly)}", $"migrate --{MigrateUsersCommand.Moniker}");
+    WriteCommandDesc($"starts migration of {Green(MigrateMembersCommand.MonikerFriendly)}", $"migrate --{MigrateMembersCommand.Moniker}");
     WriteCommandDesc($"starts migration of {Green(MigrateAttachmentsCommand.MonikerFriendly)}", $"migrate --{MigrateAttachmentsCommand.Moniker}");
     WriteCommandDesc($"starts migration of {Green(MigrateCustomModulesCommand.MonikerFriendly)}", $"migrate --{MigrateCustomModulesCommand.Moniker}");
 
@@ -330,6 +331,11 @@ while (argsQ.TryDequeue(out var arg))
     {
         commands.Add(new MigrateUsersCommand());
         continue;
+    }
+
+    if (arg == $"--{MigrateMembersCommand.Moniker}")
+    {
+        commands.Add(new MigrateMembersCommand());
     }
 
     if (arg == $"--{MigrateCustomModulesCommand.Moniker}")

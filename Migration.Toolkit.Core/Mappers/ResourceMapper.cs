@@ -23,20 +23,12 @@ public class ResourceMapper : EntityMapperBase<KX13M.CmsResource, ResourceInfo>
 
     protected override ResourceInfo MapInternal(CmsResource source, ResourceInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
-        target.ResourceAuthor = source.ResourceAuthor;
         target.ResourceDescription = source.ResourceDescription;
         target.ResourceDisplayName = source.ResourceDisplayName;
         target.ResourceGUID = source.ResourceGuid;
-        target.ResourceHasFiles = source.ResourceHasFiles ?? false;
-        target.ResourceInstallationState = source.ResourceInstallationState;
-        target.ResourceInstalledVersion = source.ResourceInstalledVersion;
-        // target.ResourceIsInDevelopment = source.ResourceIsInDevelopment ?? false;
         target.ResourceIsInDevelopment = false; // TODO tk: 2022-10-10 if true, module is not shown in UI of XbK
         target.ResourceLastModified = source.ResourceLastModified;
         target.ResourceName = source.ResourceName;
-        target.ResourceUrl = source.ResourceUrl;
-        target.ResourceVersion = source.ResourceVersion;
-        target.ShowInDevelopment = source.ShowInDevelopment ?? false;
 
         if (target.ResourceName == Kx13SystemResource.Licenses)
         {
@@ -55,6 +47,16 @@ public class ResourceMapper : EntityMapperBase<KX13M.CmsResource, ResourceInfo>
                 target.ResourceName = targetResourceNamePatched;
             }
         }
+        
+        // OBSOLETE
+        // target.ResourceAuthor = source.ResourceAuthor;
+        // target.ResourceHasFiles = source.ResourceHasFiles ?? false;
+        // target.ResourceInstallationState = source.ResourceInstallationState;
+        // target.ResourceInstalledVersion = source.ResourceInstalledVersion;
+        // target.ResourceIsInDevelopment = source.ResourceIsInDevelopment ?? false;
+        // target.ResourceUrl = source.ResourceUrl;
+        // target.ResourceVersion = source.ResourceVersion;
+        // target.ShowInDevelopment = source.ShowInDevelopment ?? false;
 
         return target;
     }

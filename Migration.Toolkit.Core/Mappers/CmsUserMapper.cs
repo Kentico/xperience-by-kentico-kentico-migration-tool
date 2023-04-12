@@ -62,25 +62,24 @@ public class CmsUserMapper : EntityMapperBase<KX13.Models.CmsUser, CmsUser>
                     {
                         RoleId = targetRoleId,
                         User = target,
-                        ValidTo = sourceCmsUserRole.ValidTo
+                        // OBSOLETE
+                        // ValidTo = sourceCmsUserRole.ValidTo
                     });
                 }
             }
         }
 
-        foreach (var sourceCmsUserSite in source.CmsUserSites)
-        {
-            var userSite = new CmsUserSite();
-            if (mappingHelper.TryTranslateId<KX13M.CmsSite>(s => s.SiteId, sourceCmsUserSite.SiteId, out var siteId) && siteId != null)
-            {
-                userSite.SiteId = siteId.Value;
-                target.CmsUserSites.Add(userSite);
-            }
-        }
+        // OBSOLETE
+        // foreach (var sourceCmsUserSite in source.CmsUserSites)
+        // {
+        //     var userSite = new CmsUserSite();
+        //     if (mappingHelper.TryTranslateId<KX13M.CmsSite>(s => s.SiteId, sourceCmsUserSite.SiteId, out var siteId) && siteId != null)
+        //     {
+        //         userSite.SiteId = siteId.Value;
+        //         target.CmsUserSites.Add(userSite);
+        //     }
+        // }
 
-        return target;
-
-        // removed in kxo
         // target.MiddleName = source.MiddleName;
         // target.FullName = source.FullName;
         // target.PreferredCultureCode = source.PreferredCultureCode;
@@ -95,5 +94,7 @@ public class CmsUserMapper : EntityMapperBase<KX13.Models.CmsUser, CmsUser>
         // target.UserMfrequired = source.UserMfrequired;
         // target.UserPrivilegeLevel = source.UserPrivilegeLevel;
         // target.UserMftimestep = source.UserMftimestep;;
+        
+        return target;
     }
 }

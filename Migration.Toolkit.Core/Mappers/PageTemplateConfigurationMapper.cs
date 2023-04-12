@@ -40,8 +40,7 @@ public class PageTemplateConfigurationMapper : EntityMapperBase<KX13M.CmsPageTem
         target.PageTemplateConfigurationDescription = source.PageTemplateConfigurationDescription;
         target.PageTemplateConfigurationName = source.PageTemplateConfigurationName;
         target.PageTemplateConfigurationLastModified = source.PageTemplateConfigurationLastModified;
-        target.PageTemplateConfigurationThumbnailGUID = source.PageTemplateConfigurationThumbnailGuid.GetValueOrDefault();
-
+        
         // TODO tk: 2022-09-14 find conversion path for PageTemplateConfigurationIcon
         // target.PageTemplateConfigurationIcon = source.PageTemplateConfigurationThumbnailGuid.GetValueOrDefault();
 
@@ -92,6 +91,9 @@ public class PageTemplateConfigurationMapper : EntityMapperBase<KX13M.CmsPageTem
             target.PageTemplateConfigurationTemplate = source.PageTemplateConfigurationTemplate;
             target.PageTemplateConfigurationWidgets = source.PageTemplateConfigurationWidgets;
         }
+        
+        // OBSOLETE
+        // target.PageTemplateConfigurationThumbnailGUID = source.PageTemplateConfigurationThumbnailGuid.GetValueOrDefault();
 
         return target;
     }
