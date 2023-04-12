@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.KXP.Models
 {
     [Table("CMS_Email")]
+    [Index("EmailEmailConfigurationId", Name = "IX_CMS_Email_EmailEmailConfigurationID")]
     [Index("EmailPriority", "EmailId", Name = "IX_CMS_Email_EmailPriority_EmailID", IsUnique = true)]
     public partial class CmsEmail
     {
@@ -44,6 +45,13 @@ namespace Migration.Toolkit.KXP.Models
         public string? EmailReplyTo { get; set; }
         public string? EmailHeaders { get; set; }
         public DateTime? EmailCreated { get; set; }
+        [Column("EmailEmailConfigurationID")]
+        public int? EmailEmailConfigurationId { get; set; }
+        public Guid? EmailMailoutGuid { get; set; }
+
+        [ForeignKey("EmailEmailConfigurationId")]
+        [InverseProperty("CmsEmails")]
+        public virtual EmailLibraryEmailConfiguration? EmailEmailConfiguration { get; set; }
 
         [ForeignKey("EmailId")]
         [InverseProperty("Emails")]

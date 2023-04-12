@@ -15,10 +15,10 @@ namespace Migration.Toolkit.KXP.Models
         public int ExternalLoginId { get; set; }
         [Column("UserID")]
         public int UserId { get; set; }
-        [StringLength(200)]
-        public string? LoginProvider { get; set; }
-        [StringLength(200)]
-        public string? IdentityKey { get; set; }
+        [StringLength(100)]
+        public string LoginProvider { get; set; } = null!;
+        [StringLength(100)]
+        public string IdentityKey { get; set; } = null!;
 
         [ForeignKey("UserId")]
         [InverseProperty("CmsExternalLogins")]

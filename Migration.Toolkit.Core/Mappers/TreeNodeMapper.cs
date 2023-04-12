@@ -133,7 +133,7 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
 
         target.DocumentPublishFrom = sourceDocument.DocumentPublishFrom.GetValueOrDefault();
         target["DocumentPublishTo"] = sourceDocument.DocumentPublishTo;
-        target.DocumentSearchExcluded = sourceDocument.DocumentSearchExcluded.GetValueOrDefault();
+        // target.DocumentSearchExcluded = sourceDocument.DocumentSearchExcluded.GetValueOrDefault();
         // TODO target.DocumentsOnPath
         // target.DocumentCheckedOutWhen = sourceDocument.DocumentCheckedOutWhen;
         // target.DocumentLastVersionName = sourceDocument.DocumentLastVersionNumber;

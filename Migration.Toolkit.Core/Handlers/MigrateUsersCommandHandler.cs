@@ -23,7 +23,6 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
     private readonly IEntityMapper<KX13.Models.CmsUser, UserInfo> _userInfoMapper;
     private readonly IEntityMapper<KX13M.CmsRole, RoleInfo> _roleMapper;
     private readonly IEntityMapper<KX13M.CmsUserRole, UserRoleInfo> _userRoleMapper;
-    private readonly IEntityMapper<KX13M.CmsUserSite, UserSiteInfo> _userSiteMapper;
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IProtocol _protocol;
@@ -36,7 +35,6 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
         IEntityMapper<KX13M.CmsUser, UserInfo> userInfoMapper,
         IEntityMapper<KX13M.CmsRole, RoleInfo> roleMapper,
         IEntityMapper<KX13M.CmsUserRole, UserRoleInfo> userRoleMapper,
-        IEntityMapper<KX13M.CmsUserSite, UserSiteInfo> userSiteMapper,
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol
@@ -47,7 +45,6 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
         _userInfoMapper = userInfoMapper;
         _roleMapper = roleMapper;
         _userRoleMapper = userRoleMapper;
-        _userSiteMapper = userSiteMapper;
         _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _protocol = protocol;
@@ -95,13 +92,7 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
             var mapped = _userInfoMapper.Map(kx13User, xbkUserInfo);
             _protocol.MappedTarget(mapped);
 
-            var userSaveSuccess = await SaveUserUsingKenticoApi(cancellationToken, mapped, kx13User);
-            if (userSaveSuccess)
-            {
-                var xbkUserId = _primaryKeyMappingContext.RequireMapFromSource<KX13M.CmsUser>(u => u.UserId, kx13User.UserId);
-
-                await MigrateUserSites(kx13User.UserId, xbkUserId, migratedSiteIds, cancellationToken);
-            }
+            await SaveUserUsingKenticoApi(cancellationToken, mapped, kx13User);
         }
 
         await MigrateUserCmsRoles(kx13Context, cancellationToken, migratedSiteIds);
@@ -109,51 +100,52 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
         return new GenericCommandResult();
     }
 
-    private async Task MigrateUserSites(int kx13UserUserId, int xbkUserId, List<int> migratedSiteIds, CancellationToken cancellationToken)
-    {
-        await using var kx13DbContext = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
-
-        var kx13UserSites = kx13DbContext.CmsUserSites
-            .Where(x => x.UserId == kx13UserUserId)
-            .AsNoTracking()
-            .AsAsyncEnumerable();
-
-        await foreach (var kx13UserSite in kx13UserSites.WithCancellation(cancellationToken))
-        {
-            _protocol.FetchedSource(kx13UserSite);
-            if (!migratedSiteIds.Contains(kx13UserSite.SiteId)) continue;
-
-            var xbkSiteId = _primaryKeyMappingContext.RequireMapFromSource<KX13M.CmsSite>(u => u.SiteId, kx13UserSite.SiteId);
-
-            var xbkUserSiteInfo = UserSiteInfoProvider.ProviderObject.Get(xbkUserId, xbkSiteId);
-            _protocol.FetchedTarget(xbkUserSiteInfo);
-
-            var mapped = _userSiteMapper.Map(kx13UserSite, xbkUserSiteInfo);
-            _protocol.MappedTarget(mapped);
-
-            if (mapped is { Success : true })
-            {
-                var (userSiteInfo, newInstance) = mapped;
-                ArgumentNullException.ThrowIfNull(userSiteInfo);
-
-                try
-                {
-                    UserSiteInfoProvider.ProviderObject.Set(userSiteInfo);
-
-                    _protocol.Success(kx13UserSite, userSiteInfo, mapped);
-                    _logger.LogEntitySetAction(newInstance, userSiteInfo);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogEntitySetError(ex, newInstance, userSiteInfo);
-                    _protocol.Append(HandbookReferences.ErrorSavingTargetInstance<UserSiteInfo>(ex)
-                        .WithData(new { kx13UserSite.UserSiteId, kx13UserSite.UserId, kx13UserSite.SiteId, })
-                        .WithMessage("Failed to migrate user role")
-                    );
-                }
-            }
-        }
-    }
+    // OBSOLETE 26.0.0
+    // private async Task MigrateUserSites(int kx13UserUserId, int xbkUserId, List<int> migratedSiteIds, CancellationToken cancellationToken)
+    // {
+    //     await using var kx13DbContext = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
+    //
+    //     var kx13UserSites = kx13DbContext.CmsUserSites
+    //         .Where(x => x.UserId == kx13UserUserId)
+    //         .AsNoTracking()
+    //         .AsAsyncEnumerable();
+    //
+    //     await foreach (var kx13UserSite in kx13UserSites.WithCancellation(cancellationToken))
+    //     {
+    //         _protocol.FetchedSource(kx13UserSite);
+    //         if (!migratedSiteIds.Contains(kx13UserSite.SiteId)) continue;
+    //
+    //         var xbkSiteId = _primaryKeyMappingContext.RequireMapFromSource<KX13M.CmsSite>(u => u.SiteId, kx13UserSite.SiteId);
+    //
+    //         var xbkUserSiteInfo = UserSiteInfoProvider.ProviderObject.Get(xbkUserId, xbkSiteId);
+    //         _protocol.FetchedTarget(xbkUserSiteInfo);
+    //
+    //         var mapped = _userSiteMapper.Map(kx13UserSite, xbkUserSiteInfo);
+    //         _protocol.MappedTarget(mapped);
+    //
+    //         if (mapped is { Success : true })
+    //         {
+    //             var (userSiteInfo, newInstance) = mapped;
+    //             ArgumentNullException.ThrowIfNull(userSiteInfo);
+    //
+    //             try
+    //             {
+    //                 UserSiteInfoProvider.ProviderObject.Set(userSiteInfo);
+    //
+    //                 _protocol.Success(kx13UserSite, userSiteInfo, mapped);
+    //                 _logger.LogEntitySetAction(newInstance, userSiteInfo);
+    //             }
+    //             catch (Exception ex)
+    //             {
+    //                 _logger.LogEntitySetError(ex, newInstance, userSiteInfo);
+    //                 _protocol.Append(HandbookReferences.ErrorSavingTargetInstance<UserSiteInfo>(ex)
+    //                     .WithData(new { kx13UserSite.UserSiteId, kx13UserSite.UserId, kx13UserSite.SiteId, })
+    //                     .WithMessage("Failed to migrate user role")
+    //                 );
+    //             }
+    //         }
+    //     }
+    // }
 
     private async Task<bool> SaveUserUsingKenticoApi(CancellationToken cancellationToken, IModelMappingResult<UserInfo> mapped, KX13.Models.CmsUser kx13User)
     {

@@ -22,6 +22,8 @@ public class ConfigurationNames
     public const string Enabled = "Enabled";
     public const string Connections = "Connections";
 
+    public const string MemberIncludeUserSystemFields = "MemberIncludeUserSystemFields";
+
     public const string ExcludeCodeNames = "ExcludeCodeNames";
     public const string ExplicitPrimaryKeyMapping = "ExplicitPrimaryKeyMapping";
 

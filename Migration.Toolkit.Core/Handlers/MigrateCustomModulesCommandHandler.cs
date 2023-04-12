@@ -3,6 +3,7 @@ namespace Migration.Toolkit.Core.Handlers;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using System.Xml.Linq;
 using CMS.DataEngine;
 using CMS.FormEngine;
@@ -18,6 +19,7 @@ using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.Helpers;
 using Migration.Toolkit.Core.Mappers;
 using Migration.Toolkit.Core.MigrationProtocol;
+using Migration.Toolkit.Core.Services;
 using Migration.Toolkit.Core.Services.BulkCopy;
 using Migration.Toolkit.Core.Services.CmsClass;
 using Migration.Toolkit.KX13.Context;
@@ -38,6 +40,7 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IProtocol _protocol;
     private readonly BulkDataCopyService _bulkDataCopyService;
+    private readonly FieldMigrationService _fieldMigrationService;
 
     public MigrateCustomModulesCommandHandler(
         ILogger<MigrateCustomModulesCommandHandler> logger,
@@ -50,7 +53,8 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol,
-        BulkDataCopyService bulkDataCopyService)
+        BulkDataCopyService bulkDataCopyService, 
+        FieldMigrationService fieldMigrationService)
     {
         _logger = logger;
         _kx13ContextFactory = kx13ContextFactory;
@@ -63,6 +67,7 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _protocol = protocol;
         _bulkDataCopyService = bulkDataCopyService;
+        _fieldMigrationService = fieldMigrationService;
     }
 
 
@@ -156,7 +161,7 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
             var dataClassId = SaveClassUsingKxoApi(kx13Class, xbkDataClass);
             if (dataClassId is { } dcId)
             {
-                MigrateClassSiteMappings(siteIdExplicitMapping, dcId, dataClassId, kx13Class);
+                //OBSOLETE MigrateClassSiteMappings(siteIdExplicitMapping, dcId, dataClassId, kx13Class);
 
                 xbkDataClass = DataClassInfoProvider.ProviderObject.Get(dcId);
                 await MigrateAlternativeForms(kx13Class, xbkDataClass, cancellationToken);
@@ -209,6 +214,91 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
                 #endregion
             }
         }
+        
+        // special case - member migration (CMS_User splits into CMS_User and CMS_Member in XbK)
+        await MigrateMemberClass(cancellationToken);
+    }
+
+    private async Task MigrateMemberClass(CancellationToken cancellationToken)
+    {
+        await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
+
+        var cmsUser = kx13Context.CmsClasses.FirstOrDefault(x => x.ClassName == Kx13SystemClass.cms_user);
+        var cmsUserSettings = kx13Context.CmsClasses.FirstOrDefault(x => x.ClassName == Kx13SystemClass.cms_usersettings);
+
+        if (cmsUser == null)
+        {
+            _protocol.Warning<KX13M.CmsUser>(HandbookReferences.InvalidSourceData<KX13M.CmsUser>().WithMessage($"{Kx13SystemClass.cms_user} class not found"), null);
+            return;
+        }
+
+        if (cmsUserSettings == null)
+        {
+            _protocol.Warning<KX13M.CmsUserSetting>(HandbookReferences.InvalidSourceData<KX13M.CmsUserSetting>().WithMessage($"{Kx13SystemClass.cms_usersettings} class not found"), null);
+            return;
+        }
+        
+        var target = _kxpClassFacade.GetClass("CMS.Member");
+
+        PatchClass(cmsUser, out var cmsUserCsi, out var cmsUserFi);
+        PatchClass(cmsUserSettings, out var cmsUserSettingsCsi, out var cmsUserSettingsFi);
+
+        var memberFormInfo = new FormInfo(target.ClassFormDefinition);
+
+        var includedSystemFields = _toolkitConfiguration.MemberIncludeUserSystemFields?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+        
+        var memberColumns = memberFormInfo.GetColumnNames();
+        
+        foreach (var uColumn in cmsUserFi.GetColumnNames())
+        {
+            var field = cmsUserFi.GetFormField(uColumn);
+
+            if (
+                !memberColumns.Contains(uColumn) &&
+                !field.PrimaryKey && 
+                !MemberInfoMapper.MigratedUserFields.Contains(uColumn, StringComparer.InvariantCultureIgnoreCase)
+                && (includedSystemFields.Contains(uColumn) || !field.System)
+            )
+            {
+                field.System = false; // no longer system field
+                memberFormInfo.AddFormItem(field);    
+            }
+        }
+        
+        foreach (var usColumn in cmsUserSettingsFi.GetColumnNames())
+        {
+            var field = cmsUserSettingsFi.GetFormField(usColumn);
+
+            if (
+                !memberColumns.Contains(usColumn) && 
+                !field.PrimaryKey
+                && (includedSystemFields.Contains(usColumn) || !field.System))
+            {
+                field.System = false; // no longer system field
+                memberFormInfo.AddFormItem(field);    
+            }
+        }
+        
+        target.ClassFormDefinition = memberFormInfo.GetXmlDefinition();
+        DataClassInfoProvider.ProviderObject.Set(target);
+    }
+
+    private void PatchClass(CmsClass cmsUser, out ClassStructureInfo classStructureInfo, out FormInfo cmsUserFormInfo)
+    {
+        classStructureInfo = new ClassStructureInfo(cmsUser.ClassName, cmsUser.ClassXmlSchema, cmsUser.ClassTableName);
+        var patcher = new FormDefinitionPatcher(
+            _logger,
+            cmsUser.ClassFormDefinition,
+            _fieldMigrationService,
+            cmsUser.ClassIsForm.GetValueOrDefault(false),
+            cmsUser.ClassIsDocumentType,
+            false,
+            false
+        );
+        patcher.PatchFields();
+        patcher.RemoveCategories(); // TODO tk: 2022-10-11 remove when supported
+        var result = patcher.GetPatched();
+        cmsUserFormInfo = new FormInfo(result);
     }
 
     private async Task MigrateAlternativeForms(CmsClass kx13Class, DataClassInfo xbkDataClass, CancellationToken cancellationToken)
@@ -354,7 +444,7 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
                     );
 
                     // migrate site resource mapping
-                    MigrateResourceToSiteMapping(migratedSites, resourceInfo, kx13CmsResource);
+                    //OBSOLETE: MigrateResourceToSiteMapping(migratedSites, resourceInfo, kx13CmsResource);
                 }
             }
             catch (Exception ex)
@@ -364,26 +454,27 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
         }
     }
 
-    private void MigrateResourceToSiteMapping(List<int> migratedSites, ResourceInfo resourceInfo, KX13M.CmsResource kx13CmsResource)
-    {
-        foreach (var migratedSiteId in migratedSites)
-        {
-            var xbkSiteId = _primaryKeyMappingContext.RequireMapFromSource<KX13M.CmsSite>(s => s.SiteId, migratedSiteId);
-            try
-            {
-                var resourceSiteInfo = ResourceSiteInfo.New(rsi =>
-                {
-                    rsi.ResourceID = resourceInfo.ResourceID;
-                    rsi.SiteID = xbkSiteId;
-                });
-                ResourceSiteInfoProvider.ProviderObject.Set(resourceSiteInfo);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while saving resource '{ResourceName}' to siteId '{SiteId}' mapping", kx13CmsResource.ResourceName, xbkSiteId);
-            }
-        }
-    }
+    // OBSOLETE
+    // private void MigrateResourceToSiteMapping(List<int> migratedSites, ResourceInfo resourceInfo, KX13M.CmsResource kx13CmsResource)
+    // {
+    //     foreach (var migratedSiteId in migratedSites)
+    //     {
+    //         var xbkSiteId = _primaryKeyMappingContext.RequireMapFromSource<KX13M.CmsSite>(s => s.SiteId, migratedSiteId);
+    //         try
+    //         {
+    //             var resourceSiteInfo = ResourceSiteInfo.New(rsi =>
+    //             {
+    //                 rsi.ResourceID = resourceInfo.ResourceID;
+    //                 rsi.SiteID = xbkSiteId;
+    //             });
+    //             ResourceSiteInfoProvider.ProviderObject.Set(resourceSiteInfo);
+    //         }
+    //         catch (Exception ex)
+    //         {
+    //             _logger.LogError(ex, "Error while saving resource '{ResourceName}' to siteId '{SiteId}' mapping", kx13CmsResource.ResourceName, xbkSiteId);
+    //         }
+    //     }
+    // }
 
     private int? SaveClassUsingKxoApi(KX13M.CmsClass kx13Class, DataClassInfo kxoDataClass)
     {
@@ -419,35 +510,36 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
         return null;
     }
 
-    private void MigrateClassSiteMappings(Dictionary<int, int> siteIdMapping, int dcId, [DisallowNull] int? dataClassId, KX13M.CmsClass kx13Class)
-    {
-        foreach (var (sourceSiteId, targetSiteId) in siteIdMapping)
-        {
-            try
-            {
-                var classSiteInfo = ClassSiteInfo.New();
-                classSiteInfo.ClassID = dcId;
-                classSiteInfo.SiteID = targetSiteId;
-                ClassSiteInfoProvider.ProviderObject.Set(classSiteInfo);
-
-                _protocol.Success(new { dataClassId, targetSiteId }, classSiteInfo, null);
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError(exception, "Failed to create target instance");
-                _protocol.Append(HandbookReferences
-                    .ErrorCreatingTargetInstance<ClassSiteInfo>(exception)
-                    .NeedsManualAction()
-                    .WithData(new
-                    {
-                        exception,
-                        sourceSiteId,
-                        targetSiteId,
-                        dataClassId,
-                        sourceClassId = kx13Class.ClassId
-                    })
-                );
-            }
-        }
-    }
+    // OBSOLETE
+    // private void MigrateClassSiteMappings(Dictionary<int, int> siteIdMapping, int dcId, [DisallowNull] int? dataClassId, KX13M.CmsClass kx13Class)
+    // {
+    //     foreach (var (sourceSiteId, targetSiteId) in siteIdMapping)
+    //     {
+    //         try
+    //         {
+    //             var classSiteInfo = ClassSiteInfo.New();
+    //             classSiteInfo.ClassID = dcId;
+    //             classSiteInfo.SiteID = targetSiteId;
+    //             ClassSiteInfoProvider.ProviderObject.Set(classSiteInfo);
+    //
+    //             _protocol.Success(new { dataClassId, targetSiteId }, classSiteInfo, null);
+    //         }
+    //         catch (Exception exception)
+    //         {
+    //             _logger.LogError(exception, "Failed to create target instance");
+    //             _protocol.Append(HandbookReferences
+    //                 .ErrorCreatingTargetInstance<ClassSiteInfo>(exception)
+    //                 .NeedsManualAction()
+    //                 .WithData(new
+    //                 {
+    //                     exception,
+    //                     sourceSiteId,
+    //                     targetSiteId,
+    //                     dataClassId,
+    //                     sourceClassId = kx13Class.ClassId
+    //                 })
+    //             );
+    //         }
+    //     }
+    // }
 }

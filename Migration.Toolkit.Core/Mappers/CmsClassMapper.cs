@@ -32,7 +32,6 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
     {
         target.ClassDisplayName = source.ClassDisplayName;
         target.ClassName = source.ClassName;
-        target.ClassUsesVersioning = source.ClassUsesVersioning;
         target.ClassIsDocumentType = source.ClassIsDocumentType;
         target.ClassIsCoupledClass = source.ClassIsCoupledClass;
 
@@ -57,25 +56,20 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
 
         MapFormDefinitionFields(source, target, isCustomizableSystemClass, classIsCustom);
 
-        // TODO tk: 2022-10-06 raise question about ClassIsPage
-        target.ClassIsPage = source.ClassIsDocumentType; // = source
-        // TODO tk: 2022-10-06 raise question about ClassHasUnmanagedDbSchema
+        // true for page content type
+        target.ClassIsPage = source.ClassIsDocumentType;
         target.ClassHasUnmanagedDbSchema = false;
 
         target.ClassNodeNameSource = source.ClassNodeNameSource;
         target.ClassTableName = source.ClassTableName;
-        // target.ClassFormLayout = source.ClassFormLayout;
         target.ClassShowAsSystemTable = source.ClassShowAsSystemTable.UseKenticoDefault();
         target.ClassUsePublishFromTo = source.ClassUsePublishFromTo.UseKenticoDefault();
         target.ClassShowTemplateSelection = source.ClassShowTemplateSelection.UseKenticoDefault();
-        // target.ClassIsMenuItemType = source.ClassIsMenuItemType.UseKenticoDefault();
         target.ClassNodeAliasSource = source.ClassNodeAliasSource;
         target.ClassLastModified = source.ClassLastModified;
         target.ClassGUID = source.ClassGuid;
-        // target.ClassIsProduct = source.ClassIsProduct.UseKenticoDefault();
         target.ClassShowColumns = source.ClassShowColumns;
 
-        // target.ClassContactMapping = source.ClassContactMapping;
         if (source.ClassContactMapping != null)
         {
             var mapInfo = new FormInfo(source.ClassContactMapping);
@@ -86,11 +80,11 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
 
                 foreach (var formFieldInfos in ffiLookup)
                 {
-                    if (formFieldInfos.Count() > 1 && formFieldInfos.Key != null)
-                    {
-                        _logger.LogWarning("Multiple mappings with same value in 'MappedToField': {Detail}",
-                            string.Join("|", formFieldInfos.Select(f => f.ToXML("FormFields", false))));
-                    }
+                    // if (formFieldInfos.Count() > 1 && formFieldInfos.Key != null)
+                    // {
+                    //     _logger.LogWarning("Multiple mappings with same value in 'MappedToField': {Detail}",
+                    //         string.Join("|", formFieldInfos.Select(f => f.ToXML("FormFields", false))));
+                    // }
 
                     newMappings.AddFormItem(formFieldInfos.First());
                 }
@@ -101,9 +95,6 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
 
         target.ClassContactOverwriteEnabled = source.ClassContactOverwriteEnabled.UseKenticoDefault();
         target.ClassConnectionString = source.ClassConnectionString;
-        // target.ClassIsProductSection = source.ClassIsProductSection.UseKenticoDefault();
-        // target.ClassFormLayoutType = source.ClassFormLayoutType.AsEnum<LayoutTypeEnum>();
-        // target.ClassVersionGUID = source.ClassVersionGuid;
         target.ClassDefaultObjectType = source.ClassDefaultObjectType;
         target.ClassIsForm = source.ClassIsForm.UseKenticoDefault();
         target.ClassCustomizedColumns = source.ClassCustomizedColumns;
@@ -111,15 +102,9 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
         target.ClassIconClass = source.ClassIconClass;
         target.ClassURLPattern = source.ClassUrlpattern;
         target.ClassUsesPageBuilder = source.ClassUsesPageBuilder;
-        // target.ClassIsNavigationItem = source.ClassIsNavigationItem;
         target.ClassHasURL = source.ClassHasUrl;
         target.ClassHasMetadata = source.ClassHasMetadata;
 
-        // target.ClassSkumappings = source.ClassSkumappings;
-        // target.ClassCreateSku = source.ClassCreateSku;
-        // target.ClassSkudefaultDepartmentName = source.ClassSkudefaultDepartmentName;
-        // target.ClassSKUDefaultDepartmentID = source.ClassSkudefaultDepartmentId;
-        // target.ClassSKUDefaultProductType = source.ClassSkudefaultProductType;
 
         if (mappingHelper.TranslateIdAllowNulls<KX13.Models.CmsClass>(c => c.ClassId, source.ClassInheritsFromClassId.NullIfZero(), out var classId))
         {
@@ -134,6 +119,20 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
             }
         }
 
+        // OBSOLETE
+        // target.ClassFormLayout = source.ClassFormLayout;
+        // target.ClassIsMenuItemType = source.ClassIsMenuItemType.UseKenticoDefault();
+        // target.ClassIsProduct = source.ClassIsProduct.UseKenticoDefault();
+        // target.ClassUsesVersioning = source.ClassUsesVersioning;
+        // target.ClassSkumappings = source.ClassSkumappings;
+        // target.ClassCreateSku = source.ClassCreateSku;
+        // target.ClassSkudefaultDepartmentName = source.ClassSkudefaultDepartmentName;
+        // target.ClassSKUDefaultDepartmentID = source.ClassSkudefaultDepartmentId;
+        // target.ClassSKUDefaultProductType = source.ClassSkudefaultProductType;
+        // target.ClassIsProductSection = source.ClassIsProductSection.UseKenticoDefault();
+        // target.ClassFormLayoutType = source.ClassFormLayoutType.AsEnum<LayoutTypeEnum>();
+        // target.ClassVersionGUID = source.ClassVersionGuid;
+        // target.ClassIsNavigationItem = source.ClassIsNavigationItem;
         // TODO tk: 2022-05-30 domain validation failed (Field name: ClassSearchIndexDataSource)
         // target.ClassSearchIndexDataSource = source.ClassSearchIndexDataSource.AsEnum<SearchIndexDataSourceEnum>();
         // target.ClassSearchEnabled = source.ClassSearchEnabled.UseKenticoDefault();

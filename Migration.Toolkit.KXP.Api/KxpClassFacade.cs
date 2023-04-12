@@ -32,6 +32,11 @@ public class KxpClassFacade
         return DataClassInfoProvider.GetDataClassInfo(classGuid);
     }
 
+    public DataClassInfo GetClass(string className)
+    {
+        return DataClassInfoProvider.GetDataClassInfo(className);
+    }
+
 
     public IEnumerable<CustomizedFieldInfo> GetCustomizedFieldInfos(string className)
     {
@@ -54,5 +59,32 @@ public class KxpClassFacade
         // }
 
         yield break;
+    }
+
+    public IEnumerable<CustomizedFieldInfo> GetCustomizedFieldInfos(FormInfo formInfo)
+    {
+        foreach (var columnName in formInfo.GetColumnNames())
+        {
+            var field = formInfo.GetFormField(columnName);
+            if (!field.System)
+            {
+                yield return new CustomizedFieldInfo(columnName);
+            }
+        }
+    }
+
+    public IEnumerable<CustomizedFieldInfo> GetCustomizedFieldInfosAll(string className)
+    {
+        var dci = DataClassInfoProvider.GetDataClassInfo(className);
+
+        var fi = new FormInfo(dci.ClassFormDefinition);
+        foreach (var columnName in fi.GetColumnNames())
+        {
+            var field = fi.GetFormField(columnName);
+            if (!field.System)
+            {
+                yield return new CustomizedFieldInfo(columnName);
+            }
+        }
     }
 }

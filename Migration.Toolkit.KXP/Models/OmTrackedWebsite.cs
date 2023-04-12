@@ -23,7 +23,7 @@ namespace Migration.Toolkit.KXP.Models
         [StringLength(400)]
         public string TrackedWebsiteUrl { get; set; } = null!;
         public string? TrackedWebsiteDescription { get; set; }
-        public bool TrackedWebsiteEnabled { get; set; }
+        public bool? TrackedWebsiteEnabled { get; set; }
         [Column("TrackedWebsiteSiteID")]
         public int TrackedWebsiteSiteId { get; set; }
         public DateTime? TrackedWebsiteLastModified { get; set; }

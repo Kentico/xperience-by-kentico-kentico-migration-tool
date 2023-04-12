@@ -66,7 +66,9 @@ public static class DependencyInjectionExtensions
         services.AddTransient<MigrateSettingKeysCommandHandler>();
         services.AddTransient<MigrateSitesCommandHandler>();
         services.AddTransient<MigrateUsersCommandHandler>();
+        services.AddTransient<MigrateMembersCommandHandler>();
         services.AddTransient<MigrateContactManagementCommandHandler>();
+        
 
         // mappers
         services.AddTransient<IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo>, CmsAttachmentMapper>();
@@ -84,10 +86,9 @@ public static class DependencyInjectionExtensions
         services.AddTransient<IEntityMapper<KX13M.CmsSettingsCategory, CmsSettingsCategory>, CmsSettingsCategoryMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsSettingsKey, CmsSettingsKey>, CmsSettingsKeyMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsSite, CmsSite>, CmsSiteMapper>();
-        // services.AddTransient<IEntityMapper<KX13M.CmsUser, CmsUser>, CmsUserMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsUser, UserInfo>, UserInfoMapper>();
+        services.AddTransient<IEntityMapper<MemberInfoMapperSource, MemberInfo>, MemberInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsUserRole, UserRoleInfo>, UserRoleInfoMapper>();
-        services.AddTransient<IEntityMapper<KX13M.CmsUserSite, UserSiteInfo>, UserSiteInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.MediaLibrary, MediaLibraryInfo>, MediaLibraryInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.OmContact, OmContact>, OmContactMapper>();
         services.AddTransient<IEntityMapper<KX13M.OmContactGroup, OmContactGroup>, OmContactGroupMapper>();

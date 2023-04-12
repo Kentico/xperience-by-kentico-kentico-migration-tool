@@ -53,7 +53,6 @@ namespace Migration.Toolkit.KXP.Models
         public string? DocumentContent { get; set; }
         public string? DocumentCustomData { get; set; }
         public DateTime? DocumentLastPublished { get; set; }
-        public bool? DocumentSearchExcluded { get; set; }
         [StringLength(50)]
         public string? DocumentLastVersionNumber { get; set; }
         public bool? DocumentIsArchived { get; set; }

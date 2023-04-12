@@ -8,7 +8,6 @@ namespace Migration.Toolkit.KXP.Models
 {
     [Table("CMS_UserRole")]
     [Index("RoleId", Name = "IX_CMS_UserRole_RoleID")]
-    [Index("RoleId", "ValidTo", "UserId", Name = "IX_CMS_UserRole_UserID")]
     [Index("UserId", "RoleId", Name = "IX_CMS_UserRole_UserID_RoleID", IsUnique = true)]
     public partial class CmsUserRole
     {
@@ -16,7 +15,6 @@ namespace Migration.Toolkit.KXP.Models
         public int UserId { get; set; }
         [Column("RoleID")]
         public int RoleId { get; set; }
-        public DateTime? ValidTo { get; set; }
         [Key]
         [Column("UserRoleID")]
         public int UserRoleId { get; set; }

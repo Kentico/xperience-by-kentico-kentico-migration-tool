@@ -13,12 +13,10 @@ namespace Migration.Toolkit.KXP.Models
         public CmsResource()
         {
             CmsClasses = new HashSet<CmsClass>();
-            CmsPermissions = new HashSet<CmsPermission>();
             CmsResourceLibraries = new HashSet<CmsResourceLibrary>();
             CmsScheduledTasks = new HashSet<CmsScheduledTask>();
             CmsSettingsCategories = new HashSet<CmsSettingsCategory>();
             CmsWorkflowActions = new HashSet<CmsWorkflowAction>();
-            Sites = new HashSet<CmsSite>();
         }
 
         [Key]
@@ -29,28 +27,13 @@ namespace Migration.Toolkit.KXP.Models
         [StringLength(100)]
         public string ResourceName { get; set; } = null!;
         public string? ResourceDescription { get; set; }
-        public bool? ShowInDevelopment { get; set; }
-        [Column("ResourceURL")]
-        [StringLength(1000)]
-        public string? ResourceUrl { get; set; }
         [Column("ResourceGUID")]
         public Guid ResourceGuid { get; set; }
         public DateTime ResourceLastModified { get; set; }
         public bool? ResourceIsInDevelopment { get; set; }
-        public bool? ResourceHasFiles { get; set; }
-        [StringLength(200)]
-        public string? ResourceVersion { get; set; }
-        [StringLength(200)]
-        public string? ResourceAuthor { get; set; }
-        [StringLength(50)]
-        public string? ResourceInstallationState { get; set; }
-        [StringLength(50)]
-        public string? ResourceInstalledVersion { get; set; }
 
         [InverseProperty("ClassResource")]
         public virtual ICollection<CmsClass> CmsClasses { get; set; }
-        [InverseProperty("Resource")]
-        public virtual ICollection<CmsPermission> CmsPermissions { get; set; }
         [InverseProperty("ResourceLibraryResource")]
         public virtual ICollection<CmsResourceLibrary> CmsResourceLibraries { get; set; }
         [InverseProperty("TaskResource")]
@@ -59,9 +42,5 @@ namespace Migration.Toolkit.KXP.Models
         public virtual ICollection<CmsSettingsCategory> CmsSettingsCategories { get; set; }
         [InverseProperty("ActionResource")]
         public virtual ICollection<CmsWorkflowAction> CmsWorkflowActions { get; set; }
-
-        [ForeignKey("ResourceId")]
-        [InverseProperty("Resources")]
-        public virtual ICollection<CmsSite> Sites { get; set; }
     }
 }

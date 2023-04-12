@@ -75,6 +75,24 @@ public static class ReflectionHelper<T>
         
         return PropertyGetterMaps[propertyName].PropertyGetMethod!.Invoke(obj, Array.Empty<object>());
     }
+    
+    public static bool TryGetPropertyValue(T obj, string propertyName, StringComparison propNameComparison, out object? value)
+    {
+        var propName = PropertyGetterMaps.Keys.FirstOrDefault(x => x.Equals(propertyName, propNameComparison));
+        if (propName == null || !PropertyGetterMaps.ContainsKey(propName))
+        {
+            value = null;
+            return false;
+        }
+
+        if (obj == null)
+        {
+            throw new NullReferenceException($"Null reference, ReflectionHelper.GetPropertyValue needs obj argument reference");
+        }
+
+        value = PropertyGetterMaps[propName].PropertyGetMethod!.Invoke(obj, Array.Empty<object>());
+        return true;
+    }
 
     public static object? GetStaticPropertyValue(string propertyName)
     {

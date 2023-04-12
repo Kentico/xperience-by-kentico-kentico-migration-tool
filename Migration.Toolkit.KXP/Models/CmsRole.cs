@@ -12,12 +12,10 @@ namespace Migration.Toolkit.KXP.Models
     {
         public CmsRole()
         {
+            CmsApplicationPermissions = new HashSet<CmsApplicationPermission>();
             CmsUserRoles = new HashSet<CmsUserRole>();
             CmsWorkflowStepRoles = new HashSet<CmsWorkflowStepRole>();
-            MediaLibraryRolePermissions = new HashSet<MediaLibraryRolePermission>();
             Forms = new HashSet<CmsForm>();
-            Memberships = new HashSet<CmsMembership>();
-            Permissions = new HashSet<CmsPermission>();
         }
 
         [Key]
@@ -33,26 +31,19 @@ namespace Migration.Toolkit.KXP.Models
         [Column("RoleGUID")]
         public Guid RoleGuid { get; set; }
         public DateTime RoleLastModified { get; set; }
-        public bool? RoleIsDomain { get; set; }
 
         [ForeignKey("SiteId")]
         [InverseProperty("CmsRoles")]
         public virtual CmsSite? Site { get; set; }
         [InverseProperty("Role")]
+        public virtual ICollection<CmsApplicationPermission> CmsApplicationPermissions { get; set; }
+        [InverseProperty("Role")]
         public virtual ICollection<CmsUserRole> CmsUserRoles { get; set; }
         [InverseProperty("Role")]
         public virtual ICollection<CmsWorkflowStepRole> CmsWorkflowStepRoles { get; set; }
-        [InverseProperty("Role")]
-        public virtual ICollection<MediaLibraryRolePermission> MediaLibraryRolePermissions { get; set; }
 
         [ForeignKey("RoleId")]
         [InverseProperty("Roles")]
         public virtual ICollection<CmsForm> Forms { get; set; }
-        [ForeignKey("RoleId")]
-        [InverseProperty("Roles")]
-        public virtual ICollection<CmsMembership> Memberships { get; set; }
-        [ForeignKey("RoleId")]
-        [InverseProperty("Roles")]
-        public virtual ICollection<CmsPermission> Permissions { get; set; }
     }
 }

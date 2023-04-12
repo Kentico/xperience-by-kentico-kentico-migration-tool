@@ -33,8 +33,18 @@ public record MigrateUsersCommand : IRequest<CommandResult>, ICommand
 
     public static string Moniker => "users";
     public static string MonikerFriendly => "Users";
+    
+    public Type[] Dependencies => new[] { typeof(MigrateCustomModulesCommand) };
+}
 
-    public Type[] Dependencies => new[] { typeof(MigrateSitesCommand), typeof(MigrateCustomModulesCommand) };
+public record MigrateMembersCommand : IRequest<CommandResult>, ICommand
+{
+    public static readonly int Rank = 2 + MigrateSitesCommand.Rank + MigrateCustomModulesCommand.Rank;
+
+    public static string Moniker => "members";
+    public static string MonikerFriendly => "Members";
+
+    public Type[] Dependencies => new[] { typeof(MigrateCustomModulesCommand) };
 }
 
 // public record MigrateContactGroupsCommand : IRequest<CommandResult>, ICommand
