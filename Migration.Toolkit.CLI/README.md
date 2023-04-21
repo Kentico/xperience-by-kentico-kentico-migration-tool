@@ -11,7 +11,7 @@ The target of the migration must be an Xperience by Kentico instance that fulfil
 * The instance's database and file system must be accessible from the environment where you run the migration.
 * The target application *must not be running* when you start the migration.
 * The instance must not contain any data except for an empty site and/or data from the source site created by previous runs of the Migration toolkit.
-* When running the migration for the first time, the content tree must be empty except for the root page (of the `CMS.Root` type).
+  * When running the migration for the first time, the content tree must be empty except for the root page (of the `CMS.Root` type).
 * For performance optimization, the migration transfers certain objects using bulk SQL queries. As a result, you always need to delete all objects of the following types before running repeated migrations:
   * **Contacts**, including their **Activities** and **Consent agreements** (when using the `migrate --contact-management` parameter)
   * **Form submissions** (when using the `migrate --forms` parameter)

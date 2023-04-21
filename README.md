@@ -97,10 +97,10 @@ The following types of data exist in Xperience by Kentico, but are currently **n
 * **Contact groups**
   * Static contact groups are currently not supported in Xperience by Kentico.
   * The condition format for dynamic contact groups is not compatible. To migrate contact groups:
-  1. Migrate your contacts using the toolkit.
-  2. Create the [contact groups](https://docs.xperience.io/x/o4PWCQ) manually in Xperience by Kentico.
-  3. Build equivalent conditions.
-  4. Recalculate the contact groups.
+    1. Migrate your contacts using the toolkit.
+    2. Create the [contact groups](https://docs.xperience.io/x/o4PWCQ) manually in Xperience by Kentico.
+    3. Build equivalent conditions.
+    4. Recalculate the contact groups.
 * **License keys**
   * Unnecessary, since Xperience by Kentico uses a new license key format.
 
