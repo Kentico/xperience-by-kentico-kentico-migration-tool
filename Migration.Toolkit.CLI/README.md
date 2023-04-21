@@ -223,8 +223,8 @@ The toolkit by default migrates:
 
 The toolkit ***DOES NOT*** migrate:
 
-* External login information associated with each account (e.g., Google or Facebook logins)
-* User password hashes from the `CMS_User.UserPassword` column. 
+* External login information associated with each account (e.g., Google or Facebook logins).
+* User password hashes from the `CMS_User.UserPassword` column.
 
   After the migration, the corresponding `CMS_Member.MemberPassword` in the target Xperience by Kentico instance is `NULL`. This means that the migrated accounts **CANNOT** be used to sign in to the system under any circumstances. The account owners must first reset their password via ASP.NET Identity.
 
