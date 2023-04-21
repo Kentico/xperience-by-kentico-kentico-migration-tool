@@ -21,7 +21,7 @@ The Migration toolkit transfers content and other data from **Kentico Xperience 
 ### Target
 
 * The toolkit is periodically updated to support migration to the **latest version** of Xperience by Kentico. However, there may be time gaps between Xperience by Kentico releases and Migration toolkit updates.
-  * Currently, Xperience by Kentico **23.0.3** is tested and supported.
+  * Currently, Xperience by Kentico **26.0.1** is tested and supported.
 * The target instance's database and file system must be accessible from the environment where you run the Migration toolkit.
 * To avoid conflicts and inconsistencies, the target instance must not contain any data apart from an empty site and/or data from the source site created by previous runs of the Migration toolkit.
 
@@ -56,15 +56,19 @@ Currently, the Migration toolkit supports the following types of data:
 * **Forms**
   * The migration does not include the content of form autoresponder and notification emails. You can migrate form autoresponders to Xperience by Kentico manually by copying your HTML code and content into Email templates and Emails. See [Emails](https://docs.xperience.io/x/IaDWCQ).
 * **Users**
+
   * Xperience by Kentico uses separate entities for users with access to the administration interface (_CMS_User_ table) and live site visitor accounts (_CMS_Member_ table). Consequently, only users whose _Privilege level_ is set to _Editor_ and above are migrated (_Users_ -> edit a user -> _General_ tab).
   * Users in Xperience by Kentico must have an email address. Migration is only supported for users who have a unique email address value on the source instance.
   * Custom user fields can be migrated together with _modules classes_.
   * Live site users are represented using a separate **Member** entity and stored in the _CMS_Member_ table.
 
     The migration identifies live site users as those without access to the administration interface. That is, only those accounts whose _Privilege level_ is set to _None_ (Users -> edit a user -> General tab) are migrated as _Members_.
+
 * **Roles**
+
   * Only roles that have at least one user whose _Privilege level_ is set to _Editor_ and above are migrated.
   * Because Xperience by Kentico uses a different [permission model](https://docs.xperience.io/x/7IVwCg), no existing role permissions or UI personalization settings are migrated. After the migration, the permissions for each role must be configured again.
+
 * **Contacts**
   * Custom contact fields can be migrated together with _modules classes_.
 * **Activities**  
