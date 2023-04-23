@@ -25,5 +25,7 @@ namespace Migration.Toolkit.KXP.Models
         public string FormFeaturedFieldName { get; set; } = null!;
         [StringLength(200)]
         public string FormFeaturedFieldIconClass { get; set; } = null!;
+        [Required]
+        public bool? FormFeaturedFieldEnabled { get; set; }
     }
 }
