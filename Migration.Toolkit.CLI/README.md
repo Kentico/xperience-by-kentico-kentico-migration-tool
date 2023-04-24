@@ -213,9 +213,9 @@ The migration identifies live site users as those without access to the administ
 
 The toolkit by default migrates:
 
-* all system fields from the *CMS_User* and *CMS_UserSettings* tables. You can customize which fields are migrated via the `MemberIncludeUserSystemFields` setting. See [configuration](#configuration).
+* all system fields from the *CMS_User* and *CMS_UserSettings* tables. You can customize which fields are migrated via the `MemberIncludeUserSystemFields` configuration option. See [configuration](#configuration).
 * all custom fields added to the *CMS_User* and *CMS_UserSettings* tables are migrated under `CMS_Member`.
-  > If you are migrating custom fields, the `--custom-modues` migration command must be run before the `--members` command. For example:
+  > If you are migrating custom fields, the `--custom-modules` migration command must be run before the `--members` command. For example:
   
   ```powershell
   Migration.Toolkit.CLI.exe migrate --siteId 1 --custom-modules --sites --users --members
@@ -275,7 +275,7 @@ Add the options under the `Settings` section in the configuration file.
 | XbKApiSettings                                           | Configuration options set for the API when creating migrated objects in the target application.<br /><br />The `ConnectionStrings.CMSConnectionString`option is required - set the connection string to the target Xperience by Kentico database (the same value as `XbKConnectionString`).              |
 | MigrationProtocolPath                                    | The absolute file system path of the location where the [migration protocol file](./MIGRATION_PROTOCOL_REFERENCE.md) is generated.<br /><br />For example: `"C:\\Logs\\Migration.Toolkit.Protocol.log"`               |
 | MigrateOnlyMediaFileInfo                                 | If set to `true`, only the database representations of media files are migrated, without the files in the media folder in the project's file system. For example, enable this option if your media library files are mapped to a shared directory or Cloud storage.<br /><br />If `false`, media files are migrated based on the `KxCmsDirPath` location.  |
-| MemberIncludeUserSystemFields | Determines which system fields from the *CMS_User* and *CMS_UserSettings* tables are migrated to *CMS_Member* in Xperience by Kentico. Fields that do not exist in *CMS_Member* are automatically created. <br /><br />The sample `appsettings.json` file included with the toolkit by default includes all user fields that can be migrated from Kentico Xperience 13. You exclude specific fields from the migration, by removing them from the setting."  |
+| MemberIncludeUserSystemFields | Determines which system fields from the *CMS_User* and *CMS_UserSettings* tables are migrated to *CMS_Member* in Xperience by Kentico. Fields that do not exist in *CMS_Member* are automatically created. <br /><br />The sample `appsettings.json` file included with the toolkit by default includes all user fields that can be migrated from Kentico Xperience 13. Exclude specific fields from the migration by removing them from this configuration option." |
 | UseOmActivityNodeRelationAutofix                         | Determines how the migration handles references from Contact management activities to non-existing pages.<br /><br />Possible options:<br />`DiscardData` - faulty references are removed,<br />`AttemptFix` - references are updated to the IDs of corresponding pages created by the migration,<br />`Error` - an error is reported and the reference can be translated or otherwise handled manually |
 | UseOmActivitySiteRelationAutofix                         | Determines how the migration handles site references from Contact management activities.<br /><br />Possible options: `DiscardData`,`AttemptFix`,`Error` |
 | EntityConfigurations                                           | Contains options that allow you to fine-tune the migration of specific object types.                 |
