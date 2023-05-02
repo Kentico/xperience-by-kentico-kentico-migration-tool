@@ -399,6 +399,8 @@ By default, text fields with the _Media selection_ [form control](https://docs.x
 
 Only links using Xperience handlers (`getmedia` or `getattachment`) are supported. [Direct file paths](https://docs.xperience.io/x/xQ_RBg) will not be converted.
 
+:warning: If you enable this feature, you also need to change retrieval and handling of affected files in your code, as the structure of the stored data changes from a text path (e.g.,`~/getmedia/CCEAD0F0-E2BF-459B-814A-36699E5C773E/somefile.jpeg?width=300&height=100`) to an asset data type (internally stored as e.g., `[{"Identifier":"CCEAD0F0-E2BF-459B-814A-36699E5C773E","Some file":"somefile.jpeg","Size":11803,"Dimensions":{"Width":300,"Height":100}}]`). The value of the field now needs to be [retrieved as an content item asset](https://docs.xperience.io/x/OKrWCQ).
+
 To enable this feature, Configure the `OptInFeatures.CustomMigration.FieldMigrations` [configuration options](#configuration) for the Migration toolkit.
 
 * `SourceDataType` - The [data type](https://docs.xperience.io/x/coJwCg) of the fields in the source instance.
@@ -406,7 +408,7 @@ To enable this feature, Configure the `OptInFeatures.CustomMigration.FieldMigrat
 * `SourceFormControl` - [Form control](https://docs.xperience.io/x/lAyRBg) of the fields in the source instance.
 * `TargetFormComponent` - [Form component](https://docs.xperience.io/x/5ASiCQ) of the fields in the target instance.
 * `Actions` - Additional actions to be applied to the files (`convert to asset` or `convert to pages`)
-* `FieldNameRegex` - A regular expression used to filter what fields are converted. Only fields with field names that match the regular expressions are converted.
+* `FieldNameRegex` - A regular expression used to filter what fields are converted. Only fields with field names that match the regular expressions are converted. Use `.*` to match all fields.
 
 ```json
 "OptInFeatures":{
