@@ -224,9 +224,10 @@ Add the options under the `Settings` section in the configuration file.
 | UseOmActivitySiteRelationAutofix                         | Determines how the migration handles site references from Contact management activities.<br /><br />Possible options: `DiscardData`,`AttemptFix`,`Error` |
 | EntityConfigurations                                           | Contains options that allow you to fine-tune the migration of specific object types.                 |
 | EntityConfigurations.CMS_Site.ExplicitPrimaryKeyMapping.SiteID | **Required**. Maps the site ID (primary key) of the source site to the ID of the target site.        |
-| EntityConfigurations.<object table name>.ExcludeCodeNames      | Excludes objects with the specified code names from the migration.                                   |
+| EntityConfigurations.*&lt;object table name&gt;*.ExcludeCodeNames      | Excludes objects with the specified code names from the migration.                                   |
 | OptInFeatures.QuerySourceInstanceApi.Enabled                   | If `true`, [source instance API discovery](#source-instance-api-discovery) is enabled to allow advanced migration of Page Builder content for pages and page templates. |
-| OptInFeatures.QuerySourceInstanceApi.Connections               | To use [source instance API discovery](#source-instance-api-discovery), you need to add a connection JSON object containing the following values:<br />`SourceInstanceUri` - the base URI where the source instance's live site application is running.<br />`Secret` - the secret that you set in the _ToolkitApiController.cs_ file on the source instance.  |
+| OptInFeatures.QuerySourceInstanceApi.Connections               | To use [source instance API discovery](#source-instance-api-discovery), you need to add a connection JSON object containing the following values:<br />`SourceInstanceUri` - the base URI where the source instance's live site application is running.<br />`Secret` - the secret that you set in the *ToolkitApiController.cs* file on the source instance.  |
+| OptInFeatures.CustomMigration.FieldMigrations                  | Enables conversion of media selection text fields to asset fields.<br />`SourceDataType` - The [data type](https://docs.xperience.io/x/coJwCg) of the fields in the source instance.<br />`TargetDataType` - The [data type](https://docs.xperience.io/x/RoXWCQ) of the fields in the target instance.<br />`SourceFormControl` - [Form control](https://docs.xperience.io/x/lAyRBg) of the fields in the source instance.<br />`TargetFormComponent` - [Form component](https://docs.xperience.io/x/5ASiCQ) of the fields in the target instance.<br />`Actions` - Additional actions to be applied to the files (`convert to asset` or `convert to pages`)<br />`FieldNameRegex` - A regular expression used to filter what fields are converted.|
 
 ### Example
 	
@@ -289,6 +290,14 @@ Add the options under the `Settings` section in the configuration file.
           "Connections": [
             { "SourceInstanceUri": "http://localhost:60527", "Secret": "__your secret string__" }
           ]
+        },
+        "FieldMigrations": {
+            "SourceDataType": "text",
+            "TargetDataType": "assets",
+            "SourceFormControl": "MediaSelectionControl",
+            "TargetFormComponent": "Kentico.Administration.AssetSelector",
+            "Actions": [ "convert to asset" ],
+            "FieldNameRegex": ".*"
         }
     }
   }
@@ -383,3 +392,35 @@ private const string Secret = "__your secret string__";
 You can test the source instance API discovery by making a POST request to `<source instance live site URI>/ToolkitApi/Test` with `{ "secret":"__your secret string__" }` in the body. If your setup is correct, the response should be: `{ "pong": true }`
 
 When you now [Migrate data](#migrate-data), the toolkit performs API discovery of Page Builder component code on the source instance and advanced migration of Page Builder data.
+
+## Convert text fields with media links to assets
+
+By default, text fields with the _Media selection_ [form control](https://docs.xperience.io/x/0A_RBg) from the source instance are migrated as plain text fields to the target instance. You can instead configure the migration toolkit to convert these fields to [content item assets](https://docs.xperience.io/x/barWCQ) in the target instance.
+
+Only links using Xperience handlers (`getmedia` or `getattachment`) are supported. [Direct file paths](https://docs.xperience.io/x/xQ_RBg) will not be converted.
+
+To enable this feature, Configure the `OptInFeatures.CustomMigration.FieldMigrations` [configuration options](#configuration) for the Migration toolkit.
+
+* `SourceDataType` - The [data type](https://docs.xperience.io/x/coJwCg) of the fields in the source instance.
+* `TargetDataType` - The [data type](https://docs.xperience.io/x/RoXWCQ) of the fields in the target instance.
+* `SourceFormControl` - [Form control](https://docs.xperience.io/x/lAyRBg) of the fields in the source instance.
+* `TargetFormComponent` - [Form component](https://docs.xperience.io/x/5ASiCQ) of the fields in the target instance.
+* `Actions` - Additional actions to be applied to the files (`convert to asset` or `convert to pages`)
+* `FieldNameRegex` - A regular expression used to filter what fields are converted. Only fields with field names that match the regular expressions are converted.
+
+```json
+"OptInFeatures":{
+  "CustomMigration":{
+    "FieldMigrations": [
+      {
+        "SourceDataType": "text",
+        "TargetDataType": "assets",
+        "SourceFormControl": "MediaSelectionControl",
+        "TargetFormComponent": "Kentico.Administration.AssetSelector",
+        "Actions": [ "convert to asset" ],
+        "FieldNameRegex": ".*"
+      }
+    ]
+  }
+}   
+```
