@@ -10,11 +10,11 @@ namespace Migration.Toolkit.KXP.Models
     [Index("ContentRelationshipItemObjectType", "ContentRelationshipItemObjectId", Name = "IX_CMS_ContentRelationshipItem_ObjectType_ObjectID", IsUnique = true)]
     public partial class CmsContentRelationshipItem
     {
-        [Column("graph_id_ADFBD307F6894A6B9C2C0A3D9A6058DC")]
-        public long GraphIdAdfbd307f6894a6b9c2c0a3d9a6058dc { get; set; }
-        [Column("$node_id_B12FA7C97AAB49A3BC4B145536D270E3")]
+        [Column("graph_id_0F42876FB2D4400FB0F5DC129B956195")]
+        public long GraphId0f42876fb2d4400fb0f5dc129b956195 { get; set; }
+        [Column("$node_id_BB9B40FFA6D34F9F9733E1D3D9259FC6")]
         [StringLength(1000)]
-        public string NodeIdB12fa7c97aab49a3bc4b145536d270e3 { get; set; } = null!;
+        public string NodeIdBb9b40ffa6d34f9f9733e1d3d9259fc6 { get; set; } = null!;
         [Key]
         [Column("ContentRelationshipItemID")]
         public int ContentRelationshipItemId { get; set; }

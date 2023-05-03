@@ -533,6 +533,8 @@ namespace Migration.Toolkit.KXP.Context
 
             modelBuilder.Entity<CmsFormFeaturedField>(entity =>
             {
+                entity.Property(e => e.FormFeaturedFieldEnabled).HasDefaultValueSql("((1))");
+
                 entity.Property(e => e.FormFeaturedFieldMapping).HasDefaultValueSql("(N'')");
             });
 
@@ -1154,8 +1156,6 @@ namespace Migration.Toolkit.KXP.Context
             modelBuilder.Entity<CmsWorkflowAction>(entity =>
             {
                 entity.Property(e => e.ActionEnabled).HasDefaultValueSql("((1))");
-
-                entity.Property(e => e.ActionWorkflowType).HasDefaultValueSql("((0))");
 
                 entity.HasOne(d => d.ActionResource)
                     .WithMany(p => p.CmsWorkflowActions)
