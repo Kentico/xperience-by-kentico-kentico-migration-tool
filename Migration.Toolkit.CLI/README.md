@@ -283,7 +283,7 @@ Add the options under the `Settings` section in the configuration file.
 | EntityConfigurations.*&lt;object table name&gt;*.ExcludeCodeNames      | Excludes objects with the specified code names from the migration.                                   |
 | OptInFeatures.QuerySourceInstanceApi.Enabled                   | If `true`, [source instance API discovery](#source-instance-api-discovery) is enabled to allow advanced migration of Page Builder content for pages and page templates. |
 | OptInFeatures.QuerySourceInstanceApi.Connections               | To use [source instance API discovery](#source-instance-api-discovery), you need to add a connection JSON object containing the following values:<br />`SourceInstanceUri` - the base URI where the source instance's live site application is running.<br />`Secret` - the secret that you set in the *ToolkitApiController.cs* file on the source instance.  |
-| OptInFeatures.CustomMigration.FieldMigrations                  | Enables conversion of media selection text fields to asset fields.<br />`SourceDataType` - The [data type](https://docs.xperience.io/x/coJwCg) of the fields in the source instance.<br />`TargetDataType` - The [data type](https://docs.xperience.io/x/RoXWCQ) of the fields in the target instance.<br />`SourceFormControl` - [Form control](https://docs.xperience.io/x/lAyRBg) of the fields in the source instance.<br />`TargetFormComponent` - [Form component](https://docs.xperience.io/x/5ASiCQ) of the fields in the target instance.<br />`Actions` - Additional actions to be applied to the files (`convert to asset` or `convert to pages`)<br />`FieldNameRegex` - A regular expression used to filter what fields are converted.|
+| OptInFeatures.CustomMigration.FieldMigrations                  | Enables conversion of media selection text fields to asset fields.<br />`SourceDataType` - the [data type](https://docs.xperience.io/x/coJwCg) of the fields in the source instance.<br />`TargetDataType` - the [data type](https://docs.xperience.io/x/RoXWCQ) of the fields in the target instance.<br />`SourceFormControl` - [form control](https://docs.xperience.io/x/lAyRBg) of the fields in the source instance.<br />`TargetFormComponent` - [form component](https://docs.xperience.io/x/5ASiCQ) of the fields in the target instance.<br />`Actions` - additional actions to be applied to the files (`convert to asset` or `convert to pages`)<br />`FieldNameRegex` - a regular expression used to filter what fields are converted.|
 
 ### Example
 
@@ -464,20 +464,20 @@ When you now [Migrate data](#migrate-data), the toolkit performs API discovery o
 
 ## Convert text fields with media links to assets
 
-By default, text fields with the _Media selection_ [form control](https://docs.xperience.io/x/0A_RBg) from the source instance are migrated as plain text fields to the target instance. You can instead configure the migration toolkit to convert these fields to [content item assets](https://docs.xperience.io/x/barWCQ) in the target instance.
+By default, text fields with the _Media selection_ [form control](https://docs.xperience.io/x/0A_RBg) from the source instance are migrated as plain text fields to the target instance. You can instead configure the Migration toolkit to convert these fields to [content item assets](https://docs.xperience.io/x/barWCQ) in the target instance.
 
 Only links using Xperience handlers (`getmedia` or `getattachment`) are supported. [Direct file paths](https://docs.xperience.io/x/xQ_RBg) will not be converted.
 
-:warning: If you enable this feature, you also need to change retrieval and handling of affected files in your code, as the structure of the stored data changes from a text path (e.g.,`~/getmedia/CCEAD0F0-E2BF-459B-814A-36699E5C773E/somefile.jpeg?width=300&height=100`) to an asset data type (internally stored as e.g., `[{"Identifier":"CCEAD0F0-E2BF-459B-814A-36699E5C773E","Some file":"somefile.jpeg","Size":11803,"Dimensions":{"Width":300,"Height":100}}]`). The value of the field now needs to be [retrieved as an content item asset](https://docs.xperience.io/x/OKrWCQ).
+> :warning: If you enable this feature, you also need to change retrieval and handling of affected files in your code, as the structure of the stored data changes from a text path (e.g.,`~/getmedia/CCEAD0F0-E2BF-459B-814A-36699E5C773E/somefile.jpeg?width=300&height=100`) to an asset data type (internally stored as e.g., `[{"Identifier":"CCEAD0F0-E2BF-459B-814A-36699E5C773E","Some file":"somefile.jpeg","Size":11803,"Dimensions":{"Width":300,"Height":100}}]`). The value of the field now needs to be [retrieved as an content item asset](https://docs.xperience.io/x/OKrWCQ).
 
-To enable this feature, Configure the `OptInFeatures.CustomMigration.FieldMigrations` [configuration options](#configuration) for the Migration toolkit.
+To enable this feature, configure the `OptInFeatures.CustomMigration.FieldMigrations` [configuration options](#configuration) for the Migration toolkit.
 
-* `SourceDataType` - The [data type](https://docs.xperience.io/x/coJwCg) of the fields in the source instance.
-* `TargetDataType` - The [data type](https://docs.xperience.io/x/RoXWCQ) of the fields in the target instance.
-* `SourceFormControl` - [Form control](https://docs.xperience.io/x/lAyRBg) of the fields in the source instance.
-* `TargetFormComponent` - [Form component](https://docs.xperience.io/x/5ASiCQ) of the fields in the target instance.
-* `Actions` - Additional actions to be applied to the files (`convert to asset` or `convert to pages`)
-* `FieldNameRegex` - A regular expression used to filter what fields are converted. Only fields with field names that match the regular expressions are converted. Use `.*` to match all fields.
+* `SourceDataType` - the [data type](https://docs.xperience.io/x/coJwCg) of the fields in the source instance.
+* `TargetDataType` - the [data type](https://docs.xperience.io/x/RoXWCQ) of the fields in the target instance.
+* `SourceFormControl` - [form control](https://docs.xperience.io/x/lAyRBg) of the fields in the source instance.
+* `TargetFormComponent` - [form component](https://docs.xperience.io/x/5ASiCQ) of the fields in the target instance.
+* `Actions` - actions to be applied to the files (use either`convert to asset` or `convert to pages`)
+* `FieldNameRegex` - a regular expression used to filter what fields are converted. Only fields with field names that match the regular expressions are converted. Use `.*` to match all fields.
 
 ```json
 "OptInFeatures":{
