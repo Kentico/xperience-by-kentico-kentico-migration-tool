@@ -110,6 +110,8 @@ The following table describes how the Migration toolkit maps the data types and 
 | Unique identifier (Guid)  | Unique identifier (Guid) | *any*                         | None (not supported)  |
 | Pages                     | Pages                    | *any* (Pages)                 | Page selector         |
 
+Conversion of text fields with media links (*Media selection* form control) to media library files can also be enabled by setting the `OptInFeatures.CustomMigration.FieldMigrations` [configuration option](#convert-text-fields-with-media-links-to-media-libraries).
+
 Some [Form components](https://docs.xperience.io/x/5ASiCQ) used by content type fields in Xperience by Kentico store data differently than their equivalent Form control in Xperience 13. To ensure that content is displayed correctly on pages, you also need to manually adjust your website's implementation to match the new data format. See [Editing components in Xperience by Kentico](https://docs.xperience.io/x/wIfWCQ) to learn more about some of the most common components and selectors.
 
 #### Pages
@@ -283,7 +285,7 @@ Add the options under the `Settings` section in the configuration file.
 | EntityConfigurations.*&lt;object table name&gt;*.ExcludeCodeNames      | Excludes objects with the specified code names from the migration.                                   |
 | OptInFeatures.QuerySourceInstanceApi.Enabled                   | If `true`, [source instance API discovery](#source-instance-api-discovery) is enabled to allow advanced migration of Page Builder content for pages and page templates. |
 | OptInFeatures.QuerySourceInstanceApi.Connections               | To use [source instance API discovery](#source-instance-api-discovery), you need to add a connection JSON object containing the following values:<br />`SourceInstanceUri` - the base URI where the source instance's live site application is running.<br />`Secret` - the secret that you set in the *ToolkitApiController.cs* file on the source instance.  |
-| OptInFeatures.CustomMigration.FieldMigrations                  | Enables conversion of media selection text fields to asset fields.<br />`SourceDataType` - the [data type](https://docs.xperience.io/x/coJwCg) of the fields in the source instance.<br />`TargetDataType` - the [data type](https://docs.xperience.io/x/RoXWCQ) of the fields in the target instance.<br />`SourceFormControl` - [form control](https://docs.xperience.io/x/lAyRBg) of the fields in the source instance.<br />`TargetFormComponent` - [form component](https://docs.xperience.io/x/5ASiCQ) of the fields in the target instance.<br />`Actions` - additional actions to be applied to the files (`convert to asset` or `convert to pages`)<br />`FieldNameRegex` - a regular expression used to filter what fields are converted.|
+| OptInFeatures.CustomMigration.FieldMigrations                  | Enables conversion of media selection text fields to media library files. See [Convert text fields with media links to media libraries](#convert-text-fields-with-media-links-to-media-libraries) for more information.|
 
 ### Example
 
@@ -464,25 +466,17 @@ When you now [Migrate data](#migrate-data), the toolkit performs API discovery o
 
 ## Convert text fields with media links to media libraries
 
-Dependency: `--media-libraries`
+By default, page type and module class fields with the _Text_ data type and the _Media selection_ [form control](https://docs.xperience.io/x/0A_RBg) from the source instance are converted to plain _Text_ fields in the target instance. You can instead configure the Migration toolkit to convert these fields to the _Media files_ data type and use the _Media file selector_ form component.
 
-By default, text fields with the _Media selection_ [form control](https://docs.xperience.io/x/0A_RBg) from the source instance are migrated as plain text fields to the target instance. You can instead configure the Migration toolkit to convert these fields to [media library files](https://docs.xperience.io/x/UwqRBg) in the target instance.
+* Attachment links (containing a `getattachment` handler) are migrated as [attachments](#attachments) and changed to the _Media files_ data type.
+* Media file links (containing a `getmedia` handler) are changed to the _Media files_ data type. It is expected that the media library containing the targeted file has been migrated.
 
-Only links using Xperience handlers (`getmedia` or `getattachment`) are supported. [Direct file paths](https://docs.xperience.io/x/xQ_RBg) will not be converted.
+> :warning: **Notes**
+>
+> * Only media libraries using the **Permanent** [file URL format](https://docs.xperience.io/x/xQ_RBg) are supported. Content from media libraries with enabled **Use direct path for files in content** setting will not be converted.
+> * If you enable this feature, you also need to change retrieval and handling of affected files in your code, as the structure of the stored data changes from a text path (e.g.,`~/getmedia/CCEAD0F0-E2BF-459B-814A-36699E5C773E/somefile.jpeg?width=300&height=100`) to a _Media files_ data type (internally stored as e.g., `[{"Identifier":"CCEAD0F0-E2BF-459B-814A-36699E5C773E","Some file":"somefile.jpeg","Size":11803,"Dimensions":{"Width":300,"Height":100}}]`). The value of the field now needs to be [retrieved as a media library file](https://docs.xperience.io/x/LA2RBg).
 
-* Links containing a `getattachment` handler are migrated as [attachments](#attachments) and changed to a media library asset data type.
-* Links containing a `getmedia` handler are changed to an media library asset data type. It is expected that the media library containing the targeted file has been migrated.
-
-> :warning: If you enable this feature, you also need to change retrieval and handling of affected files in your code, as the structure of the stored data changes from a text path (e.g.,`~/getmedia/CCEAD0F0-E2BF-459B-814A-36699E5C773E/somefile.jpeg?width=300&height=100`) to a media library asset data type (internally stored as e.g., `[{"Identifier":"CCEAD0F0-E2BF-459B-814A-36699E5C773E","Some file":"somefile.jpeg","Size":11803,"Dimensions":{"Width":300,"Height":100}}]`). The value of the field now needs to be [retrieved as a media library file](https://docs.xperience.io/x/LA2RBg).
-
-To enable this feature, configure the `OptInFeatures.CustomMigration.FieldMigrations` [configuration options](#configuration) for the Migration toolkit.
-
-* `SourceDataType` - the [data type](https://docs.xperience.io/x/coJwCg) of the fields in the source instance.
-* `TargetDataType` - the [data type](https://docs.xperience.io/x/RoXWCQ) of the fields in the target instance.
-* `SourceFormControl` - [form control](https://docs.xperience.io/x/lAyRBg) of the fields in the source instance.
-* `TargetFormComponent` - [form component](https://docs.xperience.io/x/5ASiCQ) of the fields in the target instance.
-* `Actions` - actions to be applied to the files (use `convert to asset`)
-* `FieldNameRegex` - a regular expression used to filter what fields are converted. Only fields with field names that match the regular expressions are converted. Use `.*` to match all fields.
+To enable this feature, configure the `OptInFeatures.CustomMigration.FieldMigrations` [options](#configuration) for the Migration toolkit. Use the values in the code snippet below:
 
 ```json
 "OptInFeatures":{
@@ -500,3 +494,5 @@ To enable this feature, configure the `OptInFeatures.CustomMigration.FieldMigrat
   }
 }   
 ```
+
+`FieldNameRegex` - a regular expression used to filter what fields are converted. Only fields with field names that match the regular expressions are converted. Use `.*` to match all fields.
