@@ -233,7 +233,11 @@ public class TreeNodeMapper : EntityMapperBase<CmsTreeMapperSource, TreeNode>
 
             // TODO tk: 2022-09-14 find other acronym for FormComponents
             var sectionFcs = _sourceInstanceContext.GetSectionFormComponents(siteId, section.TypeIdentifier);
-            WalkProperties(section.Properties, sectionFcs);
+
+            if (section.Properties is { Count: > 0 })
+            {
+                WalkProperties(section.Properties, sectionFcs);
+            }
 
             if (section.Zones is { Count: > 0 })
             {
