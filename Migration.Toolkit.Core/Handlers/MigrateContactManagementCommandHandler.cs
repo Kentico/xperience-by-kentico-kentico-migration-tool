@@ -64,6 +64,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
 
     private CommandResult? MigrateContacts()
     {
+        const string contactTableName = "OM_Contact";
         var requiredColumnsForContactMigration = new Dictionary<string, string>
         {
             { nameof(OmContact.ContactId), nameof(KXP.Models.OmContact.ContactId) },
@@ -103,21 +104,21 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
             requiredColumnsForContactMigration.Add(cfi.FieldName, cfi.FieldName);
         }
 
-        // if (_bulkDataCopyService.CheckIfDataExistsInTargetTable("OM_Contact"))
-        // {
-        //     _protocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable("OM_Contact"));
-        //     _logger.LogError("Data must not exist in target instance table, remove data before proceeding");
-        //     return new CommandFailureResult();
-        // }
+        if (_bulkDataCopyService.CheckIfDataExistsInTargetTable(contactTableName))
+        {
+            _logger.LogWarning("Data exists in target coupled data table '{TableName}' - cannot migrate, skipping contact data migration", contactTableName);
+            _protocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable(contactTableName));
+            return new CommandFailureResult();
+        }
 
-        if (_bulkDataCopyService.CheckForTableColumnsDifferences("OM_Contact", requiredColumnsForContactMigration, out var differences))
+        if (_bulkDataCopyService.CheckForTableColumnsDifferences(contactTableName, requiredColumnsForContactMigration, out var differences))
         {
             _protocol.Append(HandbookReferences
-                .BulkCopyColumnMismatch("OM_Contact")
+                .BulkCopyColumnMismatch(contactTableName)
                 .NeedsManualAction()
                 .WithData(differences)
             );
-            _logger.LogError("Table {TableName} columns do not match, fix columns before proceeding", "OM_Contact");
+            _logger.LogError("Table {TableName} columns do not match, fix columns before proceeding", contactTableName);
             {
                 return new CommandFailureResult();
             }
@@ -127,7 +128,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         _primaryKeyMappingContext.PreloadDependencies<CmsState>(u => u.StateId);
         _primaryKeyMappingContext.PreloadDependencies<CmsCountry>(u => u.CountryId);
 
-        var bulkCopyRequest = new BulkCopyRequest("OM_Contact",
+        var bulkCopyRequest = new BulkCopyRequest(contactTableName,
             s => true,// s => s != "ContactID",
             _ => true,
             50000,
@@ -224,6 +225,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
 
     private CommandResult? MigrateContactActivities(List<int> migratedSiteIds)
     {
+        const string activityTableName = "OM_Activity";
         var requiredColumnsForContactMigration = new Dictionary<string, string>
         {
             { nameof(OmActivity.ActivityId), nameof(KXP.Models.OmActivity.ActivityId) },
@@ -251,23 +253,22 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         {
             requiredColumnsForContactMigration.Add(cfi.FieldName, cfi.FieldName);
         }
+        
+        if (_bulkDataCopyService.CheckIfDataExistsInTargetTable(activityTableName))
+        {
+            _logger.LogWarning("Data exists in target coupled data table '{TableName}' - cannot migrate, skipping activity data migration", activityTableName);
+            _protocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable(activityTableName));
+            return new CommandFailureResult();
+        }
 
-        // TODO tk: 2022-07-07 replace table data
-        // if (_bulkDataCopyService.CheckIfDataExistsInTargetTable("OM_Activity"))
-        // {
-        //     _protocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable("OM_Activity"));
-        //     _logger.LogError("Data must not exist in target instance table, remove data before proceeding");
-        //     return new CommandFailureResult();
-        // }
-
-        if (_bulkDataCopyService.CheckForTableColumnsDifferences("OM_Activity", requiredColumnsForContactMigration, out var differences))
+        if (_bulkDataCopyService.CheckForTableColumnsDifferences(activityTableName, requiredColumnsForContactMigration, out var differences))
         {
             _protocol.Append(HandbookReferences
-                .BulkCopyColumnMismatch("OM_Activity")
+                .BulkCopyColumnMismatch(activityTableName)
                 .NeedsManualAction()
                 .WithData(differences)
             );
-            _logger.LogError("Table {TableName} columns do not match, fix columns before proceeding", "OM_Activity");
+            _logger.LogError("Table {TableName} columns do not match, fix columns before proceeding", activityTableName);
             {
                 return new CommandFailureResult();
             }
@@ -276,7 +277,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         _primaryKeyMappingContext.PreloadDependencies<CmsTree>(u => u.NodeId);
         _primaryKeyMappingContext.PreloadDependencies<OmContact>(u => u.ContactId);
 
-        var bulkCopyRequest = new BulkCopyRequest("OM_Activity",
+        var bulkCopyRequest = new BulkCopyRequest(activityTableName,
             s => true,// s => s != "ActivityID",
             reader => migratedSiteIds.Contains(reader.GetInt32(reader.GetOrdinal("ActivitySiteID"))), // TODO tk: 2022-07-07 move condition to source query
             50000,
