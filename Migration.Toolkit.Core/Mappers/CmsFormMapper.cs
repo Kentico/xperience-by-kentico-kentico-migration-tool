@@ -56,11 +56,12 @@ public class CmsFormMapper : EntityMapperBase<KX13.Models.CmsForm, BizFormInfo>
         {
             target.FormClassID = formClassId;
         }
-        
-        if (mappingHelper.TranslateRequiredId<KX13.Models.CmsSite>(c => c.SiteId, source.FormSiteId, out var formSiteId))
-        {
-            target.FormSiteID = formSiteId;
-        }
+
+        // TODOV27 tomas.krch: 2023-09-05: site mapping obsolete
+        // if (mappingHelper.TranslateRequiredId<KX13.Models.CmsSite>(c => c.SiteId, source.FormSiteId, out var formSiteId))
+        // {
+        //     target.FormSiteID = formSiteId;
+        // }
 
         return target;
     }
@@ -99,12 +100,12 @@ public class CmsFormMapperEf : EntityMapperBase<KX13.Models.CmsForm, Migration.T
 
         // TODO tk: 2022-05-20 new deduce: target.FormAfterSubmitMode = source.FormAfterSubmitMode;
         // TODO tk: 2022-05-20 new deduce: target.FormAfterSubmitRelatedValue = source.FormAfterSubmitRelatedValue;
-        
+
         if (mappingHelper.TranslateRequiredId<KX13.Models.CmsClass>(c => c.ClassId, source.FormClassId, out var classId))
         {
             target.FormClassId = classId;
         }
-        
+
         if (mappingHelper.TranslateRequiredId<KX13.Models.CmsSite>(c => c.SiteId, source.FormSiteId, out var siteId))
         {
             target.FormSiteId = siteId;

@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>disable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Kentico.Xperience.Core" Version="26.1.0" />
-      <PackageReference Include="Kentico.Xperience.WebApp" Version="26.1.0" />
+      <PackageReference Include="Kentico.Xperience.Core" Version="27.0.0-b241883" />
+      <PackageReference Include="Kentico.Xperience.WebApp" Version="27.0.0-b241883" />
       <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
       <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
     </ItemGroup>

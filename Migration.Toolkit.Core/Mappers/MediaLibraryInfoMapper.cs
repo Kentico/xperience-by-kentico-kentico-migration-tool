@@ -36,14 +36,15 @@ public class MediaLibraryInfoMapper : EntityMapperBase<KX13.Models.MediaLibrary,
         target.LibraryLastModified = mappingHelper.Require(source.LibraryLastModified, nameof(source.LibraryLastModified));
         target.LibraryUseDirectPathForContent = source.LibraryUseDirectPathForContent ?? true;
 
-        target.LibraryTeaserPath = source.LibraryTeaserPath;
-        target.LibraryTeaserGUID = source.LibraryTeaserGuid ?? Guid.Empty;
+        // TODOV27 tomas.krch: 2023-09-05: library obsolete properties
+        // target.LibraryTeaserPath = source.LibraryTeaserPath;
+        // target.LibraryTeaserGUID = source.LibraryTeaserGuid ?? Guid.Empty;
+        //
+        // if (mappingHelper.TranslateRequiredId<KX13.Models.CmsSite>(c => c.SiteId, source.LibrarySiteId, out var siteId))
+        // {
+        //     target.LibrarySiteID = siteId;
+        // }
 
-        if (mappingHelper.TranslateRequiredId<KX13.Models.CmsSite>(c => c.SiteId, source.LibrarySiteId, out var siteId))
-        {
-            target.LibrarySiteID = siteId;
-        }
-        
         // OBSOLETE
         // var libraryAccess = mappingHelper.Require(source.LibraryAccess, nameof(source.LibraryAccess));
         // target.FileCreate = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 1);

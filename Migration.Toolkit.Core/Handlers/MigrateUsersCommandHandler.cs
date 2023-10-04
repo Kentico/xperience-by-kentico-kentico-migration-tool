@@ -221,10 +221,10 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
             //     continue;
             // }
 
-            var xbkRoleInfo = RoleInfoProvider.GetRoleInfo(kx13CmsRole.RoleName, targetSiteId ?? 0);
-
+            // TODOV27 tomas.krch: 2023-09-05: role info obsolete?
+            var xbkRoleInfo = default(RoleInfo);// RoleInfoProvider.GetRoleInfo(kx13CmsRole.RoleName, targetSiteId ?? 0);
+            throw new NotImplementedException("unsopported currently");
             _protocol.FetchedTarget(xbkRoleInfo);
-
             var mapped = _roleMapper.Map(kx13CmsRole, xbkRoleInfo);
             _protocol.MappedTarget(mapped);
 

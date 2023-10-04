@@ -53,7 +53,7 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol,
-        BulkDataCopyService bulkDataCopyService, 
+        BulkDataCopyService bulkDataCopyService,
         FieldMigrationService fieldMigrationService)
     {
         _logger = logger;
@@ -168,7 +168,8 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
 
                 #region Migrate coupled data class data
 
-                if (!xbkDataClass.ClassShowAsSystemTable)
+                // TODOV27 tomas.krch: 2023-09-05: obsolete logic - replacement?
+                if (true)//!xbkDataClass.ClassShowAsSystemTable)
                 {
                     Debug.Assert(xbkDataClass.ClassTableName != null, "kx13Class.ClassTableName != null");
                     // var csi = new ClassStructureInfo(kx13Class.ClassXmlSchema, kx13Class.ClassXmlSchema, kx13Class.ClassTableName);
@@ -214,7 +215,7 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
                 #endregion
             }
         }
-        
+
         // special case - member migration (CMS_User splits into CMS_User and CMS_Member in XbK)
         await MigrateMemberClass(cancellationToken);
     }
@@ -237,7 +238,7 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
             _protocol.Warning<KX13M.CmsUserSetting>(HandbookReferences.InvalidSourceData<KX13M.CmsUserSetting>().WithMessage($"{Kx13SystemClass.cms_usersettings} class not found"), null);
             return;
         }
-        
+
         var target = _kxpClassFacade.GetClass("CMS.Member");
 
         PatchClass(cmsUser, out var cmsUserCsi, out var cmsUserFi);
@@ -246,39 +247,39 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
         var memberFormInfo = new FormInfo(target.ClassFormDefinition);
 
         var includedSystemFields = _toolkitConfiguration.MemberIncludeUserSystemFields?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
-        
+
         var memberColumns = memberFormInfo.GetColumnNames();
-        
+
         foreach (var uColumn in cmsUserFi.GetColumnNames())
         {
             var field = cmsUserFi.GetFormField(uColumn);
 
             if (
                 !memberColumns.Contains(uColumn) &&
-                !field.PrimaryKey && 
+                !field.PrimaryKey &&
                 !MemberInfoMapper.MigratedUserFields.Contains(uColumn, StringComparer.InvariantCultureIgnoreCase)
                 && (includedSystemFields.Contains(uColumn) || !field.System)
             )
             {
                 field.System = false; // no longer system field
-                memberFormInfo.AddFormItem(field);    
+                memberFormInfo.AddFormItem(field);
             }
         }
-        
+
         foreach (var usColumn in cmsUserSettingsFi.GetColumnNames())
         {
             var field = cmsUserSettingsFi.GetFormField(usColumn);
 
             if (
-                !memberColumns.Contains(usColumn) && 
+                !memberColumns.Contains(usColumn) &&
                 !field.PrimaryKey
                 && (includedSystemFields.Contains(usColumn) || !field.System))
             {
                 field.System = false; // no longer system field
-                memberFormInfo.AddFormItem(field);    
+                memberFormInfo.AddFormItem(field);
             }
         }
-        
+
         target.ClassFormDefinition = memberFormInfo.GetXmlDefinition();
         DataClassInfoProvider.ProviderObject.Set(target);
     }

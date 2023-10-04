@@ -38,7 +38,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
         IDbContextFactory<KX13Context> kx13ContextFactory,
         IEntityMapper<MediaLibrary, MediaLibraryInfo> mediaLibraryInfoMapper,
         KxpMediaFileFacade mediaFileFacade,
-        IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo> mediaFileInfoMapper, 
+        IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo> mediaFileInfoMapper,
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol
@@ -168,7 +168,8 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
                     loadMediaFileData = true;
                 }
 
-                var targetSite = kxoDbContext.CmsSites.SingleOrDefault(s => s.SiteId == targetMediaLibrary.LibrarySiteID);
+                // TODOV27 tomas.krch: 2023-09-05: site obsolete
+                // var targetSite = kxoDbContext.CmsSites.SingleOrDefault(s => s.SiteId == targetMediaLibrary.LibrarySiteID);
                 var kx13MediaFiles = kx13Context.MediaFiles
                     .Where(x => migratedSiteIds.Contains(x.FileSiteId))
                     .Where(x => x.FileLibraryId == sourceMediaLibrary.LibraryId);
@@ -208,8 +209,9 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
                         {
                             if (newInstance)
                             {
-                                Debug.Assert(targetSite != null, nameof(targetSite) + " != null");
-                                _mediaFileFacade.EnsureMediaFilePathExistsInLibrary(mf, targetMediaLibrary.LibraryID, targetSite.SiteName);
+                                // TODOV27 tomas.krch: 2023-09-05: site obsolete
+                                //Debug.Assert(targetSite != null, nameof(targetSite) + " != null");
+                                // _mediaFileFacade.EnsureMediaFilePathExistsInLibrary(mf, targetMediaLibrary.LibraryID, targetSite.SiteName);
                             }
 
                             _mediaFileFacade.SetMediaFile(mf, newInstance);

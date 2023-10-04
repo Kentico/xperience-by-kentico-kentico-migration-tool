@@ -33,7 +33,9 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
         target.ClassDisplayName = source.ClassDisplayName;
         target.ClassName = source.ClassName;
         target.ClassIsDocumentType = source.ClassIsDocumentType;
-        target.ClassIsCoupledClass = source.ClassIsCoupledClass;
+
+        // TODOV27 tomas.krch: 2023-09-05: class is coupled class removed, replacement?
+        // target.ClassIsCoupledClass = source.ClassIsCoupledClass;
 
         var isCustomizableSystemClass = false;
         var classIsCustom = true;
@@ -56,19 +58,15 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
 
         MapFormDefinitionFields(source, target, isCustomizableSystemClass, classIsCustom);
 
-        // true for page content type
-        target.ClassIsPage = source.ClassIsDocumentType;
+
         target.ClassHasUnmanagedDbSchema = false;
 
-        target.ClassNodeNameSource = source.ClassNodeNameSource;
+
         target.ClassTableName = source.ClassTableName;
-        target.ClassShowAsSystemTable = source.ClassShowAsSystemTable.UseKenticoDefault();
-        target.ClassUsePublishFromTo = source.ClassUsePublishFromTo.UseKenticoDefault();
         target.ClassShowTemplateSelection = source.ClassShowTemplateSelection.UseKenticoDefault();
-        target.ClassNodeAliasSource = source.ClassNodeAliasSource;
         target.ClassLastModified = source.ClassLastModified;
         target.ClassGUID = source.ClassGuid;
-        target.ClassShowColumns = source.ClassShowColumns;
+
 
         if (source.ClassContactMapping != null)
         {
@@ -96,20 +94,31 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
         target.ClassContactOverwriteEnabled = source.ClassContactOverwriteEnabled.UseKenticoDefault();
         target.ClassConnectionString = source.ClassConnectionString;
         target.ClassDefaultObjectType = source.ClassDefaultObjectType;
-        target.ClassIsForm = source.ClassIsForm.UseKenticoDefault();
-        target.ClassCustomizedColumns = source.ClassCustomizedColumns;
         target.ClassCodeGenerationSettings = source.ClassCodeGenerationSettings;
         target.ClassIconClass = source.ClassIconClass;
-        target.ClassURLPattern = source.ClassUrlpattern;
-        target.ClassUsesPageBuilder = source.ClassUsesPageBuilder;
-        target.ClassHasURL = source.ClassHasUrl;
-        target.ClassHasMetadata = source.ClassHasMetadata;
 
 
-        if (mappingHelper.TranslateIdAllowNulls<KX13.Models.CmsClass>(c => c.ClassId, source.ClassInheritsFromClassId.NullIfZero(), out var classId))
-        {
-            target.ClassInheritsFromClassID = classId.UseKenticoDefault();
-        }
+
+        // true for page content type
+        // TODOV27 tomas.krch: 2023-09-05: obsolete dataclass properties
+        // target.ClassIsPage = source.ClassIsDocumentType;
+        // target.ClassNodeNameSource = source.ClassNodeNameSource;
+        // target.ClassShowAsSystemTable = source.ClassShowAsSystemTable.UseKenticoDefault();
+        // target.ClassUsePublishFromTo = source.ClassUsePublishFromTo.UseKenticoDefault();
+        // target.ClassNodeAliasSource = source.ClassNodeAliasSource;
+        // target.ClassShowColumns = source.ClassShowColumns;
+        // target.ClassURLPattern = source.ClassUrlpattern;
+        // target.ClassUsesPageBuilder = source.ClassUsesPageBuilder;
+        // target.ClassHasURL = source.ClassHasUrl;
+        // target.ClassHasMetadata = source.ClassHasMetadata;
+        // target.ClassIsForm = source.ClassIsForm.UseKenticoDefault();
+        // target.ClassCustomizedColumns = source.ClassCustomizedColumns;
+
+        // TODOV27 tomas.krch: 2023-09-05: broken class inheritance
+        // if (mappingHelper.TranslateIdAllowNulls<KX13.Models.CmsClass>(c => c.ClassId, source.ClassInheritsFromClassId.NullIfZero(), out var classId))
+        // {
+        //     target.ClassInheritsFromClassID = classId.UseKenticoDefault();
+        // }
 
         if (mappingHelper.TranslateIdAllowNulls<KX13.Models.CmsResource>(c => c.ResourceId, source.ClassResourceId, out var resourceId))
         {

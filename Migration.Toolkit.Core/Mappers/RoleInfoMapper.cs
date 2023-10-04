@@ -26,10 +26,11 @@ public class RoleInfoMapper : EntityMapperBase<KX13.Models.CmsRole, RoleInfo>
         target.RoleName = source.RoleName;
         target.RoleDescription = source.RoleDescription;
 
-        if (mappingHelper.TranslateIdAllowNulls<KX13.Models.CmsSite>(c => c.SiteId, source.SiteId, out var siteId))
-        {
-            target.SiteID = siteId ?? 0;
-        }
+        // TODOV27 tomas.krch: 2023-09-05: role info mapping to siteid is obsolete
+        // if (mappingHelper.TranslateIdAllowNulls<KX13.Models.CmsSite>(c => c.SiteId, source.SiteId, out var siteId))
+        // {
+        //     target.SiteID = siteId ?? 0;
+        // }
 
         target.RoleGUID = source.RoleGuid;
         target.RoleLastModified = source.RoleLastModified;

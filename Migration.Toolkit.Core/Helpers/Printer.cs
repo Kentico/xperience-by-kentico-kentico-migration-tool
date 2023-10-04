@@ -1,5 +1,5 @@
 using CMS.DataEngine;
-using CMS.DocumentEngine;
+// using CMS.DocumentEngine => obsolete;
 using CMS.MediaLibrary;
 using Migration.Toolkit.Common.Helpers;
 
@@ -54,14 +54,18 @@ public static class Printer
 
         return model switch
         {
-            PageTemplateConfigurationInfo item => FormatModel($"ID={item.PageTemplateConfigurationID}, GUID={item.PageTemplateConfigurationGUID}, Name={item.PageTemplateConfigurationName}, SiteId={item.PageTemplateConfigurationSiteID}"),
+            // TODOV27 tomas.krch: 2023-09-05: obsolete objects logging
+            // PageTemplateConfigurationInfo item => FormatModel($"ID={item.PageTemplateConfigurationID}, GUID={item.PageTemplateConfigurationGUID}, Name={item.PageTemplateConfigurationName}, SiteId={item.PageTemplateConfigurationSiteID}"),
+            // PageUrlPathInfo item => FormatModel($"ID={item.PageUrlPathID}, GUID={item.PageUrlPathGUID}, UrlPath={item.PageUrlPathUrlPath}"),
+            // TreeNode item => FormatModel($"NodeID={item.NodeID}, DocumentID={item.DocumentID}, NodeGUID={item.NodeGUID}, DocumentGUID={item.DocumentGUID}, DocumentCulture={item.DocumentCulture}, DocumentName={item.DocumentName}"),
+
             MediaLibraryInfo item => FormatModel($"ID={item.LibraryID}, GUID={item.LibraryGUID}, Name={item.LibraryName}"),
             MediaFileInfo item => FormatModel($"ID={item.FileID}, GUID={item.FileGUID}, Name={item.FileName}"),
             DataClassInfo item => FormatModel($"ID={item.ClassID}, GUID={item.ClassGUID}, Name={item.ClassName}"),
-            PageUrlPathInfo item => FormatModel($"ID={item.PageUrlPathID}, GUID={item.PageUrlPathGUID}, UrlPath={item.PageUrlPathUrlPath}"),
+
             CountryInfo item => FormatModel($"ID={item.CountryID}, GUID={item.CountryGUID}, Name={item.CountryName}"),
             StateInfo item => FormatModel($"ID={item.StateID}, GUID={item.StateGUID}, Name={item.StateName}"),
-            TreeNode item => FormatModel($"NodeID={item.NodeID}, DocumentID={item.DocumentID}, NodeGUID={item.NodeGUID}, DocumentGUID={item.DocumentGUID}, DocumentCulture={item.DocumentCulture}, DocumentName={item.DocumentName}"),
+
             ResourceInfo item => FormatModel($"ID={item.ResourceID}, Guid={item.ResourceGUID} Name={item.ResourceName}"),
             CMS.FormEngine.AlternativeFormInfo item => FormatModel($"ID={item.FormID}, Guid={item.FormGUID} Name={item.FormName}"),
             UserInfo item => FormatModel($"ID={item.UserID}, Guid={item.UserGUID} Name={item.UserName}"),

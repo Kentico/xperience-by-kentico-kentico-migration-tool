@@ -196,7 +196,8 @@ public class AttachmentMigrator
                         targetSiteId,
                         mediaFileInfo.FileGUID,
                         mediaFileInfo.FileName,
-                        mediaFileInfo.FileSiteID
+                        // TODOV27 tomas.krch: 2023-09-05: obsolete - fileSiteID
+                        // mediaFileInfo.FileSiteID
                     })
                 );
             }

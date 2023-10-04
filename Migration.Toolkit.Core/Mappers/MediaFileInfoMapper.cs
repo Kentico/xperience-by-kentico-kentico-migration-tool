@@ -40,11 +40,13 @@ public class MediaFileInfoMapper: EntityMapperBase<MediaFileInfoMapperSource, Me
 
 
     protected override MediaFileInfo? CreateNewInstance(MediaFileInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) {
+        // TODOV27 tomas.krch: 2023-09-05: remove site id mapping
         if (mappingHelper.TranslateRequiredId<KX13M.CmsSite>(s => s.SiteId, source.MediaFile.FileSiteId, out var siteId))
         {
             if (source.File != null)
             {
-                return new MediaFileInfo(source.File, source.TargetLibraryId, source.LibrarySubFolder ?? "", 0, 0, 0, siteId);
+                // TODOV27 tomas.krch: 2023-09-05: site id removed from media file .ctor
+                return new MediaFileInfo(source.File, source.TargetLibraryId, source.LibrarySubFolder ?? "", 0, 0, 0);
             }
 
             return new MediaFileInfo();
@@ -79,10 +81,11 @@ public class MediaFileInfoMapper: EntityMapperBase<MediaFileInfoMapperSource, Me
 
         target.FileLibraryID = targetLibraryId;
 
-        if (mappingHelper.TranslateRequiredId<KX13.Models.CmsSite>(c => c.SiteId, mediaFile.FileSiteId, out var siteId))
-        {
-            target.FileSiteID = siteId;
-        }
+        // TODOV27 tomas.krch: 2023-09-05: obsolete mapping
+        // if (mappingHelper.TranslateRequiredId<KX13.Models.CmsSite>(c => c.SiteId, mediaFile.FileSiteId, out var siteId))
+        // {
+        //     target.FileSiteID = siteId;
+        // }
 
         if (mappingHelper.TranslateIdAllowNulls<KX13.Models.CmsUser>(c => c.UserId, mediaFile.FileCreatedByUserId, out var createdByUserId))
         {
