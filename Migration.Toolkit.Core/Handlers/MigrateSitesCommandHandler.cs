@@ -1,5 +1,7 @@
 ﻿namespace Migration.Toolkit.Core.Handlers;
 
+using Kentico.Xperience.UMT.Model;
+using Kentico.Xperience.UMT.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -19,6 +21,7 @@ public class MigrateSitesCommandHandler: IRequestHandler<MigrateSitesCommand, Co
     private readonly IEntityMapper<CmsSite, KXP.Models.CmsSite> _cmsSiteMapper;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IProtocol _protocol;
+    private readonly IImportService _importService;
 
     private KxpContext _kxpContext;
 
@@ -28,7 +31,8 @@ public class MigrateSitesCommandHandler: IRequestHandler<MigrateSitesCommand, Co
         IDbContextFactory<KX13Context> kx13ContextFactory,
         IEntityMapper<CmsSite, KXP.Models.CmsSite> cmsSiteMapper,
         PrimaryKeyMappingContext primaryKeyMappingContext,
-        IProtocol protocol
+        IProtocol protocol,
+        IImportService importService
     )
     {
         _logger = logger;
@@ -37,11 +41,14 @@ public class MigrateSitesCommandHandler: IRequestHandler<MigrateSitesCommand, Co
         _cmsSiteMapper = cmsSiteMapper;
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _protocol = protocol;
+        _importService = importService;
         _kxpContext = _kxpContextFactory.CreateDbContext();
     }
-    
+
     public async Task<CommandResult> Handle(MigrateSitesCommand request, CancellationToken cancellationToken)
     {
+
+
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
         foreach (var kx13CmsSite in kx13Context.CmsSites)
@@ -56,12 +63,23 @@ public class MigrateSitesCommandHandler: IRequestHandler<MigrateSitesCommand, Co
                 _logger.LogWarning("Site '{SiteName}' with Guid {Guid} migration skipped", kx13CmsSite.SiteName, kx13CmsSite.SiteGuid);
                 continue;
             }
-            
+
             var kxoCmsSite = await _kxpContext.CmsSites.FirstOrDefaultAsync(u => u.SiteId == targetSiteId, cancellationToken);
             _protocol.FetchedTarget(kxoCmsSite);
 
             var mapped = _cmsSiteMapper.Map(kx13CmsSite, kxoCmsSite);
             _protocol.MappedTarget(mapped);
+
+            // TODO tomas.krch: 2023-10-30 refactor needed,
+            // var observer = _importService.StartImport(new UmtModel[]
+            // {
+            //     // TODO tomas.krch: 2023-10-30 channel import model
+            //     new DataClassModel
+            //     {
+            //
+            //     }
+            // }.AsEnumerable(), new ImporterContext("[to be removed]", "[to be removed]"), null);
+            // await observer.ImportCompletedTask;
 
             if (mapped is { Success : true } result)
             {
@@ -81,7 +99,7 @@ public class MigrateSitesCommandHandler: IRequestHandler<MigrateSitesCommand, Co
 
                 _protocol.Success(kx13CmsSite, cmsSite, mapped);
                 _logger.LogEntitySetAction(newInstance, cmsSite);
-                    
+
                 _primaryKeyMappingContext.SetMapping<CmsSite>(r => r.SiteId, kx13CmsSite.SiteId, cmsSite.SiteId);
             }
         }

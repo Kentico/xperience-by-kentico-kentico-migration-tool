@@ -22,6 +22,7 @@ using CMS.FormEngine;
 using CMS.Globalization;
 using CMS.Membership;
 using CMS.Modules;
+using Kentico.Xperience.UMT;
 using Migration.Toolkit.Core.Services.Ipc;
 using Migration.Toolkit.KXP.Models;
 
@@ -102,6 +103,8 @@ public static class DependencyInjectionExtensions
         // TODOV27 tomas.krch: 2023-09-05: update registration
         //services.AddTransient<IEntityMapper<KX13M.CmsPageTemplateConfiguration, PageTemplateConfigurationInfo>, PageTemplateConfigurationMapper>();
         // TODO tk: 2022-09-13 services.AddTransient<IEntityMapper<KX13M.CmsLayout, LayoutInfo>, PageTemplateConfigurationMapper>();
+
+        services.AddUniversalMigrationToolkit(o => { });
 
         return services;
     }
