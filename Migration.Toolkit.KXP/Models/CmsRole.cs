@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.KXP.Models
 {
     [Table("CMS_Role")]
-    [Index("SiteId", "RoleId", Name = "IX_CMS_Role_SiteID_RoleID")]
     public partial class CmsRole
     {
         public CmsRole()
@@ -26,15 +25,10 @@ namespace Migration.Toolkit.KXP.Models
         [StringLength(100)]
         public string RoleName { get; set; } = null!;
         public string? RoleDescription { get; set; }
-        [Column("SiteID")]
-        public int? SiteId { get; set; }
         [Column("RoleGUID")]
         public Guid RoleGuid { get; set; }
         public DateTime RoleLastModified { get; set; }
 
-        [ForeignKey("SiteId")]
-        [InverseProperty("CmsRoles")]
-        public virtual CmsSite? Site { get; set; }
         [InverseProperty("Role")]
         public virtual ICollection<CmsApplicationPermission> CmsApplicationPermissions { get; set; }
         [InverseProperty("Role")]

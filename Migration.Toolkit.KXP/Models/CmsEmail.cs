@@ -33,13 +33,10 @@ namespace Migration.Toolkit.KXP.Models
         public string? EmailPlainTextBody { get; set; }
         public int EmailFormat { get; set; }
         public int EmailPriority { get; set; }
-        [Column("EmailSiteID")]
-        public int? EmailSiteId { get; set; }
         public string? EmailLastSendResult { get; set; }
         public DateTime? EmailLastSendAttempt { get; set; }
         [Column("EmailGUID")]
         public Guid EmailGuid { get; set; }
-        public DateTime EmailLastModified { get; set; }
         public int? EmailStatus { get; set; }
         [StringLength(254)]
         public string? EmailReplyTo { get; set; }

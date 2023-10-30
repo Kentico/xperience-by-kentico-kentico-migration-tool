@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.KXP.Models
 {
     [Table("OM_TrackedWebsite")]
-    [Index("TrackedWebsiteSiteId", Name = "IX_OM_TrackedWebsite_TrackedWebsiteSiteID")]
     public partial class OmTrackedWebsite
     {
         [Key]
@@ -24,12 +23,8 @@ namespace Migration.Toolkit.KXP.Models
         public string TrackedWebsiteUrl { get; set; } = null!;
         public string? TrackedWebsiteDescription { get; set; }
         public bool? TrackedWebsiteEnabled { get; set; }
-        [Column("TrackedWebsiteSiteID")]
-        public int TrackedWebsiteSiteId { get; set; }
         public DateTime? TrackedWebsiteLastModified { get; set; }
-
-        [ForeignKey("TrackedWebsiteSiteId")]
-        [InverseProperty("OmTrackedWebsites")]
-        public virtual CmsSite TrackedWebsiteSite { get; set; } = null!;
+        [Column("TrackedWebsiteChannelID")]
+        public int TrackedWebsiteChannelId { get; set; }
     }
 }

@@ -30,16 +30,12 @@ namespace Migration.Toolkit.KXP.Models
         public string ActionClass { get; set; } = null!;
         [Column("ActionResourceID")]
         public int? ActionResourceId { get; set; }
-        [Column("ActionThumbnailGUID")]
-        public Guid? ActionThumbnailGuid { get; set; }
         [Column("ActionGUID")]
         public Guid ActionGuid { get; set; }
         public DateTime ActionLastModified { get; set; }
         [Required]
         public bool? ActionEnabled { get; set; }
         public string? ActionAllowedObjects { get; set; }
-        [Column("ActionIconGUID")]
-        public Guid? ActionIconGuid { get; set; }
         public int? ActionWorkflowType { get; set; }
         [StringLength(200)]
         public string? ActionIconClass { get; set; }

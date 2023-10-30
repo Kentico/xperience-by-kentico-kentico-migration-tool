@@ -9,7 +9,6 @@ namespace Migration.Toolkit.KXP.Models
     [Table("CMS_ScheduledTask")]
     [Index("TaskNextRunTime", "TaskEnabled", "TaskServerName", Name = "IX_CMS_ScheduledTask_TaskNextRunTime_TaskEnabled_TaskServerName")]
     [Index("TaskResourceId", Name = "IX_CMS_ScheduledTask_TaskResourceID")]
-    [Index("TaskSiteId", "TaskDisplayName", Name = "IX_CMS_ScheduledTask_TaskSiteID_TaskDisplayName")]
     [Index("TaskUserId", Name = "IX_CMS_ScheduledTask_TaskUserID")]
     public partial class CmsScheduledTask
     {
@@ -30,8 +29,6 @@ namespace Migration.Toolkit.KXP.Models
         public DateTime? TaskLastRunTime { get; set; }
         public DateTime? TaskNextRunTime { get; set; }
         public string? TaskLastResult { get; set; }
-        [Column("TaskSiteID")]
-        public int? TaskSiteId { get; set; }
         public bool? TaskDeleteAfterLastRun { get; set; }
         [StringLength(100)]
         public string? TaskServerName { get; set; }
@@ -45,7 +42,6 @@ namespace Migration.Toolkit.KXP.Models
         public DateTime? TaskLastExecutionReset { get; set; }
         [StringLength(400)]
         public string? TaskCondition { get; set; }
-        public bool? TaskRunIndividually { get; set; }
         [Column("TaskUserID")]
         public int? TaskUserId { get; set; }
         public int? TaskType { get; set; }
@@ -61,9 +57,6 @@ namespace Migration.Toolkit.KXP.Models
         [ForeignKey("TaskResourceId")]
         [InverseProperty("CmsScheduledTasks")]
         public virtual CmsResource? TaskResource { get; set; }
-        [ForeignKey("TaskSiteId")]
-        [InverseProperty("CmsScheduledTasks")]
-        public virtual CmsSite? TaskSite { get; set; }
         [ForeignKey("TaskUserId")]
         [InverseProperty("CmsScheduledTasks")]
         public virtual CmsUser? TaskUser { get; set; }

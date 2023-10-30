@@ -18,11 +18,6 @@ namespace Migration.Toolkit.KXP.Models
             CmsAutomationHistoryHistorySteps = new HashSet<CmsAutomationHistory>();
             CmsAutomationHistoryHistoryTargetSteps = new HashSet<CmsAutomationHistory>();
             CmsAutomationStates = new HashSet<CmsAutomationState>();
-            CmsDocuments = new HashSet<CmsDocument>();
-            CmsObjectSettings = new HashSet<CmsObjectSetting>();
-            CmsVersionHistories = new HashSet<CmsVersionHistory>();
-            CmsWorkflowHistorySteps = new HashSet<CmsWorkflowHistory>();
-            CmsWorkflowHistoryTargetSteps = new HashSet<CmsWorkflowHistory>();
             CmsWorkflowStepRoles = new HashSet<CmsWorkflowStepRole>();
             CmsWorkflowStepUsers = new HashSet<CmsWorkflowStepUser>();
             CmsWorkflowTransitionTransitionEndSteps = new HashSet<CmsWorkflowTransition>();
@@ -75,16 +70,6 @@ namespace Migration.Toolkit.KXP.Models
         public virtual ICollection<CmsAutomationHistory> CmsAutomationHistoryHistoryTargetSteps { get; set; }
         [InverseProperty("StateStep")]
         public virtual ICollection<CmsAutomationState> CmsAutomationStates { get; set; }
-        [InverseProperty("DocumentWorkflowStep")]
-        public virtual ICollection<CmsDocument> CmsDocuments { get; set; }
-        [InverseProperty("ObjectWorkflowStep")]
-        public virtual ICollection<CmsObjectSetting> CmsObjectSettings { get; set; }
-        [InverseProperty("VersionWorkflowStep")]
-        public virtual ICollection<CmsVersionHistory> CmsVersionHistories { get; set; }
-        [InverseProperty("Step")]
-        public virtual ICollection<CmsWorkflowHistory> CmsWorkflowHistorySteps { get; set; }
-        [InverseProperty("TargetStep")]
-        public virtual ICollection<CmsWorkflowHistory> CmsWorkflowHistoryTargetSteps { get; set; }
         [InverseProperty("Step")]
         public virtual ICollection<CmsWorkflowStepRole> CmsWorkflowStepRoles { get; set; }
         [InverseProperty("Step")]
