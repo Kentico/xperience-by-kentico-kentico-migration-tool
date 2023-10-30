@@ -32,7 +32,8 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
     {
         target.ClassDisplayName = source.ClassDisplayName;
         target.ClassName = source.ClassName;
-        target.ClassIsDocumentType = source.ClassIsDocumentType;
+        // TODO tomas.krch: 2023-10-30 removed in v27 => this needs to be replaced by 'ClassType' and 'ClassContentTypeType'
+        // target.ClassIsDocumentType = source.ClassIsDocumentType;
 
         // TODOV27 tomas.krch: 2023-09-05: class is coupled class removed, replacement?
         // target.ClassIsCoupledClass = source.ClassIsCoupledClass;
@@ -189,7 +190,8 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
         //     ConvertSingleField(field, formInfo, columnName, FieldMappingInstance.Default.DataTypeMappings);
         // }
 
-        target.ClassXmlSchema = classStructureInfo.GetXmlSchema();
+        // TODO tomas.krch: 2023-10-30 check if XML Schema gets set automatically with API kentico api
+        // target.ClassXmlSchema = classStructureInfo.GetXmlSchema();
         target.ClassFormDefinition = formInfo.GetXmlDefinition();
     }
 

@@ -34,7 +34,8 @@ public class MediaLibraryInfoMapper : EntityMapperBase<KX13.Models.MediaLibrary,
         target.LibraryDescription = source.LibraryDescription;
         target.LibraryFolder = source.LibraryFolder;
         target.LibraryLastModified = mappingHelper.Require(source.LibraryLastModified, nameof(source.LibraryLastModified));
-        target.LibraryUseDirectPathForContent = source.LibraryUseDirectPathForContent ?? true;
+        // TODO tomas.krch: 2023-10-30 verify is needed
+        // target.LibraryUseDirectPathForContent = source.LibraryUseDirectPathForContent ?? true;
 
         // TODOV27 tomas.krch: 2023-09-05: library obsolete properties
         // target.LibraryTeaserPath = source.LibraryTeaserPath;
