@@ -29,10 +29,19 @@ public class MediaLibraryInfoMapper : EntityMapperBase<KX13.Models.MediaLibrary,
         target.LibraryFolder = source.LibraryFolder;
         target.LibraryGUID = mappingHelper.Require(source.LibraryGuid, nameof(source.LibraryGuid));
 
-        target.LibraryName = source.LibraryName;
+        if (!target.LibraryName.StartsWith($"{source.LibrarySite.SiteName}_", StringComparison.InvariantCultureIgnoreCase))
+        {
+            target.LibraryName = $"{source.LibrarySite.SiteName}_{source.LibraryName}";
+        }
+
         target.LibraryDisplayName = source.LibraryDisplayName;
         target.LibraryDescription = source.LibraryDescription;
-        target.LibraryFolder = source.LibraryFolder;
+
+        if (!target.LibraryFolder.StartsWith($"{source.LibrarySite.SiteName}_", StringComparison.InvariantCultureIgnoreCase))
+        {
+            target.LibraryFolder = $"{source.LibrarySite.SiteName}_{source.LibraryFolder}";
+        }
+
         target.LibraryLastModified = mappingHelper.Require(source.LibraryLastModified, nameof(source.LibraryLastModified));
         // TODO tomas.krch: 2023-10-30 verify is needed
         // target.LibraryUseDirectPathForContent = source.LibraryUseDirectPathForContent ?? true;

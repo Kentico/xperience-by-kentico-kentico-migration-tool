@@ -16,6 +16,16 @@ public static class Extensions
         container.SetValue(column, values.Any() ? JsonConvert.SerializeObject(values) : null);
     }
 
+    public static void SetValueAsJson<TValue>(this Dictionary<string, object?> container, string column, TValue value)
+    {
+        container[column] = value?.Equals(default) ?? true ? null : JsonConvert.SerializeObject(value);
+    }
+
+    public static void SetValueAsJson<TValue>(this Dictionary<string, object?> container, string column, IEnumerable<TValue> values)
+    {
+        container[column] = values.Any() ? JsonConvert.SerializeObject(values) : null;
+    }
+
     #region System.Xml.Linq extensions
 
     /// <summary>

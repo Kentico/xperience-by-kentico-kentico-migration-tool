@@ -123,40 +123,40 @@ void WriteCommandDesc(string desc, string commandMoniker)
     Console.WriteLine($"{Yellow(commandMoniker)}: {desc}");
 }
 
-bool RequireParameter(string paramName, out string paramValue)
-{
-    if (Array.IndexOf(args, paramName) is int cIdx and > -1 && args.Length > cIdx + 1)
-    {
-        paramValue = args[cIdx + 1];
-        return true;
-    }
-
-    Console.WriteLine(Red($"Parameter {paramName} is reqiured."));
-    paramValue = null;
-    return false;
-}
-
-bool RequireNumberParameter(string paramName, out int? paramValue)
-{
-    if (Array.IndexOf(args, paramName) is int cIdx and > -1 && args.Length > cIdx + 1)
-    {
-        if(int.TryParse(args[cIdx + 1], out var value))
-        {
-            paramValue = value;
-            return true;
-        }
-        else
-        {
-            Console.WriteLine(Red($"Parameter {paramName} is not int."));
-            paramValue = null;
-            return false;
-        }
-    }
-
-    Console.WriteLine(Red($"Parameter {paramName} is reqiured."));
-    paramValue = null;
-    return false;
-}
+// bool RequireParameter(string paramName, out string paramValue)
+// {
+//     if (Array.IndexOf(args, paramName) is int cIdx and > -1 && args.Length > cIdx + 1)
+//     {
+//         paramValue = args[cIdx + 1];
+//         return true;
+//     }
+//
+//     Console.WriteLine(Red($"Parameter {paramName} is reqiured."));
+//     paramValue = null;
+//     return false;
+// }
+//
+// bool RequireNumberParameter(string paramName, out int? paramValue)
+// {
+//     if (Array.IndexOf(args, paramName) is int cIdx and > -1 && args.Length > cIdx + 1)
+//     {
+//         if(int.TryParse(args[cIdx + 1], out var value))
+//         {
+//             paramValue = value;
+//             return true;
+//         }
+//         else
+//         {
+//             Console.WriteLine(Red($"Parameter {paramName} is not int."));
+//             paramValue = null;
+//             return false;
+//         }
+//     }
+//
+//     Console.WriteLine(Red($"Parameter {paramName} is reqiured."));
+//     paramValue = null;
+//     return false;
+// }
 
 
 var mappingContext = scope.ServiceProvider.GetRequiredService<PrimaryKeyMappingContext>();
@@ -209,17 +209,17 @@ bool firstHaveToBeMigrate = true;
 var bypassDependencyCheck = false;
 while (argsQ.TryDequeue(out var arg))
 {
-    var cultureCode = "";
+    // var cultureCode = "";
 
     // TODO tk: 2022-06-23 ! konfigurovat site přes SiteName (ponechat aktuální přístup)
-    if (RequireNumberParameter("--siteId", out var siteId) && siteId is int sid && kxpContext.CmsSites.OrderBy(x => x.SiteId).FirstOrDefault()?.SiteId is int targetSiteId)
-    {
-        toolkitConfiguration.AddExplicitMapping<Migration.Toolkit.KX13.Models.CmsSite>(s => s.SiteId, sid, targetSiteId);
-    }
-    else
-    {
-        return;
-    }
+    // if (RequireNumberParameter("--siteId", out var siteId) && siteId is int sid && kxpContext.CmsSites.OrderBy(x => x.SiteId).FirstOrDefault()?.SiteId is int targetSiteId)
+    // {
+    //     toolkitConfiguration.AddExplicitMapping<Migration.Toolkit.KX13.Models.CmsSite>(s => s.SiteId, sid, targetSiteId);
+    // }
+    // else
+    // {
+    //     return;
+    // }
 
     if (arg.IsIn("help", "h"))
     {
@@ -230,16 +230,6 @@ while (argsQ.TryDequeue(out var arg))
     if (arg == "migrate" && firstHaveToBeMigrate)
     {
         firstHaveToBeMigrate = false;
-        continue;
-    }
-
-    if (arg == "--culture")
-    {
-        continue;
-    }
-
-    if (arg == "--site")
-    {
         continue;
     }
 
@@ -295,24 +285,8 @@ while (argsQ.TryDequeue(out var arg))
 
     if (arg == $"--{MigratePagesCommand.Moniker}")
     {
-        if (RequireParameter("--culture", out var culture))
-        {
-            try
-            {
-                if (CultureInfo.GetCultureInfo(culture) is CultureInfo cultureInfo) // TODO tk: 2022-05-18 also check in kentico db for validity
-                {
-                    cultureCode = cultureInfo.Name;
-                }
-            }
-            catch (CultureNotFoundException cnfex)
-            {
-                Console.WriteLine($"{Red($"Culture '{culture}' not found!")}");
-                break;
-            }
-
-            commands.Add(new MigratePagesCommand(cultureCode));
-            continue;
-        }
+        commands.Add(new MigratePagesCommand());
+        continue;
     }
 
     if (arg == $"--{MigrateSettingKeysCommand.Moniker}")
@@ -344,27 +318,27 @@ while (argsQ.TryDequeue(out var arg))
         continue;
     }
 
-    if (arg == $"--{MigrateAttachmentsCommand.Moniker}")
-    {
-        if (RequireParameter("--culture", out var culture))
-        {
-            try
-            {
-                if (CultureInfo.GetCultureInfo(culture) is CultureInfo cultureInfo) // TODO tk: 2022-05-18 also check in kentico db for validity
-                {
-                    cultureCode = cultureInfo.Name;
-                }
-            }
-            catch (CultureNotFoundException cnfex)
-            {
-                Console.WriteLine($"{Red($"Culture '{culture}' not found!")}");
-                break;
-            }
-
-            commands.Add(new MigrateAttachmentsCommand(cultureCode));
-            continue;
-        }
-    }
+    // if (arg == $"--{MigrateAttachmentsCommand.Moniker}")
+    // {
+    //     if (RequireParameter("--culture", out var culture))
+    //     {
+    //         try
+    //         {
+    //             if (CultureInfo.GetCultureInfo(culture) is CultureInfo cultureInfo) // TODO tk: 2022-05-18 also check in kentico db for validity
+    //             {
+    //                 cultureCode = cultureInfo.Name;
+    //             }
+    //         }
+    //         catch (CultureNotFoundException cnfex)
+    //         {
+    //             Console.WriteLine($"{Red($"Culture '{culture}' not found!")}");
+    //             break;
+    //         }
+    //
+    //         commands.Add(new MigrateAttachmentsCommand(cultureCode));
+    //         continue;
+    //     }
+    // }
 }
 
 kxpContext.Dispose();

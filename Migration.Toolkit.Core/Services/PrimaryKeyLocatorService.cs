@@ -93,15 +93,16 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
             yield break;
         }
 
+        // TODO tomas.krch: 2023-11-01 add target constraint - node id maps to Channel, WebSiteChannel, EmailChannel...
         if (sourceType == typeof(KX13.Models.CmsTree) && memberName == nameof(KX13M.CmsTree.NodeId))
         {
             var source = kx13Context.CmsTrees.Select(x => new { x.NodeId, x.NodeGuid }).ToList();
-            var target = kxpContext.CmsTrees.Select(x => new { x.NodeId, x.NodeGuid }).ToList();
+            var target = kxpContext.CmsChannels.Select(x => new { x.ChannelId, x.ChannelGuid }).ToList();
 
             var result = source.Join(target,
                 a => a.NodeGuid,
-                b => b.NodeGuid,
-                (a, b) => new SourceTargetKeyMapping(a.NodeId, b.NodeId)
+                b => b.ChannelGuid,
+                (a, b) => new SourceTargetKeyMapping(a.NodeId, b.ChannelId)
             );
 
             foreach (var resultingMapping in result)
@@ -196,10 +197,11 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
                 return true;
             }
 
+            // TODO tomas.krch: 2023-11-01 add target constraint - node id maps to Channel, WebSiteChannel, EmailChannel...
             if (sourceType == typeof(KX13.Models.CmsSite))
             {
                 var kx13Guid = kx13Context.CmsSites.Where(c => c.SiteId == sourceId).Select(x => x.SiteGuid).Single();
-                targetId = kxpContext.CmsSites.Where(x => x.SiteGuid == kx13Guid).Select(x => x.SiteId).Single();
+                targetId = kxpContext.CmsChannels.Where(x => x.ChannelGuid == kx13Guid).Select(x => x.ChannelId).Single();
                 return true;
             }
 
@@ -232,17 +234,25 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
                 return true;
             }
 
+            // TODO tomas.krch: 2023-11-01 add target constraint - node id maps to Channel, WebSiteChannel, EmailChannel...
             if (sourceType == typeof(KX13.Models.CmsTree))
             {
                 // careful - cms.root will have different guid
                 var kx13Guid = kx13Context.CmsTrees.Where(c => c.NodeId == sourceId).Select(x => x.NodeGuid).Single();
-                targetId = kxpContext.CmsTrees.Where(x => x.NodeGuid == kx13Guid).Select(x => x.NodeId).Single();
+                targetId = kxpContext.CmsChannels.Where(x => x.ChannelGuid == kx13Guid).Select(x => x.ChannelId).Single();
                 return true;
             }
         }
         catch (InvalidOperationException ioex)
         {
-            _logger.LogWarning("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
+            if (ioex.Message.StartsWith("Sequence contains no elements"))
+            {
+                _logger.LogDebug("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
+            }
+            else
+            {
+                _logger.LogWarning("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
+            }
             return false;
         }
         finally

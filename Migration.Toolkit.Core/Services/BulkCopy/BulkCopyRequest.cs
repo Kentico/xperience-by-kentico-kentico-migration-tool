@@ -14,3 +14,5 @@ namespace Migration.Toolkit.Core.Services.BulkCopy;
 /// <param name="SkippedRowCallback">Called when row is skipped for whatever reason</param>
 /// <param name="OrderBy">SQL ORDER BY definition</param>
 public record BulkCopyRequest(string TableName, Func<string,bool> ColumnFilter, Func<IDataReader,bool> DataFilter, int BatchSize, List<string>? Columns = null, ValueInterceptor? ValueInterceptor = null, ValueInterceptingReaderSkippedRow? SkippedRowCallback = null, string? OrderBy = null);
+
+public record BulkCopyRequestExtended(string TableName, Func<string,bool> ColumnFilter, Func<IDataReader,bool> DataFilter, int BatchSize, Dictionary<string, string> ColumnsMapping, ValueInterceptor? ValueInterceptor = null, ValueInterceptingReaderSkippedRow? SkippedRowCallback = null, string? OrderBy = null): BulkCopyRequest(TableName, ColumnFilter, DataFilter, BatchSize, ColumnsMapping.Keys.ToList(), ValueInterceptor, SkippedRowCallback, OrderBy);

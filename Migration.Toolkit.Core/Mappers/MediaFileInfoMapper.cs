@@ -23,41 +23,44 @@ public class MediaFileInfoMapper: EntityMapperBase<MediaFileInfoMapperSource, Me
     private readonly KxpClassFacade _classFacade;
     private readonly IProtocol _protocol;
     private readonly ToolkitConfiguration _toolkitConfiguration;
+    private readonly KeyMappingContext _keyMappingContext;
 
     public MediaFileInfoMapper(
         ILogger<MediaFileInfoMapper> logger,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         KxpClassFacade classFacade,
         IProtocol protocol,
-        ToolkitConfiguration toolkitConfiguration
+        ToolkitConfiguration toolkitConfiguration,
+        KeyMappingContext keyMappingContext
         ): base(logger, primaryKeyMappingContext, protocol)
     {
         _logger = logger;
         _classFacade = classFacade;
         _protocol = protocol;
         _toolkitConfiguration = toolkitConfiguration;
+        _keyMappingContext = keyMappingContext;
     }
 
 
     protected override MediaFileInfo? CreateNewInstance(MediaFileInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) {
         // TODOV27 tomas.krch: 2023-09-05: remove site id mapping
-        if (mappingHelper.TranslateRequiredId<KX13M.CmsSite>(s => s.SiteId, source.MediaFile.FileSiteId, out var siteId))
+        //if (mappingHelper.TranslateRequiredId<KX13M.CmsSite>(s => s.SiteId, source.MediaFile.FileSiteId, out var siteId))
+        // {
+        if (source.File != null)
         {
-            if (source.File != null)
-            {
-                // TODOV27 tomas.krch: 2023-09-05: site id removed from media file .ctor
-                return new MediaFileInfo(source.File, source.TargetLibraryId, source.LibrarySubFolder ?? "", 0, 0, 0);
-            }
-
-            return new MediaFileInfo();
+            // TODOV27 tomas.krch: 2023-09-05: site id removed from media file .ctor
+            return new MediaFileInfo(source.File, source.TargetLibraryId, source.LibrarySubFolder ?? "", 0, 0, 0);
         }
 
-        var error = HandbookReferences
-            .FailedToCreateTargetInstance<MediaFileInfo>()
-            .WithData(source);
+        return new MediaFileInfo();
+        // }
 
-        addFailure(new MapperResultFailure<MediaFileInfo>(error));
-        return null;
+        // var error = HandbookReferences
+        //     .FailedToCreateTargetInstance<MediaFileInfo>()
+        //     .WithData(source);
+        //
+        // addFailure(new MapperResultFailure<MediaFileInfo>(error));
+        // return null;
     }
 
     protected override MediaFileInfo MapInternal(MediaFileInfoMapperSource args, MediaFileInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
@@ -87,12 +90,36 @@ public class MediaFileInfoMapper: EntityMapperBase<MediaFileInfoMapperSource, Me
         //     target.FileSiteID = siteId;
         // }
 
-        if (mappingHelper.TranslateIdAllowNulls<KX13.Models.CmsUser>(c => c.UserId, mediaFile.FileCreatedByUserId, out var createdByUserId))
+        var targetCreatedMemberId = _keyMappingContext.MapSourceKey<KX13.Models.CmsUser, KXP.Models.CmsMember, int?>(
+            s => s.UserId,
+            s => s.UserGuid,
+            mediaFile.FileCreatedByUserId,
+            t => t.MemberId,
+            t => t.MemberGuid
+        );
+        if (targetCreatedMemberId.Success)
+        {
+            // user was migrated to MEMBER => setting user would break foreign key
+            target.SetValue(nameof(target.FileCreatedByUserID), CMSActionContext.CurrentUser.UserID);
+        }
+        else if (mappingHelper.TranslateIdAllowNulls<KX13.Models.CmsUser>(c => c.UserId, mediaFile.FileCreatedByUserId, out var createdByUserId))
         {
             target.SetValue(nameof(target.FileCreatedByUserID), createdByUserId);
         }
 
-        if (mappingHelper.TranslateIdAllowNulls<KX13.Models.CmsUser>(c => c.UserId, mediaFile.FileModifiedByUserId, out var modifiedByUserId))
+        var targetModifiedMemberId = _keyMappingContext.MapSourceKey<KX13.Models.CmsUser, KXP.Models.CmsMember, int?>(
+            s => s.UserId,
+            s => s.UserGuid,
+            mediaFile.FileModifiedByUserId,
+            t => t.MemberId,
+            t => t.MemberGuid
+        );
+        if (targetModifiedMemberId.Success)
+        {
+            // user was migrated to MEMBER => setting user would break foreign key
+            target.SetValue(nameof(target.FileModifiedByUserID), CMSActionContext.CurrentUser.UserID);
+        }
+        else if (mappingHelper.TranslateIdAllowNulls<KX13.Models.CmsUser>(c => c.UserId, mediaFile.FileModifiedByUserId, out var modifiedByUserId))
         {
             target.SetValue(nameof(target.FileModifiedByUserID), modifiedByUserId);
         }

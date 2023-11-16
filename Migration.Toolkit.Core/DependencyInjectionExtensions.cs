@@ -1,7 +1,4 @@
-using CMS.DataEngine;
-// using CMS.DocumentEngine => obsolete;
 using CMS.MediaLibrary;
-using CMS.OnlineForms;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,11 +15,15 @@ using Migration.Toolkit.Core.Services.CmsRelationship;
 
 namespace Migration.Toolkit.Core;
 
+using CMS.DataEngine;
 using CMS.FormEngine;
 using CMS.Globalization;
 using CMS.Membership;
 using CMS.Modules;
+using CMS.OnlineForms;
+using CMS.Websites;
 using Kentico.Xperience.UMT;
+using Migration.Toolkit.Core.HandlersNG;
 using Migration.Toolkit.Core.Services.Ipc;
 using Migration.Toolkit.KXP.Models;
 
@@ -39,8 +40,7 @@ public static class DependencyInjectionExtensions
         services.AddTransient<CmsRelationshipService>();
         services.AddTransient<CoupledDataService>();
         services.AddScoped<AttachmentMigrator>();
-        // TODOV27 tomas.krch: 2023-09-05: update registration
-        // services.AddScoped<PageTemplateMigrator>();
+        services.AddScoped<PageTemplateMigrator>();
         services.AddScoped<CountryMigrator>();
         services.AddScoped<ClassService>();
 
@@ -55,23 +55,29 @@ public static class DependencyInjectionExtensions
         services.AddTransient<IpcService>();
 
         services.AddScoped<PrimaryKeyMappingContext>();
+        services.AddSingleton<Migration.Toolkit.Core.Contexts.KeyMappingContext>();
         services.AddScoped<IPrimaryKeyLocatorService, PrimaryKeyLocatorService>();
+        services.AddSingleton<KeyLocatorService>();
 
         // commands
-        services.AddTransient<MigrateAttachmentsCommandHandler>();
+        // services.AddTransient<MigrateAttachmentsCommandHandler>();
         // services.AddTransient<MigrateContactGroupsCommand>();
-        services.AddTransient<MigrateContactManagementCommandHandler>();
+        // services.AddTransient<MigrateContactManagementCommandHandler>();
         services.AddTransient<MigrateDataProtectionCommandHandler>();
         services.AddTransient<MigrateFormsCommandHandler>();
         // TODOV27 tomas.krch: 2023-09-05: update registration
+        services.AddTransient<MigratePagesCommandHandler>();
         //services.AddTransient<MigratePageTypesCommandHandler>();
         services.AddTransient<MigratePagesCommand>();
-        services.AddTransient<MigrateSettingKeysCommandHandler>();
-        services.AddTransient<MigrateSitesCommandHandler>();
+        // services.AddTransient<MigrateSettingKeysCommandHandler>();
+        // services.AddTransient<MigrateSitesCommandHandler>();
         services.AddTransient<MigrateUsersCommandHandler>();
         services.AddTransient<MigrateMembersCommandHandler>();
-        services.AddTransient<MigrateContactManagementCommandHandler>();
+        // services.AddTransient<MigrateContactManagementCommandHandler>();
 
+
+        // umt mappers
+        services.AddTransient<IUmtMapper<CmsTreeMapperSource>, ContentItemMapper>();
 
         // mappers
         services.AddTransient<IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo>, CmsAttachmentMapper>();
@@ -82,14 +88,14 @@ public static class DependencyInjectionExtensions
         services.AddTransient<IEntityMapper<KX13M.CmsConsentAgreement, CmsConsentAgreement>, CmsConsentAgreementMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsConsentArchive, CmsConsentArchive>, CmsConsentArchiveMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsForm, BizFormInfo>, CmsFormMapper>();
-        services.AddTransient<IEntityMapper<KX13M.CmsForm, CmsForm>, CmsFormMapperEf>();
-        services.AddTransient<IEntityMapper<KX13M.CmsPageUrlPath, CmsPageUrlPath>, CmsPageUrlPathMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsForm, CmsForm>, CmsFormMapperEf>(); // TODO tomas.krch: 2023-11-13 why not remove this?
+        // services.AddTransient<IEntityMapper<KX13M.CmsPageUrlPath, CmsPageUrlPath>, CmsPageUrlPathMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsResource, ResourceInfo>, ResourceMapper>();
         services.AddTransient<IEntityMapper<AlternativeFormMapperSource, AlternativeFormInfo>, AlternativeFormMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsRole, RoleInfo>, RoleInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsSettingsCategory, CmsSettingsCategory>, CmsSettingsCategoryMapper>();
-        services.AddTransient<IEntityMapper<KX13M.CmsSettingsKey, CmsSettingsKey>, CmsSettingsKeyMapper>();
-        services.AddTransient<IEntityMapper<KX13M.CmsSite, CmsSite>, CmsSiteMapper>();
+        // services.AddTransient<IEntityMapper<KX13M.CmsSettingsKey, CmsSettingsKey>, CmsSettingsKeyMapper>();
+        // services.AddTransient<IEntityMapper<KX13M.CmsSite, CmsSite>, CmsSiteMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsUser, UserInfo>, UserInfoMapper>();
         services.AddTransient<IEntityMapper<MemberInfoMapperSource, MemberInfo>, MemberInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsUserRole, UserRoleInfo>, UserRoleInfoMapper>();
@@ -101,7 +107,7 @@ public static class DependencyInjectionExtensions
         services.AddTransient<IEntityMapper<KX13M.CmsCountry, CountryInfo>, CountryInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsState, StateInfo>, StateInfoMapper>();
         // TODOV27 tomas.krch: 2023-09-05: update registration
-        //services.AddTransient<IEntityMapper<KX13M.CmsPageTemplateConfiguration, PageTemplateConfigurationInfo>, PageTemplateConfigurationMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsPageTemplateConfiguration, PageTemplateConfigurationInfo>, PageTemplateConfigurationMapper>();
         // TODO tk: 2022-09-13 services.AddTransient<IEntityMapper<KX13M.CmsLayout, LayoutInfo>, PageTemplateConfigurationMapper>();
 
         services.AddUniversalMigrationToolkit(o => { });

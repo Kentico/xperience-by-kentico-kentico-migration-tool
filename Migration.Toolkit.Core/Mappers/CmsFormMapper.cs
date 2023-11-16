@@ -106,10 +106,11 @@ public class CmsFormMapperEf : EntityMapperBase<KX13.Models.CmsForm, Migration.T
             target.FormClassId = classId;
         }
 
-        if (mappingHelper.TranslateRequiredId<KX13.Models.CmsSite>(c => c.SiteId, source.FormSiteId, out var siteId))
-        {
-            target.FormSiteId = siteId;
-        }
+        // TODO tomas.krch: 2023-11-13 GLOBALIZED!
+        // if (mappingHelper.TranslateRequiredId<KX13.Models.CmsSite>(c => c.SiteId, source.FormSiteId, out var siteId))
+        // {
+        //     target.FormSiteId = siteId;
+        // }
 
         return target;
     }

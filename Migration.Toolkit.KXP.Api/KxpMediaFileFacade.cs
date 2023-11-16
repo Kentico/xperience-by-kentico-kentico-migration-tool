@@ -48,11 +48,11 @@ public class KxpMediaFileFacade
         return MediaLibraryInfoProvider.ProviderObject.Get(mediaLibraryGuid);
     }
 
-    public void EnsureMediaFilePathExistsInLibrary(MediaFileInfo mfi, int libraryId, string siteName)
+    public void EnsureMediaFilePathExistsInLibrary(MediaFileInfo mfi, int libraryId)
     {
         var librarySubDir = Path.GetDirectoryName(mfi.FilePath);
         // TODOV27 tomas.krch: 2023-09-05: media library => obsolete create method with sitename
-        // MediaLibraryInfoProvider.CreateMediaLibraryFolder(siteName, libraryId, librarySubDir, false);
+        MediaLibraryInfoProvider.CreateMediaLibraryFolder(libraryId, $"{librarySubDir}", false);
     }
 
     public MediaLibraryInfo CreateMediaLibrary(int siteId, string libraryFolder, string libraryDescription, string libraryName, string libraryDisplayName)
@@ -66,6 +66,7 @@ public class KxpMediaFileFacade
         newLibrary.LibraryDescription = libraryDescription;
         newLibrary.LibraryFolder = libraryFolder;
 
+        // TODO tomas.krch: 2023-11-02 ?? newLibrary.LibraryUseDirectPathForContent
         // TODOV27 tomas.krch: 2023-09-05: library site id ref (replace with channel?)
         // newLibrary.LibrarySiteID = siteId;
 

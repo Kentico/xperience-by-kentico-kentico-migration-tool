@@ -1,4 +1,3 @@
-// TODOV27 tomas.krch: 2023-09-05: treenode migration entirely obsolete
 // using System.Diagnostics;
 // // using CMS.DocumentEngine => obsolete;
 // // using CMS.DocumentEngine => obsolete.Internal;
