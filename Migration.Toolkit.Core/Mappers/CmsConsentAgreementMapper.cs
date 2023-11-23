@@ -26,10 +26,10 @@ public class CmsConsentAgreementMapper : EntityMapperBase<KX13.Models.CmsConsent
         {
             target.ConsentAgreementContactId = contactId;
         }
-        
+
         if (mappingHelper.TranslateRequiredId<KX13.Models.CmsConsent>(r => r.ConsentId, source.ConsentAgreementConsentId, out var consentId))
         {
-            target.ConsentAgreementConsentId = consentId;    
+            target.ConsentAgreementConsentId = consentId;
         }
 
         return target;

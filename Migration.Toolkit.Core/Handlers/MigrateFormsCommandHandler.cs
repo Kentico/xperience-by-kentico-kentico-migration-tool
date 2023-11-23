@@ -7,7 +7,6 @@ using CMS.DataEngine;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Common;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.MigrationProtocol;
@@ -26,7 +25,6 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
     private readonly IEntityMapper<CmsForm, KXP.Models.CmsForm> _cmsFormMapper;
     private readonly KxpClassFacade _kxpClassFacade;
     private readonly BulkDataCopyService _bulkDataCopyService;
-    private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IProtocol _protocol;
 
@@ -40,7 +38,6 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
         IEntityMapper<CmsForm, KXP.Models.CmsForm> cmsFormMapper,
         KxpClassFacade kxpClassFacade,
         BulkDataCopyService bulkDataCopyService,
-        ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol
     )
@@ -52,7 +49,6 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
         _cmsFormMapper = cmsFormMapper;
         _kxpClassFacade = kxpClassFacade;
         _bulkDataCopyService = bulkDataCopyService;
-        _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _protocol = protocol;
         _kxpContext = kxpContextFactory.CreateDbContext();
@@ -60,8 +56,6 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
 
     public async Task<CommandResult> Handle(MigrateFormsCommand request, CancellationToken cancellationToken)
     {
-        // var migratedSiteIds = _toolkitConfiguration.RequireExplicitMapping<CmsSite>(s => s.SiteId).Keys.ToList();
-
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
         var cmsClassForms = kx13Context.CmsClasses
@@ -73,14 +67,6 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
         foreach (var kx13Class in cmsClassForms)
         {
             _protocol.FetchedSource(kx13Class);
-
-            // checking of kx13Class.ClassConnectionString is not necessary
-
-            // if (!kx13Class.CmsForms.Any(f => migratedSiteIds.Contains(f.FormSiteId)))
-            // {
-            //     _logger.LogWarning("CmsClass: {ClassName} => Class site is not migrated => skipping", kx13Class.ClassName);
-            //     continue;
-            // }
 
             var kxoDataClass = _kxpClassFacade.GetClass(kx13Class.ClassGuid);
             _protocol.FetchedTarget(kxoDataClass);

@@ -21,13 +21,13 @@ public record MemberInfoMapperSource(KX13M.CmsUser User, KX13M.CmsUserSetting Us
 
 public class MemberInfoMapper : EntityMapperBase<MemberInfoMapperSource, MemberInfo>
 {
-    private readonly ILogger<UserInfoMapper> _logger;
+    private readonly ILogger<MemberInfoMapper> _logger;
     private readonly KxpClassFacade _kxpClassFacade;
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly IDbContextFactory<KX13Context> _kx13DbContextFactory;
 
     public MemberInfoMapper(
-        ILogger<UserInfoMapper> logger,
+        ILogger<MemberInfoMapper> logger,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol,
         KxpClassFacade kxpClassFacade,
@@ -196,21 +196,5 @@ public class MemberInfoMapper : EntityMapperBase<MemberInfoMapperSource, MemberI
 
 
         return target;
-
-        // removed in kxo
-        // target.MiddleName = source.MiddleName;
-        // target.FullName = source.FullName;
-        // target.PreferredCultureCode = source.PreferredCultureCode;
-        // target.PreferredUicultureCode = source.PreferredUicultureCode;
-        // target.UserIsExternal = source.UserIsExternal;
-        // target.UserPasswordFormat = source.UserPasswordFormat;
-        // target.UserStartingAliasPath = source.UserStartingAliasPath;
-        // target.UserLastLogonInfo = source.UserLastLogonInfo;
-        // target.UserIsHidden = source.UserIsHidden;
-        // target.UserIsDomain = source.UserIsDomain;
-        // target.UserHasAllowedCultures = source.UserHasAllowedCultures;
-        // target.UserMfrequired = source.UserMfrequired;
-        // target.UserPrivilegeLevel = source.UserPrivilegeLevel;
-        // target.UserMftimestep = source.UserMftimestep;;
     }
 }

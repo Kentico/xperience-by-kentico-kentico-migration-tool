@@ -107,21 +107,5 @@ public class UserInfoMapper : EntityMapperBase<KX13M.CmsUser, UserInfo>
 
 
         return target;
-
-        // removed in kxo
-        // target.MiddleName = source.MiddleName;
-        // target.FullName = source.FullName;
-        // target.PreferredCultureCode = source.PreferredCultureCode;
-        // target.PreferredUicultureCode = source.PreferredUicultureCode;
-        // target.UserIsExternal = source.UserIsExternal;
-        // target.UserPasswordFormat = source.UserPasswordFormat;
-        // target.UserStartingAliasPath = source.UserStartingAliasPath;
-        // target.UserLastLogonInfo = source.UserLastLogonInfo;
-        // target.UserIsHidden = source.UserIsHidden;
-        // target.UserIsDomain = source.UserIsDomain;
-        // target.UserHasAllowedCultures = source.UserHasAllowedCultures;
-        // target.UserMfrequired = source.UserMfrequired;
-        // target.UserPrivilegeLevel = source.UserPrivilegeLevel;
-        // target.UserMftimestep = source.UserMftimestep;;
     }
 }

@@ -88,7 +88,6 @@ public class AlternativeFormMapper : EntityMapperBase<AlternativeFormMapperSourc
 
         target.FormDisplayName = source.FormDisplayName;
         target.FormGUID = source.FormGuid;
-        // target.FormHideNewParentFields = source.FormHideNewParentFields.GetValueOrDefault(false);
         target.FormIsCustom = source.FormIsCustom.GetValueOrDefault(false);
         target.FormLastModified = source.FormLastModified;
         target.FormName = source.FormName;

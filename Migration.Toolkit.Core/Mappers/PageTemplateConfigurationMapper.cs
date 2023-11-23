@@ -1,6 +1,6 @@
 namespace Migration.Toolkit.Core.Mappers;
 
-// using CMS.DocumentEngine => obsolete;
+
 using CMS.MediaLibrary;
 using CMS.Websites;
 using Microsoft.Extensions.Logging;
@@ -15,7 +15,6 @@ using Migration.Toolkit.KXP.Api.Auxiliary;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-// TODOV27 tomas.krch: 2023-09-05: PageTemplateConfigurationInfo is obsolete...
 public class PageTemplateConfigurationMapper : EntityMapperBase<KX13M.CmsPageTemplateConfiguration, PageTemplateConfigurationInfo>
 {
     private readonly ILogger<PageTemplateConfigurationMapper> _logger;
@@ -42,15 +41,6 @@ public class PageTemplateConfigurationMapper : EntityMapperBase<KX13M.CmsPageTem
         target.PageTemplateConfigurationDescription = source.PageTemplateConfigurationDescription;
         target.PageTemplateConfigurationName = source.PageTemplateConfigurationName;
         target.PageTemplateConfigurationLastModified = source.PageTemplateConfigurationLastModified;
-
-        // TODO tk: 2022-09-14 find conversion path for PageTemplateConfigurationIcon
-        // target.PageTemplateConfigurationIcon = source.PageTemplateConfigurationThumbnailGuid.GetValueOrDefault();
-
-        // TODO tomas.krch: 2023-11-13 any way to target template for particular channel?
-        // target.PageTemplateConfigurationSiteID =
-        //     mappingHelper.TranslateRequiredId<KX13M.CmsSite>(s => s.SiteId, source.PageTemplateConfigurationSiteId, out var targetSiteId)
-        //         ? targetSiteId
-        //         : 0;
 
         if (newInstance)
         {
@@ -95,9 +85,6 @@ public class PageTemplateConfigurationMapper : EntityMapperBase<KX13M.CmsPageTem
             target.PageTemplateConfigurationTemplate = source.PageTemplateConfigurationTemplate;
             target.PageTemplateConfigurationWidgets = source.PageTemplateConfigurationWidgets;
         }
-
-        // OBSOLETE
-        // target.PageTemplateConfigurationThumbnailGUID = source.PageTemplateConfigurationThumbnailGuid.GetValueOrDefault();
 
         return target;
     }

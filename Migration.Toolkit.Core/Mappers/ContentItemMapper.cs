@@ -1,21 +1,12 @@
 using System.Diagnostics;
-// using CMS.DocumentEngine => obsolete;
-// using CMS.DocumentEngine => obsolete.Internal;
 using CMS.FormEngine;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.Core.Services;
 using Migration.Toolkit.Core.Services.CmsClass;
 using Migration.Toolkit.Core.Services.CmsRelationship;
-
-namespace Migration.Toolkit.Core.Mappers;
-
 using CMS.ContentEngine;
-using CMS.ContentEngine.Internal;
-using CMS.Core;
-using CMS.DataEngine;
 using CMS.MediaLibrary;
 using CMS.Websites;
 using Kentico.Xperience.UMT.Model;
@@ -28,6 +19,8 @@ using Migration.Toolkit.KXP.Api;
 using Migration.Toolkit.KXP.Api.Auxiliary;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
+namespace Migration.Toolkit.Core.Mappers;
 
 public record CmsTreeMapperSource(CmsTree CmsTree, string SafeNodeName, Guid SiteGuid, Guid? NodeParentGuid,
     Dictionary<string, Guid> CultureToLanguageGuid,
@@ -84,22 +77,15 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
         yield return new ContentItemModel
         {
             ContentItemGUID = contentItemGuid,
-            ContentItemName = safeNodeName, //await _contentItemNameProvider.Get(kx13CmsTree.NodeName),
+            ContentItemName = safeNodeName,
             ContentItemIsReusable = false, // page is not reusable
             ContentItemIsSecured = cmsTree.IsSecuredNode ?? false,
             ContentItemDataClassGuid = cmsTree.NodeClass.ClassGuid,
             ContentItemChannelGuid = siteGuid,
         };
 
-        // foreach (var cmsDocument in cmsTree.CmsDocuments)
         foreach (var cmsDocument in migratedDocuments)
         {
-            // var isPublished = _pageFacade.IsPublished(new IsPublishedArguments(
-            //     cmsDocument.DocumentCanBePublished, cmsDocument.DocumentWorkflowStepId,
-            //     cmsDocument.DocumentIsArchived, cmsDocument.DocumentCheckedOutVersionHistoryId,
-            //     cmsDocument.DocumentPublishedVersionHistoryId, cmsDocument.DocumentPublishFrom, cmsDocument.DocumentPublishTo)
-            // );
-
             if (!cultureToLanguageGuid.TryGetValue(cmsDocument.DocumentCulture, out var languageGuid))
                 // TODO tomas.krch: 2023-11-15 WARN about skipped document
                 continue;
@@ -146,7 +132,6 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
 
             var commonDataInfo = new ContentItemCommonDataModel
             {
-                // TODO tomas.krch: 2023-11-22 CAREFUL!!! CHECK!!
                 ContentItemCommonDataGUID = cmsDocument.DocumentGuid ?? throw new InvalidOperationException($"DocumentGUID is null"),
                 ContentItemCommonDataContentItemGuid = contentItemGuid,
                 ContentItemCommonDataContentLanguageGuid = languageGuid, // DocumentCulture -> language entity needs to be created and its ID used here
@@ -174,11 +159,7 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
                 {
                     throw new Exception("Error, unable to find coupled data primary key");
                 }
-                // var coupledData = _coupledDataService.GetSourceCoupledDataRow(
-                //     cmsTree.NodeClass.ClassTableName,
-                //     primaryKeyName, // fieldsInfo.TypeInfo.IDColumn,
-                //     cmsDocument.DocumentForeignKeyValue
-                // );
+
                 var coupledDataRow = _coupledDataService.GetSourceCoupledDataRow(cmsTree.NodeClass.ClassTableName, primaryKeyName, cmsDocument.DocumentForeignKeyValue);
                 MapCoupledDataFieldValues(commonDataInfo.CustomProperties,
                     (columnName) => coupledDataRow?[columnName],
@@ -197,7 +178,7 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
             }
             else
             {
-                // TODO tomas.krch: 2023-11-16 log that user could not be found (it could me migrated to member!)
+
             }
 
             Guid? documentModifiedByUserGuid = null;
@@ -207,7 +188,7 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
             }
             else
             {
-                // TODO tomas.krch: 2023-11-16 log that user could not be found (it could me migrated to member!)
+
             }
 
             var languageMetadataInfo = new ContentItemLanguageMetadataModel
@@ -277,20 +258,11 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
                 pageBuilderWidgets = JsonConvert.SerializeObject(areas);
             }
         }
-        else
-        {
-            // simply copy if no info is available
-            // pageBuilderWidgets = pageBuilderWidgets;
-            // pageTemplateConfiguration = pageTemplateConfiguration;
-        }
     }
 
     private IEnumerable<IUmtModel> MigrateDraft(KX13M.CmsVersionHistory checkoutVersion, KX13M.CmsTree cmsTree, string sourceFormClassDefinition, string targetFormDefinition, Guid contentItemGuid, Guid contentLanguageGuid)
     {
-        // var (primaryKey, tableName, documentNameField, oldClassFormDefinition) = mMigrated.GetOldClass(newClass.ClassName);
-
-        var adapter = new NodeXmlAdapter(checkoutVersion.NodeXml);//, tableName);
-        // var nodeId = adapter.NodeID ?? throw new ArgumentException($"Failed to parse NodeId from NodeXML");
+        var adapter = new NodeXmlAdapter(checkoutVersion.NodeXml);
 
         IUmtModel? commonDataInfo = null;
         try
@@ -301,25 +273,15 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
 
             commonDataInfo = new ContentItemCommonDataModel
             {
-                // TODO tomas.krch: 2023-11-22 CAREFUL!! CHECK!
                 ContentItemCommonDataGUID = adapter.DocumentGUID ?? throw new InvalidOperationException($"DocumentGUID is null"),
-                ContentItemCommonDataContentItemGuid = contentItemGuid, //contentItemInfo.ContentItemID,
-                ContentItemCommonDataContentLanguageGuid = contentLanguageGuid, //languageInfo.ContentLanguageID, // DocumentCulture -> language entity needs to be created and its ID used here
+                ContentItemCommonDataContentItemGuid = contentItemGuid,
+                ContentItemCommonDataContentLanguageGuid = contentLanguageGuid,
                 ContentItemCommonDataVersionStatus = VersionStatus.Draft,
                 ContentItemCommonDataIsLatest = true, // Flag for latest record to know what to retrieve for the UI
                 ContentItemCommonDataPageBuilderWidgets = pageBuildWidgets,
                 ContentItemCommonDataPageTemplateConfiguration = pageTemplateConfiguration,
                 ContentItemDataGuid = cmsTree.NodeGuid,
             };
-
-            // var contentItemDataInfo = new ContentItemDataInfo(newClass.ClassName)
-            // {
-            //     ContentItemDataCommonDataID = commonDataInfo.ContentItemCommonDataID,
-            //     ContentItemDataGUID = default,
-            // };
-
-            // var oldFormInfo = new FormInfo(sourceFormClassDefinition);//oldClassFormDefinition);
-            // var newFormInfo = new FormInfo(newClass.ClassFormDefinition);
 
             if (cmsTree.NodeClass.ClassIsCoupledClass)
             {
@@ -338,11 +300,6 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
                 {
                     throw new Exception("Error, unable to find coupled data primary key");
                 }
-                // var coupledData = _coupledDataService.GetSourceCoupledDataRow(
-                //     cmsTree.NodeClass.ClassTableName,
-                //     primaryKeyName, // fieldsInfo.TypeInfo.IDColumn,
-                //     cmsDocument.DocumentForeignKeyValue
-                // );
 
                 MapCoupledDataFieldValues(commonDataInfo.CustomProperties,
                     s => adapter.GetValue(s),
@@ -350,50 +307,8 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
                     , cmsTree, adapter.DocumentID, fi.GetColumnNames(), sfi);
             }
 
-            // var columnNames = oldFormInfo.GetColumnNames();
-            // foreach (var columnName in columnNames)
-            // {
-            //     var field = oldFormInfo.GetFormField(columnName);
-            //     if (field is null)
-            //     {
-            //         Debug.WriteLineIf(columnName != primaryKey, $"WARN: columnName != primaryKey ('{columnName}')");
-            //         continue;
-            //     }
-            //
-            //     var value = adapter.HasValueSet(columnName)
-            //         ? adapter.GetValue(columnName)
-            //         : field.GetDefaultValue(FormResolveTypeEnum.AllFields, null);
-            //
-            //     var datatype = field.DataType?.ToLowerInvariant();
-            //     switch (datatype)
-            //     {
-            //         case "webpages":
-            //         {
-            //             if (value is string pageReferenceJson)
-            //             {
-            //                 value = pageReferenceJson.Replace("\"NodeGuid\"", "\"WebPageGuid\"");
-            //             }
-            //
-            //             break;
-            //         }
-            //         case "contentitemreference":
-            //         {
-            //             var relations = Dal.GetRelations(null, adapter.NodeID, field.Guid, "cms.node").ToList();
-            //             mRelationsToResolve.Add(new ResolveRelations(contentItemInfo.ContentItemID, field, relations));
-            //             break;
-            //         }
-            //     }
-            //
-            //     contentItemDataInfo.SetValue(columnName, value);
-            // }
-
             // supply document name
             commonDataInfo.CustomProperties.Add("DocumentName", adapter.DocumentName);
-
-            // var itemDataProvider = Service.Resolve<IContentItemDataInfoProviderAccessor>().Get(newClass.ClassName);
-            //
-            // // we crate item data even for container types, currently there is no better migration path
-            // itemDataProvider.Set(contentItemDataInfo);
         }
         catch(Exception ex)
         {
@@ -459,8 +374,6 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
         {
             _logger.LogTrace("Walk widget {TypeIdentifier}|{Identifier}", widget.TypeIdentifier, widget.Identifier);
 
-            // TODO tomas.krch: 2023-11-15 any form widget in KX13?
-
             var widgetFcs = _sourceInstanceContext.GetWidgetPropertyFormComponents(siteId, widget.TypeIdentifier);
             foreach (var variant in widget.Variants)
             {
@@ -486,7 +399,6 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
                 if (FieldMappingInstance.BuiltInModel.NotSupportedInKxpLegacyMode
                         .SingleOrDefault(x => x.OldFormComponent == editingFcm.FormComponentIdentifier) is var (oldFormComponent, newFormComponent))
                 {
-                    // Protocol.Append(HandbookReferences.FormComponentNotSupportedInLegacyMode(oldFormComponent, newFormComponent));
                     _logger.LogTrace("Editing form component found {FormComponentName} => no longer supported {Replacement}", editingFcm.FormComponentIdentifier, newFormComponent);
 
                     switch (oldFormComponent)
@@ -529,9 +441,7 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
                 }
                 else
                 {
-                    // TODO tk: 2022-09-14 leave message that data needs to be migrated
                     // unknown control, probably custom
-                    // Protocol.Append(HandbookReferences.FormComponentCustom(editingFcm.FormComponentIdentifier));
                     _logger.LogTrace("Editing form component found {FormComponentName} => custom or inlined component, don't forget to migrate code accordingly", editingFcm.FormComponentIdentifier);
                 }
             }
@@ -542,13 +452,12 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
 
     private void MapCoupledDataFieldValues(
         Dictionary<string, object?> target,
-        // Dictionary<string, object?>? source,
         Func<string, object> getSourceValue,
         Func<string, bool> containsSourceValue,
         CmsTree cmsTree,
         int? documentId,
         List<string> newColumnNames,
-        FormInfo oldFormInfo// , string primaryKeyName
+        FormInfo oldFormInfo
         )
     {
         Debug.Assert(cmsTree.NodeClass.ClassTableName != null, "cmsTree.NodeClass.ClassTableName != null");
@@ -581,13 +490,11 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
             MediaFileInfo?[]? mfis = null;
             bool hasMigratedMediaFile = false;
 
-            // TODO tomas.krch: 2023-03-07 store original URL/link to media/resource
             var fieldMigration = _fieldMigrationService.GetFieldMigration(field.DataType, controlName, columnName);
-            // Debug.Assert(fieldMigration != null, nameof(fieldMigration) + " != null");
             if (fieldMigration?.Actions?.Contains(TcaDirective.ConvertToAsset) ?? false)
             {
                 if (value is string link &&
-                    MediaHelper.MatchMediaLink(link) is (_, var mediaLinkKind, var mediaKind, var path, var mediaGuid) { Success: true })
+                    MediaHelper.MatchMediaLink(link) is (true, var mediaLinkKind, var mediaKind, var path, var mediaGuid))
                 {
                     if (mediaLinkKind == MediaLinkKind.Path)
                     {
@@ -612,10 +519,9 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
 
                         if (mediaKind == MediaKind.MediaFile)
                         {
-                            //  _mediaFileFacade.GetMediaFile()
+                            // _mediaFileFacade.GetMediaFile()
                             // TODO tomas.krch: 2023-03-07 get media file by path
                             // attachmentDocument.DocumentNode.NodeAliasPath
-                            _logger.LogWarning("Unimplemented tail '{Field}'", columnName);
                         }
                     }
 
@@ -634,7 +540,6 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
                             mfis = new[] { mfi };
                             hasMigratedMediaFile = true;
                             _logger.LogTrace("MediaFile migrated from media file '{Field}': '{Value}'", columnName, mg);
-                            // TODO tomas.krch: 2023-03-07 get migrated media file
                         }
                     }
                 }
@@ -704,7 +609,6 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
 
             if (controlName != null)
             {
-                // _classService.GetFormControlDefinition(controlName) is { UserControlForDocRelationships: true } ||
                 if (fieldMigration.Actions?.Contains(TcaDirective.ConvertToPages) ?? false)
                 {
                     // relation to other document

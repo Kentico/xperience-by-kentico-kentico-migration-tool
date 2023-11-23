@@ -2,31 +2,24 @@
 
 using System;
 using System.Xml.Linq;
-using System.Xml.XPath;
 
 internal class NodeXmlAdapter {
     private readonly XDocument _xDoc;
-    private readonly XElement _xClass;
+    private readonly XElement? _xClass;
 
     public bool ParsingSuccessful { get; }
 
-    public NodeXmlAdapter(string xml) {//, string classTableName) {
+    public NodeXmlAdapter(string xml) {
         _xDoc = XDocument.Parse(xml);
-        // if (string.IsNullOrWhiteSpace(classTableName) && _xDoc.Root?.FirstNode is XElement dClass)
-        // {
-        //     _xClass = dClass;
-        //     ParsingSuccessful = true;
-        //     return;
-        // }
-        // if (_xDoc.XPathSelectElement($"//{classTableName}") is { } xClass) {
-        //     _xClass = xClass;
-        //     ParsingSuccessful = true;
-        // }
-
         if (_xDoc.Root?.FirstNode is XElement dClass)
         {
             _xClass = dClass;
             ParsingSuccessful = true;
+        }
+        else
+        {
+            _xClass = null;
+            ParsingSuccessful = false;
         }
     }
 

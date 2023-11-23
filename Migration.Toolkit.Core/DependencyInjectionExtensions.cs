@@ -23,7 +23,6 @@ using CMS.Modules;
 using CMS.OnlineForms;
 using CMS.Websites;
 using Kentico.Xperience.UMT;
-using Migration.Toolkit.Core.HandlersNG;
 using Migration.Toolkit.Core.Services.Ipc;
 using Migration.Toolkit.KXP.Models;
 
@@ -65,7 +64,6 @@ public static class DependencyInjectionExtensions
         // services.AddTransient<MigrateContactManagementCommandHandler>();
         services.AddTransient<MigrateDataProtectionCommandHandler>();
         services.AddTransient<MigrateFormsCommandHandler>();
-        // TODOV27 tomas.krch: 2023-09-05: update registration
         services.AddTransient<MigratePagesCommandHandler>();
         //services.AddTransient<MigratePageTypesCommandHandler>();
         services.AddTransient<MigratePagesCommand>();
@@ -73,7 +71,7 @@ public static class DependencyInjectionExtensions
         // services.AddTransient<MigrateSitesCommandHandler>();
         services.AddTransient<MigrateUsersCommandHandler>();
         services.AddTransient<MigrateMembersCommandHandler>();
-        // services.AddTransient<MigrateContactManagementCommandHandler>();
+        services.AddTransient<MigrateContactManagementCommandHandler>();
 
 
         // umt mappers
@@ -81,21 +79,17 @@ public static class DependencyInjectionExtensions
 
         // mappers
         services.AddTransient<IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo>, CmsAttachmentMapper>();
-        // TODOV27 tomas.krch: 2023-09-05: update registration
-        //services.AddTransient<IEntityMapper<CmsTreeMapperSource, TreeNode>, TreeNodeMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsClass, DataClassInfo>, CmsClassMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsConsent, CmsConsent>, CmsConsentMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsConsentAgreement, CmsConsentAgreement>, CmsConsentAgreementMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsConsentArchive, CmsConsentArchive>, CmsConsentArchiveMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsForm, BizFormInfo>, CmsFormMapper>();
-        services.AddTransient<IEntityMapper<KX13M.CmsForm, CmsForm>, CmsFormMapperEf>(); // TODO tomas.krch: 2023-11-13 why not remove this?
-        // services.AddTransient<IEntityMapper<KX13M.CmsPageUrlPath, CmsPageUrlPath>, CmsPageUrlPathMapper>();
+        services.AddTransient<IEntityMapper<KX13M.CmsForm, CmsForm>, CmsFormMapperEf>();
         services.AddTransient<IEntityMapper<KX13M.CmsResource, ResourceInfo>, ResourceMapper>();
         services.AddTransient<IEntityMapper<AlternativeFormMapperSource, AlternativeFormInfo>, AlternativeFormMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsRole, RoleInfo>, RoleInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsSettingsCategory, CmsSettingsCategory>, CmsSettingsCategoryMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsSettingsKey, SettingsKeyInfo>, CmsSettingsKeyMapper>();
-        // services.AddTransient<IEntityMapper<KX13M.CmsSite, CmsSite>, CmsSiteMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsUser, UserInfo>, UserInfoMapper>();
         services.AddTransient<IEntityMapper<MemberInfoMapperSource, MemberInfo>, MemberInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsUserRole, UserRoleInfo>, UserRoleInfoMapper>();
@@ -106,9 +100,7 @@ public static class DependencyInjectionExtensions
         services.AddTransient<IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo>, MediaFileInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsCountry, CountryInfo>, CountryInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsState, StateInfo>, StateInfoMapper>();
-        // TODOV27 tomas.krch: 2023-09-05: update registration
         services.AddTransient<IEntityMapper<KX13M.CmsPageTemplateConfiguration, PageTemplateConfigurationInfo>, PageTemplateConfigurationMapper>();
-        // TODO tk: 2022-09-13 services.AddTransient<IEntityMapper<KX13M.CmsLayout, LayoutInfo>, PageTemplateConfigurationMapper>();
 
         services.AddUniversalMigrationToolkit(o => { });
 

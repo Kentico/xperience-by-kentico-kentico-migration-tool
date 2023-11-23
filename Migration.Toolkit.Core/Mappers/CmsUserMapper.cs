@@ -42,14 +42,9 @@ public class CmsUserMapper : EntityMapperBase<KX13.Models.CmsUser, CmsUser>
         target.UserGuid = source.UserGuid;
         target.UserLastModified = source.UserLastModified;
         target.UserSecurityStamp = source.UserSecurityStamp;
-
-        // TODO tk: 2022-05-18 deduced - check
         target.UserAdministrationAccess = source.UserPrivilegeLevel == 3;
-        // TODO tk: 2022-05-18 deduce info
         target.UserIsPendingRegistration = false;
-        // TODO tk: 2022-05-18 deduce info
         target.UserPasswordLastChanged = null;
-        // TODO tk: 2022-05-18 deduce info
         target.UserRegistrationLinkExpiration = DateTime.Now.AddDays(365);
 
         foreach (var sourceCmsUserRole in source.CmsUserRoles)
@@ -62,39 +57,11 @@ public class CmsUserMapper : EntityMapperBase<KX13.Models.CmsUser, CmsUser>
                     {
                         RoleId = targetRoleId,
                         User = target,
-                        // OBSOLETE
-                        // ValidTo = sourceCmsUserRole.ValidTo
                     });
                 }
             }
         }
 
-        // OBSOLETE
-        // foreach (var sourceCmsUserSite in source.CmsUserSites)
-        // {
-        //     var userSite = new CmsUserSite();
-        //     if (mappingHelper.TryTranslateId<KX13M.CmsSite>(s => s.SiteId, sourceCmsUserSite.SiteId, out var siteId) && siteId != null)
-        //     {
-        //         userSite.SiteId = siteId.Value;
-        //         target.CmsUserSites.Add(userSite);
-        //     }
-        // }
-
-        // target.MiddleName = source.MiddleName;
-        // target.FullName = source.FullName;
-        // target.PreferredCultureCode = source.PreferredCultureCode;
-        // target.PreferredUicultureCode = source.PreferredUicultureCode;
-        // target.UserIsExternal = source.UserIsExternal;
-        // target.UserPasswordFormat = source.UserPasswordFormat;
-        // target.UserStartingAliasPath = source.UserStartingAliasPath;
-        // target.UserLastLogonInfo = source.UserLastLogonInfo;
-        // target.UserIsHidden = source.UserIsHidden;
-        // target.UserIsDomain = source.UserIsDomain;
-        // target.UserHasAllowedCultures = source.UserHasAllowedCultures;
-        // target.UserMfrequired = source.UserMfrequired;
-        // target.UserPrivilegeLevel = source.UserPrivilegeLevel;
-        // target.UserMftimestep = source.UserMftimestep;;
-        
         return target;
     }
 }

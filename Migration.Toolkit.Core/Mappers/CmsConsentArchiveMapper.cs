@@ -23,10 +23,10 @@ public class CmsConsentArchiveMapper : EntityMapperBase<KX13.Models.CmsConsentAr
         target.ConsentArchiveGuid = source.ConsentArchiveGuid;
         target.ConsentArchiveLastModified = source.ConsentArchiveLastModified;
         target.ConsentArchiveHash = source.ConsentArchiveHash;
-        
+
         if (mappingHelper.TranslateRequiredId<KX13.Models.CmsConsent>(r => r.ConsentId, source.ConsentArchiveConsentId, out var consentId))
         {
-            target.ConsentArchiveConsentId = consentId;    
+            target.ConsentArchiveConsentId = consentId;
         }
 
         return target;

@@ -22,9 +22,8 @@ public class CmsConsentMapper : EntityMapperBase<KX13.Models.CmsConsent, CmsCons
     protected override CmsConsent MapInternal(KX13.Models.CmsConsent source, CmsConsent target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         target.ConsentDisplayName = source.ConsentDisplayName;
-
-        // TODO tomas.krch: 2023-11-08 get default site language for consent
-        target.ConsentName = ConsentContentPatcher.PathConsentContent(source.ConsentName, null);
+        var defaultContentLanguageInfo = ContentLanguageInfo.Provider.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageIsDefault), true).FirstOrDefault() ?? throw new InvalidCastException("Missing default content language");
+        target.ConsentName = ConsentContentPatcher.PathConsentContent(source.ConsentName, defaultContentLanguageInfo);
 
         target.ConsentContent = source.ConsentContent;
         target.ConsentGuid = source.ConsentGuid;
@@ -45,7 +44,6 @@ static file class ConsentContentPatcher
             cultureCodeElement.Name = "LanguageName";
             if (!string.Equals(defaultContentLanguage.ContentLanguageName, cultureCodeElement.Value, StringComparison.InvariantCultureIgnoreCase))
             {
-                // TODO tomas.krch: 2023-11-08 log warning
                 // mLogger.LogWarning($"Consent '{consentInfo.ConsentName}' has unknown content language set '{cultureCodeElement.Value}'");
             }
 

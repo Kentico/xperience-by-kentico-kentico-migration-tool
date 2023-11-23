@@ -49,6 +49,8 @@ public class CmsFormMapper : EntityMapperBase<KX13.Models.CmsForm, BizFormInfo>
         target.FormLogActivity = source.FormLogActivity.UseKenticoDefault();
         target.FormBuilderLayout = source.FormBuilderLayout;
 
+
+
         // target.FormAfterSubmitMode = source.FormAfterSubmitMode;
         // target.FormAfterSubmitRelatedValue = source.FormAfterSubmitRelatedValue;
 
@@ -56,12 +58,6 @@ public class CmsFormMapper : EntityMapperBase<KX13.Models.CmsForm, BizFormInfo>
         {
             target.FormClassID = formClassId;
         }
-
-        // TODOV27 tomas.krch: 2023-09-05: site mapping obsolete
-        // if (mappingHelper.TranslateRequiredId<KX13.Models.CmsSite>(c => c.SiteId, source.FormSiteId, out var formSiteId))
-        // {
-        //     target.FormSiteID = formSiteId;
-        // }
 
         return target;
     }
@@ -105,12 +101,6 @@ public class CmsFormMapperEf : EntityMapperBase<KX13.Models.CmsForm, Migration.T
         {
             target.FormClassId = classId;
         }
-
-        // TODO tomas.krch: 2023-11-13 GLOBALIZED!
-        // if (mappingHelper.TranslateRequiredId<KX13.Models.CmsSite>(c => c.SiteId, source.FormSiteId, out var siteId))
-        // {
-        //     target.FormSiteId = siteId;
-        // }
 
         return target;
     }

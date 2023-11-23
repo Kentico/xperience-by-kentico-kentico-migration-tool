@@ -47,16 +47,6 @@ public class ResourceMapper : EntityMapperBase<KX13M.CmsResource, ResourceInfo>
                 target.ResourceName = targetResourceNamePatched;
             }
         }
-        
-        // OBSOLETE
-        // target.ResourceAuthor = source.ResourceAuthor;
-        // target.ResourceHasFiles = source.ResourceHasFiles ?? false;
-        // target.ResourceInstallationState = source.ResourceInstallationState;
-        // target.ResourceInstalledVersion = source.ResourceInstalledVersion;
-        // target.ResourceIsInDevelopment = source.ResourceIsInDevelopment ?? false;
-        // target.ResourceUrl = source.ResourceUrl;
-        // target.ResourceVersion = source.ResourceVersion;
-        // target.ShowInDevelopment = source.ShowInDevelopment ?? false;
 
         return target;
     }
