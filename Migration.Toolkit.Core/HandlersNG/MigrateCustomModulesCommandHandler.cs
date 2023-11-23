@@ -1,9 +1,7 @@
-namespace Migration.Toolkit.Core.Handlers;
+namespace Migration.Toolkit.Core.HandlersNG;
 
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using System.Xml.Linq;
 using CMS.DataEngine;
 using CMS.FormEngine;

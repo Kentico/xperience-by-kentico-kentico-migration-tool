@@ -285,40 +285,47 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
     {
         // var classStructureInfo = new ClassStructureInfo(source.ClassName, source.ClassXmlSchema, source.ClassTableName);
 
-        var patcher = new FormDefinitionPatcher(
-            _logger,
-            source.ClassFormDefinition,
-            _fieldMigrationService,
-            source.ClassIsForm.GetValueOrDefault(false),
-            source.ClassIsDocumentType,
-            isCustomizableSystemClass,
-            classIsCustom
-        );
-
-        patcher.PatchFields();
-        patcher.RemoveCategories(); // TODO tk: 2022-10-11 remove when supported
-
-        var result = patcher.GetPatched();
-        if (isCustomizableSystemClass)
+        if (!string.IsNullOrWhiteSpace(source.ClassFormDefinition))
         {
-            result = FormHelper.MergeFormDefinitions(target.ClassFormDefinition, result);
+            var patcher = new FormDefinitionPatcher(
+                _logger,
+                source.ClassFormDefinition,
+                _fieldMigrationService,
+                source.ClassIsForm.GetValueOrDefault(false),
+                source.ClassIsDocumentType,
+                isCustomizableSystemClass,
+                classIsCustom
+            );
+
+            patcher.PatchFields();
+            patcher.RemoveCategories(); // TODO tk: 2022-10-11 remove when supported
+
+            var result = patcher.GetPatched();
+            if (isCustomizableSystemClass)
+            {
+                result = FormHelper.MergeFormDefinitions(target.ClassFormDefinition, result);
+            }
+
+            var formInfo = new FormInfo(result); //(source.ClassFormDefinition);
+
+            // temporary fix until system category is supported
+
+            // var columnNames = formInfo.GetColumnNames();
+            //
+            // foreach (var columnName in columnNames)
+            // {
+            //     var field = formInfo.GetFormField(columnName);
+            //     ConvertSingleField(field, formInfo, columnName, FieldMappingInstance.Default.DataTypeMappings);
+            // }
+
+            // TODO tomas.krch: 2023-10-30 check if XML Schema gets set automatically with API kentico api
+            // target.ClassXmlSchema = classStructureInfo.GetXmlSchema();
+            target.ClassFormDefinition = formInfo.GetXmlDefinition();
         }
-
-        var formInfo = new FormInfo(result); //(source.ClassFormDefinition);
-
-        // temporary fix until system category is supported
-
-        // var columnNames = formInfo.GetColumnNames();
-        //
-        // foreach (var columnName in columnNames)
-        // {
-        //     var field = formInfo.GetFormField(columnName);
-        //     ConvertSingleField(field, formInfo, columnName, FieldMappingInstance.Default.DataTypeMappings);
-        // }
-
-        // TODO tomas.krch: 2023-10-30 check if XML Schema gets set automatically with API kentico api
-        // target.ClassXmlSchema = classStructureInfo.GetXmlSchema();
-        target.ClassFormDefinition = formInfo.GetXmlDefinition();
+        else
+        {
+            target.ClassFormDefinition = new FormInfo().GetXmlDefinition();
+        }
     }
 
     private DataClassInfo PatchDataClassInfo(DataClassInfo dataClass, out string? oldPrimaryKeyName, out string? documentNameField)

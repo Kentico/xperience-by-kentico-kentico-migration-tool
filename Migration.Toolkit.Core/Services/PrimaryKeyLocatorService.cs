@@ -93,7 +93,6 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
             yield break;
         }
 
-        // TODO tomas.krch: 2023-11-01 add target constraint - node id maps to Channel, WebSiteChannel, EmailChannel...
         if (sourceType == typeof(KX13.Models.CmsTree) && memberName == nameof(KX13M.CmsTree.NodeId))
         {
             var source = kx13Context.CmsTrees.Select(x => new { x.NodeId, x.NodeGuid }).ToList();
@@ -161,10 +160,6 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
         using var kxpContext = _kxpContextFactory.CreateDbContext();
         using var kx13Context = _kx13ContextFactory.CreateDbContext();
 
-        // var memberName = keyNameSelector.GetMemberName();
-        // var entityType = kx13Context.Model.FindEntityType(typeof(T));
-
-        // TODO tk: 2022-05-18 can be done smarter => deferred to optimizations
         var sourceType = typeof(T);
         targetId = -1;
         try
@@ -197,7 +192,6 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
                 return true;
             }
 
-            // TODO tomas.krch: 2023-11-01 add target constraint - node id maps to Channel, WebSiteChannel, EmailChannel...
             if (sourceType == typeof(KX13.Models.CmsSite))
             {
                 var kx13Guid = kx13Context.CmsSites.Where(c => c.SiteId == sourceId).Select(x => x.SiteGuid).Single();
@@ -228,13 +222,11 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
 
             if (sourceType == typeof(KX13.Models.OmContact))
             {
-                // TODO tk: 2022-06-13 might be good to optimize
                 var kx13Guid = kx13Context.OmContacts.Where(c => c.ContactId == sourceId).Select(x => x.ContactGuid).Single();
                 targetId = kxpContext.OmContacts.Where(x => x.ContactGuid == kx13Guid).Select(x => x.ContactId).Single();
                 return true;
             }
 
-            // TODO tomas.krch: 2023-11-01 add target constraint - node id maps to Channel, WebSiteChannel, EmailChannel...
             if (sourceType == typeof(KX13.Models.CmsTree))
             {
                 // careful - cms.root will have different guid

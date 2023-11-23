@@ -92,10 +92,6 @@ public class SourceInstanceContext
         return GetPageTemplateFormComponents(siteName, pageTemplateIdentifier);
     }
 
-    #region "Model"
-
-    #endregion
-
     public List<EditingFormControlModel>? GetSectionFormComponents(int siteId, string sectionIdentifier)
     {
         var context = _kx13ContextFactory.CreateDbContext();

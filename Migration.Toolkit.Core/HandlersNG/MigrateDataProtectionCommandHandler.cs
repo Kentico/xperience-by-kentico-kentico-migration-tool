@@ -1,9 +1,5 @@
-﻿namespace Migration.Toolkit.Core.Handlers;
+﻿namespace Migration.Toolkit.Core.HandlersNG;
 
-using System.Text;
-using System.Xml.Linq;
-using System.Xml.XPath;
-using CMS.ContentEngine;
 using MediatR;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;

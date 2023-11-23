@@ -44,15 +44,6 @@ public class MigrateSitesCommandHandlerNG : IRequestHandler<MigrateSitesCommand,
             _protocol.FetchedSource(kx13CmsSite);
             _logger.LogTrace("Migrating site {SiteName} with SiteGuid {SiteGuid}", kx13CmsSite.SiteName, kx13CmsSite.SiteGuid);
 
-            // not needed enymore - verify
-            // var targetSiteId = _primaryKeyMappingContext.MapFromSourceOrNull<CmsSite>(s => s.SiteId, kx13CmsSite.SiteId);
-            // if (targetSiteId is null)
-            // {
-            //     // TODO tk: 2022-05-26 add site guid mapping
-            //     _logger.LogWarning("Site '{SiteName}' with Guid {Guid} migration skipped", kx13CmsSite.SiteName, kx13CmsSite.SiteGuid);
-            //     continue;
-            // }
-
             var defaultCultureCode = GetSiteCulture(kx13CmsSite);
             var migratedSiteCultures = kx13CmsSite.Cultures.ToList();
             if (!migratedSiteCultures.Any(x => x.CultureCode.Equals(defaultCultureCode, StringComparison.InvariantCultureIgnoreCase)))
@@ -66,6 +57,16 @@ public class MigrateSitesCommandHandlerNG : IRequestHandler<MigrateSitesCommand,
 
             foreach (var cmsCulture in migratedSiteCultures)
             {
+                var existing = ContentLanguageInfoProvider.ProviderObject.Get()
+                    .WhereEquals(nameof(ContentLanguageInfo.ContentLanguageCultureFormat), cmsCulture.CultureCode)
+                    .FirstOrDefault();
+
+                if (existing != null && existing.ContentLanguageGUID != cmsCulture.CultureGuid)
+                {
+                    existing.ContentLanguageGUID = cmsCulture.CultureGuid;
+                    existing.Update();
+                }
+
                 if (migratedCultureCodes.ContainsKey(cmsCulture.CultureCode)) continue;
                 var langResult = await _importer.ImportAsync(new ContentLanguageModel
                 {
@@ -80,6 +81,7 @@ public class MigrateSitesCommandHandlerNG : IRequestHandler<MigrateSitesCommand,
                 if (langResult is { Success: true, Imported: ContentLanguageInfo importedLanguage })
                 {
                     migratedCultureCodes.TryAdd(cmsCulture.CultureCode, importedLanguage);
+                    _logger.LogTrace("Imported language {Language} from {Culture}", importedLanguage.ContentLanguageName, cmsCulture.CultureCode);
                 }
                 else
                 {
@@ -132,43 +134,54 @@ public class MigrateSitesCommandHandlerNG : IRequestHandler<MigrateSitesCommand,
                 WebsiteChannelStoreFormerUrls = storeFormerUrls
             });
 
-            // _primaryKeyMappingContext.SetMapping<CmsSite>(r => r.SiteId, kx13CmsSite.SiteId, channelInfo.ChannelID);
+            if (webSiteChannelResult.Imported is WebsiteChannelInfo webSiteChannel)
+            {
+                var cmsReCaptchaPublicKey = KenticoHelper.GetSettingsKey(_kx13ContextFactory, kx13CmsSite.SiteId, "CMSReCaptchaPublicKey") as string;
+                var cmsReCaptchaPrivateKey = KenticoHelper.GetSettingsKey(_kx13ContextFactory, kx13CmsSite.SiteId, "CMSReCaptchaPrivateKey") as string;
 
-            // var channelInfo = ChannelInfoProvider.ProviderObject.Get(kx13CmsSite.SiteGuid);
-            // var websiteChannelInfo = WebsiteChannelInfoProvider.ProviderObject.Get(kx13CmsSite.SiteGuid);
-            // var xbkTarget = new SiteMapperResult(channelInfo, websiteChannelInfo);
-            // _protocol.FetchedTarget(xbkTarget);
-            //
-            // var mapped = _channelMapper.Map(kx13CmsSite, xbkTarget);
-            // _protocol.MappedTarget(mapped);
-            //
-            // // TODO tomas.krch: 2023-10-30 refactor needed,
-            // // var observer = _importService.StartImport(new UmtModel[]
-            // // {
-            // //     // TODO tomas.krch: 2023-10-30 channel import model
-            // //     new DataClassModel
-            // //     {
-            // //
-            // //     }
-            // // }.AsEnumerable(), new ImporterContext("[to be removed]", "[to be removed]"), null);
-            // // await observer.ImportCompletedTask;
-            //
-            // if (mapped is { Success : true } result)
-            // {
-            //     var (webSiteChannelMappingResult, newInstance) = result;
-            //     ArgumentNullException.ThrowIfNull(webSiteChannelMappingResult, nameof(webSiteChannelMappingResult));
-            //
-            //     (channelInfo, websiteChannelInfo) = webSiteChannelMappingResult;
-            //
-            //     ChannelInfoProvider.ProviderObject.Set(channelInfo);
-            //     WebsiteChannelInfoProvider.ProviderObject.Set(websiteChannelInfo);
-            //
-            //     _protocol.Success(kx13CmsSite, webSiteChannelMappingResult, mapped);
-            //     _logger.LogEntitySetAction(newInstance, webSiteChannelMappingResult);
-            //
-            //     // TODO tomas.krch: 2023-10-30 might be needed to set reference to web site channel id
-            //     _primaryKeyMappingContext.SetMapping<CmsSite>(r => r.SiteId, kx13CmsSite.SiteId, channelInfo.ChannelID);
-            // }
+                WebsiteCaptchaSettingsInfo? reCaptchaSettings = null;
+                var cmsReCaptchaV3PrivateKey = KenticoHelper.GetSettingsKey(_kx13ContextFactory, kx13CmsSite.SiteId, "CMSReCaptchaV3PrivateKey") as string;
+                var cmsRecaptchaV3PublicKey = KenticoHelper.GetSettingsKey(_kx13ContextFactory, kx13CmsSite.SiteId, "CMSRecaptchaV3PublicKey") as string;
+                var cmsRecaptchaV3Threshold = KenticoHelper.GetSettingsKey<double>(_kx13ContextFactory, kx13CmsSite.SiteId, "CMSRecaptchaV3Threshold");
+
+                if (!string.IsNullOrWhiteSpace(cmsReCaptchaV3PrivateKey) || !string.IsNullOrWhiteSpace(cmsRecaptchaV3PublicKey))
+                {
+                    reCaptchaSettings = new WebsiteCaptchaSettingsInfo
+                    {
+                        WebsiteCaptchaSettingsWebsiteChannelID = webSiteChannel.WebsiteChannelID,
+                        WebsiteCaptchaSettingsReCaptchaSiteKey = cmsRecaptchaV3PublicKey,
+                        WebsiteCaptchaSettingsReCaptchaSecretKey = cmsReCaptchaV3PrivateKey,
+                        WebsiteCaptchaSettingsReCaptchaThreshold = cmsRecaptchaV3Threshold ?? 0.5d,
+                        WebsiteCaptchaSettingsReCaptchaVersion = ReCaptchaVersion.ReCaptchaV3,
+                    };
+                }
+
+                if (!string.IsNullOrWhiteSpace(cmsReCaptchaPublicKey) || !string.IsNullOrWhiteSpace(cmsReCaptchaPrivateKey))
+                {
+                    if (reCaptchaSettings is not null)
+                    {
+                        _logger.LogError("""
+                                         Conflicting settings found, ReCaptchaV2 and ReCaptchaV3 is set simultaneously.
+                                         Remove setting keys 'CMSReCaptchaPublicKey', 'CMSReCaptchaPrivateKey'
+                                         or remove setting keys 'CMSReCaptchaV3PrivateKey', 'CMSRecaptchaV3PublicKey', 'CMSRecaptchaV3Threshold'.
+                                         """);
+                        throw new InvalidOperationException("Invalid ReCaptcha settings");
+                    }
+
+                    reCaptchaSettings = new WebsiteCaptchaSettingsInfo
+                    {
+                        WebsiteCaptchaSettingsWebsiteChannelID = webSiteChannel.WebsiteChannelID,
+                        WebsiteCaptchaSettingsReCaptchaSiteKey = cmsReCaptchaPublicKey,
+                        WebsiteCaptchaSettingsReCaptchaSecretKey = cmsReCaptchaPrivateKey,
+                        WebsiteCaptchaSettingsReCaptchaVersion = ReCaptchaVersion.ReCaptchaV2,
+                    };
+                }
+
+                if (reCaptchaSettings != null)
+                {
+                    WebsiteCaptchaSettingsInfo.Provider.Set(reCaptchaSettings);
+                }
+            }
         }
 
         return new GenericCommandResult();

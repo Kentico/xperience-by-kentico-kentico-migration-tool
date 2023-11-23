@@ -93,9 +93,9 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
             await SaveUserUsingKenticoApi(cancellationToken, mapped, kx13User);
         }
 
-        // TODO tomas.krch: 2023-11-13 MIGRATE ROLES
+
         // await MigrateUserCmsRoles(kx13Context, cancellationToken, migratedSiteIds);
-        // await MigrateUserCmsRoles(kx13Context, cancellationToken);
+        await MigrateUserCmsRoles(kx13Context, cancellationToken);
 
         return new GenericCommandResult();
     }
@@ -192,11 +192,10 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
     private async Task MigrateUserCmsRoles(KX13Context kx13Context, CancellationToken cancellationToken)
     {
         var kx13CmsRoles = kx13Context.CmsRoles
-            // .Include(r => r.CmsUserRoles)
+            // .Include(r => r.CmsUserRoles).ThenInclude(ur => ur.User)
             .Where(r =>
                 r.CmsUserRoles.Any(ur => MigratedAdminUserPrivilegeLevels.Contains(ur.User.UserPrivilegeLevel))
-                // && migratedSiteIds.Contains(r.SiteId!.Value)
-               )
+            )
             .AsNoTracking()
             .AsAsyncEnumerable();
 
@@ -204,27 +203,13 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
         {
             _protocol.FetchedSource(kx13CmsRole);
 
-            var (success, targetSiteId) = _primaryKeyMappingContext.MapSourceId<KX13M.CmsSite>(s => s.SiteId, kx13CmsRole.SiteId);
-            if (!success)
-            {
-                _logger.LogTrace("Role site '{SourceSiteID}' is not included in migration => skipping", kx13CmsRole.SiteId);
-                continue;
-            }
-            // if (_primaryKeyMappingContext.MapFromSourceOrNull<KX13M.CmsSite>(s => s.SiteId, kx13CmsRole.SiteId) is not int targetSiteId)
-            // {
-            //     _logger.LogTrace("Role site '{SourceSiteID}' is not included in migration => skipping", kx13CmsRole.SiteId);
-            //     continue;
-            // }
-
-            // if (kx13CmsRole.CmsUserRoles.Any(ur => MigratedAdminUserPrivilegeLevels.Contains(ur.User.UserPrivilegeLevel)))
+            // if (!kx13CmsRole.CmsUserRoles.Any(ur => MigratedAdminUserPrivilegeLevels.Contains(ur.User.UserPrivilegeLevel)))
             // {
             //     _logger.LogTrace("Role '{RoleName}' not contains users with privilege level ({PrivilegeLevels}) => skipping", kx13CmsRole.RoleName, string.Join(",", MigratedAdminUserPrivilegeLevels));
             //     continue;
             // }
 
-            // TODOV27 tomas.krch: 2023-09-05: role info obsolete?
-            var xbkRoleInfo = default(RoleInfo);// RoleInfoProvider.GetRoleInfo(kx13CmsRole.RoleName, targetSiteId ?? 0);
-            throw new NotImplementedException("unsopported currently");
+            var xbkRoleInfo = RoleInfoProvider.ProviderObject.Get(kx13CmsRole.RoleGuid);
             _protocol.FetchedTarget(xbkRoleInfo);
             var mapped = _roleMapper.Map(kx13CmsRole, xbkRoleInfo);
             _protocol.MappedTarget(mapped);

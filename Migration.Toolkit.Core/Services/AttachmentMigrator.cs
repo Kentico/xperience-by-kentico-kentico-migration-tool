@@ -99,8 +99,6 @@ public class AttachmentMigrator
         return MigrateAttachment(attachment, additionalPath);
     }
 
-    // private readonly ConcurrentDictionary<int, CmsSite> _targetSites = new();
-
     public MigrateAttachmentResult MigrateAttachment(KX13M.CmsAttachment kx13CmsAttachment, string? additionalMediaPath = null)
     {
         // TODO tomas.krch: 2022-08-18 directory validation only -_ replace!
@@ -123,12 +121,6 @@ public class AttachmentMigrator
             ? GetKx13CmsDocument(attachmentDocumentId)
             : null;
 
-        // var targetSiteId = _primaryKeyMappingContext.RequireMapFromSource<KX13.Models.CmsSite>(s => s.SiteId, kx13CmsAttachment.AttachmentSiteId);
-        // var targetSite = _targetSites.GetOrAdd(targetSiteId, i =>
-        // {
-        //     using var kxoDbContext = _kxpContextFactory.CreateDbContext();
-        //     return kxoDbContext.CmsSites.Single(s => s.SiteId == targetSiteId);
-        // });
         using var kx13Context = _kx13ContextFactory.CreateDbContext();
         var site = kx13Context.CmsSites.FirstOrDefault(s=>s.SiteId == kx13CmsAttachment.AttachmentSiteId) ?? throw new InvalidOperationException("Site not exists!");
         if (!TryEnsureTargetLibraryExists(kx13CmsAttachment.AttachmentSiteId, site.SiteName, out var targetMediaLibraryId))
@@ -173,8 +165,6 @@ public class AttachmentMigrator
             {
                 if (newInstance)
                 {
-                    // TODO tomas.krch: 2023-11-02 perf
-                    // using var kx13Context = _kx13ContextFactory.CreateDbContext();
                     _mediaFileFacade.EnsureMediaFilePathExistsInLibrary(mediaFileInfo, targetMediaLibraryId);
                 }
 

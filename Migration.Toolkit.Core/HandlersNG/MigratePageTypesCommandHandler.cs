@@ -1,8 +1,7 @@
-﻿namespace Migration.Toolkit.Core.Handlers;
+﻿namespace Migration.Toolkit.Core.HandlersNG;
 
 using CMS.ContentEngine;
 using CMS.DataEngine;
-using Kentico.Xperience.UMT.Model;
 using Kentico.Xperience.UMT.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

@@ -1,7 +1,9 @@
 namespace Migration.Toolkit.Core;
 
+using System.Data.Common;
 using System.Xml.Linq;
 using CMS.Base;
+using CMS.Helpers;
 using Newtonsoft.Json;
 
 public static class Extensions
@@ -52,4 +54,35 @@ public static class Extensions
     }
 
     #endregion
+
+    public static T Unbox<T>(this DbDataReader reader, string propertyName)
+    {
+        if (reader.GetOrdinal(propertyName) < 0)
+        {
+            throw new InvalidOperationException($"Property '{propertyName}' not exists");
+        }
+
+        return reader[propertyName] switch
+        {
+            T r => r,
+            DBNull => default,
+            _ => throw new InvalidCastException($"Unboxing property '{propertyName}' of type '{reader[propertyName].GetType().FullName}' to type '{typeof(T).FullName}' failed")
+        };
+    }
+
+    public static T Value<T>(this XElement element)
+    {
+        return element?.Value == default
+            ? default
+            : ValidationHelper.GetValue<T>(element.Value);
+    }
+
+
+    public static bool? ValueAsBool(this XElement element) {
+
+        if (element != null && bool.TryParse(element.Value, out var value)) {
+            return value;
+        }
+        else return default;
+    }
 }

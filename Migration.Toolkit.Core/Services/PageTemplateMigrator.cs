@@ -1,6 +1,5 @@
 namespace Migration.Toolkit.Core.Services;
 
-// using CMS.DocumentEngine => obsolete;
 using CMS.DataEngine.Internal;
 using CMS.Websites;
 using Microsoft.Extensions.Logging;

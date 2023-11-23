@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KXP.Context;
-using Migration.Toolkit.KXP.Models;
 
 public class KeyLocatorService
 {
@@ -48,7 +47,7 @@ public class KeyLocatorService
 
             var sourceEquals = Expression.Equal(
                 sourceKeySelector.Body,
-                Expression.Convert(Expression.Constant(sourceKey, sourceKey.GetType()), typeof(object))//sourceProp
+                Expression.Convert(Expression.Constant(sourceKey, sourceKey.GetType()), typeof(object))
             );
             var sourcePredicate = Expression.Lambda<Func<TSource, bool>>(sourceEquals, sourceKeySelector.Parameters[0]);
             var kx13Guid = kx13Context.Set<TSource>().Where(sourcePredicate).Select(sourceGuidSelector).Single();
@@ -69,7 +68,6 @@ public class KeyLocatorService
             var selector = Expression.Lambda<Func<TTarget, TTargetKey>>(targetKeySelector.Body, targetKeySelector.Parameters[0]);
             targetId = query.Select(selector).Single();
             return true;
-            // }
         }
         catch (InvalidOperationException ioex)
         {
@@ -102,7 +100,7 @@ public class KeyLocatorService
 
             var sourceEquals = Expression.Equal(
                 keySelector.Body,
-                Expression.Convert(Expression.Constant(key, key.GetType()), typeof(object))//sourceProp
+                Expression.Convert(Expression.Constant(key, key.GetType()), typeof(object))
             );
             var sourcePredicate = Expression.Lambda<Func<T, bool>>(sourceEquals, keySelector.Parameters[0]);
             guid = kx13Context.Set<T>().Where(sourcePredicate).Select(guidSelector).Single();
