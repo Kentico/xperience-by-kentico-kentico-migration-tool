@@ -36,13 +36,11 @@ To perform the migration:
 Command usage:
 
 ```powershell
-Migration.Toolkit.CLI.exe migrate --siteId 1 --culture en-US --sites --users
+Migration.Toolkit.CLI.exe migrate --sites --custom-modules --users --members --forms --media-libraries --attachments --page-types --pages --settings-keys --contact-management --data-protection
 ```
 
 | Parameter                   | Description                                              |  Dependencies                         |
 |-----------------------------|----------------------------------------------------------|---------------------------------------|
-| `--siteId <siteId>`         | **Required**. Specifies the ID of the site on the source instance. You can find the ID in the source database by running the `SELECT * FROM dbo.CMS_Site` query and checking the value of the `SiteID` column. |                                           |
-| `--culture <cultureCode>`   | Specifies the culture code from which content is migrated, for example *en-US*. Multilingual migration is currently not supported.  |    |
 | `--sites`                   | Enables migration of the [site](https://docs.xperience.io/x/34HFC). The site's basic properties are transferred to the target instance. Requires the `siteId` parameter to be specified. |  |
 | `--custom-modules`          | Enables migration of custom modules, [custom module classes and their data](https://docs.xperience.io/x/AKDWCQ), and [custom fields in supported system classes](https://docs.xperience.io/x/V6rWCQ).<br /><br />See: [Migration details for specific object types - Custom modules and classes](#custom-modules-and-classes)  | `--sites` |
 | `--users`                   | Enables migration of [users](https://docs.xperience.io/x/8ILWCQ) and [roles](https://docs.xperience.io/x/7IVwCg).<br /><br />See: [Migration details for specific object types - Users](#users) | `--sites`, `--custom-modules` |
@@ -121,7 +119,7 @@ Some [Form components](https://docs.xperience.io/x/5ASiCQ) used by content type 
 * Migration includes the URL paths and Former URLs of pages, but not Alternative URLs, which are currently not supported in Xperience by Kentico.
 * Linked pages are currently not supported in Xperience by Kentico. The migration creates standard page copies for any linked pages on the source instance.
 * Page permissions (ACLs) are currently not supported in Xperience by Kentico, so are not migrated.
-  
+
 #### Page Builder content
 
 By default, JSON data storing the Page Builder content of pages and custom page templates is migrated directly without modifications. On the target Xperience by Kentico instance, the migrated data can work in the Page Builder's legacy compatibility mode. However, we strongly recommend updating your codebase to the new Xperience by Kentico components.
@@ -218,7 +216,7 @@ The toolkit by default migrates:
 * all system fields from the *CMS_User* and *CMS_UserSettings* tables. You can customize which fields are migrated via the `MemberIncludeUserSystemFields` configuration option. See [configuration](#configuration).
 * all custom fields added to the *CMS_User* and *CMS_UserSettings* tables are migrated under `CMS_Member`.
   > If you are migrating custom fields, the `--custom-modules` migration command must be run before the `--members` command. For example:
-  
+
   ```powershell
   Migration.Toolkit.CLI.exe migrate --siteId 1 --custom-modules --sites --users --members
   ```
@@ -236,13 +234,13 @@ The toolkit ***DOES NOT*** migrate:
 
         ```csharp
         // Selects members whose password is null and who don't use external providers to sign in
-        var migratedMembers = 
+        var migratedMembers =
                 MemberInfo.Provider
                         .Get()
                         .WhereNull("MemberPassword")
                         .WhereEquals("MemberIsExternal", 0);
         ```
-  
+
     2. Generate password reset tokens for each account using `UserManager.GeneratePasswordResetTokenAsync(member)`.
     3. Send the password reset email to each account using `IEmailService`.
 
@@ -252,7 +250,7 @@ The toolkit ***DOES NOT*** migrate:
                 {
                     Recipients = member.Email,
                     Subject = "Password reset request",
-                    // {resetURL} targets a controller action with the password reset form 
+                    // {resetURL} targets a controller action with the password reset form
                     Body = $"To reset your account's password, click <a href=\"{resetUrl}\">here</a>."
                 });
         ```
@@ -261,7 +259,7 @@ The toolkit ***DOES NOT*** migrate:
 
 * Custom contact fields can be migrated together with *modules classes*.
 * For performance reasons, contacts and related objects are migrated using bulk SQL queries. As a result, you always need to delete all Contacts, Activities and Consent agreements before running the migration (when using the `migrate --contact-management` parameter).
-  
+
 ## Configuration
 
 Before you run the migration, configure options in the `Migration.Toolkit.CLI/appsettings.json` file.
@@ -308,14 +306,14 @@ Add the options under the `Settings` section in the configuration file.
     "KxConnectionString": "Data Source=myserver;Initial Catalog=Xperience13;Integrated Security=True;Persist Security Info=False;Connect Timeout=120;Encrypt=False;Current Language=English;",
     "KxCmsDirPath": "C:\\inetpub\\wwwroot\\Xperience13\\CMS",
     "XbKConnectionString": "Data Source=myserver;Initial Catalog=XperienceByKentico;Integrated Security=True;Persist Security Info=False;Connect Timeout=120;Encrypt=False;Current Language=English;",
-    "XbKDirPath": "C:\\inetpub\\wwwroot\\XP_Target",    
+    "XbKDirPath": "C:\\inetpub\\wwwroot\\XP_Target",
     "XbKApiSettings": {
       "ConnectionStrings": {
         "CMSConnectionString": "Data Source=myserver;Initial Catalog=XperienceByKentico;Integrated Security=True;Persist Security Info=False;Connect Timeout=120;Encrypt=False;Current Language=English;"
       }
     },
  "MigrationProtocolPath": "C:\\_Development\\xperience-migration-toolkit-master\\Migration.Toolkit.Protocol.log",
- "MemberIncludeUserSystemFields": "FirstName|MiddleName|LastName|FullName|UserPrivilegeLevel|UserIsExternal|LastLogon|UserLastModified|UserGender|UserDateOfBirth", 
+ "MemberIncludeUserSystemFields": "FirstName|MiddleName|LastName|FullName|UserPrivilegeLevel|UserIsExternal|LastLogon|UserLastModified|UserGender|UserDateOfBirth",
  "MigrateOnlyMediaFileInfo": false,
     "UseOmActivityNodeRelationAutofix": "AttemptFix",
     "UseOmActivitySiteRelationAutofix": "AttemptFix",
@@ -329,7 +327,7 @@ Add the options under the `Settings` section in the configuration file.
       },
       "CMS_Class": {
         "ExcludeCodeNames": [
-          "CMS.File", 
+          "CMS.File",
           "CMS.MenuItem",
           "ACME.News",
           "ACME.Office",
@@ -384,7 +382,7 @@ To convert Page Builder data to a format suitable for the Xperience by Kentico c
 public class MyWidgetProperties : IWidgetProperties
 {
     // Supported
-    [EditingComponent(PageSelector.IDENTIFIER, Label = "Selected products", Order = 1)]    
+    [EditingComponent(PageSelector.IDENTIFIER, Label = "Selected products", Order = 1)]
     public IEnumerable<PageSelectorItem> SelectedProducts { get; set; } = new List<PageSelectorItem>();
 
     // NOT supported
@@ -405,7 +403,7 @@ public class MyWidgetProperties : IWidgetProperties
 
       ```csharp
       app.UseEndpoints(endpoints =>
-      { 
+      {
           endpoints.MapControllerRoute(
               name: "ToolkitExtendedFeatures",
               pattern: "{controller}/{action}",
@@ -413,7 +411,7 @@ public class MyWidgetProperties : IWidgetProperties
               {
                   controller = "ToolkitApi"
               }
-          ); 
+          );
 
           // other routes ...
       });
@@ -426,17 +424,17 @@ public class MyWidgetProperties : IWidgetProperties
       {
           // Maps routes for Xperience handlers and enabled features
           routes.Kentico().MapRoutes()
-      
+
           routes.MapRoute(
               name: "ToolkitExtendedFeatures",
               url: "{controller}/{action}",
               defaults: new { },
               constraints: new
-              {   
+              {
                   controller = "ToolkitApi"
               }
           );
-      
+
           // other routes ...
       }
       ```
@@ -492,7 +490,7 @@ To enable this feature, configure the `OptInFeatures.CustomMigration.FieldMigrat
       }
     ]
   }
-}   
+}
 ```
 
 `FieldNameRegex` - a regular expression used to filter what fields are converted. Only fields with field names that match the regular expressions are converted. Use `.*` to match all fields.
