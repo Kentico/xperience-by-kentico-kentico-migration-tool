@@ -166,7 +166,7 @@ public class BulkDataCopyService
         {
             if (targetColumns.All(x => x.ColumnName != columnName))
             {
-                _logger.LogWarning("{TableName} source column '{SourceColumn}' has no match", request.TableName, columnName);
+                _logger.LogDebug("{TableName} source column '{SourceColumn}' has no match", request.TableName, columnName);
             }
         }
     }

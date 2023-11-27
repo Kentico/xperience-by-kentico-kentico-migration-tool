@@ -147,14 +147,13 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
 
             _protocol.FetchedTarget(xbkDataClass);
 
-            var dataClassId = SaveClassUsingKxoApi(kx13Class, xbkDataClass);
-            if (dataClassId is { })
+            if (SaveClassUsingKxoApi(kx13Class, xbkDataClass) is {} savedDataClass)
             {
-                Debug.Assert(xbkDataClass.ClassID != 0, "xbkDataClass.ClassID != 0");
+                Debug.Assert(savedDataClass.ClassID != 0, "xbkDataClass.ClassID != 0");
                 // MigrateClassSiteMappings(kx13Class, xbkDataClass);
 
-                xbkDataClass = DataClassInfoProvider.ProviderObject.Get(dataClassId.Value);
-                await MigrateAlternativeForms(kx13Class, xbkDataClass, cancellationToken);
+                xbkDataClass = DataClassInfoProvider.ProviderObject.Get(savedDataClass.ClassID);
+                await MigrateAlternativeForms(kx13Class, savedDataClass, cancellationToken);
 
                 #region Migrate coupled data class data
 
@@ -468,7 +467,7 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
     //     }
     // }
 
-    private int? SaveClassUsingKxoApi(KX13M.CmsClass kx13Class, DataClassInfo kxoDataClass)
+    private DataClassInfo? SaveClassUsingKxoApi(KX13M.CmsClass kx13Class, DataClassInfo kxoDataClass)
     {
         var mapped = _dataClassMapper.Map(kx13Class, kxoDataClass);
         _protocol.MappedTarget(mapped);
@@ -491,7 +490,7 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
                     dataClassInfo.ClassID
                 );
 
-                return dataClassInfo.ClassID;
+                return dataClassInfo;
             }
         }
         catch (Exception ex)

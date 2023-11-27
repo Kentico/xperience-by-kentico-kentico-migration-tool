@@ -130,7 +130,7 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
             string? contentItemCommonDataPageTemplateConfiguration = cmsDocument.DocumentPageTemplateConfiguration;
             PatchJsonDefinitions(source.CmsTree.NodeSiteId, ref contentItemCommonDataPageTemplateConfiguration, ref contentItemCommonDataPageBuilderWidgets);
 
-            var commonDataInfo = new ContentItemCommonDataModel
+            var commonDataModel = new ContentItemCommonDataModel
             {
                 ContentItemCommonDataGUID = cmsDocument.DocumentGuid ?? throw new InvalidOperationException($"DocumentGUID is null"),
                 ContentItemCommonDataContentItemGuid = contentItemGuid,
@@ -139,7 +139,14 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
                 ContentItemCommonDataIsLatest = !draftMigrated, // Flag for latest record to know what to retrieve for the UI
                 ContentItemCommonDataPageBuilderWidgets = contentItemCommonDataPageBuilderWidgets, // PatchPageBuilderWidgets(cmsDocument.DocumentPageBuilderWidgets, cmsTree.NodeID, "cms.node", out _),
                 ContentItemCommonDataPageTemplateConfiguration = contentItemCommonDataPageTemplateConfiguration, // PatchPageTemplateConfiguration(cmsDocument.DocumentPageTemplateConfiguration, cmsTree.NodeID, "cms.node", out var _)
-                ContentItemDataGuid = cmsDocument.DocumentGuid
+                // ContentItemDataGuid = cmsDocument.DocumentGuid
+            };
+
+            var dataModel = new ContentItemDataModel
+            {
+                ContentItemDataGUID = commonDataModel.ContentItemCommonDataGUID,
+                ContentItemDataCommonDataGuid = commonDataModel.ContentItemCommonDataGUID,
+                ContentItemContentTypeName = cmsTree.NodeClass.ClassName
             };
 
             if (cmsTree.NodeClass.ClassIsCoupledClass)
@@ -161,15 +168,16 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
                 }
 
                 var coupledDataRow = _coupledDataService.GetSourceCoupledDataRow(cmsTree.NodeClass.ClassTableName, primaryKeyName, cmsDocument.DocumentForeignKeyValue);
-                MapCoupledDataFieldValues(commonDataInfo.CustomProperties,
+                MapCoupledDataFieldValues(dataModel.CustomProperties,
                     (columnName) => coupledDataRow?[columnName],
                     columnName => coupledDataRow?.ContainsKey(columnName) ?? false
                     , cmsTree, cmsDocument.DocumentId, fi.GetColumnNames(), sfi);
             }
 
-            commonDataInfo.CustomProperties.Add("DocumentName", cmsDocument.DocumentName);
+            dataModel.CustomProperties.Add("DocumentName", cmsDocument.DocumentName);
 
-            yield return commonDataInfo;
+            yield return commonDataModel;
+            yield return dataModel;
 
             Guid? documentCreatedByUserGuid = null;
             if (_keyMappingContext.GetGuid<KX13M.CmsUser>(u => u.UserId, u => u.UserGuid, cmsDocument.DocumentCreatedByUserId) is (true, var createdByUserGuid))
@@ -264,14 +272,15 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
     {
         var adapter = new NodeXmlAdapter(checkoutVersion.NodeXml);
 
-        IUmtModel? commonDataInfo = null;
+        ContentItemCommonDataModel? commonDataModel = null;
+        ContentItemDataModel? dataModel = null;
         try
         {
             var pageTemplateConfiguration = adapter.DocumentPageTemplateConfiguration;
             var pageBuildWidgets = adapter.DocumentPageBuilderWidgets;
             PatchJsonDefinitions(checkoutVersion.NodeSiteId, ref pageTemplateConfiguration, ref pageBuildWidgets);
 
-            commonDataInfo = new ContentItemCommonDataModel
+            commonDataModel = new ContentItemCommonDataModel
             {
                 ContentItemCommonDataGUID = adapter.DocumentGUID ?? throw new InvalidOperationException($"DocumentGUID is null"),
                 ContentItemCommonDataContentItemGuid = contentItemGuid,
@@ -280,7 +289,13 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
                 ContentItemCommonDataIsLatest = true, // Flag for latest record to know what to retrieve for the UI
                 ContentItemCommonDataPageBuilderWidgets = pageBuildWidgets,
                 ContentItemCommonDataPageTemplateConfiguration = pageTemplateConfiguration,
-                ContentItemDataGuid = cmsTree.NodeGuid,
+            };
+
+            dataModel = new ContentItemDataModel
+            {
+                ContentItemDataGUID = commonDataModel.ContentItemCommonDataGUID,
+                ContentItemDataCommonDataGuid = commonDataModel.ContentItemCommonDataGUID,
+                ContentItemContentTypeName = cmsTree.NodeClass.ClassName
             };
 
             if (cmsTree.NodeClass.ClassIsCoupledClass)
@@ -301,14 +316,14 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
                     throw new Exception("Error, unable to find coupled data primary key");
                 }
 
-                MapCoupledDataFieldValues(commonDataInfo.CustomProperties,
+                MapCoupledDataFieldValues(dataModel.CustomProperties,
                     s => adapter.GetValue(s),
                     s => adapter.HasValueSet(s)
                     , cmsTree, adapter.DocumentID, fi.GetColumnNames(), sfi);
             }
 
             // supply document name
-            commonDataInfo.CustomProperties.Add("DocumentName", adapter.DocumentName);
+            dataModel.CustomProperties.Add("DocumentName", adapter.DocumentName);
         }
         catch(Exception ex)
         {
@@ -316,9 +331,10 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
             throw;
         }
 
-        if (commonDataInfo != null)
+        if (dataModel != null && commonDataModel != null)
         {
-            yield return commonDataInfo;
+            yield return commonDataModel;
+            yield return dataModel;
         }
     }
 

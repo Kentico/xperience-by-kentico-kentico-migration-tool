@@ -41,6 +41,7 @@ public class PageTemplateConfigurationMapper : EntityMapperBase<KX13M.CmsPageTem
         target.PageTemplateConfigurationDescription = source.PageTemplateConfigurationDescription;
         target.PageTemplateConfigurationName = source.PageTemplateConfigurationName;
         target.PageTemplateConfigurationLastModified = source.PageTemplateConfigurationLastModified;
+        target.PageTemplateConfigurationIcon = "xp-custom-element"; // TODO tomas.krch: 2023-11-27 some better default icon pick?
 
         if (newInstance)
         {

@@ -20,8 +20,8 @@ public class KxpMediaFileFacade
 
         if (newInstance)
         {
-            mfi.Insert();
             mfi.SaveFileToDisk(true);
+            mfi.Insert();
         }
         else
         {

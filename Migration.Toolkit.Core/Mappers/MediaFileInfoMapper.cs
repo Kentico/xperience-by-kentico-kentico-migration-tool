@@ -45,7 +45,9 @@ public class MediaFileInfoMapper: EntityMapperBase<MediaFileInfoMapperSource, Me
     protected override MediaFileInfo? CreateNewInstance(MediaFileInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) {
         if (source.File != null)
         {
-            return new MediaFileInfo(source.File, source.TargetLibraryId, source.LibrarySubFolder ?? "", 0, 0, 0);
+            var mf = new MediaFileInfo(source.File, source.TargetLibraryId, source.LibrarySubFolder ?? "", 0, 0, 0);
+            mf.SaveFileToDisk(true);
+            return mf;
         }
 
         return new MediaFileInfo();
