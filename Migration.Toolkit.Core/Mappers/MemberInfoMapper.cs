@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
 using CMS.Membership;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.KXP.Api;
@@ -13,8 +11,10 @@ using CMS.DataEngine;
 using CMS.FormEngine;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Enumerations;
 using Migration.Toolkit.Common.Helpers;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
 
 public record MemberInfoMapperSource(KX13M.CmsUser User, KX13M.CmsUserSetting UserSetting);

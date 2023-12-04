@@ -2,7 +2,7 @@ namespace Migration.Toolkit.Core.Handlers;
 
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Migration.Toolkit.Core.Abstractions;
+using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Core.Services;
 using Migration.Toolkit.KX13.Context;
 

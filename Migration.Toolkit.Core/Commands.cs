@@ -1,9 +1,9 @@
 ﻿using MediatR;
-using Migration.Toolkit.Core.Abstractions;
 
 namespace Migration.Toolkit.Core;
 
 using System.Reflection;
+using Migration.Toolkit.Common.Abstractions;
 
 public interface ICommand
 {

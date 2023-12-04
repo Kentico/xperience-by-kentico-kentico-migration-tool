@@ -4,10 +4,10 @@ using CMS.DataEngine;
 using CMS.FormEngine;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
+using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Enumerations;
-using Migration.Toolkit.Core.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.Core.Services;
 using Migration.Toolkit.Core.Services.CmsClass;
 

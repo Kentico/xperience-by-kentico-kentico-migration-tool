@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
 
 namespace Migration.Toolkit.Core.Mappers;
 
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Models;
 
 public class CmsUserMapper : EntityMapperBase<KX13.Models.CmsUser, CmsUser>

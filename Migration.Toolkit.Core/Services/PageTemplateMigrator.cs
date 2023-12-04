@@ -3,8 +3,8 @@ namespace Migration.Toolkit.Core.Services;
 using CMS.DataEngine.Internal;
 using CMS.Websites;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
-using Migration.Toolkit.Core.MigrationProtocol;
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 
 public class PageTemplateMigrator
 {

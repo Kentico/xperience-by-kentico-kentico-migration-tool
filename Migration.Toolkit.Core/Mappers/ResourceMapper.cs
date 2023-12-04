@@ -2,10 +2,10 @@ namespace Migration.Toolkit.Core.Mappers;
 
 using CMS.Modules;
 using Microsoft.Extensions.Logging;
+using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Enumerations;
-using Migration.Toolkit.Core.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.Core.Services.CmsClass;
 using Migration.Toolkit.KX13.Models;
 

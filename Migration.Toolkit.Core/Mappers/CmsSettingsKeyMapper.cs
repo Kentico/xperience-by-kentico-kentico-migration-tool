@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
 
 namespace Migration.Toolkit.Core.Mappers;
 
 using System.Diagnostics;
 using CMS.DataEngine;
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 
 public class CmsSettingsKeyMapper : EntityMapperBase<Migration.Toolkit.KX13.Models.CmsSettingsKey, SettingsKeyInfo>
 {

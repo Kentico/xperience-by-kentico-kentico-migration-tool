@@ -1,12 +1,14 @@
 ﻿namespace Migration.Toolkit.Core.Handlers;
 
+using CMS.DataProtection;
 using MediatR;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
+using Migration.Toolkit.Common;
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KX13.Models;
 using Migration.Toolkit.KXP.Context;
@@ -250,6 +252,13 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
                         .ErrorUpdatingTargetInstance<KXP.Models.CmsConsentAgreement>(dbUpdateException)
                         .NeedsManualAction()
                         .WithIdentityPrints(consentAgreementUpdates)
+                    );
+
+                    var cai = ConsentAgreementInfo.New();
+                    _protocol.Append(HandbookReferences
+                        .ErrorUpdatingTargetInstance<KXP.Models.CmsConsentAgreement>(dbUpdateException)
+                        .NeedsManualAction()
+                        .WithIdentityPrint(cai)
                     );
 
                     _logger.LogEntitiesSetError(dbUpdateException, false, consentAgreementUpdates);

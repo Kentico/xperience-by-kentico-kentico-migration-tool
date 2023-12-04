@@ -1,11 +1,12 @@
 ﻿using CMS.Helpers;
 using CMS.MediaLibrary;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
 
 namespace Migration.Toolkit.Core.Mappers;
+
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 
 public class MediaLibraryInfoMapper : EntityMapperBase<KX13.Models.MediaLibrary, MediaLibraryInfo>
 {

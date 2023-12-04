@@ -2,12 +2,12 @@
 using CMS.OnlineForms;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
-using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
 
 namespace Migration.Toolkit.Core.Mappers;
 
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Models;
 
 public class CmsFormMapper : EntityMapperBase<KX13.Models.CmsForm, BizFormInfo>

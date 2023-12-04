@@ -1,10 +1,11 @@
 ﻿using System.Diagnostics;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
-using Migration.Toolkit.Core.MigrationProtocol;
 
 namespace Migration.Toolkit.Core.Behaviors;
+
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 
 public class RequestHandlingBehavior<TRequest, TResponse>: IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>

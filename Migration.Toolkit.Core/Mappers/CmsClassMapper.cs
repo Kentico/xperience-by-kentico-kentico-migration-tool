@@ -2,9 +2,7 @@
 using CMS.FormEngine;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
-using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.Core.Services.CmsClass;
 
 namespace Migration.Toolkit.Core.Mappers;
@@ -14,7 +12,9 @@ using System.Xml;
 using CMS.ContentEngine;
 using CMS.Core;
 using CMS.DataEngine.Query;
+using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Enumerations;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.Services;
 using Migration.Toolkit.KX13.Models;
 

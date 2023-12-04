@@ -5,6 +5,7 @@ using Migration.Toolkit.Common;
 
 namespace Migration.Toolkit.Core.Services;
 
+using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.KXP.Context;
 
 public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService

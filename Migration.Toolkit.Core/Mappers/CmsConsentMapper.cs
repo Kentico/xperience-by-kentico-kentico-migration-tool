@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
 
 namespace Migration.Toolkit.Core.Mappers;
 
@@ -9,6 +7,8 @@ using System.Text;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using CMS.ContentEngine;
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Models;
 
 public class CmsConsentMapper : EntityMapperBase<KX13.Models.CmsConsent, CmsConsent>

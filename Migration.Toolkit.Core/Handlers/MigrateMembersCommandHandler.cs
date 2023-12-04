@@ -7,10 +7,10 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
-using Migration.Toolkit.Core.Abstractions;
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.Mappers;
-using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KXP.Api.Enums;
 

@@ -1,13 +1,13 @@
 using CMS.Base;
 using CMS.MediaLibrary;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.Helpers;
-using Migration.Toolkit.Core.MigrationProtocol;
 
 namespace Migration.Toolkit.Core.Mappers;
 
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KX13.Models;
 
 public record CmsAttachmentMapperSource(CmsAttachment Attachment, int TargetLibraryId, IUploadedFile File, string LibrarySubFolder,

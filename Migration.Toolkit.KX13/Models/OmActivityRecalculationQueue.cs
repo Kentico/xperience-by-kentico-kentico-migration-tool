@@ -1,15 +1,18 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
-namespace Migration.Toolkit.KX13.Models
+namespace Migration.Toolkit.KX13.Models;
+
+[Table("OM_ActivityRecalculationQueue")]
+public partial class OmActivityRecalculationQueue
 {
-    [Table("OM_ActivityRecalculationQueue")]
-    public partial class OmActivityRecalculationQueue
-    {
-        [Key]
-        [Column("ActivityRecalculationQueueID")]
-        public int ActivityRecalculationQueueId { get; set; }
-        [Column("ActivityRecalculationQueueActivityID")]
-        public int ActivityRecalculationQueueActivityId { get; set; }
-    }
+    [Key]
+    [Column("ActivityRecalculationQueueID")]
+    public int ActivityRecalculationQueueId { get; set; }
+
+    [Column("ActivityRecalculationQueueActivityID")]
+    public int ActivityRecalculationQueueActivityId { get; set; }
 }

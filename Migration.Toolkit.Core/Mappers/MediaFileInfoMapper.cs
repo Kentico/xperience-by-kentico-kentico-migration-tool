@@ -1,10 +1,8 @@
 ﻿using CMS.Base;
 using CMS.MediaLibrary;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.Helpers;
-using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Models;
 
 namespace Migration.Toolkit.Core.Mappers;
@@ -12,6 +10,8 @@ namespace Migration.Toolkit.Core.Mappers;
 using System.Data;
 using Microsoft.Data.SqlClient;
 using Migration.Toolkit.Common;
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Api;
 
 public record MediaFileInfoMapperSource(MediaFile MediaFile, int TargetLibraryId, IUploadedFile? File, string? LibrarySubFolder,

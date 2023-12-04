@@ -2,14 +2,11 @@ using CMS.MediaLibrary;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Behaviors;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.Handlers;
 using Migration.Toolkit.Core.Mappers;
-using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.Core.Services;
-using Migration.Toolkit.Core.Services.BulkCopy;
 using Migration.Toolkit.Core.Services.CmsClass;
 using Migration.Toolkit.Core.Services.CmsRelationship;
 
@@ -23,14 +20,26 @@ using CMS.Modules;
 using CMS.OnlineForms;
 using CMS.Websites;
 using Kentico.Xperience.UMT;
-using Migration.Toolkit.Core.Services.Ipc;
+using Migration.Toolkit.Common;
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
+using Migration.Toolkit.Common.Services;
+using Migration.Toolkit.Common.Services.BulkCopy;
+using Migration.Toolkit.Common.Services.Ipc;
+using Migration.Toolkit.Core.Helpers;
 using Migration.Toolkit.KXP.Models;
 
 public static class DependencyInjectionExtensions
 {
     public static IServiceCollection UseToolkitCore(this IServiceCollection services)
     {
+        var printService = new PrintService();
+        services.AddSingleton<IPrintService>(printService);
+        HandbookReference.PrintService = printService;
+        LogExtensions.PrintService = printService;
+
         services.AddSingleton<IProtocol, Protocol>();
+
         services.AddSingleton<IMigrationProtocol, TextMigrationProtocol>();
         services.AddSingleton<IMigrationProtocol, DebugMigrationProtocol>();
         services.AddSingleton<FieldMigrationService>();

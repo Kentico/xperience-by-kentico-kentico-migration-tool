@@ -30,6 +30,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Temp", "Temp", "{4F24165E-8
 EndProject
 Project("{95356D0D-5AC1-40DB-885F-901CF33AB532}") = "Kentico.Xperience.UMT", "..\xperience-by-kentico-universal-migration-toolkit\src\Kentico.Xperience.UMT\Kentico.Xperience.UMT.csproj", "{95356D0D-5AC1-40DB-885F-901CF33AB532}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.KX12", "Migration.Toolkit.KX12\Migration.Toolkit.KX12.csproj", "{CAC43720-697A-43C2-8F75-2D029AD2ABFD}"
+EndProject
 
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -83,6 +85,10 @@ Global
 		{FEA68426-F772-419D-989D-C6ADDA757344}.Release|Any CPU.Build.0 = Release|Any CPU
 		{95356D0D-5AC1-40DB-885F-901CF33AB532}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{95356D0D-5AC1-40DB-885F-901CF33AB532}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAC43720-697A-43C2-8F75-2D029AD2ABFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAC43720-697A-43C2-8F75-2D029AD2ABFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAC43720-697A-43C2-8F75-2D029AD2ABFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CAC43720-697A-43C2-8F75-2D029AD2ABFD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{EA37FE22-A945-4170-A364-2AD76A4247F2} = {D06721D3-6E2D-4235-B146-2BB80DF2DBA9}

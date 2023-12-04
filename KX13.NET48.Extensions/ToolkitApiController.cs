@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 public class ToolkitApiController : Controller
 {
     // TODO configure your own secret
-    private const string Secret = "";
+    private const string Secret = "secret_used_for_http_posts_to_source_instance_change_to_random_key";
 
     public ToolkitApiController() { }
 

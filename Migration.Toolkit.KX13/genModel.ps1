@@ -6,8 +6,11 @@ $workDir = $MyInvocation.MyCommand.Path
 $workDir = [System.IO.Path]::GetDirectoryName($workDir)
 $contextPath = "$workDir\Context\KX13Context.cs"
 $contextText = [System.IO.File]::ReadAllText($contextPath)
-$result = $contextText -replace '(?i-mn).*if \(\!optionsBuilder\.IsConfigured\)[\s\S]*?\}','';
-$result = $result -replace '(?i-mn).*protected override void OnConfiguring[\s\S]*?\}','';
+#$result = $contextText -replace '(?i-mn).*if \(\!optionsBuilder\.IsConfigured\)[\s\S]*?\}','';
+#$result = $result -replace '(?i-mn).*protected override void OnConfiguring[\s\S]*?\}','';
+$result = $contextText -replace '.*optionsBuilder.UseSqlServer.*','';
+$result = $result -replace '.*protected override void OnConfiguring.*','';
+$result = $result -replace '.*#warning To protect potentially sensitive information in your connection string, .*','';
 [System.IO.File]::WriteAllText($contextPath, $result)
 
 # ./genModel.ps1 -connection "Server=.;Database=KX13_20220324;Integrated Security=True"

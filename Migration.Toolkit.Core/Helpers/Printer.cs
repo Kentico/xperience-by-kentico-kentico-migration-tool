@@ -8,7 +8,9 @@ using Migration.Toolkit.KXP.Models;
 
 namespace Migration.Toolkit.Core.Helpers;
 
-public static class Printer
+using Migration.Toolkit.Common.Services;
+
+public class Printer
 {
     public static string PrintKxpModelInfo<T>(T model)
     {
@@ -93,5 +95,27 @@ public static class Printer
     public static string PrintEnumValues<TEnum>(string separator) where TEnum: struct, Enum
     {
         return string.Join(separator, Enum.GetValues<TEnum>());
+    }
+}
+
+public class PrintService: IPrintService {
+    public string PrintKxpModelInfo<T>(T model)
+    {
+        return Printer.PrintKxpModelInfo(model);
+    }
+
+    public string GetEntityIdentityPrint<T>(T model, bool printType = true)
+    {
+        return Printer.GetEntityIdentityPrint<T>(model, printType);
+    }
+
+    public string GetEntityIdentityPrints<T>(IEnumerable<T> models, string separator = "|")
+    {
+        return Printer.GetEntityIdentityPrints(models, separator);
+    }
+
+    public string PrintEnumValues<TEnum>(string separator) where TEnum : struct, Enum
+    {
+        return Printer.PrintEnumValues<TEnum>(separator);
     }
 }
