@@ -11,9 +11,9 @@ The target of the migration must be an Xperience by Kentico instance that fulfil
 * The instance's database and file system must be accessible from the environment where you run the migration.
 * The target application *must not be running* when you start the migration.
 * The instance must not contain any data except for an empty site and/or data from the source site created by previous runs of the Migration toolkit.
-  * When running the migration for the first time, the content tree must be empty except for the root page (of the `CMS.Root` type).
+  ~~* When running the migration for the first time, the content tree must be empty except for the root page (of the `CMS.Root` type).~~ 🔥no longer true, there is not CMS.Root in v28🔥
 * For performance optimization, the migration transfers certain objects using bulk SQL queries. As a result, you always need to delete all objects of the following types before running repeated migrations:
-  * **Contacts**, including their **Activities** and **Consent agreements** (when using the `migrate --contact-management` parameter)
+  * **Contacts**, including their **Activities** and **Consent agreements** (when using the `migrate --contact-management` parameter) 🔥consent agreements are migrated inside --data-protection command🔥
   * **Form submissions** (when using the `migrate --forms` parameter)
   * **Custom module class data** (when using the `--custom-modules` parameter)
 
@@ -58,11 +58,11 @@ Migration.Toolkit.CLI.exe migrate --sites --custom-modules --users --members --f
 
 ### Examples
 
-* `Migration.Toolkit.CLI.exe migrate --siteId 1 --culture en-US --sites --custom-modules --users --settings-keys --media-libraries --page-types --pages`
+* `Migration.Toolkit.CLI.exe migrate --siteId 1 --culture en-US --sites --custom-modules --users --settings-keys --media-libraries --page-types --pages` 🔥remove --SiteId 1 --culture en-US, its is no longer supported🔥
   * Migration including the site object, custom modules and classes, users, setting key values, media libraries, page types and pages
-* `Migration.Toolkit.CLI.exe migrate --siteId 1 --culture en-US --page-types --pages  --bypass-dependency-check`
+* `Migration.Toolkit.CLI.exe migrate --siteId 1 --culture en-US --page-types --pages  --bypass-dependency-check` 🔥remove --SiteId 1 --culture en-US, its is no longer supported🔥
   * Repeated migration only for page types and pages, if you know that sites and users were already migrated successfully.
-* `Migration.Toolkit.CLI.exe migrate --siteId 1 --culture en-US --pages --bypass-dependency-check`
+* `Migration.Toolkit.CLI.exe migrate --siteId 1 --culture en-US --pages --bypass-dependency-check` 🔥remove --SiteId 1 --culture en-US, its is no longer supported🔥
   * Repeated migration only for pages, if you know that page types, sites and users were already migrated successfully.
 
 ### Migration details for specific object types
@@ -71,7 +71,7 @@ Migration.Toolkit.CLI.exe migrate --sites --custom-modules --users --members --f
 
 Content types are named **Page types** in Kentico Xperience 13.
 
-**Troubleshooting**: The migration only includes page types that are assigned to the migrated site on the source instance. As a result, all page types that are used for pages in the content tree **must be assigned to the migrated site**. Otherwise, the migration will fail when transferring the given pages.
+**Troubleshooting**: The migration only includes page types that are assigned to the migrated site on the source instance. As a result, all page types that are used for pages in the content tree **must be assigned to the migrated site**. Otherwise, the migration will fail when transferring the given pages. 🔥no longer true, multi site/channel is now implemented🔥
 
 Xperience by Kentico currently does not support:
 
@@ -114,9 +114,9 @@ Some [Form components](https://docs.xperience.io/x/5ASiCQ) used by content type 
 
 #### Pages
 
-* Xperience by Kentico currently does not support multilingual sites. The content of pages is migrated from the culture specified in the `migrate --culture` parameter.
-* Only pages that are **published** on the source instance are migrated. After the migration, all pages are in the published workflow step.
-* Migration includes the URL paths and Former URLs of pages, but not Alternative URLs, which are currently not supported in Xperience by Kentico.
+* ~~Xperience by Kentico currently does not support multilingual sites. The content of pages is migrated from the culture specified in the `migrate --culture` parameter.~~ 🔥no longer true🔥
+* ~~Only pages that are **published** on the source instance are migrated. After the migration, all pages are in the published workflow step.~~ 🔥no longer true, migrated are: archived, published, last checkout version and never published document 🔥
+* Migration includes the URL paths and Former URLs of pages, but not Alternative URLs, which are currently not supported in Xperience by Kentico. 
 * Linked pages are currently not supported in Xperience by Kentico. The migration creates standard page copies for any linked pages on the source instance.
 * Page permissions (ACLs) are currently not supported in Xperience by Kentico, so are not migrated.
 
@@ -152,7 +152,7 @@ As with all object types, the migration toolkit does not transfer code files to 
 To learn more about custom modules and classes in Xperience by Kentico, see the [Object types](https://docs.xperience.io/x/AKDWCQ) documentation.
 
 #### Media libraries
-
+🔥media libraries are all globalized => there is change in library code name, new codename is "{SiteName}_{LibraryCodeName}"🔥
 * Media library permissions are currently not supported in Xperience by Kentico, so are not migrated.
 
 #### Attachments
@@ -196,7 +196,7 @@ The command migrates all users with access to the administration interface. Note
 * The 'administrator' user account is not updated by the migration, only transferred from the source if it does not exist on the target instance.
 * The 'public' system user is updated, and all bindings (e.g. the site binding) are mapped automatically on the target instance.
 * Site bindings are updated automatically for all migrated users.
-* Users in Xperience by Kentico must have an email address. Migration is only supported for users who have a **unique** email address value on the source instance.
+* Users in Xperience by Kentico must have an email address. Migration is only supported for users who have a **unique** email address value on the source instance. 🔥validation behavior and supporeted emails can be changed with setting "CMSEmailValidationRegex" if I'am not mistaken - there was often reported error about failed user import becouse email was invalid by default validation (alteast to me :))🔥
 * Custom user fields can be migrated together with *modules classes*.
 
 Additionally, the command migrates all roles and user-role bindings that fulfill the following criteria:
@@ -218,8 +218,8 @@ The toolkit by default migrates:
   > If you are migrating custom fields, the `--custom-modules` migration command must be run before the `--members` command. For example:
 
   ```powershell
-  Migration.Toolkit.CLI.exe migrate --siteId 1 --custom-modules --sites --users --members
-  ```
+  Migration.Toolkit.CLI.exe migrate --custom-modules --sites --users --members
+  ```  
 
 The toolkit ***DOES NOT*** migrate:
 
@@ -279,7 +279,7 @@ Add the options under the `Settings` section in the configuration file.
 | UseOmActivityNodeRelationAutofix                         | Determines how the migration handles references from Contact management activities to non-existing pages.<br /><br />Possible options:<br />`DiscardData` - faulty references are removed,<br />`AttemptFix` - references are updated to the IDs of corresponding pages created by the migration,<br />`Error` - an error is reported and the reference can be translated or otherwise handled manually |
 | UseOmActivitySiteRelationAutofix                         | Determines how the migration handles site references from Contact management activities.<br /><br />Possible options: `DiscardData`,`AttemptFix`,`Error` |
 | EntityConfigurations                                           | Contains options that allow you to fine-tune the migration of specific object types.                 |
-| EntityConfigurations.CMS_Site.ExplicitPrimaryKeyMapping.SiteID | **Required**. Maps the site ID (primary key) of the source site to the ID of the target site.        |
+| ~~EntityConfigurations.CMS_Site.ExplicitPrimaryKeyMapping.SiteID~~ 🔥no longer supported🔥 | **Required**. Maps the site ID (primary key) of the source site to the ID of the target site.        |
 | EntityConfigurations.*&lt;object table name&gt;*.ExcludeCodeNames      | Excludes objects with the specified code names from the migration.                                   |
 | OptInFeatures.QuerySourceInstanceApi.Enabled                   | If `true`, [source instance API discovery](#source-instance-api-discovery) is enabled to allow advanced migration of Page Builder content for pages and page templates. |
 | OptInFeatures.QuerySourceInstanceApi.Connections               | To use [source instance API discovery](#source-instance-api-discovery), you need to add a connection JSON object containing the following values:<br />`SourceInstanceUri` - the base URI where the source instance's live site application is running.<br />`Secret` - the secret that you set in the *ToolkitApiController.cs* file on the source instance.  |
@@ -370,12 +370,12 @@ However, we strongly recommend updating your codebase to the new Xperience by Ke
 To convert Page Builder data to a format suitable for the Xperience by Kentico components, the Migration toolkit provides an advanced migration mode that utilizes API discovery on the source instance. The advanced mode currently provides the following data conversion:
 
 * **Attachment selector** properties - converted to a format suitable for the Xperience by Kentico **Media selector** component, with `IEnumerable<AssetRelatedItem>` values.
-* **Page selector** properties - converted to a format suitable for the Xperience by Kentico Page selector component, with `IEnumerable<PageRelatedItem>` values.
+* **Page selector** properties - converted to a format suitable for the Xperience by Kentico Page selector component, with `IEnumerable<PageRelatedItem>` values. 🔥IEnumerable<PageRelatedItem> => IEnumerable<WebPageRelatedItem> (if i remember correctly)🔥
 
 ### Prerequisites and Limitations
 
 * To use source instance API discovery, the live site application of your source instance must be running and available during the migration.
-* Using the advanced Page Builder data migration **prevents the data from being used in the Page Builder's legacy compatibility mode**. With this approach, you need to update all Page Builder component code files to the [Xperience by Kentico format](https://docs.xperience.io/x/wIfWCQ).
+* Using the advanced Page Builder data migration **prevents the data from being used in the Page Builder's legacy compatibility mode**. With this approach, you need to update all Page Builder component code files to the [Xperience by Kentico format](https://docs.xperience.io/x/wIfWCQ). 🔥legacy mode no longer supported in v28🔥
 * The source instance API discovery feature only processes component properties defined using `[EditingComponent]` attribute notation. Other implementations, such as properties edited via custom view components in the cshtml view, are not supported.
 
 ```csharp
