@@ -21,7 +21,7 @@ The Migration toolkit transfers content and other data from **Kentico Xperience 
 ### Target
 
 * The toolkit is periodically updated to support migration to the **latest version** of Xperience by Kentico. However, there may be time gaps between Xperience by Kentico releases and Migration toolkit updates.
-  * Currently, Xperience by Kentico **28.0.1** is tested and supported.
+  * Currently, Xperience by Kentico **28.0.1** is tested and supported. 🔥compatibility updated🔥
 * The target instance's database and file system must be accessible from the environment where you run the Migration toolkit.
 * To avoid conflicts and inconsistencies, the target instance must not contain any data apart from an empty site and/or data from the source site created by previous runs of the Migration toolkit.
 
@@ -29,23 +29,23 @@ The Migration toolkit transfers content and other data from **Kentico Xperience 
 
 The Migration toolkit does not transfer all data available in the Kentico Xperience 13 source. Xperience by Kentico currently provides a smaller, more focused, set of features, so many objects are not supported for migration. Certain types of data are migrated to a suitable alternative or discarded.
 
-The Migration toolkit only supports content and objects **stored in the database**, except for related binary data on the file system, such as media library files. Code, customizations, and any other types of content need to be migrated manually to the target project and adjusted for Xperience by Kentico.
+The Migration toolkit only supports content and objects **stored in the database**, ~~except for related binary data on the file system, such as media library files~~🔥commented, media files are supported🔥. Code, customizations, and any other types of content need to be migrated manually to the target project and adjusted for Xperience by Kentico.
 
 Currently, the Migration toolkit supports the following types of data:
 
-* **Sites**
+* **Sites** 🔥migrated into web site channel entity also all site cultures are included🔥
 * **Content types** (_Page types_ in Kentico Xperience 13)
   * The Migration toolkit attempts to map the _Data type_ and _Form control_ of page type fields to an appropriate equivalent in Xperience by Kentico. This is not always possible, and cannot be done for custom data types or form controls. We recommend that you check your content type fields after the migration and adjust them if necessary.
-  * Only page types assigned to the migrated site on the source instance are included.
+  * ~~Only page types assigned to the migrated site on the source instance are included.~~ 🔥multi-site support implemented => new web site channel per site instance will be created🔥
   * Xperience by Kentico currently does not support:
     * Macro expressions in page type field default values or other settings. Content type fields containing macros will not work correctly after the migration.
     * Page type inheritance. You cannot migrate page types that inherit fields from other types.
     * Categories for page type fields. Field categories are not migrated with page types.
   * All migrated Content types have the **Page** feature enabled (the migration never creates non-page content items).
 * **Pages**
-  * Xperience by Kentico currently does not support multilingual sites. You need to select one culture from which the content of pages is migrated.
-  * Only pages that are **published** on the source instance are migrated.
-  * Includes the **Former URLs** of pages, but not Alternative URLs, which are currently not supported in Xperience by Kentico.
+  * ~~Xperience by Kentico currently does not support multilingual sites. You need to select one culture from which the content of pages is migrated.~~ 🔥multi culture/multi lang support delivered with this version🔥
+  * ~~Only pages that are **published** on the source instance are migrated.~~ 🔥migration of latest draft is included and never published pages are migrated into content items with InitialDraft version state (also archived documents are included)🔥
+  * Includes the **Former URLs** of pages, but not Alternative URLs, which are currently not supported in Xperience by Kentico. 🔥former urls still not included🔥
   * Linked pages are currently not supported in Xperience by Kentico. The migration creates standard page copies for any linked pages on the source instance.
   * Page permissions (ACLs) are currently not supported in Xperience by Kentico, so are not migrated.
 * **Page attachments**
@@ -63,11 +63,11 @@ Currently, the Migration toolkit supports the following types of data:
 * **Roles**
   * Only roles that have at least one user whose _Privilege level_ is set to _Editor_ and above are migrated.
   * Because Xperience by Kentico uses a different [permission model](https://docs.xperience.io/x/7IVwCg), no existing role permissions or UI personalization settings are migrated. After the migration, the permissions for each role must be configured again.
-* **Contacts**
+* **Contacts** 🔥there is limitation, for performance reasons migration requires that no data exists in tables OM_Contact and OM_Activity🔥
   * Custom contact fields can be migrated together with _modules classes_.
 * **Activities**  
 * **Consents and consent agreements**
-  * Only one culture version of consent texts is migrated, according to the culture selected during the migration.
+  * ~~Only one culture version of consent texts is migrated, according to the culture selected during the migration.~~ 🔥no longer true, all cultures used are migrated🔥
 * **Modules and classes**
   * The migration includes the following:
     * Custom modules
@@ -81,8 +81,9 @@ Currently, the Migration toolkit supports the following types of data:
     * Module permissions (permissions work differently in Xperience by Kentico, see [Role management](https://docs.xperience.io/x/7IVwCg) and [UI page permission checks](https://docs.xperience.io/x/8IKyCg))
     * As with all object types, the migration toolkit does not transfer code files to the target project. You need to manually move all code files generated for your custom classes (_Info_, _InfoProvider_, etc.).
 * **Setting values**
-  * Xperience by Kentico uses a sub-set of the settings available in Kentico Xperience 13. The migration only transfers the values of settings that exist in Xperience by Kentico.
+  * Xperience by Kentico uses a sub-set of the settings available in Kentico Xperience 13. The migration only transfers the values of settings that exist in Xperience by Kentico. 🔥this newly includes new limitation, multiple sites can be migrated so if there are settings related to single site those will not be migrated (we don't know how to merge them into single global value)🔥
 * **Countries and states**
+🔥new point - Content language is migrated from cultures that were used on sites🔥
 
 ### Unsupported data
 
@@ -117,6 +118,7 @@ Follow the steps below to run the Migration toolkit:
         ```powershell
         Migration.Toolkit.CLI.exe  migrate --siteId 1 --culture en-US --sites --users --settings-keys --page-types --pages --attachments --contact-management --forms --media-libraries --data-protection --countries
         ```
+🔥command no longore supports siteID selection (all sites atre migrated, culture selection is also not supported - multilang is implemented), new sample would be `Migration.Toolkit.CLI.exe  migrate --sites --users --settings-keys --page-types --pages --attachments --contact-management --forms --media-libraries --data-protection --countries`🔥
 
 8. Observe the command line output. The command output is also stored into a log file (`logs\log-<date>.txt` under the output directory by default), which you can review later.
 9. Review the migration protocol, which provides information about the result of the migration, lists required manual steps, etc.
