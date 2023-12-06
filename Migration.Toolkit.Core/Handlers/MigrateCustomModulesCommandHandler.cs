@@ -123,12 +123,12 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
             {
                 if (!Kx13SystemClass.Customizable.Contains(kx13Class.ClassName))
                 {
-                    _logger.LogInformation("Class '{Kx13ClassClassName}' is part of system resource '{Kx13ResourceName}' and is not customizable", kx13Class.ClassName, kx13Class.ClassName);
-                    var handbookRef = HandbookReferences
-                        .NotSupportedSkip<KX13M.CmsClass>()
-                        .WithMessage($"Class '{kx13Class.ClassName}' is part of system resource '{kx13ResourceName}' and is not customizable");
-
-                    _protocol.Append(handbookRef);
+                    _logger.LogDebug("Class '{Kx13ClassClassName}' is part of system resource '{Kx13ResourceName}' and is not customizable", kx13Class.ClassName, kx13Class.ClassName);
+                    // var handbookRef = HandbookReferences
+                    //     .NotSupportedSkip<KX13M.CmsClass>()
+                    //     .WithMessage($"Class '{kx13Class.ClassName}' is part of system resource '{kx13ResourceName}' and is not customizable");
+                    //
+                    // _protocol.Append(handbookRef);
                     continue;
                 }
 

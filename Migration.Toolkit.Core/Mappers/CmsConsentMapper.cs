@@ -23,9 +23,8 @@ public class CmsConsentMapper : EntityMapperBase<KX13.Models.CmsConsent, CmsCons
     {
         target.ConsentDisplayName = source.ConsentDisplayName;
         var defaultContentLanguageInfo = ContentLanguageInfo.Provider.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageIsDefault), true).FirstOrDefault() ?? throw new InvalidCastException("Missing default content language");
-        target.ConsentName = ConsentContentPatcher.PathConsentContent(source.ConsentName, defaultContentLanguageInfo);
-
-        target.ConsentContent = source.ConsentContent;
+        target.ConsentName = source.ConsentName;
+        target.ConsentContent = ConsentContentPatcher.PatchConsentContent(source.ConsentContent, defaultContentLanguageInfo);
         target.ConsentGuid = source.ConsentGuid;
         target.ConsentLastModified = source.ConsentLastModified;
         target.ConsentHash = source.ConsentHash;
@@ -36,9 +35,20 @@ public class CmsConsentMapper : EntityMapperBase<KX13.Models.CmsConsent, CmsCons
 
 static file class ConsentContentPatcher
 {
-    public static string PathConsentContent(string content, ContentLanguageInfo defaultContentLanguage)
+    public static string PatchConsentContent(string content, ContentLanguageInfo defaultContentLanguage)
     {
-        var doc = XDocument.Parse(content);
+        if (string.IsNullOrWhiteSpace(content)) return content;
+        XDocument doc;
+        try
+        {
+            doc = XDocument.Parse(content);
+        }
+        catch (Exception)
+        {
+            // cannot patch xml that cannot be parsed
+            return content;
+        }
+
         foreach (var cultureCodeElement in doc.XPathSelectElements("//CultureCode"))
         {
             cultureCodeElement.Name = "LanguageName";

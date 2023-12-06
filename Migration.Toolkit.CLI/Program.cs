@@ -319,19 +319,7 @@ if (!dependenciesSatisfied)
 
 foreach (var command in commands)
 {
-    var result = await mediatr.Send(command);
-    if (result is CommandCheckFailedResult { CanContinue: true })
-    {
-        Console.WriteLine($@"Command {command.GetType().Name} failed.");
-        continue;
-    }
-    if (result is CommandCheckFailedResult { CanContinue: false })
-    {
-        Console.WriteLine($@"Command {command.GetType().Name} failed critically.");
-        break;
-    }
-
-    Console.WriteLine($@"Command {command.GetType().Name} is completed");
+    await mediatr.Send(command);
 }
 
 if (!args.Contains("--nowait"))

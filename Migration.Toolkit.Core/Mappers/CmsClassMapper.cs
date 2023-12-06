@@ -114,7 +114,7 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
         target.ClassDefaultObjectType = source.ClassDefaultObjectType;
         target.ClassCodeGenerationSettings = source.ClassCodeGenerationSettings;
         target.ClassIconClass = source.ClassIconClass;
-
+        target.ClassWebPageHasUrl = source.ClassHasUrl;
 
         // true for page content type
         // TODOV27 tomas.krch: 2023-09-05: obsolete dataclass properties
@@ -126,7 +126,6 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
         // target.ClassShowColumns = source.ClassShowColumns;
         // target.ClassURLPattern = source.ClassUrlpattern;
         // target.ClassUsesPageBuilder = source.ClassUsesPageBuilder;
-        // target.ClassHasURL = source.ClassHasUrl;
         // target.ClassHasMetadata = source.ClassHasMetadata;
         // target.ClassIsForm = source.ClassIsForm.UseKenticoDefault();
         // target.ClassCustomizedColumns = source.ClassCustomizedColumns;
@@ -335,10 +334,13 @@ public class CmsClassMapper : EntityMapperBase<KX13.Models.CmsClass, DataClassIn
         if (dataClass.ClassType is ClassType.CONTENT_TYPE)
         {
             var fi = new FormInfo(dataClass.ClassFormDefinition);
-
+            var tableName = dataClass.ClassTableName;
             var contentTypeManager = Service.Resolve<IContentTypeManager>();
             contentTypeManager.Initialize(dataClass);
-
+            if (!string.IsNullOrWhiteSpace(tableName))
+            {
+                dataClass.ClassTableName = tableName;
+            }
             var nfi = new FormInfo(dataClass.ClassFormDefinition);
             AppendDocumentNameField(nfi, out documentNameField);
 

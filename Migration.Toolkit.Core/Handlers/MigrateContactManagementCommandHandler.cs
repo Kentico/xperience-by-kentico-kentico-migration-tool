@@ -105,14 +105,13 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         {
             requiredColumnsForContactMigration.Add(cfi.FieldName, cfi.FieldName);
         }
-#if  !DEBUG
+
         if (_bulkDataCopyService.CheckIfDataExistsInTargetTable("OM_Contact"))
         {
             _protocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable("OM_Contact"));
             _logger.LogError("Data must not exist in target instance table, remove data before proceeding");
             return new CommandFailureResult();
         }
-#endif
 
         if (_bulkDataCopyService.CheckForTableColumnsDifferences("OM_Contact", requiredColumnsForContactMigration, out var differences))
         {
@@ -140,12 +139,6 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
             current => { _logger.LogError("Contact skipped due error, contact: {Contact}", PrintHelper.PrintDictionary(current)); },
             "ContactID"
         );
-#if DEBUG
-        if (_bulkDataCopyService.CheckIfDataExistsInTargetTable(bulkCopyRequest.TableName))
-        {
-            return null;
-        }
-#endif
 
         _logger.LogTrace("Bulk data copy request: {Request}", bulkCopyRequest);
         try

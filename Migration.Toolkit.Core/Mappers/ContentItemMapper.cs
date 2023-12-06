@@ -20,6 +20,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Migration.Toolkit.Core.Mappers;
 
+using CMS.ContentEngine.Internal;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.Common.Services.Ipc;
@@ -92,9 +93,12 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
                 // TODO tomas.krch: 2023-11-15 WARN about skipped document
                 continue;
 
-            var checkoutVersion = cmsDocument.DocumentPublishedVersionHistoryId <= cmsDocument.DocumentCheckedOutVersionHistoryId
-                ? null
-                : cmsDocument.DocumentCheckedOutVersionHistory;
+            var hasDraft = cmsDocument.DocumentPublishedVersionHistoryId is not null &&
+                           cmsDocument.DocumentPublishedVersionHistoryId != cmsDocument.DocumentCheckedOutVersionHistoryId;
+
+            var checkoutVersion = hasDraft
+                ? cmsDocument.DocumentCheckedOutVersionHistory
+                : null;
 
             var draftMigrated = false;
             if (checkoutVersion is { PublishFrom: null } draftVersion)
@@ -125,6 +129,7 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
                 { DocumentIsArchived: true } => VersionStatus.Archived,
                 { DocumentPublishedVersionHistoryId: null, DocumentCheckedOutVersionHistoryId: null } => VersionStatus.Published,
                 { DocumentPublishedVersionHistoryId: { } pubId, DocumentCheckedOutVersionHistoryId: { } chId } when pubId <= chId => VersionStatus.Published,
+                { DocumentPublishedVersionHistoryId: null, DocumentCheckedOutVersionHistoryId: not null } => VersionStatus.InitialDraft,
                 _ => draftMigrated ? VersionStatus.Published : VersionStatus.InitialDraft
             };
 
@@ -173,7 +178,7 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
                 MapCoupledDataFieldValues(dataModel.CustomProperties,
                     (columnName) => coupledDataRow?[columnName],
                     columnName => coupledDataRow?.ContainsKey(columnName) ?? false
-                    , cmsTree, cmsDocument.DocumentId, fi.GetColumnNames(), sfi);
+                    , cmsTree, cmsDocument.DocumentId, fi.GetColumnNames(), sfi, false);
             }
 
             dataModel.CustomProperties.Add("DocumentName", cmsDocument.DocumentName);
@@ -282,9 +287,31 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
             var pageBuildWidgets = adapter.DocumentPageBuilderWidgets;
             PatchJsonDefinitions(checkoutVersion.NodeSiteId, ref pageTemplateConfiguration, ref pageBuildWidgets);
 
+            #region Find existing guid
+
+            var contentItemCommonDataGuid = Guid.NewGuid();
+            var contentItemInfo = ContentItemInfo.Provider.Get()
+                .WhereEquals(nameof(ContentItemInfo.ContentItemGUID), contentItemGuid)
+                .FirstOrDefault();
+            if (contentItemInfo != null)
+            {
+                var contentItems = ContentItemCommonDataInfo.Provider.Get()
+                        .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataContentItemID), contentItemInfo.ContentItemID)
+                        .ToList()
+                    ;
+
+                var existingDraft = contentItems.FirstOrDefault(x => x.ContentItemCommonDataVersionStatus == VersionStatus.Draft);
+                if (existingDraft is { ContentItemCommonDataGUID: { } existingGuid })
+                {
+                    contentItemCommonDataGuid = existingGuid;
+                }
+            }
+
+            #endregion
+
             commonDataModel = new ContentItemCommonDataModel
             {
-                ContentItemCommonDataGUID = adapter.DocumentGUID ?? throw new InvalidOperationException($"DocumentGUID is null"),
+                ContentItemCommonDataGUID = contentItemCommonDataGuid, // adapter.DocumentGUID ?? throw new InvalidOperationException($"DocumentGUID is null"),
                 ContentItemCommonDataContentItemGuid = contentItemGuid,
                 ContentItemCommonDataContentLanguageGuid = contentLanguageGuid,
                 ContentItemCommonDataVersionStatus = VersionStatus.Draft,
@@ -321,7 +348,7 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
                 MapCoupledDataFieldValues(dataModel.CustomProperties,
                     s => adapter.GetValue(s),
                     s => adapter.HasValueSet(s)
-                    , cmsTree, adapter.DocumentID, fi.GetColumnNames(), sfi);
+                    , cmsTree, adapter.DocumentID, fi.GetColumnNames(), sfi, true);
             }
 
             // supply document name
@@ -475,7 +502,8 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
         CmsTree cmsTree,
         int? documentId,
         List<string> newColumnNames,
-        FormInfo oldFormInfo
+        FormInfo oldFormInfo,
+        bool migratingFromVersionHistory
         )
     {
         Debug.Assert(cmsTree.NodeClass.ClassTableName != null, "cmsTree.NodeClass.ClassTableName != null");
@@ -494,7 +522,14 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
 
             if (!containsSourceValue(columnName))
             {
-                _logger.LogWarning("Not contained field '{Field}'", columnName);
+                if (migratingFromVersionHistory)
+                {
+                    _logger.LogDebug("Value is not contained in source, field '{Field}' (possibly because version existed before field was added to class form)", columnName);
+                }
+                else
+                {
+                    _logger.LogWarning("Value is not contained in source, field '{Field}'", columnName);
+                }
                 continue;
             }
 

@@ -52,7 +52,7 @@ public class MigrateMembersCommandHandler : IRequestHandler<MigrateMembersComman
 
         // TODO tomas.krch: 2023-04-11 query only users from particular sites !!
         var kx13CmsUsers = kx13Context.CmsUsers
-                .Include(u => u.CmsUserSettingUserSettingsUser)
+                .Include(u => u.CmsUserSettingUserSettingsUserNavigation)
                 .Where(u => MigratedAdminUserPrivilegeLevels.Contains(u.UserPrivilegeLevel))
             ;
 
@@ -96,7 +96,7 @@ public class MigrateMembersCommandHandler : IRequestHandler<MigrateMembersComman
                 continue;
             }
 
-            var mapped = _memberInfoMapper.Map(new MemberInfoMapperSource(kx13User, kx13User.CmsUserSettingUserSettingsUser), xbkMemberInfo);
+            var mapped = _memberInfoMapper.Map(new MemberInfoMapperSource(kx13User, kx13User.CmsUserSettingUserSettingsUserNavigation), xbkMemberInfo);
             _protocol.MappedTarget(mapped);
 
             await SaveUserUsingKenticoApi(cancellationToken, mapped, kx13User);

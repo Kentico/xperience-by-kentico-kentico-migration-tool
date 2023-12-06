@@ -60,10 +60,6 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
 
     private bool PerformChecks(TRequest request, KX13Context kx13Context)
     {
-#if DEBUG
-        return true;
-#endif
-
         var criticalCheckPassed = true;
         const string supportedVersion = "13.0.64";
         if (SemanticVersion.TryParse(supportedVersion, out var minimalVersion))

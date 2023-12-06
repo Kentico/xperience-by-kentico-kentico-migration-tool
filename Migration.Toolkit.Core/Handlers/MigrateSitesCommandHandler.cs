@@ -108,16 +108,6 @@ public class MigrateSitesCommandHandler : IRequestHandler<MigrateSitesCommand, C
                 ChannelType = ChannelType.Website
             });
 
-            if (channelResult.Imported is ChannelInfo chi)
-            {
-                // bug workaround - NEEDS CHECKUP IN UMT
-                if (chi.ChannelType != ChannelType.Website)
-                {
-                    chi.ChannelType = ChannelType.Website;
-                    chi.Update();
-                }
-            }
-
             var webSiteChannelResult = await _importer.ImportAsync(new WebsiteChannelModel
             {
                 WebsiteChannelGUID = kx13CmsSite.SiteGuid,

@@ -49,7 +49,7 @@ public static class LogExtensions
     public static ILogger<T> LogEntitySetAction<T, TEntity>(this ILogger<T> logger, bool newInstance, TEntity entity)
     {
         var entityIdentityPrint = PrintService.GetEntityIdentityPrint(entity);
-        logger.LogInformation("Command {Command}: {Action} {EntityIdentityPrint}", ReflectionHelper<T>.CurrentType.Name, newInstance ? "inserted" : "updated", entityIdentityPrint);
+        logger.LogDebug("Command {Command}: {Action} {EntityIdentityPrint}", ReflectionHelper<T>.CurrentType.Name, newInstance ? "inserted" : "updated", entityIdentityPrint);
         return logger;
     }
 
