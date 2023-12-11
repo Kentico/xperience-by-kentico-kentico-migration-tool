@@ -31,7 +31,7 @@ using Migration.Toolkit.KXP.Models;
 
 public static class DependencyInjectionExtensions
 {
-    public static IServiceCollection UseToolkitCore(this IServiceCollection services)
+    public static IServiceCollection UseKx13ToolkitCore(this IServiceCollection services)
     {
         var printService = new PrintService();
         services.AddSingleton<IPrintService>(printService);
@@ -111,7 +111,7 @@ public static class DependencyInjectionExtensions
         services.AddTransient<IEntityMapper<KX13M.CmsState, StateInfo>, StateInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsPageTemplateConfiguration, PageTemplateConfigurationInfo>, PageTemplateConfigurationMapper>();
 
-        services.AddUniversalMigrationToolkit(o => { });
+        services.AddUniversalMigrationToolkit();
 
         return services;
     }

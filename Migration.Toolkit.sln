@@ -26,8 +26,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Experiments", "Experiments"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.Tests", "Migration.Toolkit.Tests\Migration.Toolkit.Tests.csproj", "{FEA68426-F772-419D-989D-C6ADDA757344}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Temp", "Temp", "{4F24165E-8E48-4D55-8742-0D028767A696}"
-EndProject
 Project("{95356D0D-5AC1-40DB-885F-901CF33AB532}") = "Kentico.Xperience.UMT", "..\xperience-by-kentico-universal-migration-toolkit\src\Kentico.Xperience.UMT\Kentico.Xperience.UMT.csproj", "{95356D0D-5AC1-40DB-885F-901CF33AB532}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.KX12", "Migration.Toolkit.KX12\Migration.Toolkit.KX12.csproj", "{CAC43720-697A-43C2-8F75-2D029AD2ABFD}"

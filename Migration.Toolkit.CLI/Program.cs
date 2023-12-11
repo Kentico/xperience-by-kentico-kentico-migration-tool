@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Reflection;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.CLI;
 using Migration.Toolkit.Common;
-using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Services.Ipc;
 using Migration.Toolkit.Core;
 using Migration.Toolkit.Core.Contexts;
@@ -109,7 +107,7 @@ var kxpApiSettings =
 
 services.UseKxpApi(kxpApiSettings, settings.XbKDirPath);
 services.AddSingleton(settings);
-services.UseToolkitCore();
+services.UseKx13ToolkitCore();
 
 await using var serviceProvider = services.BuildServiceProvider();
 using var scope = serviceProvider.CreateScope();
@@ -117,7 +115,7 @@ using var scope = serviceProvider.CreateScope();
 
 void WriteCommandDesc(string desc, string commandMoniker)
 {
-    Console.WriteLine($"{Yellow(commandMoniker)}: {desc}");
+    Console.WriteLine($@"{Yellow(commandMoniker)}: {desc}");
 }
 
 var mappingContext = scope.ServiceProvider.GetRequiredService<PrimaryKeyMappingContext>();
@@ -306,7 +304,7 @@ if (!bypassDependencyCheck)
 
                 dependenciesSatisfied = false;
 
-                Console.WriteLine($"Migration {Yellow($"--{cmdMoniker}")} needs to run migration {Red($"--{cmdMonikerNeeded}")} before.");
+                Console.WriteLine($@"Migration {Yellow($"--{cmdMoniker}")} needs to run migration {Red($"--{cmdMonikerNeeded}")} before.");
             }
         }
     }
