@@ -14,7 +14,7 @@
 
     <ItemGroup>
       <PackageReference Include="Kentico.Xperience.Admin" Version="26.1.0" />
-      <PackageReference Include="Kentico.Xperience.Core" Version="26.1.0" />
+      <PackageReference Include="Kentico.Xperience.Core" Version="28.1.0" />
     </ItemGroup>
 
 </Project>
