@@ -1,4 +1,4 @@
-namespace Migration.Toolkit.KX12;
+namespace Migration.Toolkit.KX12.Context;
 
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;

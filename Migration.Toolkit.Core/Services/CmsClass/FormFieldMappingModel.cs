@@ -82,8 +82,9 @@ public static class FieldMappingInstance
         {
             new(Kx13FormComponents.Kentico_AttachmentSelector, FormComponents.AdminAssetSelectorComponent), new(Kx13FormComponents.Kentico_PageSelector, FormComponents.AdminPageSelectorComponent)
         },
-        new[]
+        new string[]
         {
+            // Legacy mode is no longer supported
             Kx13FormComponents.Kentico_BoolFieldValueTypeSelector, Kx13FormComponents.Kentico_CheckBox, Kx13FormComponents.Kentico_CompareToFieldSelector, Kx13FormComponents.Kentico_ConsentAgreement,
             Kx13FormComponents.Kentico_ConsentSelector, Kx13FormComponents.Kentico_DropDown, Kx13FormComponents.Kentico_EmailInput, Kx13FormComponents.Kentico_FileUploader,
             Kx13FormComponents.Kentico_HiddenGuidInput, Kx13FormComponents.Kentico_IntInput, Kx13FormComponents.Kentico_MultipleChoice, Kx13FormComponents.Kentico_Name,
