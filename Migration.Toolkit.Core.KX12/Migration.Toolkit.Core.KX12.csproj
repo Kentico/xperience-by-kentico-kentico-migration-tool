@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <ProjectReference Include="..\..\xperience-by-kentico-universal-migration-toolkit\src\Kentico.Xperience.UMT\Kentico.Xperience.UMT.csproj" />
         <ProjectReference Include="..\Migration.Toolkit.Common\Migration.Toolkit.Common.csproj"/>
         <ProjectReference Include="..\Migration.Toolkit.KX12\Migration.Toolkit.KX12.csproj"/>
         <ProjectReference Include="..\Migration.Toolkit.KXP.Api\Migration.Toolkit.KXP.Api.csproj"/>
