@@ -17,7 +17,7 @@ The target of the migration must be an Xperience by Kentico instance that fulfil
   * **Form submissions** (when using the `migrate --forms` parameter)
   * **Custom module class data** (when using the `--custom-modules` parameter)
 
->To create a suitable target instance, [install a new Xperience by Kentico project](https://docs.xperience.io/x/DQKQC) using the **Boilerplate** project template.
+To create a suitable target instance, [install a new Xperience by Kentico project](https://docs.xperience.io/x/DQKQC) using the **Boilerplate** project template.
 
 ## Migrate data
 
