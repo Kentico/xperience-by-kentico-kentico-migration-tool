@@ -3,7 +3,7 @@ namespace Migration.Toolkit.Core.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
-using Migration.Toolkit.Core.Services.Ipc;
+using Migration.Toolkit.Common.Services.Ipc;
 using Migration.Toolkit.KX13.Context;
 
 public class SourceInstanceContext
@@ -91,10 +91,6 @@ public class SourceInstanceContext
 
         return GetPageTemplateFormComponents(siteName, pageTemplateIdentifier);
     }
-
-    #region "Model"
-
-    #endregion
 
     public List<EditingFormControlModel>? GetSectionFormComponents(int siteId, string sectionIdentifier)
     {

@@ -2,8 +2,6 @@ namespace Migration.Toolkit.Core.Handlers;
 
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using System.Xml.Linq;
 using CMS.DataEngine;
 using CMS.FormEngine;
@@ -12,26 +10,24 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
+using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Enumerations;
 using Migration.Toolkit.Common.Helpers;
-using Migration.Toolkit.Core.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
+using Migration.Toolkit.Common.Services.BulkCopy;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.Helpers;
 using Migration.Toolkit.Core.Mappers;
-using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.Core.Services;
-using Migration.Toolkit.Core.Services.BulkCopy;
 using Migration.Toolkit.Core.Services.CmsClass;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KX13.Models;
 using Migration.Toolkit.KXP.Api;
-using Migration.Toolkit.KXP.Context;
 
 public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomModulesCommand, CommandResult>
 {
     private readonly ILogger<MigrateCustomModulesCommandHandler> _logger;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
-    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
     private readonly KxpClassFacade _kxpClassFacade;
     private readonly IEntityMapper<KX13M.CmsClass, DataClassInfo> _dataClassMapper;
     private readonly IEntityMapper<KX13M.CmsResource, ResourceInfo> _resourceMapper;
@@ -45,7 +41,6 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
     public MigrateCustomModulesCommandHandler(
         ILogger<MigrateCustomModulesCommandHandler> logger,
         IDbContextFactory<KX13Context> kx13ContextFactory,
-        IDbContextFactory<KxpContext> kxpContextFactory,
         KxpClassFacade kxpClassFacade,
         IEntityMapper<KX13.Models.CmsClass, DataClassInfo> dataClassMapper,
         IEntityMapper<KX13M.CmsResource, ResourceInfo> resourceMapper,
@@ -53,12 +48,11 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol,
-        BulkDataCopyService bulkDataCopyService, 
+        BulkDataCopyService bulkDataCopyService,
         FieldMigrationService fieldMigrationService)
     {
         _logger = logger;
         _kx13ContextFactory = kx13ContextFactory;
-        _kxpContextFactory = kxpContextFactory;
         _kxpClassFacade = kxpClassFacade;
         _dataClassMapper = dataClassMapper;
         _resourceMapper = resourceMapper;
@@ -74,17 +68,15 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
     public async Task<CommandResult> Handle(MigrateCustomModulesCommand request, CancellationToken cancellationToken)
     {
         var entityConfiguration = _toolkitConfiguration.EntityConfigurations.GetEntityConfiguration<KX13M.CmsClass>();
-        var siteIdExplicitMapping = _toolkitConfiguration.RequireExplicitMapping<KX13M.CmsSite>(s => s.SiteId);
-        var migratedSiteIds = siteIdExplicitMapping.Keys.ToList();
 
-        await MigrateResources(migratedSiteIds, cancellationToken);
+        await MigrateResources(cancellationToken);
 
-        await MigrateClasses(migratedSiteIds, siteIdExplicitMapping, entityConfiguration, cancellationToken);
+        await MigrateClasses(entityConfiguration, cancellationToken);
 
         return new GenericCommandResult();
     }
 
-    private async Task MigrateClasses(List<int> migratedSiteIds, Dictionary<int, int> siteIdExplicitMapping, EntityConfiguration entityConfiguration, CancellationToken cancellationToken)
+    private async Task MigrateClasses(EntityConfiguration entityConfiguration, CancellationToken cancellationToken)
     {
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
         var kx13ClassesResult = kx13Context.CmsClasses
@@ -99,6 +91,11 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
         while (kx13Classes.GetNext(out var di))
         {
             var (_, kx13Class) = di;
+
+            if (kx13Class.ClassIsCustomTable)
+            {
+                continue;
+            }
 
             if (kx13Class.ClassInheritsFromClassId is { } classInheritsFromClassId && !_primaryKeyMappingContext.HasMapping<KX13M.CmsClass>(c => c.ClassId, classInheritsFromClassId))
             {
@@ -121,25 +118,17 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
 
             _protocol.FetchedSource(kx13Class);
 
-            if (!kx13Class.Sites.Any(s => migratedSiteIds.Contains(s.SiteId)) &&
-                !(kx13Class.ClassResource?.Sites.Any(s => migratedSiteIds.Contains(s.SiteId)) ?? false))
-            {
-                // skip classes not included in current site
-                _logger.LogTrace("Class {ClassName} skipped, no site mapping", kx13Class.ClassName);
-                continue;
-            }
-
             var kx13ResourceName = kx13Class.ClassResource?.ResourceName;
             if (kx13ResourceName != null && Kx13SystemResource.All.Contains(kx13ResourceName) && !Kx13SystemResource.ConvertToNonSysResource.Contains(kx13ResourceName))
             {
                 if (!Kx13SystemClass.Customizable.Contains(kx13Class.ClassName))
                 {
-                    _logger.LogInformation("Class '{Kx13ClassClassName}' is part of system resource '{Kx13ResourceName}' and is not customizable", kx13Class.ClassName, kx13Class.ClassName);
-                    var handbookRef = HandbookReferences
-                        .NotSupportedSkip<KX13M.CmsClass>()
-                        .WithMessage($"Class '{kx13Class.ClassName}' is part of system resource '{kx13ResourceName}' and is not customizable");
-
-                    _protocol.Append(handbookRef);
+                    _logger.LogDebug("Class '{Kx13ClassClassName}' is part of system resource '{Kx13ResourceName}' and is not customizable", kx13Class.ClassName, kx13Class.ClassName);
+                    // var handbookRef = HandbookReferences
+                    //     .NotSupportedSkip<KX13M.CmsClass>()
+                    //     .WithMessage($"Class '{kx13Class.ClassName}' is part of system resource '{kx13ResourceName}' and is not customizable");
+                    //
+                    // _protocol.Append(handbookRef);
                     continue;
                 }
 
@@ -158,17 +147,17 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
 
             _protocol.FetchedTarget(xbkDataClass);
 
-            var dataClassId = SaveClassUsingKxoApi(kx13Class, xbkDataClass);
-            if (dataClassId is { } dcId)
+            if (SaveClassUsingKxoApi(kx13Class, xbkDataClass) is {} savedDataClass)
             {
-                //OBSOLETE MigrateClassSiteMappings(siteIdExplicitMapping, dcId, dataClassId, kx13Class);
+                Debug.Assert(savedDataClass.ClassID != 0, "xbkDataClass.ClassID != 0");
+                // MigrateClassSiteMappings(kx13Class, xbkDataClass);
 
-                xbkDataClass = DataClassInfoProvider.ProviderObject.Get(dcId);
-                await MigrateAlternativeForms(kx13Class, xbkDataClass, cancellationToken);
+                xbkDataClass = DataClassInfoProvider.ProviderObject.Get(savedDataClass.ClassID);
+                await MigrateAlternativeForms(kx13Class, savedDataClass, cancellationToken);
 
                 #region Migrate coupled data class data
 
-                if (!xbkDataClass.ClassShowAsSystemTable)
+                if (kx13Class.ClassShowAsSystemTable is false)
                 {
                     Debug.Assert(xbkDataClass.ClassTableName != null, "kx13Class.ClassTableName != null");
                     // var csi = new ClassStructureInfo(kx13Class.ClassXmlSchema, kx13Class.ClassXmlSchema, kx13Class.ClassTableName);
@@ -198,7 +187,9 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
                         }
 
                         var bulkCopyRequest = new BulkCopyRequest(
-                            xbkDataClass.ClassTableName, s => !autoIncrementColumns.Contains(s), _ => true,
+                            xbkDataClass.ClassTableName,
+                            s => true, // s => !autoIncrementColumns.Contains(s),
+                            _ => true,
                             20000
                         );
 
@@ -214,7 +205,7 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
                 #endregion
             }
         }
-        
+
         // special case - member migration (CMS_User splits into CMS_User and CMS_Member in XbK)
         await MigrateMemberClass(cancellationToken);
     }
@@ -237,7 +228,7 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
             _protocol.Warning<KX13M.CmsUserSetting>(HandbookReferences.InvalidSourceData<KX13M.CmsUserSetting>().WithMessage($"{Kx13SystemClass.cms_usersettings} class not found"), null);
             return;
         }
-        
+
         var target = _kxpClassFacade.GetClass("CMS.Member");
 
         PatchClass(cmsUser, out var cmsUserCsi, out var cmsUserFi);
@@ -246,39 +237,39 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
         var memberFormInfo = new FormInfo(target.ClassFormDefinition);
 
         var includedSystemFields = _toolkitConfiguration.MemberIncludeUserSystemFields?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
-        
+
         var memberColumns = memberFormInfo.GetColumnNames();
-        
+
         foreach (var uColumn in cmsUserFi.GetColumnNames())
         {
             var field = cmsUserFi.GetFormField(uColumn);
 
             if (
                 !memberColumns.Contains(uColumn) &&
-                !field.PrimaryKey && 
+                !field.PrimaryKey &&
                 !MemberInfoMapper.MigratedUserFields.Contains(uColumn, StringComparer.InvariantCultureIgnoreCase)
                 && (includedSystemFields.Contains(uColumn) || !field.System)
             )
             {
                 field.System = false; // no longer system field
-                memberFormInfo.AddFormItem(field);    
+                memberFormInfo.AddFormItem(field);
             }
         }
-        
+
         foreach (var usColumn in cmsUserSettingsFi.GetColumnNames())
         {
             var field = cmsUserSettingsFi.GetFormField(usColumn);
 
             if (
-                !memberColumns.Contains(usColumn) && 
+                !memberColumns.Contains(usColumn) &&
                 !field.PrimaryKey
                 && (includedSystemFields.Contains(usColumn) || !field.System))
             {
                 field.System = false; // no longer system field
-                memberFormInfo.AddFormItem(field);    
+                memberFormInfo.AddFormItem(field);
             }
         }
-        
+
         target.ClassFormDefinition = memberFormInfo.GetXmlDefinition();
         DataClassInfoProvider.ProviderObject.Set(target);
     }
@@ -354,7 +345,7 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
         return await kx13Context.CmsClasses.Where(x => x.ClassResourceId == kx13ResourceId).ToListAsync();
     }
 
-    private async Task MigrateResources(List<int> migratedSites, CancellationToken cancellationToken)
+    private async Task MigrateResources(CancellationToken cancellationToken)
     {
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
@@ -416,11 +407,11 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
                 _logger.LogDebug("CMSResource is CUSTOM resource ({Resource})", Printer.GetEntityIdentityPrint(kx13CmsResource));
             }
 
-            if (!kx13CmsResource.Sites.Any(s => migratedSites.Contains(s.SiteId)))
-            {
-                _logger.LogDebug("CMSResource '{ResourceName}' is not included in migrated site => skipping", kx13CmsResource.ResourceName);
-                continue;
-            }
+            // if (!kx13CmsResource.Sites.Any(s => migratedSites.Contains(s.SiteId)))
+            // {
+            //     _logger.LogDebug("CMSResource '{ResourceName}' is not included in migrated site => skipping", kx13CmsResource.ResourceName);
+            //     continue;
+            // }
 
             var mapped = _resourceMapper.Map(kx13CmsResource, xbkResource);
             _protocol.MappedTarget(mapped);
@@ -476,7 +467,7 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
     //     }
     // }
 
-    private int? SaveClassUsingKxoApi(KX13M.CmsClass kx13Class, DataClassInfo kxoDataClass)
+    private DataClassInfo? SaveClassUsingKxoApi(KX13M.CmsClass kx13Class, DataClassInfo kxoDataClass)
     {
         var mapped = _dataClassMapper.Map(kx13Class, kxoDataClass);
         _protocol.MappedTarget(mapped);
@@ -499,7 +490,7 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
                     dataClassInfo.ClassID
                 );
 
-                return dataClassInfo.ClassID;
+                return dataClassInfo;
             }
         }
         catch (Exception ex)
@@ -510,13 +501,15 @@ public class MigrateCustomModulesCommandHandler : IRequestHandler<MigrateCustomM
         return null;
     }
 
-    // OBSOLETE
-    // private void MigrateClassSiteMappings(Dictionary<int, int> siteIdMapping, int dcId, [DisallowNull] int? dataClassId, KX13M.CmsClass kx13Class)
+    // private void MigrateClassSiteMappings(int dcId, int? dataClassId, KX13M.CmsClass kx13Class)
     // {
-    //     foreach (var (sourceSiteId, targetSiteId) in siteIdMapping)
+    //     using var kx13Context = _kx13ContextFactory.CreateDbContext();
+    //
+    //     foreach (var kx13ClassSite in kx13Class.Sites)
     //     {
     //         try
     //         {
+    //
     //             var classSiteInfo = ClassSiteInfo.New();
     //             classSiteInfo.ClassID = dcId;
     //             classSiteInfo.SiteID = targetSiteId;

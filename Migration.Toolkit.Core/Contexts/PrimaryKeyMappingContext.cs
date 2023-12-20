@@ -7,9 +7,9 @@ using Migration.Toolkit.Core.Services;
 
 namespace Migration.Toolkit.Core.Contexts;
 
-public record MapSourceIdResult(bool Success, int? MappedId);
+using Migration.Toolkit.Common.Services;
 
-public class PrimaryKeyMappingContext
+public class PrimaryKeyMappingContext : IPrimaryKeyMappingContext
 {
     private readonly Dictionary<string, int> _mappings = new(StringComparer.OrdinalIgnoreCase);
 

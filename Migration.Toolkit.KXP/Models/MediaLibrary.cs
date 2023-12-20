@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.KXP.Models
 {
     [Table("Media_Library")]
-    [Index("LibrarySiteId", "LibraryName", "LibraryGuid", Name = "IX_Media_Library_LibrarySiteID_LibraryName_LibraryGUID", IsUnique = true)]
+    [Index("LibraryName", "LibraryGuid", Name = "IX_Media_Library_LibrarySiteID_LibraryName_LibraryGUID", IsUnique = true)]
     public partial class MediaLibrary
     {
         public MediaLibrary()
@@ -26,20 +26,10 @@ namespace Migration.Toolkit.KXP.Models
         [StringLength(250)]
         public string LibraryFolder { get; set; } = null!;
         public int? LibraryAccess { get; set; }
-        [Column("LibrarySiteID")]
-        public int LibrarySiteId { get; set; }
         [Column("LibraryGUID")]
         public Guid? LibraryGuid { get; set; }
         public DateTime? LibraryLastModified { get; set; }
-        [StringLength(450)]
-        public string? LibraryTeaserPath { get; set; }
-        [Column("LibraryTeaserGUID")]
-        public Guid? LibraryTeaserGuid { get; set; }
-        public bool? LibraryUseDirectPathForContent { get; set; }
 
-        [ForeignKey("LibrarySiteId")]
-        [InverseProperty("MediaLibraries")]
-        public virtual CmsSite LibrarySite { get; set; } = null!;
         [InverseProperty("FileLibrary")]
         public virtual ICollection<MediaFile> MediaFiles { get; set; }
     }

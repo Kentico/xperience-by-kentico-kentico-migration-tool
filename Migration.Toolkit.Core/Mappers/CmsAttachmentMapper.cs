@@ -1,13 +1,13 @@
 using CMS.Base;
 using CMS.MediaLibrary;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.Helpers;
-using Migration.Toolkit.Core.MigrationProtocol;
 
 namespace Migration.Toolkit.Core.Mappers;
 
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KX13.Models;
 
 public record CmsAttachmentMapperSource(CmsAttachment Attachment, int TargetLibraryId, IUploadedFile File, string LibrarySubFolder,
@@ -23,23 +23,14 @@ public class CmsAttachmentMapper: EntityMapperBase<CmsAttachmentMapperSource, Me
 
     protected override MediaFileInfo? CreateNewInstance(CmsAttachmentMapperSource source, MappingHelper mappingHelper, AddFailure addFailure)
     {
-        if (mappingHelper.TranslateRequiredId<KX13M.CmsSite>(s => s.SiteId, source.Attachment.AttachmentSiteId, out var siteId))
-        {
-            return new MediaFileInfo(source.File, source.TargetLibraryId, source.LibrarySubFolder, 0, 0, 0, siteId);
-        }
-
-        var error = HandbookReferences
-            .FailedToCreateTargetInstance<MediaFileInfo>()
-            .WithData(source);
-            
-        addFailure(new MapperResultFailure<MediaFileInfo>(error));
-        return null;
+        // library name is generated with site name in it
+        return new MediaFileInfo(source.File, source.TargetLibraryId, source.LibrarySubFolder, 0, 0, 0);
     }
 
     protected override MediaFileInfo MapInternal(CmsAttachmentMapperSource args, MediaFileInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         var (cmsAttachment, targetLibraryId, _, _, attachmentDocument) = args;
-        
+
         target.FileName = Path.GetFileNameWithoutExtension(cmsAttachment.AttachmentName);
         target.FileTitle = cmsAttachment.AttachmentTitle ?? cmsAttachment.AttachmentName;
         target.FileDescription = cmsAttachment.AttachmentDescription ?? string.Empty;
@@ -50,24 +41,20 @@ public class CmsAttachmentMapper: EntityMapperBase<CmsAttachmentMapperSource, Me
         target.FileImageHeight = cmsAttachment.AttachmentImageHeight ?? 0;
         target.FileGUID = cmsAttachment.AttachmentGuid;
         target.FileLibraryID = targetLibraryId;
-        if (mappingHelper.TranslateRequiredId<KX13.Models.CmsSite>(s => s.SiteId, cmsAttachment.AttachmentSiteId, out var siteId))
-        {
-            target.FileSiteID = siteId;
-        }
-        
+
         // target.FileCreatedByUserID = cmsAttachment.?;
         // target.FileModifiedByUserID = cmsAttachment.?;
         // target.FileCreatedWhen = cmsAttachment.?;
-        
+
         target.FileModifiedWhen = cmsAttachment.AttachmentLastModified;
-        
+
         KenticoHelper.CopyCustomData(target.FileCustomData, cmsAttachment.AttachmentCustomData);
 
         if (attachmentDocument != null)
         {
-            target.FileCustomData.SetValue(LegacyOriginalPath, attachmentDocument.DocumentNode.NodeAliasPath);    
+            target.FileCustomData.SetValue(LegacyOriginalPath, attachmentDocument.DocumentNode.NodeAliasPath);
         }
-        
+
         return target;
     }
 }

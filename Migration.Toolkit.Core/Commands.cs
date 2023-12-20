@@ -1,9 +1,9 @@
 ﻿using MediatR;
-using Migration.Toolkit.Core.Abstractions;
 
 namespace Migration.Toolkit.Core;
 
 using System.Reflection;
+using Migration.Toolkit.Common.Abstractions;
 
 public interface ICommand
 {
@@ -33,7 +33,7 @@ public record MigrateUsersCommand : IRequest<CommandResult>, ICommand
 
     public static string Moniker => "users";
     public static string MonikerFriendly => "Users";
-    
+
     public Type[] Dependencies => new[] { typeof(MigrateCustomModulesCommand) };
 }
 
@@ -105,7 +105,7 @@ public record MigratePageTypesCommand : IRequest<CommandResult>, ICommand
     public Type[] Dependencies => new[] { typeof(MigrateSitesCommand) };
 }
 
-public record MigratePagesCommand(string CultureCode): IRequest<CommandResult>, ICommand, ICultureReliantCommand
+public record MigratePagesCommand(): IRequest<CommandResult>, ICommand
 {
     public static readonly int Rank = 1 + MigrateSitesCommand.Rank + MigrateUsersCommand.Rank + MigratePageTypesCommand.Rank;
 

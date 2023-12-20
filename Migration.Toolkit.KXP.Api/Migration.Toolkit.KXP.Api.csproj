@@ -1,20 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
         <AssemblyName>Migration.Toolkit.KXP.Api</AssemblyName>
         <RootNamespace>Migration.Toolkit.KXP.Api</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Migration.Toolkit.Common\Migration.Toolkit.Common.csproj" />      
+      <ProjectReference Include="..\Migration.Toolkit.Common\Migration.Toolkit.Common.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Kentico.Xperience.Admin" Version="26.1.0" />
-      <PackageReference Include="Kentico.Xperience.Core" Version="26.1.0" />
+      <PackageReference Include="Kentico.Xperience.Admin" Version="28.0.3" />
+      <PackageReference Include="Kentico.Xperience.Core" Version="28.0.3" />
     </ItemGroup>
 
 </Project>

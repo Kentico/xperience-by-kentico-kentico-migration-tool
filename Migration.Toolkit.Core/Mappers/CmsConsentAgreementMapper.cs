@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
 
 namespace Migration.Toolkit.Core.Mappers;
 
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Models;
 
 public class CmsConsentAgreementMapper : EntityMapperBase<KX13.Models.CmsConsentAgreement, CmsConsentAgreement>
@@ -26,10 +26,10 @@ public class CmsConsentAgreementMapper : EntityMapperBase<KX13.Models.CmsConsent
         {
             target.ConsentAgreementContactId = contactId;
         }
-        
+
         if (mappingHelper.TranslateRequiredId<KX13.Models.CmsConsent>(r => r.ConsentId, source.ConsentAgreementConsentId, out var consentId))
         {
-            target.ConsentAgreementConsentId = consentId;    
+            target.ConsentAgreementConsentId = consentId;
         }
 
         return target;

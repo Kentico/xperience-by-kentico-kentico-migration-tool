@@ -2,10 +2,9 @@ namespace Migration.Toolkit.Core.Mappers;
 
 using CMS.Membership;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
-
 
 public class UserRoleInfoMapper: EntityMapperBase<KX13M.CmsUserRole, UserRoleInfo>
 {
@@ -27,8 +26,6 @@ public class UserRoleInfoMapper: EntityMapperBase<KX13M.CmsUserRole, UserRoleInf
         {
             target.UserID = xbkUserId;
         }
-
-        // target.ValidTo = source.ValidTo.GetValueOrDefault();
 
         return target;
     }

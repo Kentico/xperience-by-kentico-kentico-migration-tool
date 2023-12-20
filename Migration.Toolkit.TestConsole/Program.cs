@@ -50,7 +50,7 @@ services.UseKx13DbContext(settings);
 services.UseKxpDbContext(settings);
 services.UseKxpApi(config.GetRequiredSection("Settings").GetRequiredSection(ConfigurationNames.XbKApiSettings), settings.XbKDirPath);
 services.AddSingleton(settings);
-services.UseToolkitCore();
+services.UseKx13ToolkitCore();
 
 await using var serviceProvider = services.BuildServiceProvider();
 using var scope = serviceProvider.CreateScope();

@@ -5,22 +5,19 @@ using CMS.MediaLibrary;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
-using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.Mappers;
-using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
 
 namespace Migration.Toolkit.Core.Services;
 
-using System.Text;
 using System.Text.RegularExpressions;
 using CMS.Helpers;
-using CMS.IO;
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Api;
 using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Context;
-using Migration.Toolkit.KXP.Models;
 
 public class AttachmentMigrator
 {
@@ -102,8 +99,6 @@ public class AttachmentMigrator
         return MigrateAttachment(attachment, additionalPath);
     }
 
-    private readonly ConcurrentDictionary<int, CmsSite> _targetSites = new();
-
     public MigrateAttachmentResult MigrateAttachment(KX13M.CmsAttachment kx13CmsAttachment, string? additionalMediaPath = null)
     {
         // TODO tomas.krch: 2022-08-18 directory validation only -_ replace!
@@ -126,14 +121,9 @@ public class AttachmentMigrator
             ? GetKx13CmsDocument(attachmentDocumentId)
             : null;
 
-        var targetSiteId = _primaryKeyMappingContext.RequireMapFromSource<KX13.Models.CmsSite>(s => s.SiteId, kx13CmsAttachment.AttachmentSiteId);
-        var targetSite = _targetSites.GetOrAdd(targetSiteId, i =>
-        {
-            using var kxoDbContext = _kxpContextFactory.CreateDbContext();
-            return kxoDbContext.CmsSites.Single(s => s.SiteId == targetSiteId);
-        });
-
-        if (!TryEnsureTargetLibraryExists(targetSite.SiteId, targetSite.SiteName, out var targetMediaLibraryId))
+        using var kx13Context = _kx13ContextFactory.CreateDbContext();
+        var site = kx13Context.CmsSites.FirstOrDefault(s=>s.SiteId == kx13CmsAttachment.AttachmentSiteId) ?? throw new InvalidOperationException("Site not exists!");
+        if (!TryEnsureTargetLibraryExists(kx13CmsAttachment.AttachmentSiteId, site.SiteName, out var targetMediaLibraryId))
         {
             return new(false, false);
         }
@@ -175,7 +165,7 @@ public class AttachmentMigrator
             {
                 if (newInstance)
                 {
-                    _mediaFileFacade.EnsureMediaFilePathExistsInLibrary(mediaFileInfo, targetMediaLibraryId, targetSite.SiteName);
+                    _mediaFileFacade.EnsureMediaFilePathExistsInLibrary(mediaFileInfo, targetMediaLibraryId);
                 }
 
                 _mediaFileFacade.SetMediaFile(mediaFileInfo, newInstance);
@@ -193,10 +183,10 @@ public class AttachmentMigrator
                     .WithIdentityPrint(mediaFileInfo)
                     .WithData(new
                     {
-                        targetSiteId,
                         mediaFileInfo.FileGUID,
                         mediaFileInfo.FileName,
-                        mediaFileInfo.FileSiteID
+                        // TODOV27 tomas.krch: 2023-09-05: obsolete - fileSiteID
+                        // mediaFileInfo.FileSiteID
                     })
                 );
             }
@@ -269,7 +259,9 @@ public class AttachmentMigrator
     private static int MediaLibraryFactory((string libraryName, int siteId) arg, MediaLibraryFactoryContext context)
     {
         var (libraryName, siteId) = arg;
-        var tml = context.DbContext.MediaLibraries.SingleOrDefault(ml => ml.LibrarySiteId == siteId && ml.LibraryName == libraryName);
+
+        // TODO tomas.krch: 2023-11-02 libraries now globalized, where do i put conflicting directories?
+        var tml = context.DbContext.MediaLibraries.SingleOrDefault(ml => ml.LibraryName == libraryName);
 
         var libraryDirectory = context.TargetLibraryCodeName;
         if (!LibraryPathValidationRegex.IsMatch(libraryDirectory))

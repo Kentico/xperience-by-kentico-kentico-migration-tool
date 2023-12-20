@@ -7,20 +7,18 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
-using Migration.Toolkit.Core.Abstractions;
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.Mappers;
-using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KXP.Api.Enums;
-using Migration.Toolkit.KXP.Context;
-using Migration.Toolkit.KXP.Models;
 
 public class MigrateMembersCommandHandler : IRequestHandler<MigrateMembersCommand, CommandResult>, IDisposable
 {
     private const string USER_PUBLIC = "public";
 
-    private readonly ILogger<MigrateUsersCommandHandler> _logger;
+    private readonly ILogger<MigrateMembersCommandHandler> _logger;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
     private readonly IEntityMapper<MemberInfoMapperSource, MemberInfo> _memberInfoMapper;
     private readonly ToolkitConfiguration _toolkitConfiguration;
@@ -30,7 +28,7 @@ public class MigrateMembersCommandHandler : IRequestHandler<MigrateMembersComman
     private static int[] MigratedAdminUserPrivilegeLevels => new[] { (int)UserPrivilegeLevelEnum.None };
 
     public MigrateMembersCommandHandler(
-        ILogger<MigrateUsersCommandHandler> logger,
+        ILogger<MigrateMembersCommandHandler> logger,
         IDbContextFactory<KX13Context> kx13ContextFactory,
         IEntityMapper<MemberInfoMapperSource, MemberInfo> memberInfoMapper,
         ToolkitConfiguration toolkitConfiguration,
@@ -48,13 +46,13 @@ public class MigrateMembersCommandHandler : IRequestHandler<MigrateMembersComman
 
     public async Task<CommandResult> Handle(MigrateMembersCommand request, CancellationToken cancellationToken)
     {
-        var migratedSiteIds = _toolkitConfiguration.RequireExplicitMapping<KX13M.CmsSite>(s => s.SiteId).Keys.ToList();
+        // var migratedSiteIds = _toolkitConfiguration.RequireExplicitMapping<KX13M.CmsSite>(s => s.SiteId).Keys.ToList();
 
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
         // TODO tomas.krch: 2023-04-11 query only users from particular sites !!
         var kx13CmsUsers = kx13Context.CmsUsers
-                .Include(u => u.CmsUserSettingUserSettingsUser)
+                .Include(u => u.CmsUserSettingUserSettingsUserNavigation)
                 .Where(u => MigratedAdminUserPrivilegeLevels.Contains(u.UserPrivilegeLevel))
             ;
 
@@ -94,11 +92,11 @@ public class MigrateMembersCommandHandler : IRequestHandler<MigrateMembersComman
                 // {
                 //     _primaryKeyMappingContext.SetMapping<KX13M.CmsUser>(r => r.UserId, kx13User.UserId, xbkMemberInfo.UserID);
                 // }
-            
+
                 continue;
             }
 
-            var mapped = _memberInfoMapper.Map(new MemberInfoMapperSource(kx13User, kx13User.CmsUserSettingUserSettingsUser), xbkMemberInfo);
+            var mapped = _memberInfoMapper.Map(new MemberInfoMapperSource(kx13User, kx13User.CmsUserSettingUserSettingsUserNavigation), xbkMemberInfo);
             _protocol.MappedTarget(mapped);
 
             await SaveUserUsingKenticoApi(cancellationToken, mapped, kx13User);
@@ -189,6 +187,7 @@ public class MigrateMembersCommandHandler : IRequestHandler<MigrateMembersComman
                 return false;
             }
 
+            // left for OM_Activity
             _primaryKeyMappingContext.SetMapping<KX13M.CmsUser>(r => r.UserId, kx13User.UserId, memberInfo.MemberID);
             return true;
         }

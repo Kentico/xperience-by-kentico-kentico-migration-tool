@@ -7,6 +7,8 @@ using CMS.DataEngine.Query;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.KX13.Auxiliary;
 
+// TODO tomas.krch: 2023-11-02 update patcher to incorporate V27 migration
+
 public class FormDefinitionPatcher
 {
     private const string CATEGORY_ELEM                   = "category";
@@ -180,33 +182,34 @@ public class FormDefinitionPatcher
         var controlNameElem = field.XPathSelectElement($"{FIELD_ELEM_SETTINGS}/{SETTINGS_ELEM_CONTROLNAME}");
         var controlName = controlNameElem?.Value;
 
-        var (sourceDataType, targetDataType, sourceFormControl, targetFormComponent, actions, fieldNameRegex)
-            = _fieldMigrationService.GetFieldMigration(columnType, controlName, columnAttr?.Value);
-
-        _logger.LogDebug("Field {FieldDescriptor} DataType: {SourceDataType} => {TargetDataType}", fieldDescriptor, columnType, targetDataType);
-        columnTypeAttr?.SetValue(targetDataType);
-        switch (targetFormComponent)
+        if (_fieldMigrationService.GetFieldMigration(columnType, controlName, columnAttr?.Value) is var (sourceDataType, targetDataType, sourceFormControl, targetFormComponent, actions, fieldNameRegex))
         {
-            case TfcDirective.DoNothing:
-                _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective}", fieldDescriptor, targetFormComponent);
-                PerformActionsOnField(field, fieldDescriptor, actions);
-                break;
-            case TfcDirective.Clear:
-                _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective}", fieldDescriptor, targetFormComponent);
-                field.RemoveNodes();
-                break;
-            case TfcDirective.CopySourceControl:
-                // TODO tk: 2022-10-06 support only for custom controls
-                _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective} => {ControlName}", fieldDescriptor, targetFormComponent, controlName);
-                controlNameElem?.SetValue(controlName);
-                PerformActionsOnField(field, fieldDescriptor, actions);
-                break;
-            default:
+            _logger.LogDebug("Field {FieldDescriptor} DataType: {SourceDataType} => {TargetDataType}", fieldDescriptor, columnType, targetDataType);
+            columnTypeAttr?.SetValue(targetDataType);
+            switch (targetFormComponent)
             {
-                _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:NONE => from control '{ControlName}' => {TargetFormComponent}", fieldDescriptor, controlName, targetFormComponent);
-                controlNameElem?.SetValue(targetFormComponent);
-                PerformActionsOnField(field, fieldDescriptor, actions);
-                break;
+                case TfcDirective.DoNothing:
+                    _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective}", fieldDescriptor, targetFormComponent);
+                    PerformActionsOnField(field, fieldDescriptor, actions);
+                    break;
+                case TfcDirective.Clear:
+                    _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective}", fieldDescriptor, targetFormComponent);
+                    field.RemoveNodes();
+                    visibleAttr?.SetValue(false);
+                    break;
+                case TfcDirective.CopySourceControl:
+                    // TODO tk: 2022-10-06 support only for custom controls
+                    _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective} => {ControlName}", fieldDescriptor, targetFormComponent, controlName);
+                    controlNameElem?.SetValue(controlName);
+                    PerformActionsOnField(field, fieldDescriptor, actions);
+                    break;
+                default:
+                {
+                    _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:NONE => from control '{ControlName}' => {TargetFormComponent}", fieldDescriptor, controlName, targetFormComponent);
+                    controlNameElem?.SetValue(targetFormComponent);
+                    PerformActionsOnField(field, fieldDescriptor, actions);
+                    break;
+                }
             }
         }
 
@@ -373,6 +376,11 @@ public class FormDefinitionPatcher
                         });
 
                     field.SetAttributeValue(FIELD_ATTR_SIZE, FIELD_ATTR_SIZE_ZERO); // TODO tk: 2022-08-31 describe why?
+
+                    var settings = field.EnsureElement(FIELD_ELEM_SETTINGS);
+                    settings.EnsureElement("TreePath", element => element.Value = settings.Element("RootPath")?.Value ?? "");
+                    settings.EnsureElement("RootPath").Remove();
+
                     break;
                 }
             }

@@ -1,11 +1,12 @@
 ﻿using CMS.Helpers;
 using CMS.MediaLibrary;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
 
 namespace Migration.Toolkit.Core.Mappers;
+
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 
 public class MediaLibraryInfoMapper : EntityMapperBase<KX13.Models.MediaLibrary, MediaLibraryInfo>
 {
@@ -28,31 +29,15 @@ public class MediaLibraryInfoMapper : EntityMapperBase<KX13.Models.MediaLibrary,
         target.LibraryDescription = source.LibraryDescription;
         target.LibraryFolder = source.LibraryFolder;
         target.LibraryGUID = mappingHelper.Require(source.LibraryGuid, nameof(source.LibraryGuid));
-
-        target.LibraryName = source.LibraryName;
         target.LibraryDisplayName = source.LibraryDisplayName;
         target.LibraryDescription = source.LibraryDescription;
-        target.LibraryFolder = source.LibraryFolder;
-        target.LibraryLastModified = mappingHelper.Require(source.LibraryLastModified, nameof(source.LibraryLastModified));
-        target.LibraryUseDirectPathForContent = source.LibraryUseDirectPathForContent ?? true;
 
-        target.LibraryTeaserPath = source.LibraryTeaserPath;
-        target.LibraryTeaserGUID = source.LibraryTeaserGuid ?? Guid.Empty;
-
-        if (mappingHelper.TranslateRequiredId<KX13.Models.CmsSite>(c => c.SiteId, source.LibrarySiteId, out var siteId))
+        if (!target.LibraryFolder.StartsWith($"{source.LibrarySite.SiteName}_", StringComparison.InvariantCultureIgnoreCase))
         {
-            target.LibrarySiteID = siteId;
+            target.LibraryFolder = $"{source.LibrarySite.SiteName}_{source.LibraryFolder}";
         }
-        
-        // OBSOLETE
-        // var libraryAccess = mappingHelper.Require(source.LibraryAccess, nameof(source.LibraryAccess));
-        // target.FileCreate = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 1);
-        // target.FileDelete = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 2);
-        // target.FileModify = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 3);
-        // target.FolderCreate = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 4);
-        // target.FolderDelete = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 5);
-        // target.FolderModify = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 6);
-        // target.Access = SecurityHelper.GetSecurityAccessEnum(libraryAccess, 7);
+
+        target.LibraryLastModified = mappingHelper.Require(source.LibraryLastModified, nameof(source.LibraryLastModified));
 
         return target;
     }

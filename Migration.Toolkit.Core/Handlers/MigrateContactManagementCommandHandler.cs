@@ -2,16 +2,18 @@ namespace Migration.Toolkit.Core.Handlers;
 
 using CMS.Activities;
 using CMS.ContactManagement;
+using CMS.ContentEngine;
+using CMS.Websites.Internal;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
-using Migration.Toolkit.Core.Abstractions;
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
+using Migration.Toolkit.Common.Services.BulkCopy;
 using Migration.Toolkit.Core.Contexts;
 using Migration.Toolkit.Core.Helpers;
-using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.Core.Services;
-using Migration.Toolkit.Core.Services.BulkCopy;
 using Migration.Toolkit.KX13.Models;
 using Migration.Toolkit.KXP.Api;
 using Migration.Toolkit.KXP.Context;
@@ -22,6 +24,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
     private readonly BulkDataCopyService _bulkDataCopyService;
     private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
+    private readonly KeyMappingContext _keyMappingContext;
     private readonly CountryMigrator _countryMigrator;
     private readonly KxpClassFacade _kxpClassFacade;
     private readonly IProtocol _protocol;
@@ -33,6 +36,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         BulkDataCopyService bulkDataCopyService,
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
+        KeyMappingContext keyMappingContext,
         CountryMigrator countryMigrator,
         KxpClassFacade kxpClassFacade,
         IProtocol protocol
@@ -43,6 +47,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         _bulkDataCopyService = bulkDataCopyService;
         _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
+        _keyMappingContext = keyMappingContext;
         _countryMigrator = countryMigrator;
         _kxpClassFacade = kxpClassFacade;
         _protocol = protocol;
@@ -50,12 +55,10 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
 
     public Task<CommandResult> Handle(MigrateContactManagementCommand request, CancellationToken cancellationToken)
     {
-        var migratedSiteIds = _toolkitConfiguration.RequireExplicitMapping<CmsSite>(s => s.SiteId).Keys.ToList();
-
         _countryMigrator.MigrateCountriesAndStates();
 
         if (MigrateContacts() is { } ccr) return Task.FromResult(ccr);
-        if (MigrateContactActivities(migratedSiteIds) is { } acr) return Task.FromResult(acr);
+        if (MigrateContactActivities() is { } acr) return Task.FromResult(acr);
 
         return Task.FromResult<CommandResult>(new GenericCommandResult());
     }
@@ -64,7 +67,6 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
 
     private CommandResult? MigrateContacts()
     {
-        const string contactTableName = "OM_Contact";
         var requiredColumnsForContactMigration = new Dictionary<string, string>
         {
             { nameof(OmContact.ContactId), nameof(KXP.Models.OmContact.ContactId) },
@@ -104,21 +106,21 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
             requiredColumnsForContactMigration.Add(cfi.FieldName, cfi.FieldName);
         }
 
-        if (_bulkDataCopyService.CheckIfDataExistsInTargetTable(contactTableName))
+        if (_bulkDataCopyService.CheckIfDataExistsInTargetTable("OM_Contact"))
         {
-            _logger.LogWarning("Data exists in target coupled data table '{TableName}' - cannot migrate, skipping contact data migration", contactTableName);
-            _protocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable(contactTableName));
+            _protocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable("OM_Contact"));
+            _logger.LogError("Data must not exist in target instance table, remove data before proceeding");
             return new CommandFailureResult();
         }
 
-        if (_bulkDataCopyService.CheckForTableColumnsDifferences(contactTableName, requiredColumnsForContactMigration, out var differences))
+        if (_bulkDataCopyService.CheckForTableColumnsDifferences("OM_Contact", requiredColumnsForContactMigration, out var differences))
         {
             _protocol.Append(HandbookReferences
-                .BulkCopyColumnMismatch(contactTableName)
+                .BulkCopyColumnMismatch("OM_Contact")
                 .NeedsManualAction()
                 .WithData(differences)
             );
-            _logger.LogError("Table {TableName} columns do not match, fix columns before proceeding", contactTableName);
+            _logger.LogError("Table {TableName} columns do not match, fix columns before proceeding", "OM_Contact");
             {
                 return new CommandFailureResult();
             }
@@ -128,7 +130,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         _primaryKeyMappingContext.PreloadDependencies<CmsState>(u => u.StateId);
         _primaryKeyMappingContext.PreloadDependencies<CmsCountry>(u => u.CountryId);
 
-        var bulkCopyRequest = new BulkCopyRequest(contactTableName,
+        var bulkCopyRequest = new BulkCopyRequest("OM_Contact",
             s => true,// s => s != "ContactID",
             _ => true,
             50000,
@@ -177,6 +179,17 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
                     return ValueInterceptorResult.ReplaceValue(id);
                 case { Success: false }:
                 {
+                    // try search member
+                    if (_keyMappingContext.MapSourceKey<CmsUser, KXP.Models.CmsMember, int?>(
+                            s => s.UserId,
+                            s => s.UserGuid,
+                            sourceUserId,
+                            t => t.MemberId,
+                            t => t.MemberGuid
+                        ) is { Success:true, Mapped: {} memberId })
+                    {
+                        return ValueInterceptorResult.ReplaceValue(memberId);
+                    }
                     _protocol.Append(HandbookReferences.MissingRequiredDependency<KXP.Models.CmsUser>(columnName, value)
                         .WithData(currentRow));
                     return ValueInterceptorResult.SkipRow;
@@ -223,9 +236,8 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
 
     #region "Migrate contact activities"
 
-    private CommandResult? MigrateContactActivities(List<int> migratedSiteIds)
+    private CommandResult? MigrateContactActivities() //(List<int> migratedSiteIds)
     {
-        const string activityTableName = "OM_Activity";
         var requiredColumnsForContactMigration = new Dictionary<string, string>
         {
             { nameof(OmActivity.ActivityId), nameof(KXP.Models.OmActivity.ActivityId) },
@@ -237,12 +249,12 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
             { nameof(OmActivity.ActivityValue), nameof(KXP.Models.OmActivity.ActivityValue) },
             { nameof(OmActivity.ActivityUrl), nameof(KXP.Models.OmActivity.ActivityUrl) },
             { nameof(OmActivity.ActivityTitle), nameof(KXP.Models.OmActivity.ActivityTitle) },
-            { nameof(OmActivity.ActivitySiteId), nameof(KXP.Models.OmActivity.ActivitySiteId) },
+            { nameof(OmActivity.ActivitySiteId), nameof(KXP.Models.OmActivity.ActivityChannelId) },
             { nameof(OmActivity.ActivityComment), nameof(KXP.Models.OmActivity.ActivityComment) },
-            { nameof(OmActivity.ActivityCampaign), nameof(KXP.Models.OmActivity.ActivityCampaign) },
+            // { nameof(OmActivity.ActivityCampaign), nameof(KXP.Models.OmActivity.ActivityCampaign) }, // deprecated without replacement in v27
             { nameof(OmActivity.ActivityUrlreferrer), nameof(KXP.Models.OmActivity.ActivityUrlreferrer) },
-            { nameof(OmActivity.ActivityCulture), nameof(KXP.Models.OmActivity.ActivityCulture) },
-            { nameof(OmActivity.ActivityNodeId), nameof(KXP.Models.OmActivity.ActivityNodeId) },
+            { nameof(OmActivity.ActivityCulture), nameof(KXP.Models.OmActivity.ActivityLanguageId) },
+            { nameof(OmActivity.ActivityNodeId), nameof(KXP.Models.OmActivity.ActivityWebPageItemGuid) },
             { nameof(OmActivity.ActivityUtmsource), nameof(KXP.Models.OmActivity.ActivityUtmsource) },
             // No support 2022-07-07  { nameof(OmActivity.ActivityAbvariantName), nameof(KXO.Models.OmActivity.ActivityAbvariantName) },
             // OBSOLETE 26.0.0: { nameof(OmActivity.ActivityUrlhash), nameof(KXP.Models.OmActivity.ActivityUrlhash) },
@@ -253,35 +265,23 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         {
             requiredColumnsForContactMigration.Add(cfi.FieldName, cfi.FieldName);
         }
-        
-        if (_bulkDataCopyService.CheckIfDataExistsInTargetTable(activityTableName))
+
+        if (_bulkDataCopyService.CheckIfDataExistsInTargetTable("OM_Activity"))
         {
-            _logger.LogWarning("Data exists in target coupled data table '{TableName}' - cannot migrate, skipping activity data migration", activityTableName);
-            _protocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable(activityTableName));
+            _protocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable("OM_Activity"));
+            _logger.LogError("Data must not exist in target instance table, remove data before proceeding");
             return new CommandFailureResult();
         }
 
-        if (_bulkDataCopyService.CheckForTableColumnsDifferences(activityTableName, requiredColumnsForContactMigration, out var differences))
-        {
-            _protocol.Append(HandbookReferences
-                .BulkCopyColumnMismatch(activityTableName)
-                .NeedsManualAction()
-                .WithData(differences)
-            );
-            _logger.LogError("Table {TableName} columns do not match, fix columns before proceeding", activityTableName);
-            {
-                return new CommandFailureResult();
-            }
-        }
+        // _primaryKeyMappingContext.PreloadDependencies<CmsTree>(u => u.NodeId);
+        // no need to preload contact, ID should stay same
+        // _primaryKeyMappingContext.PreloadDependencies<OmContact>(u => u.ContactId);
 
-        _primaryKeyMappingContext.PreloadDependencies<CmsTree>(u => u.NodeId);
-        _primaryKeyMappingContext.PreloadDependencies<OmContact>(u => u.ContactId);
-
-        var bulkCopyRequest = new BulkCopyRequest(activityTableName,
+        var bulkCopyRequest = new BulkCopyRequestExtended("OM_Activity",
             s => true,// s => s != "ActivityID",
-            reader => migratedSiteIds.Contains(reader.GetInt32(reader.GetOrdinal("ActivitySiteID"))), // TODO tk: 2022-07-07 move condition to source query
+            reader => true, // migratedSiteIds.Contains(reader.GetInt32(reader.GetOrdinal("ActivitySiteID"))), // TODO tk: 2022-07-07 move condition to source query
             50000,
-            requiredColumnsForContactMigration.Keys.ToList(),
+            requiredColumnsForContactMigration,
             ActivityValueInterceptor,
             current => { _logger.LogError("Contact activity skipped due error, activity: {Activity}", PrintHelper.PrintDictionary(current)); },
             "ActivityID"
@@ -303,27 +303,17 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
 
     private ValueInterceptorResult ActivityValueInterceptor(int columnOrdinal, string columnName, object value, Dictionary<string, object?> currentRow)
     {
-        if (columnName.Equals(nameof(KXP.Models.OmActivity.ActivityContactId), StringComparison.InvariantCultureIgnoreCase) && value is int sourceContactId)
-        {
-            switch (_primaryKeyMappingContext.MapSourceId<OmContact>(u => u.ContactId, sourceContactId, false))
-            {
-                case (true, var id):
-                    return ValueInterceptorResult.ReplaceValue(id);
-                case { Success: false }:
-                {
-                    _protocol.Append(HandbookReferences
-                        .MissingRequiredDependency<KXP.Models.OmContact>(columnName, value)
-                        .WithData(currentRow)
-                    );
-                    return ValueInterceptorResult.SkipRow;
-                }
-            }
-        }
-
-        if (columnName.Equals(nameof(KXP.Models.OmActivity.ActivitySiteId), StringComparison.InvariantCultureIgnoreCase) &&
+        if (columnName.Equals(nameof(KXP.Models.OmActivity.ActivityChannelId), StringComparison.InvariantCultureIgnoreCase) &&
             value is int sourceActivitySiteId)
         {
-            switch (_primaryKeyMappingContext.MapSourceId<CmsSite>(u => u.SiteId, sourceActivitySiteId.NullIfZero()))
+            var result = _keyMappingContext.MapSourceKey<KX13M.CmsTree, ChannelInfo, int?>(
+                s => s.NodeId,
+                s => s.NodeGuid,
+                sourceActivitySiteId.NullIfZero(),
+                t => t.ChannelID,
+                t => t.ChannelGUID
+            );
+            switch(result)
             {
                 case (true, var id):
                     return ValueInterceptorResult.ReplaceValue(id ?? 0);
@@ -337,9 +327,10 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
                         case AutofixEnum.AttemptFix:
                             _logger.LogTrace("Autofix (ActivitySiteId={ActivitySiteId} not exists) => ActivityNodeId=0", sourceActivitySiteId);
                             return ValueInterceptorResult.ReplaceValue(0);
+                        case AutofixEnum.Error:
                         default: //error
                             _protocol.Append(HandbookReferences
-                                .MissingRequiredDependency<KXP.Models.CmsSite>(columnName, value)
+                                .MissingRequiredDependency<KXP.Models.CmsChannel>(columnName, value)
                                 .WithData(currentRow)
                             );
                             return ValueInterceptorResult.SkipRow;
@@ -348,12 +339,16 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
             }
         }
 
-        if (columnName.Equals(nameof(KXP.Models.OmActivity.ActivityNodeId), StringComparison.InvariantCultureIgnoreCase) && value is int activityNodeId)
+        if (columnName.Equals(nameof(KXP.Models.OmActivity.ActivityWebPageItemGuid), StringComparison.InvariantCultureIgnoreCase) && value is int activityNodeId)
         {
-            switch (_primaryKeyMappingContext.MapSourceId<CmsTree>(u => u.NodeId, activityNodeId.NullIfZero(), useLocator: false))
+            var result = _keyMappingContext.MapSourceKey<KX13M.CmsTree, WebPageItemInfo, Guid?>(
+                s => s.NodeId,
+                s => s.NodeGuid,
+                activityNodeId.NullIfZero(), t => t.WebPageItemGUID, t => t.WebPageItemGUID);
+            switch(result)
             {
-                case (true, var id):
-                    return ValueInterceptorResult.ReplaceValue(id ?? 0);
+                case (true, var guid):
+                    return ValueInterceptorResult.ReplaceValue(guid);
                 case { Success: false }:
                 {
                     switch (_toolkitConfiguration.UseOmActivityNodeRelationAutofix ?? AutofixEnum.Error)
@@ -363,16 +358,22 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
                             return ValueInterceptorResult.SkipRow;
                         case AutofixEnum.AttemptFix:
                             _logger.LogTrace("Autofix (ActivityNodeId={NodeId} not exists) => ActivityNodeId=0", activityNodeId);
-                            return ValueInterceptorResult.ReplaceValue(0);
+                            return ValueInterceptorResult.ReplaceValue(null);
+                        case AutofixEnum.Error:
                         default: //error
                             _protocol.Append(HandbookReferences
-                                .MissingRequiredDependency<KXP.Models.CmsTree>(columnName, value)
+                                .MissingRequiredDependency<KXP.Models.CmsWebPageItem>(columnName, value)
                                 .WithData(currentRow)
                             );
                             return ValueInterceptorResult.SkipRow;
                     }
                 }
             }
+        }
+
+        if (columnName.Equals( nameof(KXP.Models.OmActivity.ActivityLanguageId), StringComparison.InvariantCultureIgnoreCase) && value is string cultureCode)
+        {
+            return ValueInterceptorResult.ReplaceValue(ContentLanguageInfoProvider.ProviderObject.Get(cultureCode)?.ContentLanguageID);
         }
 
         return ValueInterceptorResult.DoNothing;

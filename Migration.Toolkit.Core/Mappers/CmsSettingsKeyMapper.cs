@@ -1,13 +1,14 @@
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
 
 namespace Migration.Toolkit.Core.Mappers;
 
-using Migration.Toolkit.KXP.Models;
+using System.Diagnostics;
+using CMS.DataEngine;
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 
-public class CmsSettingsKeyMapper : EntityMapperBase<Migration.Toolkit.KX13.Models.CmsSettingsKey, CmsSettingsKey>
+public class CmsSettingsKeyMapper : EntityMapperBase<Migration.Toolkit.KX13.Models.CmsSettingsKey, SettingsKeyInfo>
 {
     private const string SOURCE_KEY_NAME = "CMSDefaultUserID";
 
@@ -16,9 +17,9 @@ public class CmsSettingsKeyMapper : EntityMapperBase<Migration.Toolkit.KX13.Mode
 
     }
 
-    protected override CmsSettingsKey CreateNewInstance(KX13.Models.CmsSettingsKey source, MappingHelper mappingHelper, AddFailure addFailure) => new();
+    protected override SettingsKeyInfo CreateNewInstance(KX13.Models.CmsSettingsKey source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
-    protected override CmsSettingsKey MapInternal(KX13.Models.CmsSettingsKey source, CmsSettingsKey target, bool newInstance,
+    protected override SettingsKeyInfo MapInternal(KX13.Models.CmsSettingsKey source, SettingsKeyInfo target, bool newInstance,
         MappingHelper mappingHelper, AddFailure addFailure)
     {
         if (newInstance)
@@ -27,29 +28,19 @@ public class CmsSettingsKeyMapper : EntityMapperBase<Migration.Toolkit.KX13.Mode
             target.KeyDisplayName = source.KeyDisplayName;
             target.KeyDescription = source.KeyDescription;
             target.KeyType = source.KeyType;
-            target.KeyGuid = source.KeyGuid;
-            // target.KeyOrder = source.KeyOrder;
-            target.KeyDefaultValue = source.KeyDefaultValue;
+            target.KeyGUID = source.KeyGuid;
             target.KeyValidation = source.KeyValidation;
             target.KeyEditingControlPath = source.KeyEditingControlPath;
-            // target.KeyIsGlobal = source.KeyIsGlobal;
-            // target.KeyIsCustom = source.KeyIsCustom;
             target.KeyFormControlSettings = source.KeyFormControlSettings;
             target.KeyExplanationText = source.KeyExplanationText;
         }
         else
         {
             target.KeyName = source.KeyName;
-            // target.KeyDisplayName = source.KeyDisplayName;
             target.KeyDescription = source.KeyDescription;
             target.KeyType = source.KeyType;
-            target.KeyGuid = source.KeyGuid;
-            // target.KeyOrder = source.KeyOrder;
-            target.KeyDefaultValue = source.KeyDefaultValue;
             target.KeyValidation = source.KeyValidation;
             target.KeyEditingControlPath = source.KeyEditingControlPath;
-            // target.KeyIsGlobal = source.KeyIsGlobal;
-            // target.KeyIsCustom = source.KeyIsCustom;
             target.KeyFormControlSettings = source.KeyFormControlSettings;
             target.KeyExplanationText = source.KeyExplanationText;
         }
@@ -71,30 +62,8 @@ public class CmsSettingsKeyMapper : EntityMapperBase<Migration.Toolkit.KX13.Mode
                 break;
         }
 
-        if (mappingHelper.TranslateIdAllowNulls<KX13.Models.CmsSite>(s => s.SiteId, source.SiteId, out var siteId))
-        {
-            target.SiteId = siteId;
-        }
+        Debug.Assert(!source.SiteId.HasValue, "!source.SiteId.HasValue");
         target.KeyLastModified = source.KeyLastModified;
-        // target.KeyIsHidden = source.KeyIsHidden; - not mapped / internal
-
-        // if (source.KeyCategory != null)
-        // {
-        //     switch (_cmsCategoryMapper.Map(source.KeyCategory, target.KeyCategory))
-        //     {
-        //         case { Success: true } result:
-        //         {
-        //             target.KeyCategory = result.Item;
-        //             break;
-        //         }
-        //         case { Success: false } result:
-        //         {
-        //             addFailure(new MapperResultFailure<KXO.Models.CmsSettingsKey>(result.HandbookReference));
-        //             break;
-        //         }
-        //     }
-        // }
-
         return target;
     }
 }

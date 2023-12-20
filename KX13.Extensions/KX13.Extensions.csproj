@@ -1,8 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">    
-    <PropertyGroup>        
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
         <Nullable>disable</Nullable>
         <TargetFrameworks>net5.0;net6.0;netcoreapp3.1</TargetFrameworks>
         <LangVersion>8</LangVersion>
+        <ImplicitUsings>disable</ImplicitUsings>
     </PropertyGroup>
 
     <ItemGroup>
