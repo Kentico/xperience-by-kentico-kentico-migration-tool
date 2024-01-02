@@ -1,13 +1,13 @@
 using System.Diagnostics;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
-using Migration.Toolkit.Core.MigrationProtocol;
 
 namespace Migration.Toolkit.Core.Behaviors;
 
 using CMS.Base;
 using CMS.Membership;
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Api;
 
 public class XbKApiContextBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>

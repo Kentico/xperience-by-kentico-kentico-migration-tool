@@ -8,10 +8,10 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
-using Migration.Toolkit.Core.Abstractions;
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
+using Migration.Toolkit.Common.Services.BulkCopy;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
-using Migration.Toolkit.Core.Services.BulkCopy;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KX13.Models;
 using Migration.Toolkit.KXP.Api;
@@ -26,7 +26,6 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
     private readonly IEntityMapper<CmsForm, KXP.Models.CmsForm> _cmsFormMapper;
     private readonly KxpClassFacade _kxpClassFacade;
     private readonly BulkDataCopyService _bulkDataCopyService;
-    private readonly ToolkitConfiguration _toolkitConfiguration;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IProtocol _protocol;
 
@@ -40,7 +39,6 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
         IEntityMapper<CmsForm, KXP.Models.CmsForm> cmsFormMapper,
         KxpClassFacade kxpClassFacade,
         BulkDataCopyService bulkDataCopyService,
-        ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol
     )
@@ -52,7 +50,6 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
         _cmsFormMapper = cmsFormMapper;
         _kxpClassFacade = kxpClassFacade;
         _bulkDataCopyService = bulkDataCopyService;
-        _toolkitConfiguration = toolkitConfiguration;
         _primaryKeyMappingContext = primaryKeyMappingContext;
         _protocol = protocol;
         _kxpContext = kxpContextFactory.CreateDbContext();
@@ -60,8 +57,6 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
 
     public async Task<CommandResult> Handle(MigrateFormsCommand request, CancellationToken cancellationToken)
     {
-        var migratedSiteIds = _toolkitConfiguration.RequireExplicitMapping<CmsSite>(s => s.SiteId).Keys.ToList();
-
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
         var cmsClassForms = kx13Context.CmsClasses
@@ -74,14 +69,6 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
         {
             _protocol.FetchedSource(kx13Class);
 
-            // checking of kx13Class.ClassConnectionString is not necessary
-
-            if (!kx13Class.CmsForms.Any(f => migratedSiteIds.Contains(f.FormSiteId)))
-            {
-                _logger.LogWarning("CmsClass: {ClassName} => Class site is not migrated => skipping", kx13Class.ClassName);
-                continue;
-            }
-
             var kxoDataClass = _kxpClassFacade.GetClass(kx13Class.ClassGuid);
             _protocol.FetchedTarget(kxoDataClass);
 
@@ -90,13 +77,13 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
             {
                 continue;
             }
-            
+
             foreach (var kx13CmsForm in kx13Class.CmsForms)
             {
                 _protocol.FetchedSource(kx13CmsForm);
-                
+
                 var kxoCmsForm = _kxpContext.CmsForms.FirstOrDefault(f => f.FormGuid == kx13CmsForm.FormGuid);
-                
+
                 _protocol.FetchedTarget(kxoCmsForm);
 
                 var mapped = _cmsFormMapper.Map(kx13CmsForm, kxoCmsForm);
@@ -138,14 +125,14 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
                             .WithIdentityPrint(cmsForm)
                         );
                         _logger.LogEntitySetError(ex, newInstance, cmsForm);
-                        
+
                         continue;
                     }
                 }
 
                 Debug.Assert(kx13Class.ClassTableName != null, "kx13Class.ClassTableName != null");
                 // var csi = new ClassStructureInfo(kx13Class.ClassXmlSchema, kx13Class.ClassXmlSchema, kx13Class.ClassTableName);
-                
+
                 XNamespace nsSchema = "http://www.w3.org/2001/XMLSchema";
                 XNamespace msSchema = "urn:schemas-microsoft-com:xml-msdata";
                 var xDoc = XDocument.Parse(kx13Class.ClassXmlSchema);
@@ -159,7 +146,7 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
 
                 var r = (kx13Class.ClassTableName, kx13Class.ClassGuid, autoIncrementColumns);
                 _logger.LogTrace("Class '{ClassGuild}' Resolved as: {Result}", kx13Class.ClassGuid, r);
-                
+
                 // check if data is present in target tables
                 if (_bulkDataCopyService.CheckIfDataExistsInTargetTable(kx13Class.ClassTableName))
                 {
@@ -218,7 +205,7 @@ public class MigrateFormsCommandHandler : IRequestHandler<MigrateFormsCommand, C
                 _logger.LogEntitySetError(ex, newInstance, dataClassInfo);
             }
         }
-        
+
         return false;
     }
 

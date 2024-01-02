@@ -1,12 +1,14 @@
 ﻿namespace Migration.Toolkit.Core.Handlers;
 
+using CMS.DataProtection;
 using MediatR;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
+using Migration.Toolkit.Common;
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KX13.Models;
 using Migration.Toolkit.KXP.Context;
@@ -47,11 +49,11 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
         _protocol = protocol;
         _kxpContext = _kxpContextFactory.CreateDbContext();
     }
-    
+
     public async Task<CommandResult> Handle(MigrateDataProtectionCommand request, CancellationToken cancellationToken)
     {
         var batchSize = _batchSize;
-        
+
         await MigrateConsent(cancellationToken);
         await MigrateConsentArchive(cancellationToken);
         await MigrateConsentAgreement(cancellationToken, batchSize);
@@ -62,12 +64,12 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
     private async Task<CommandResult> MigrateConsent(CancellationToken cancellationToken)
     {
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
-        
+
         foreach (var kx13Consent in kx13Context.CmsConsents)
         {
             _protocol.FetchedSource(kx13Consent);
             _logger.LogTrace("Migrating consent {ConsentName} with ConsentGuid {ConsentGuid}", kx13Consent.ConsentName, kx13Consent.ConsentGuid);
-            
+
             var kxoConsent = await _kxpContext.CmsConsents.FirstOrDefaultAsync(consent => consent.ConsentGuid == kx13Consent.ConsentGuid, cancellationToken);
             _protocol.FetchedTarget(kxoConsent);
 
@@ -220,14 +222,14 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
                     foreach (var newKx13ConsentAgreement in consentAgreementNews)
                     {
                         _protocol.Success(kx13ConsentAgreement, newKx13ConsentAgreement, mapped);
-                        _logger.LogInformation("CmsConsentAgreement: with ConsentAgreementGuid \'{ConsentAgreementGuid}\' was inserted",
+                        _logger.LogDebug("CmsConsentAgreement: with ConsentAgreementGuid \'{ConsentAgreementGuid}\' was inserted",
                             newKx13ConsentAgreement.ConsentAgreementGuid);
                     }
 
                     foreach (var updateKx13ConsentAgreement in consentAgreementUpdates)
                     {
                         _protocol.Success(kx13ConsentAgreement, updateKx13ConsentAgreement, mapped);
-                        _logger.LogInformation("CmsConsentAgreement: with ConsentAgreementGuid \'{ConsentAgreementGuid}\' was updated",
+                        _logger.LogDebug("CmsConsentAgreement: with ConsentAgreementGuid \'{ConsentAgreementGuid}\' was updated",
                             updateKx13ConsentAgreement.ConsentAgreementGuid);
                     }
                 }
@@ -251,7 +253,14 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
                         .NeedsManualAction()
                         .WithIdentityPrints(consentAgreementUpdates)
                     );
-                    
+
+                    var cai = ConsentAgreementInfo.New();
+                    _protocol.Append(HandbookReferences
+                        .ErrorUpdatingTargetInstance<KXP.Models.CmsConsentAgreement>(dbUpdateException)
+                        .NeedsManualAction()
+                        .WithIdentityPrint(cai)
+                    );
+
                     _logger.LogEntitiesSetError(dbUpdateException, false, consentAgreementUpdates);
 
                     _kxpContext = await _kxpContextFactory.CreateDbContextAsync(cancellationToken);
@@ -267,7 +276,7 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
 
         return new GenericCommandResult();
     }
-    
+
     public void Dispose()
     {
         _kxpContext.Dispose();

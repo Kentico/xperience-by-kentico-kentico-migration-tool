@@ -19,7 +19,8 @@ public static class DependencyInjectionExtensions
         services.AddSingleton<KxpClassFacade>();
         services.AddSingleton<KxpMediaFileFacade>();
         services.AddSingleton<KxpPageFacade>();
-        services.AddSingleton<KxpSiteFacade>();
+        // TODOV27 tomas.krch: 2023-09-05: obsolete registration
+        //services.AddSingleton<KxpSiteFacade>();
 
         return services;
     }

@@ -7,7 +7,8 @@ public class FormComponents
     ///<summary>Form component value type: System.Collections.Generic.IEnumerable`1[[Kentico.Components.Web.Mvc.FormComponents.MediaFilesSelectorItem, Kentico.Content.Web.Mvc, Version=22.0.4.0, Culture=neutral, PublicKeyToken=834b12a258f213f9]]</summary>
     public static string MvcFcMediaFilesSelector => Kentico.Components.Web.Mvc.FormComponents.MediaFilesSelector.IDENTIFIER;
     ///<summary>Form component value type: System.Collections.Generic.IEnumerable`1[[CMS.DocumentEngine.PageRelatedItem, CMS.DocumentEngine, Version=22.0.4.0, Culture=neutral, PublicKeyToken=834b12a258f213f9]]</summary>
-    public static string AdminPageSelectorComponent => Kentico.Xperience.Admin.Content.Forms.PageSelectorComponent.IDENTIFIER;
+    // public static string AdminPageSelectorComponent => Kentico.Xperience.Admin.Content.Forms.PageSelectorComponent.IDENTIFIER;
+    public static string AdminPageSelectorComponent => Kentico.Xperience.Admin.Websites.WebPageSelectorComponent.IDENTIFIER;
 
     ///<summary>Form component value type: System.Boolean</summary>
     public static string AdminCheckBoxComponent => Kentico.Xperience.Admin.Base.Forms.CheckBoxComponent.IDENTIFIER;
@@ -48,8 +49,9 @@ public class FormComponents
     public static string MvcFcRichTextComponent => Kentico.Components.Web.Mvc.FormComponents.RichTextComponent.IDENTIFIER;
     ///<summary>Form component value type: System.String</summary>
     public static string MvcFcUrlSelector => Kentico.Components.Web.Mvc.FormComponents.UrlSelector.IDENTIFIER;
+
     ///<summary>Form component value type: System.String</summary>
-    public static string AdminUrlSelectorComponent => Kentico.Xperience.Admin.Content.Forms.UrlSelectorComponent.IDENTIFIER;
+    // public static string AdminUrlSelectorComponent => Kentico.Xperience.Admin.Websites.UrlSelectorComponent.IDENTIFIER;
 
     ///<summary>Form component value type: System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=6.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]</summary>
     public static string AdminDateInputComponent => Kentico.Xperience.Admin.Base.Forms.DateInputComponent.IDENTIFIER;

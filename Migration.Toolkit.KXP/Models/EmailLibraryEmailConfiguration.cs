@@ -7,8 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.KXP.Models
 {
     [Table("EmailLibrary_EmailConfiguration")]
-    [Index("EmailConfigurationEmailTemplateId", Name = "IX_EmailLibrary_EmailConfiguration_EmailConfigurationEmailTemplateID")]
-    [Index("EmailConfigurationSiteId", Name = "IX_EmailLibrary_EmailConfiguration_EmailConfigurationSiteID")]
+    [Index("EmailConfigurationContentItemId", Name = "IX_EmailLibrary_EmailConfiguration_EmailConfigurationContentItemID")]
+    [Index("EmailConfigurationEmailChannelId", Name = "IX_EmailLibrary_EmailConfiguration_EmailConfigurationEmailChannelID")]
     public partial class EmailLibraryEmailConfiguration
     {
         public EmailLibraryEmailConfiguration()
@@ -25,33 +25,22 @@ namespace Migration.Toolkit.KXP.Models
         public int EmailConfigurationId { get; set; }
         [StringLength(250)]
         public string EmailConfigurationName { get; set; } = null!;
-        [StringLength(250)]
-        public string EmailConfigurationDisplayName { get; set; } = null!;
-        [StringLength(450)]
-        public string? EmailConfigurationSubject { get; set; }
-        [StringLength(200)]
-        public string? EmailConfigurationSenderName { get; set; }
-        [StringLength(254)]
-        public string? EmailConfigurationSenderEmail { get; set; }
-        [Column("EmailConfigurationEmailTemplateID")]
-        public int EmailConfigurationEmailTemplateId { get; set; }
-        public string? EmailConfigurationContent { get; set; }
-        [Column("EmailConfigurationSiteID")]
-        public int? EmailConfigurationSiteId { get; set; }
         [Column("EmailConfigurationGUID")]
         public Guid EmailConfigurationGuid { get; set; }
         public DateTime EmailConfigurationLastModified { get; set; }
-        public string? EmailConfigurationPlainText { get; set; }
-        public string? EmailConfigurationPreheader { get; set; }
         [StringLength(50)]
-        public string EmailConfigurationType { get; set; } = null!;
+        public string EmailConfigurationPurpose { get; set; } = null!;
+        [Column("EmailConfigurationEmailChannelID")]
+        public int? EmailConfigurationEmailChannelId { get; set; }
+        [Column("EmailConfigurationContentItemID")]
+        public int? EmailConfigurationContentItemId { get; set; }
 
-        [ForeignKey("EmailConfigurationEmailTemplateId")]
+        [ForeignKey("EmailConfigurationContentItemId")]
         [InverseProperty("EmailLibraryEmailConfigurations")]
-        public virtual EmailLibraryEmailTemplate EmailConfigurationEmailTemplate { get; set; } = null!;
-        [ForeignKey("EmailConfigurationSiteId")]
+        public virtual CmsContentItem? EmailConfigurationContentItem { get; set; }
+        [ForeignKey("EmailConfigurationEmailChannelId")]
         [InverseProperty("EmailLibraryEmailConfigurations")]
-        public virtual CmsSite? EmailConfigurationSite { get; set; }
+        public virtual EmailLibraryEmailChannel? EmailConfigurationEmailChannel { get; set; }
         [InverseProperty("SendConfigurationEmailConfiguration")]
         public virtual EmailLibrarySendConfiguration EmailLibrarySendConfiguration { get; set; } = null!;
         [InverseProperty("EmailEmailConfiguration")]

@@ -5,6 +5,7 @@ using Migration.Toolkit.Common;
 
 namespace Migration.Toolkit.Core.Services;
 
+using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.KXP.Context;
 
 public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
@@ -96,12 +97,12 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
         if (sourceType == typeof(KX13.Models.CmsTree) && memberName == nameof(KX13M.CmsTree.NodeId))
         {
             var source = kx13Context.CmsTrees.Select(x => new { x.NodeId, x.NodeGuid }).ToList();
-            var target = kxpContext.CmsTrees.Select(x => new { x.NodeId, x.NodeGuid }).ToList();
+            var target = kxpContext.CmsChannels.Select(x => new { x.ChannelId, x.ChannelGuid }).ToList();
 
             var result = source.Join(target,
                 a => a.NodeGuid,
-                b => b.NodeGuid,
-                (a, b) => new SourceTargetKeyMapping(a.NodeId, b.NodeId)
+                b => b.ChannelGuid,
+                (a, b) => new SourceTargetKeyMapping(a.NodeId, b.ChannelId)
             );
 
             foreach (var resultingMapping in result)
@@ -160,10 +161,6 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
         using var kxpContext = _kxpContextFactory.CreateDbContext();
         using var kx13Context = _kx13ContextFactory.CreateDbContext();
 
-        // var memberName = keyNameSelector.GetMemberName();
-        // var entityType = kx13Context.Model.FindEntityType(typeof(T));
-
-        // TODO tk: 2022-05-18 can be done smarter => deferred to optimizations
         var sourceType = typeof(T);
         targetId = -1;
         try
@@ -199,7 +196,7 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
             if (sourceType == typeof(KX13.Models.CmsSite))
             {
                 var kx13Guid = kx13Context.CmsSites.Where(c => c.SiteId == sourceId).Select(x => x.SiteGuid).Single();
-                targetId = kxpContext.CmsSites.Where(x => x.SiteGuid == kx13Guid).Select(x => x.SiteId).Single();
+                targetId = kxpContext.CmsChannels.Where(x => x.ChannelGuid == kx13Guid).Select(x => x.ChannelId).Single();
                 return true;
             }
 
@@ -226,7 +223,6 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
 
             if (sourceType == typeof(KX13.Models.OmContact))
             {
-                // TODO tk: 2022-06-13 might be good to optimize
                 var kx13Guid = kx13Context.OmContacts.Where(c => c.ContactId == sourceId).Select(x => x.ContactGuid).Single();
                 targetId = kxpContext.OmContacts.Where(x => x.ContactGuid == kx13Guid).Select(x => x.ContactId).Single();
                 return true;
@@ -236,13 +232,20 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
             {
                 // careful - cms.root will have different guid
                 var kx13Guid = kx13Context.CmsTrees.Where(c => c.NodeId == sourceId).Select(x => x.NodeGuid).Single();
-                targetId = kxpContext.CmsTrees.Where(x => x.NodeGuid == kx13Guid).Select(x => x.NodeId).Single();
+                targetId = kxpContext.CmsChannels.Where(x => x.ChannelGuid == kx13Guid).Select(x => x.ChannelId).Single();
                 return true;
             }
         }
         catch (InvalidOperationException ioex)
         {
-            _logger.LogWarning("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
+            if (ioex.Message.StartsWith("Sequence contains no elements"))
+            {
+                _logger.LogDebug("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
+            }
+            else
+            {
+                _logger.LogWarning("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
+            }
             return false;
         }
         finally

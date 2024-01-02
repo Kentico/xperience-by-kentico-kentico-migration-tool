@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.KXP.Models
 {
     [Table("CMS_EventLog")]
-    [Index("SiteId", Name = "IX_CMS_EventLog_SiteID")]
     public partial class CmsEventLog
     {
         [Key]
@@ -27,13 +26,7 @@ namespace Migration.Toolkit.KXP.Models
         [Column("IPAddress")]
         [StringLength(100)]
         public string? Ipaddress { get; set; }
-        [Column("NodeID")]
-        public int? NodeId { get; set; }
-        [StringLength(100)]
-        public string? DocumentName { get; set; }
         public string? EventDescription { get; set; }
-        [Column("SiteID")]
-        public int? SiteId { get; set; }
         public string? EventUrl { get; set; }
         [StringLength(100)]
         public string? EventMachineName { get; set; }

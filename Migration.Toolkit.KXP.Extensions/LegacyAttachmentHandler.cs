@@ -49,12 +49,6 @@ public class LegacyAttachmentHandler : CMS.DataEngine.Module
 public class AttachmentsService : ActionResultServiceBase
 {
     private const string LegacyOriginalPath = "__LegacyOriginalPath";
-    private readonly ISiteService _siteService;
-
-    public AttachmentsService(ISiteService siteService)
-    {
-        _siteService = siteService;
-    }
 
     protected override RequestStatusEnum RequestStatusEnum => RequestStatusEnum.GetFileHandler;
 
@@ -84,8 +78,8 @@ public class AttachmentsService : ActionResultServiceBase
                         ?.Equals($"/{dir}", StringComparison.InvariantCultureIgnoreCase) == true)
                     .ToArray();
 
-                mediaFile = narrowedByOriginalPath.Length > 1 
-                    ? null 
+                mediaFile = narrowedByOriginalPath.Length > 1
+                    ? null
                     : narrowedByOriginalPath.FirstOrDefault();
             }
             else
@@ -93,17 +87,13 @@ public class AttachmentsService : ActionResultServiceBase
                 mediaFile = mediaFiles.FirstOrDefault();
             }
 
-            if (mediaFile != null && _siteService.CurrentSite is { } site)
+            var mediaPath = MediaFileInfoProvider.GetMediaFilePath(mediaFile.FilePath, mediaFile.FileLibraryID, SystemContext.WebApplicationPhysicalPath);
+            var result = new CMSPhysicalFileResult(mediaPath)
             {
-                var mediaPath = MediaFileInfoProvider.GetMediaFilePath(mediaFile.FilePath, mediaFile.FileLibraryID, site.SiteName,
-                    SystemContext.WebApplicationPhysicalPath);
-                var result = new CMSPhysicalFileResult(mediaPath)
-                {
-                    ContentType = mediaFile.FileMimeType,
-                    ContentDisposition = HTTPHelper.GetFileDisposition(mediaPath, Path.GetExtension(mediaPath))
-                };
-                return result;
-            }
+                ContentType = mediaFile.FileMimeType,
+                ContentDisposition = HTTPHelper.GetFileDisposition(mediaPath, Path.GetExtension(mediaPath))
+            };
+            return result;
         }
 
         return new CMSNotFoundResult();

@@ -1,13 +1,14 @@
 namespace Migration.Toolkit.Core.Mappers;
 
-using CMS.DocumentEngine;
+
 using CMS.MediaLibrary;
+using CMS.Websites;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
+using Migration.Toolkit.Common.Services.Ipc;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.Core.Services.CmsClass;
-using Migration.Toolkit.Core.Services.Ipc;
 using Migration.Toolkit.KX13.Auxiliary;
 using Migration.Toolkit.KX13.Models;
 using Migration.Toolkit.KXP.Api.Auxiliary;
@@ -40,14 +41,8 @@ public class PageTemplateConfigurationMapper : EntityMapperBase<KX13M.CmsPageTem
         target.PageTemplateConfigurationDescription = source.PageTemplateConfigurationDescription;
         target.PageTemplateConfigurationName = source.PageTemplateConfigurationName;
         target.PageTemplateConfigurationLastModified = source.PageTemplateConfigurationLastModified;
-        
-        // TODO tk: 2022-09-14 find conversion path for PageTemplateConfigurationIcon
-        // target.PageTemplateConfigurationIcon = source.PageTemplateConfigurationThumbnailGuid.GetValueOrDefault();
+        target.PageTemplateConfigurationIcon = "xp-custom-element"; // TODO tomas.krch: 2023-11-27 some better default icon pick?
 
-        target.PageTemplateConfigurationSiteID =
-            mappingHelper.TranslateRequiredId<KX13M.CmsSite>(s => s.SiteId, source.PageTemplateConfigurationSiteId, out var targetSiteId)
-                ? targetSiteId
-                : 0;
         if (newInstance)
         {
             target.PageTemplateConfigurationGUID = source.PageTemplateConfigurationGuid;
@@ -91,9 +86,6 @@ public class PageTemplateConfigurationMapper : EntityMapperBase<KX13M.CmsPageTem
             target.PageTemplateConfigurationTemplate = source.PageTemplateConfigurationTemplate;
             target.PageTemplateConfigurationWidgets = source.PageTemplateConfigurationWidgets;
         }
-        
-        // OBSOLETE
-        // target.PageTemplateConfigurationThumbnailGUID = source.PageTemplateConfigurationThumbnailGuid.GetValueOrDefault();
 
         return target;
     }
@@ -197,9 +189,9 @@ public class PageTemplateConfigurationMapper : EntityMapperBase<KX13M.CmsPageTem
                         {
                             if (value?.ToObject<List<PageSelectorItem>>() is { Count: > 0 } items)
                             {
-                                properties[key] = JToken.FromObject(items.Select(x => new PageRelatedItem
+                                properties[key] = JToken.FromObject(items.Select(x => new WebPageRelatedItem
                                 {
-                                    NodeGuid = x.NodeGuid
+                                    WebPageGuid = x.NodeGuid
                                 }).ToList());
                             }
 
@@ -216,7 +208,6 @@ public class PageTemplateConfigurationMapper : EntityMapperBase<KX13M.CmsPageTem
                 }
                 else
                 {
-                    // TODO tk: 2022-09-14 leave message that data needs to be migrated
                     // unknown control, probably custom
                     Protocol.Append(HandbookReferences.FormComponentCustom(editingFcm.FormComponentIdentifier));
                     _logger.LogTrace(

@@ -11,8 +11,8 @@ using Newtonsoft.Json;
 
 public class ToolkitApiController : Controller
 {
-    // TODO configure your own secret 
-    private const string Secret = "";
+    // TODO configure your own secret
+    private const string Secret = "secret_used_for_http_posts_to_source_instance_change_to_random_key";
 
     public ToolkitApiController() { }
 
@@ -21,7 +21,7 @@ public class ToolkitApiController : Controller
         public Dictionary<string, List<EditingFormControlModel>> WidgetProperties { get; set; }
         public Dictionary<string, List<EditingFormControlModel>> PageTemplateProperties { get; set; }
         public Dictionary<string, List<EditingFormControlModel>> SectionProperties { get; set; }
-        
+
         public string SiteName { get; set; }
     }
 
@@ -47,7 +47,7 @@ public class ToolkitApiController : Controller
         {
             pong = true
         });
-    }    
+    }
 
     [HttpPost()]
     public ActionResult GetAllDefinitions(BodyModel body)
@@ -153,7 +153,7 @@ public class ToolkitApiController : Controller
         }
 
         return ToJsonResult(result);
-    }    
+    }
 
     [HttpPost()]
     public ActionResult GetAllFormComponents(BodyModel body)

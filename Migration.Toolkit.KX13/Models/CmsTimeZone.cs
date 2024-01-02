@@ -1,37 +1,44 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
-namespace Migration.Toolkit.KX13.Models
+namespace Migration.Toolkit.KX13.Models;
+
+[Table("CMS_TimeZone")]
+public partial class CmsTimeZone
 {
-    [Table("CMS_TimeZone")]
-    public partial class CmsTimeZone
-    {
-        public CmsTimeZone()
-        {
-            CmsUserSettings = new HashSet<CmsUserSetting>();
-        }
+    [Key]
+    [Column("TimeZoneID")]
+    public int TimeZoneId { get; set; }
 
-        [Key]
-        [Column("TimeZoneID")]
-        public int TimeZoneId { get; set; }
-        [StringLength(200)]
-        public string TimeZoneName { get; set; } = null!;
-        [StringLength(200)]
-        public string TimeZoneDisplayName { get; set; } = null!;
-        [Column("TimeZoneGMT")]
-        public double TimeZoneGmt { get; set; }
-        public bool? TimeZoneDaylight { get; set; }
-        public DateTime TimeZoneRuleStartIn { get; set; }
-        [StringLength(200)]
-        public string TimeZoneRuleStartRule { get; set; } = null!;
-        public DateTime TimeZoneRuleEndIn { get; set; }
-        [StringLength(200)]
-        public string TimeZoneRuleEndRule { get; set; } = null!;
-        [Column("TimeZoneGUID")]
-        public Guid TimeZoneGuid { get; set; }
-        public DateTime TimeZoneLastModified { get; set; }
+    [StringLength(200)]
+    public string TimeZoneName { get; set; } = null!;
 
-        [InverseProperty("UserTimeZone")]
-        public virtual ICollection<CmsUserSetting> CmsUserSettings { get; set; }
-    }
+    [StringLength(200)]
+    public string TimeZoneDisplayName { get; set; } = null!;
+
+    [Column("TimeZoneGMT")]
+    public double TimeZoneGmt { get; set; }
+
+    public bool? TimeZoneDaylight { get; set; }
+
+    public DateTime TimeZoneRuleStartIn { get; set; }
+
+    [StringLength(200)]
+    public string TimeZoneRuleStartRule { get; set; } = null!;
+
+    public DateTime TimeZoneRuleEndIn { get; set; }
+
+    [StringLength(200)]
+    public string TimeZoneRuleEndRule { get; set; } = null!;
+
+    [Column("TimeZoneGUID")]
+    public Guid TimeZoneGuid { get; set; }
+
+    public DateTime TimeZoneLastModified { get; set; }
+
+    [InverseProperty("UserTimeZone")]
+    public virtual ICollection<CmsUserSetting> CmsUserSettings { get; set; } = new List<CmsUserSetting>();
 }

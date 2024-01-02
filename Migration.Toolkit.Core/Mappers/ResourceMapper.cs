@@ -2,10 +2,10 @@ namespace Migration.Toolkit.Core.Mappers;
 
 using CMS.Modules;
 using Microsoft.Extensions.Logging;
+using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Enumerations;
-using Migration.Toolkit.Core.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.Core.Services.CmsClass;
 using Migration.Toolkit.KX13.Models;
 
@@ -47,16 +47,6 @@ public class ResourceMapper : EntityMapperBase<KX13M.CmsResource, ResourceInfo>
                 target.ResourceName = targetResourceNamePatched;
             }
         }
-        
-        // OBSOLETE
-        // target.ResourceAuthor = source.ResourceAuthor;
-        // target.ResourceHasFiles = source.ResourceHasFiles ?? false;
-        // target.ResourceInstallationState = source.ResourceInstallationState;
-        // target.ResourceInstalledVersion = source.ResourceInstalledVersion;
-        // target.ResourceIsInDevelopment = source.ResourceIsInDevelopment ?? false;
-        // target.ResourceUrl = source.ResourceUrl;
-        // target.ResourceVersion = source.ResourceVersion;
-        // target.ShowInDevelopment = source.ShowInDevelopment ?? false;
 
         return target;
     }

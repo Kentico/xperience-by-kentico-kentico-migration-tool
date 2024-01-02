@@ -11,6 +11,7 @@
     <AssemblyName>KX13.NET48.Extensions</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -635,7 +636,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Kentico.Xperience.AspNet.Mvc5.13.0.82\build\Kentico.Xperience.AspNet.Mvc5.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Kentico.Xperience.AspNet.Mvc5.13.0.82\build\Kentico.Xperience.AspNet.Mvc5.targets'))" />
   </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
          Other similar extension points exist, see Microsoft.Common.targets.
     <Target Name="BeforeBuild">
     </Target>

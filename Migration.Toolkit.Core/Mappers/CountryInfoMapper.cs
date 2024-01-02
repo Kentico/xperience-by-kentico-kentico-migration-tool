@@ -2,9 +2,9 @@ namespace Migration.Toolkit.Core.Mappers;
 
 using CMS.Globalization;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.KX13.Models;
 
 public class CountryInfoMapper : EntityMapperBase<KX13.Models.CmsCountry, CountryInfo>

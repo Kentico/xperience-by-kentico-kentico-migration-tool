@@ -8,9 +8,9 @@ namespace Migration.Toolkit.KXP.Models
 {
     [Table("Media_File")]
     [Index("FileCreatedByUserId", Name = "IX_Media_File_FileCreatedByUserID")]
+    [Index("FileGuid", Name = "IX_Media_File_FileGUID")]
     [Index("FileLibraryId", Name = "IX_Media_File_FileLibraryID")]
     [Index("FileModifiedByUserId", Name = "IX_Media_File_FileModifiedByUserID")]
-    [Index("FileSiteId", "FileGuid", Name = "IX_Media_File_FileSiteID_FileGUID")]
     public partial class MediaFile
     {
         [Key]
@@ -33,8 +33,6 @@ namespace Migration.Toolkit.KXP.Models
         public Guid FileGuid { get; set; }
         [Column("FileLibraryID")]
         public int FileLibraryId { get; set; }
-        [Column("FileSiteID")]
-        public int FileSiteId { get; set; }
         [Column("FileCreatedByUserID")]
         public int? FileCreatedByUserId { get; set; }
         public DateTime FileCreatedWhen { get; set; }
@@ -52,8 +50,5 @@ namespace Migration.Toolkit.KXP.Models
         [ForeignKey("FileModifiedByUserId")]
         [InverseProperty("MediaFileFileModifiedByUsers")]
         public virtual CmsUser? FileModifiedByUser { get; set; }
-        [ForeignKey("FileSiteId")]
-        [InverseProperty("MediaFiles")]
-        public virtual CmsSite FileSite { get; set; } = null!;
     }
 }

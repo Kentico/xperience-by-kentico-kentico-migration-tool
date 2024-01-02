@@ -2,12 +2,12 @@
 using CMS.OnlineForms;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
-using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
 
 namespace Migration.Toolkit.Core.Mappers;
 
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Models;
 
 public class CmsFormMapper : EntityMapperBase<KX13.Models.CmsForm, BizFormInfo>
@@ -49,17 +49,14 @@ public class CmsFormMapper : EntityMapperBase<KX13.Models.CmsForm, BizFormInfo>
         target.FormLogActivity = source.FormLogActivity.UseKenticoDefault();
         target.FormBuilderLayout = source.FormBuilderLayout;
 
+
+
         // target.FormAfterSubmitMode = source.FormAfterSubmitMode;
         // target.FormAfterSubmitRelatedValue = source.FormAfterSubmitRelatedValue;
 
         if (mappingHelper.TranslateRequiredId<KX13.Models.CmsClass>(c => c.ClassId, source.FormClassId, out var formClassId))
         {
             target.FormClassID = formClassId;
-        }
-        
-        if (mappingHelper.TranslateRequiredId<KX13.Models.CmsSite>(c => c.SiteId, source.FormSiteId, out var formSiteId))
-        {
-            target.FormSiteID = formSiteId;
         }
 
         return target;
@@ -99,15 +96,10 @@ public class CmsFormMapperEf : EntityMapperBase<KX13.Models.CmsForm, Migration.T
 
         // TODO tk: 2022-05-20 new deduce: target.FormAfterSubmitMode = source.FormAfterSubmitMode;
         // TODO tk: 2022-05-20 new deduce: target.FormAfterSubmitRelatedValue = source.FormAfterSubmitRelatedValue;
-        
+
         if (mappingHelper.TranslateRequiredId<KX13.Models.CmsClass>(c => c.ClassId, source.FormClassId, out var classId))
         {
             target.FormClassId = classId;
-        }
-        
-        if (mappingHelper.TranslateRequiredId<KX13.Models.CmsSite>(c => c.SiteId, source.FormSiteId, out var siteId))
-        {
-            target.FormSiteId = siteId;
         }
 
         return target;

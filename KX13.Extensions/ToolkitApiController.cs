@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 
 public class ToolkitApiController : Controller
 {
-    // TODO configure your own secret 
+    // TODO configure your own secret
     private const string Secret = "";
 
     private readonly IHttpContextAccessor _httpContextAccessor;
@@ -27,7 +27,7 @@ public class ToolkitApiController : Controller
         public Dictionary<string, List<EditingFormControlModel>> WidgetProperties { get; set; }
         public Dictionary<string, List<EditingFormControlModel>> PageTemplateProperties { get; set; }
         public Dictionary<string, List<EditingFormControlModel>> SectionProperties { get; set; }
-        
+
         public string SiteName { get; set; }
     }
 

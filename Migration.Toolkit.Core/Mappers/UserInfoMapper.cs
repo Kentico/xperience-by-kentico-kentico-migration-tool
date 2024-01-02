@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
 
 namespace Migration.Toolkit.Core.Mappers;
 
@@ -10,6 +8,8 @@ using System.Text;
 using CMS.Membership;
 using Microsoft.Data.SqlClient;
 using Migration.Toolkit.Common;
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Api;
 
 public class UserInfoMapper : EntityMapperBase<KX13M.CmsUser, UserInfo>
@@ -107,21 +107,5 @@ public class UserInfoMapper : EntityMapperBase<KX13M.CmsUser, UserInfo>
 
 
         return target;
-
-        // removed in kxo
-        // target.MiddleName = source.MiddleName;
-        // target.FullName = source.FullName;
-        // target.PreferredCultureCode = source.PreferredCultureCode;
-        // target.PreferredUicultureCode = source.PreferredUicultureCode;
-        // target.UserIsExternal = source.UserIsExternal;
-        // target.UserPasswordFormat = source.UserPasswordFormat;
-        // target.UserStartingAliasPath = source.UserStartingAliasPath;
-        // target.UserLastLogonInfo = source.UserLastLogonInfo;
-        // target.UserIsHidden = source.UserIsHidden;
-        // target.UserIsDomain = source.UserIsDomain;
-        // target.UserHasAllowedCultures = source.UserHasAllowedCultures;
-        // target.UserMfrequired = source.UserMfrequired;
-        // target.UserPrivilegeLevel = source.UserPrivilegeLevel;
-        // target.UserMftimestep = source.UserMftimestep;;
     }
 }

@@ -31,8 +31,6 @@ namespace Migration.Toolkit.KXP.Models
         [Column("AttachmentContentID")]
         [StringLength(255)]
         public string? AttachmentContentId { get; set; }
-        [Column("AttachmentSiteID")]
-        public int? AttachmentSiteId { get; set; }
 
         [ForeignKey("AttachmentId")]
         [InverseProperty("Attachments")]

@@ -1,9 +1,10 @@
 namespace Migration.Toolkit.Core.Services;
 
-using CMS.DocumentEngine;
+using CMS.DataEngine.Internal;
+using CMS.Websites;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Core.Abstractions;
-using Migration.Toolkit.Core.MigrationProtocol;
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 
 public class PageTemplateMigrator
 {
@@ -24,18 +25,18 @@ public class PageTemplateMigrator
 
     public Task MigratePageTemplateConfigurationAsync(KX13M.CmsPageTemplateConfiguration kx13PageTemplateConfiguration)
     {
-        var kxpProvider = PageTemplateConfigurationInfoProvider.ProviderObject;
+        var kxpProvider = Provider<PageTemplateConfigurationInfo>.Instance;
         var kxpPageTemplateConfiguration = kxpProvider.Get().WhereEquals("PageTemplateConfigurationGUID", kx13PageTemplateConfiguration.PageTemplateConfigurationGuid).FirstOrDefault();
 
         var mapped = _pageTemplateConfigurationMapper.Map(kx13PageTemplateConfiguration, kxpPageTemplateConfiguration);
 
-        if (mapped is (var pageTemplateConfigurationInfo, _) { Success: true })
+        if (mapped is { Success: true, Item: { } result })
         {
             try
             {
-                kxpProvider.Set(pageTemplateConfigurationInfo);
-                
-                _protocol.Success(kx13PageTemplateConfiguration, pageTemplateConfigurationInfo, null);
+                kxpProvider.Set(result);
+
+                _protocol.Success(kx13PageTemplateConfiguration, result, null);
             }
             catch (Exception exception)
             {

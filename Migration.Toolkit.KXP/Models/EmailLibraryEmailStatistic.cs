@@ -20,6 +20,11 @@ namespace Migration.Toolkit.KXP.Models
         public int EmailStatisticsEmailClicks { get; set; }
         public int EmailStatisticsEmailUniqueClicks { get; set; }
         public int EmailStatisticsTotalSent { get; set; }
+        public int? EmailStatisticsEmailSoftBounces { get; set; }
+        public int? EmailStatisticsEmailHardBounces { get; set; }
+        public int EmailStatisticsEmailsDelivered { get; set; }
+        public int EmailStatisticsUniqueUnsubscribes { get; set; }
+        public int? EmailStatisticsSpamReports { get; set; }
 
         [ForeignKey("EmailStatisticsEmailConfigurationId")]
         [InverseProperty("EmailLibraryEmailStatistics")]

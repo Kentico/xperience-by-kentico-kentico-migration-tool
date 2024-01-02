@@ -60,8 +60,8 @@ public static class FieldMappingInstance
         new(Kx13FieldDataType.LongText, FieldDataType.LongText, FcLongText.TextAreaControl, FormComponents.AdminTextAreaComponent),
         new(Kx13FieldDataType.LongText, FieldDataType.LongText, SfcDirective.CatchAnyNonMatching, FormComponents.AdminRichTextEditorComponent),
         new(Kx13FieldDataType.Integer, FieldDataType.Integer, SfcDirective.CatchAnyNonMatching, FormComponents.AdminNumberInputComponent),
-        new(Kx13FieldDataType.LongInteger, FieldDataType.LongInteger, SfcDirective.CatchAnyNonMatching, FormComponents.AdminNumberInputComponent),
-        new(Kx13FieldDataType.Double, FieldDataType.Double, SfcDirective.CatchAnyNonMatching, FormComponents.AdminNumberInputComponent),
+        new(Kx13FieldDataType.LongInteger, FieldDataType.LongInteger, SfcDirective.CatchAnyNonMatching, TfcDirective.Clear, new[] { TfcDirective.Clear }),//FormComponents.AdminNumberInputComponent),
+        new(Kx13FieldDataType.Double, FieldDataType.Double, SfcDirective.CatchAnyNonMatching, TfcDirective.Clear, new[] { TfcDirective.Clear }),// FormComponents.AdminNumberInputComponent),
         new(Kx13FieldDataType.Decimal, FieldDataType.Decimal, SfcDirective.CatchAnyNonMatching, FormComponents.AdminDecimalNumberInputComponent),
         new(Kx13FieldDataType.DateTime, FieldDataType.DateTime, SfcDirective.CatchAnyNonMatching, FormComponents.AdminDateTimeInputComponent),
         new(Kx13FieldDataType.Date, FieldDataType.Date, SfcDirective.CatchAnyNonMatching, FormComponents.AdminDateInputComponent),
@@ -69,7 +69,7 @@ public static class FieldMappingInstance
         new(Kx13FieldDataType.Boolean, FieldDataType.Boolean, SfcDirective.CatchAnyNonMatching, FormComponents.AdminCheckBoxComponent),
         new(Kx13FieldDataType.DocAttachments, FieldDataType.Assets, SfcDirective.CatchAnyNonMatching, FormComponents.AdminAssetSelectorComponent, new[] { TcaDirective.ConvertToAsset }),
         new(Kx13FieldDataType.File, FieldDataType.Assets, SfcDirective.CatchAnyNonMatching, FormComponents.AdminAssetSelectorComponent, new[] { TcaDirective.ConvertToAsset }),
-        new(Kx13FieldDataType.Guid, FieldDataType.Guid, "RelatedDocuments", FormComponents.AdminPageSelectorComponent, new [] { TcaDirective.ConvertToPages }),
+        new(Kx13FieldDataType.Guid, FieldDataType.LongText, "RelatedDocuments", FormComponents.AdminPageSelectorComponent, new [] { TcaDirective.ConvertToPages }),
         new(Kx13FieldDataType.Guid, FieldDataType.Guid, SfcDirective.CatchAnyNonMatching, TfcDirective.Clear),
         new(Kx13FieldDataType.Binary, FieldDataType.Binary, SfcDirective.CatchAnyNonMatching, TfcDirective.Clear),
         new(Kx13FieldDataType.Xml, FieldDataType.Xml, SfcDirective.CatchAnyNonMatching, FormComponents.AdminNumberWithLabelComponent),
@@ -82,8 +82,9 @@ public static class FieldMappingInstance
         {
             new(Kx13FormComponents.Kentico_AttachmentSelector, FormComponents.AdminAssetSelectorComponent), new(Kx13FormComponents.Kentico_PageSelector, FormComponents.AdminPageSelectorComponent)
         },
-        new[]
+        new string[]
         {
+            // Legacy mode is no longer supported
             Kx13FormComponents.Kentico_BoolFieldValueTypeSelector, Kx13FormComponents.Kentico_CheckBox, Kx13FormComponents.Kentico_CompareToFieldSelector, Kx13FormComponents.Kentico_ConsentAgreement,
             Kx13FormComponents.Kentico_ConsentSelector, Kx13FormComponents.Kentico_DropDown, Kx13FormComponents.Kentico_EmailInput, Kx13FormComponents.Kentico_FileUploader,
             Kx13FormComponents.Kentico_HiddenGuidInput, Kx13FormComponents.Kentico_IntInput, Kx13FormComponents.Kentico_MultipleChoice, Kx13FormComponents.Kentico_Name,

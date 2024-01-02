@@ -4,10 +4,10 @@ using CMS.DataEngine;
 using CMS.FormEngine;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
+using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Enumerations;
-using Migration.Toolkit.Core.Abstractions;
+using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.MigrationProtocol;
 using Migration.Toolkit.Core.Services;
 using Migration.Toolkit.Core.Services.CmsClass;
 
@@ -88,7 +88,6 @@ public class AlternativeFormMapper : EntityMapperBase<AlternativeFormMapperSourc
 
         target.FormDisplayName = source.FormDisplayName;
         target.FormGUID = source.FormGuid;
-        // target.FormHideNewParentFields = source.FormHideNewParentFields.GetValueOrDefault(false);
         target.FormIsCustom = source.FormIsCustom.GetValueOrDefault(false);
         target.FormLastModified = source.FormLastModified;
         target.FormName = source.FormName;

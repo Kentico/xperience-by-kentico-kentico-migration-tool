@@ -27,11 +27,12 @@ public class FieldMigrationService // shall be singleton to cache necessary data
         _userDefinedMigrations = allUserDefinedMigrations;
     }
 
-    public FieldMigration GetFieldMigration(string sourceDataType, string? sourceFormControl, string? fieldName)
+    public FieldMigration? GetFieldMigration(string sourceDataType, string? sourceFormControl, string? fieldName)
     {
         if (sourceFormControl == null)
         {
-            _logger.LogWarning("Attempt to find field migration without source field control defined '{SourceDataType}', field '{FieldName}'", sourceDataType, fieldName);
+            _logger.LogDebug("Source field has no control defined '{SourceDataType}', field '{FieldName}'", sourceDataType, fieldName);
+            return null;
         }
 
         var userDefined = GetFieldMigrationInternal(_userDefinedMigrations, sourceDataType, sourceFormControl, fieldName);

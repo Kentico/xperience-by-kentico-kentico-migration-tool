@@ -13,7 +13,6 @@ namespace Migration.Toolkit.KXP.Models
         public CmsResource()
         {
             CmsClasses = new HashSet<CmsClass>();
-            CmsResourceLibraries = new HashSet<CmsResourceLibrary>();
             CmsScheduledTasks = new HashSet<CmsScheduledTask>();
             CmsSettingsCategories = new HashSet<CmsSettingsCategory>();
             CmsWorkflowActions = new HashSet<CmsWorkflowAction>();
@@ -34,8 +33,6 @@ namespace Migration.Toolkit.KXP.Models
 
         [InverseProperty("ClassResource")]
         public virtual ICollection<CmsClass> CmsClasses { get; set; }
-        [InverseProperty("ResourceLibraryResource")]
-        public virtual ICollection<CmsResourceLibrary> CmsResourceLibraries { get; set; }
         [InverseProperty("TaskResource")]
         public virtual ICollection<CmsScheduledTask> CmsScheduledTasks { get; set; }
         [InverseProperty("CategoryResource")]

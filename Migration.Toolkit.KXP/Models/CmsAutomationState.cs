@@ -8,7 +8,6 @@ namespace Migration.Toolkit.KXP.Models
 {
     [Table("CMS_AutomationState")]
     [Index("StateObjectId", "StateObjectType", Name = "IX_CMS_AutomationState_StateObjectID_StateObjectType")]
-    [Index("StateSiteId", Name = "IX_CMS_AutomationState_StateSiteID")]
     [Index("StateStepId", Name = "IX_CMS_AutomationState_StateStepID")]
     [Index("StateUserId", Name = "IX_CMS_AutomationState_StateUserID")]
     [Index("StateWorkflowId", Name = "IX_CMS_AutomationState_StateWorkflowID")]
@@ -35,17 +34,12 @@ namespace Migration.Toolkit.KXP.Models
         [Column("StateWorkflowID")]
         public int StateWorkflowId { get; set; }
         public int? StateStatus { get; set; }
-        [Column("StateSiteID")]
-        public int? StateSiteId { get; set; }
         [Column("StateUserID")]
         public int? StateUserId { get; set; }
         [Column("StateGUID")]
         public Guid StateGuid { get; set; }
         public string? StateCustomData { get; set; }
 
-        [ForeignKey("StateSiteId")]
-        [InverseProperty("CmsAutomationStates")]
-        public virtual CmsSite? StateSite { get; set; }
         [ForeignKey("StateStepId")]
         [InverseProperty("CmsAutomationStates")]
         public virtual CmsWorkflowStep StateStep { get; set; } = null!;
