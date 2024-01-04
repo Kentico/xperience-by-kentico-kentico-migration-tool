@@ -6,7 +6,7 @@
 [//]: # "[![Discord][discussion-shield]][discussion-url]"
 
 <!-- ABOUT THE PROJECT -->
-# Migration toolkit for Xperience
+# Migration toolkit for Xperience by Kentico
 
 The Migration toolkit transfers content and other data from **Kentico Xperience 13** to **Xperience by Kentico**.
 
