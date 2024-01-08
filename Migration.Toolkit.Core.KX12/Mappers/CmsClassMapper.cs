@@ -42,23 +42,8 @@ public class CmsClassMapper : EntityMapperBase<KX12M.CmsClass, DataClassInfo>
     protected override DataClassInfo MapInternal(KX12M.CmsClass source, DataClassInfo target, bool newInstance, MappingHelper mappingHelper,
         AddFailure addFailure)
     {
-        // if (source.ClassName.Equals("cms.folder", StringComparison.InvariantCultureIgnoreCase))
-        // {
-        //
-        // }
-        // else
-        // {
-        //
-        // }
-
         target.ClassDisplayName = source.ClassDisplayName;
         target.ClassName = source.ClassName;
-        // TODO tomas.krch: 2023-10-30 removed in v27 => this needs to be replaced by 'ClassType' and 'ClassContentTypeType'
-        // target.ClassIsDocumentType = source.ClassIsDocumentType;
-
-        // TODOV27 tomas.krch: 2023-09-05: class is coupled class removed, replacement?
-        // target.ClassIsCoupledClass = source.ClassIsCoupledClass;
-
 
         var isCustomizableSystemClass = false;
         var classIsCustom = true;
@@ -93,12 +78,6 @@ public class CmsClassMapper : EntityMapperBase<KX12M.CmsClass, DataClassInfo>
 
                 foreach (var formFieldInfos in ffiLookup)
                 {
-                    // if (formFieldInfos.Count() > 1 && formFieldInfos.Key != null)
-                    // {
-                    //     _logger.LogWarning("Multiple mappings with same value in 'MappedToField': {Detail}",
-                    //         string.Join("|", formFieldInfos.Select(f => f.ToXML("FormFields", false))));
-                    // }
-
                     newMappings.AddFormItem(formFieldInfos.First());
                 }
             }
@@ -116,26 +95,6 @@ public class CmsClassMapper : EntityMapperBase<KX12M.CmsClass, DataClassInfo>
             target.ClassWebPageHasUrl = true;
         }
 
-        // true for page content type
-        // TODOV27 tomas.krch: 2023-09-05: obsolete dataclass properties
-        // target.ClassIsPage = source.ClassIsDocumentType;
-        // target.ClassNodeNameSource = source.ClassNodeNameSource;
-        // target.ClassShowAsSystemTable = source.ClassShowAsSystemTable.UseKenticoDefault();
-        // target.ClassUsePublishFromTo = source.ClassUsePublishFromTo.UseKenticoDefault();
-        // target.ClassNodeAliasSource = source.ClassNodeAliasSource;
-        // target.ClassShowColumns = source.ClassShowColumns;
-        // target.ClassURLPattern = source.ClassUrlpattern;
-        // target.ClassUsesPageBuilder = source.ClassUsesPageBuilder;
-        // target.ClassHasMetadata = source.ClassHasMetadata;
-        // target.ClassIsForm = source.ClassIsForm.UseKenticoDefault();
-        // target.ClassCustomizedColumns = source.ClassCustomizedColumns;
-
-        // TODOV27 tomas.krch: 2023-09-05: broken class inheritance
-        // if (mappingHelper.TranslateIdAllowNulls<KX12M.CmsClass>(c => c.ClassId, source.ClassInheritsFromClassId.NullIfZero(), out var classId))
-        // {
-        //     target.ClassInheritsFromClassID = classId.UseKenticoDefault();
-        // }
-
         if (mappingHelper.TranslateIdAllowNulls<KX12M.CmsResource>(c => c.ResourceId, source.ClassResourceId, out var resourceId))
         {
             if (resourceId.HasValue)
@@ -143,29 +102,6 @@ public class CmsClassMapper : EntityMapperBase<KX12M.CmsClass, DataClassInfo>
                 target.ClassResourceID = resourceId.Value;
             }
         }
-
-        // OBSOLETE
-        // target.ClassFormLayout = source.ClassFormLayout;
-        // target.ClassIsMenuItemType = source.ClassIsMenuItemType.UseKenticoDefault();
-        // target.ClassIsProduct = source.ClassIsProduct.UseKenticoDefault();
-        // target.ClassUsesVersioning = source.ClassUsesVersioning;
-        // target.ClassSkumappings = source.ClassSkumappings;
-        // target.ClassCreateSku = source.ClassCreateSku;
-        // target.ClassSkudefaultDepartmentName = source.ClassSkudefaultDepartmentName;
-        // target.ClassSKUDefaultDepartmentID = source.ClassSkudefaultDepartmentId;
-        // target.ClassSKUDefaultProductType = source.ClassSkudefaultProductType;
-        // target.ClassIsProductSection = source.ClassIsProductSection.UseKenticoDefault();
-        // target.ClassFormLayoutType = source.ClassFormLayoutType.AsEnum<LayoutTypeEnum>();
-        // target.ClassVersionGUID = source.ClassVersionGuid;
-        // target.ClassIsNavigationItem = source.ClassIsNavigationItem;
-        // TODO tk: 2022-05-30 domain validation failed (Field name: ClassSearchIndexDataSource)
-        // target.ClassSearchIndexDataSource = source.ClassSearchIndexDataSource.AsEnum<SearchIndexDataSourceEnum>();
-        // target.ClassSearchEnabled = source.ClassSearchEnabled.UseKenticoDefault();
-        // target.ClassSearchTitleColumn = source.ClassSearchTitleColumn;
-        // target.ClassSearchContentColumn = source.ClassSearchContentColumn;
-        // target.ClassSearchImageColumn = source.ClassSearchImageColumn;
-        // target.ClassSearchCreationDateColumn = source.ClassSearchCreationDateColumn;
-        // target.ClassSearchSettings = source.ClassSearchSettings;
 
         switch (source)
         {
@@ -175,10 +111,6 @@ public class CmsClassMapper : EntityMapperBase<KX12M.CmsClass, DataClassInfo>
                 className.Equals("cms.root", StringComparison.InvariantCultureIgnoreCase)
                 :
             {
-                // Debug.WriteLine($"'{source.ClassName}' SKIPPED");
-                // return;
-                // TODO tomas.krch: 2023-11-08 correct fail - this needs to be excluded before mapping
-                // addFailure($"'{source.ClassName}' SKIPPED");
                 throw new Exception("Unable to map obsolete dataclass");
                 return target;
             }
@@ -186,16 +118,9 @@ public class CmsClassMapper : EntityMapperBase<KX12M.CmsClass, DataClassInfo>
             // Target System,null
             case not null when target is { ClassType: ClassType.OTHER or ClassType.SYSTEM_TABLE }:
             {
-                // Debug.WriteLine($"'{dataClass.ClassName}' => OTHER or SYSTEM => IGNORED");
                 break;
             }
         }
-
-        // if (target == null)
-        // {
-        //     // Debug.WriteLine($"'{source.ClassName}' not found in migrated db");
-        //     target = MapTempClassToDataClass(source);
-        // }
 
         switch (source)
         {
@@ -227,10 +152,6 @@ public class CmsClassMapper : EntityMapperBase<KX12M.CmsClass, DataClassInfo>
             {
                 target.ClassType = ClassType.FORM;
                 target.ClassContentTypeType = "";
-                // remove when ClassIsDocumentType is completely obsolete
-                // if(target.ContainsColumn("ClassIsDocumentType")) target.SetValue("ClassIsDocumentType", false);
-                // Debug.WriteLine($"'{target.ClassName}' => CT='{target.ClassType}' CCTT='{target.ClassContentTypeType}'");
-                //DataClassInfoProvider.ProviderObject.Set(target);
 
                 break;
             }
@@ -249,10 +170,6 @@ public class CmsClassMapper : EntityMapperBase<KX12M.CmsClass, DataClassInfo>
                 target.ClassContentTypeType = ClassContentTypeType.REUSABLE;
 
                 target = PatchDataClassInfo(target, out var oldPrimaryKeyName, out var documentNameField);
-
-                // Debug.WriteLine($"'{target.ClassName}' => CT='{target.ClassType}' CCTT='{target.ClassContentTypeType}'");
-                // DataClassInfoProvider.ProviderObject.Set(target);
-                // mMigrated.DataClass(source.ClassName, source.ClassID, new Migrated.SimplifiedClassInfo(oldPrimaryKeyName, target.ClassTableName, documentNameField, source.ClassFormDefinition), target);
                 break;
             }
 
@@ -269,10 +186,6 @@ public class CmsClassMapper : EntityMapperBase<KX12M.CmsClass, DataClassInfo>
                 target.ClassContentTypeType = ClassContentTypeType.WEBSITE;
 
                 target = PatchDataClassInfo(target, out var oldPrimaryKeyName, out var documentNameField);
-
-                // Debug.WriteLine($"'{target.ClassName}' => CT='{target.ClassType}' CCTT='{target.ClassContentTypeType}'");
-                // DataClassInfoProvider.ProviderObject.Set(target);
-                // mMigrated.DataClass(source.ClassName, source.ClassID, new Migrated.SimplifiedClassInfo(oldPrimaryKeyName, target.ClassTableName, documentNameField, source.ClassFormDefinition), target);
                 break;
             }
         }
@@ -282,8 +195,6 @@ public class CmsClassMapper : EntityMapperBase<KX12M.CmsClass, DataClassInfo>
 
     private void MapFormDefinitionFields(CmsClass source, DataClassInfo target, bool isCustomizableSystemClass, bool classIsCustom)
     {
-        // var classStructureInfo = new ClassStructureInfo(source.ClassName, source.ClassXmlSchema, source.ClassTableName);
-
         if (!string.IsNullOrWhiteSpace(source.ClassFormDefinition))
         {
             var patcher = new FormDefinitionPatcher(
@@ -305,20 +216,7 @@ public class CmsClassMapper : EntityMapperBase<KX12M.CmsClass, DataClassInfo>
                 result = FormHelper.MergeFormDefinitions(target.ClassFormDefinition, result);
             }
 
-            var formInfo = new FormInfo(result); //(source.ClassFormDefinition);
-
-            // temporary fix until system category is supported
-
-            // var columnNames = formInfo.GetColumnNames();
-            //
-            // foreach (var columnName in columnNames)
-            // {
-            //     var field = formInfo.GetFormField(columnName);
-            //     ConvertSingleField(field, formInfo, columnName, FieldMappingInstance.Default.DataTypeMappings);
-            // }
-
-            // TODO tomas.krch: 2023-10-30 check if XML Schema gets set automatically with API kentico api
-            // target.ClassXmlSchema = classStructureInfo.GetXmlSchema();
+            var formInfo = new FormInfo(result);
             target.ClassFormDefinition = formInfo.GetXmlDefinition();
         }
         else

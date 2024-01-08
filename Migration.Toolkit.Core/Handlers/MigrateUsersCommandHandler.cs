@@ -85,7 +85,7 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
             var mapped = _userInfoMapper.Map(kx13User, xbkUserInfo);
             _protocol.MappedTarget(mapped);
 
-            await SaveUserUsingKenticoApi(cancellationToken, mapped, kx13User);
+            await SaveUserUsingKenticoApi(mapped, kx13User);
         }
 
         await MigrateUserCmsRoles(kx13Context, cancellationToken);
@@ -93,7 +93,7 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
         return new GenericCommandResult();
     }
 
-    private async Task<bool> SaveUserUsingKenticoApi(CancellationToken cancellationToken, IModelMappingResult<UserInfo> mapped, KX13.Models.CmsUser kx13User)
+    private Task SaveUserUsingKenticoApi(IModelMappingResult<UserInfo> mapped, KX13M.CmsUser kx13User)
     {
         if (mapped is { Success : true } result)
         {
@@ -115,7 +115,7 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
                     .WithData(new { kx13User.UserName, kx13User.UserGuid, kx13User.UserId, })
                     .WithMessage("Failed to migrate user, target database broken.")
                 );
-                return false;
+                return Task.CompletedTask;
             }
             catch (Exception ex)
             {
@@ -125,14 +125,14 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
                     .NeedsManualAction()
                     .WithIdentityPrint(userInfo)
                 );
-                return false;
+                return Task.CompletedTask;
             }
 
             _primaryKeyMappingContext.SetMapping<KX13M.CmsUser>(r => r.UserId, kx13User.UserId, userInfo.UserID);
-            return true;
+            return Task.CompletedTask;
         }
 
-        return false;
+        return Task.CompletedTask;
     }
 
     private async Task MigrateUserCmsRoles(KX13Context kx13Context, CancellationToken cancellationToken)
