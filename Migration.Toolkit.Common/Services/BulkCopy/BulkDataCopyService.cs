@@ -177,7 +177,7 @@ public class BulkDataCopyService
         for (var i = 0; i < sourceColumns.Length; i++)
         {
             var (columnName, ordinalPosition) = sourceColumns[i];
-            selectBuilder.Append(columnName);
+            selectBuilder.Append($"[{columnName}]");
             if (i < sourceColumns.Length - 1)
             {
                 selectBuilder.Append(", ");

@@ -119,6 +119,22 @@ public class MigrateSitesCommandHandler : IRequestHandler<MigrateSitesCommand, C
                 WebsiteChannelStoreFormerUrls = storeFormerUrls
             });
 
+            if (!webSiteChannelResult.Success)
+            {
+                if (webSiteChannelResult.ModelValidationResults != null)
+                {
+                    foreach (var mvr in webSiteChannelResult.ModelValidationResults)
+                    {
+                        _logger.LogError("Invalid channel properties {Members}: {ErrorMessage}", string.Join(", ", mvr.MemberNames), mvr.ErrorMessage);
+                    }
+                }
+                else
+                {
+                    _logger.LogError(webSiteChannelResult.Exception, "Failed to migrate site");
+                }
+                return new CommandFailureResult();
+            }
+
             if (webSiteChannelResult.Imported is WebsiteChannelInfo webSiteChannel)
             {
                 var cmsReCaptchaPublicKey = KenticoHelper.GetSettingsKey(_kx13ContextFactory, kx13CmsSite.SiteId, "CMSReCaptchaPublicKey") as string;

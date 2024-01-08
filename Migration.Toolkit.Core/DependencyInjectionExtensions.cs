@@ -38,6 +38,9 @@ public static class DependencyInjectionExtensions
         HandbookReference.PrintService = printService;
         LogExtensions.PrintService = printService;
 
+        services.AddTransient<IModuleLoader, ModuleLoader>();
+        services.AddSingleton<ICommandParser, CommandParser>();
+
         services.AddSingleton<IProtocol, Protocol>();
 
         services.AddSingleton<IMigrationProtocol, TextMigrationProtocol>();

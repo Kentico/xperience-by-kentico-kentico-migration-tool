@@ -5,18 +5,6 @@ namespace Migration.Toolkit.Core;
 using System.Reflection;
 using Migration.Toolkit.Common.Abstractions;
 
-public interface ICommand
-{
-    Type[] Dependencies { get; }
-
-    int Rank => (int)(GetType().GetField("Rank", BindingFlags.Static | BindingFlags.Public)?.GetValue(null) ?? 999);
-}
-
-public interface ICultureReliantCommand
-{
-    string CultureCode { get; }
-}
-
 public record MigrateSitesCommand : IRequest<CommandResult>, ICommand
 {
     public static readonly int Rank = 1;

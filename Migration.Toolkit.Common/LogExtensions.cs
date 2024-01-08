@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Common;
+namespace Migration.Toolkit.Common;
 
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common.Abstractions;
