@@ -169,8 +169,6 @@ public class PrimaryKeyMappingContext : IPrimaryKeyMappingContext
             return resultId;
         }
 
-
-
         _logger.LogTrace("TryLocate {Key}", fullKeyName);
         if (_primaryKeyLocatorService.TryLocate(keyNameSelector, sid, out var targetId))
         {
@@ -209,8 +207,6 @@ public class PrimaryKeyMappingContext : IPrimaryKeyMappingContext
             return resultId;
         }
 
-
-
         _logger.LogTrace("TryLocate {Key}", fullKeyName);
         if (_primaryKeyLocatorService.TryLocate(keyNameSelector, sid, out var targetId))
         {
@@ -248,8 +244,6 @@ public class PrimaryKeyMappingContext : IPrimaryKeyMappingContext
             _logger.LogTrace("{Key} resolved as {Value}", fullKeyName, resultId);
             return new MapSourceIdResult(true, resultId);
         }
-
-
 
         _logger.LogTrace("TryLocate {Key}", fullKeyName);
         if (useLocator && _primaryKeyLocatorService.TryLocate(keyNameSelector, sid, out var targetId))

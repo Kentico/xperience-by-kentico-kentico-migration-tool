@@ -30,28 +30,14 @@ public class CmsFormMapper : EntityMapperBase<KX12M.CmsForm, BizFormInfo>
     {
         target.FormDisplayName = source.FormDisplayName;
         target.FormName = source.FormName;
-        // target.FormSendToEmail = source.FormSendToEmail;
-        // target.FormSendFromEmail = source.FormSendFromEmail;
-        // target.FormEmailSubject = source.FormEmailSubject;
-        // target.FormEmailTemplate = source.FormEmailTemplate;
-        // target.FormEmailAttachUploadedDocs = source.FormEmailAttachUploadedDocs.UseKenticoDefault();
         target.FormItems = source.FormItems;
         target.FormReportFields = source.FormReportFields;
         target.FormSubmitButtonText = source.FormSubmitButtonText;
-        // target.FormConfirmationEmailField = source.FormConfirmationEmailField;
-        // target.FormConfirmationTemplate = source.FormConfirmationTemplate;
-        // target.FormConfirmationSendFromEmail = source.FormConfirmationSendFromEmail;
-        // target.FormConfirmationEmailSubject = source.FormConfirmationEmailSubject;
         target.FormAccess = source.FormAccess.AsEnum<FormAccessEnum>();
         target.FormSubmitButtonImage = source.FormSubmitButtonImage;
         target.FormLastModified = source.FormLastModified;
         target.FormLogActivity = source.FormLogActivity.UseKenticoDefault();
         target.FormBuilderLayout = source.FormBuilderLayout;
-
-
-
-        // target.FormAfterSubmitMode = source.FormAfterSubmitMode;
-        // target.FormAfterSubmitRelatedValue = source.FormAfterSubmitRelatedValue;
 
         if (mappingHelper.TranslateRequiredId<KX12M.CmsClass>(c => c.ClassId, source.FormClassId, out var formClassId))
         {

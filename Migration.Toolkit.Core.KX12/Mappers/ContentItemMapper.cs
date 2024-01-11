@@ -497,7 +497,7 @@ public class ContentItemMapper : UmtMapperBase<CmsTreeMapperSource>
 
     private void MapCoupledDataFieldValues(
         Dictionary<string, object?> target,
-        Func<string, object> getSourceValue,
+        Func<string, object?> getSourceValue,
         Func<string, bool> containsSourceValue,
         CmsTree cmsTree,
         int? documentId,

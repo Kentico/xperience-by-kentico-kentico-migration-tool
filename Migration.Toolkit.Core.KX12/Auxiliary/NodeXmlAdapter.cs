@@ -2,28 +2,28 @@
 
 using System;
 using System.Xml.Linq;
+using Migration.Toolkit.Common.Enumerations;
 
 internal class NodeXmlAdapter {
-    private readonly XDocument _xDoc;
-    private readonly XElement? _xClass;
+    private readonly XElement _xClass;
 
     public bool ParsingSuccessful { get; }
 
     public NodeXmlAdapter(string xml) {
-        _xDoc = XDocument.Parse(xml);
-        if (_xDoc.Root?.FirstNode is XElement dClass)
+        var xDoc = XDocument.Parse(xml);
+        if (xDoc.Root?.FirstNode is XElement dClass)
         {
             _xClass = dClass;
             ParsingSuccessful = true;
         }
         else
         {
-            _xClass = null;
+            _xClass = null!;
             ParsingSuccessful = false;
         }
     }
 
-    public string GetValue(string columnName) {
+    public string? GetValue(string columnName) {
         return _xClass.Element(columnName)?.Value;
     }
 
@@ -32,41 +32,41 @@ internal class NodeXmlAdapter {
         return _xClass.Element(columnName) != null;
     }
 
-    public int? NodeID => _xClass.Element("NodeID")?.Value<int>();
-    public string NodeAliasPath => _xClass.Element("NodeAliasPath")?.Value;
-    public string NodeName => _xClass.Element("NodeName")?.Value;
-    public string NodeAlias => _xClass.Element("NodeAlias")?.Value;
-    public int? NodeClassID => _xClass.Element("NodeClassID")?.Value<int>();
-    public int? NodeParentID => _xClass.Element("NodeParentID")?.Value<int>();
-    public int? NodeLevel => _xClass.Element("NodeLevel")?.Value<int>();
-    public int? NodeSiteID => _xClass.Element("NodeSiteID")?.Value<int>();
-    public Guid? NodeGUID => _xClass.Element("NodeGUID")?.Value<Guid>();
-    public int? NodeOrder => _xClass.Element("NodeOrder")?.Value<int>();
-    public int? NodeOwner => _xClass.Element("NodeOwner")?.Value<int>();
-    public bool? NodeHasChildren => _xClass.Element("NodeHasChildren")?.ValueAsBool();
-    public bool? NodeHasLinks => _xClass.Element("NodeHasLinks")?.ValueAsBool();
-    public int? NodeOriginalNodeID => _xClass.Element("NodeOriginalNodeID")?.Value<int>();
-    public bool? NodeIsPage => _xClass.Element("NodeIsPage")?.ValueAsBool();
-    public bool? NodeIsSecured => _xClass.Element("NodeIsSecured")?.ValueAsBool();
-    public int? DocumentID => _xClass.Element("DocumentID")?.Value<int>();
-    public string DocumentName => _xClass.Element("DocumentName")?.Value;
-    public DateTime? DocumentModifiedWhen => _xClass.Element("DocumentModifiedWhen")?.Value<DateTime>();
-    public int? DocumentModifiedByUserID => _xClass.Element("DocumentModifiedByUserID")?.Value<int>();
-    public int? DocumentCreatedByUserID => _xClass.Element("DocumentCreatedByUserID")?.Value<int>();
-    public DateTime? DocumentCreatedWhen => _xClass.Element("DocumentCreatedWhen")?.Value<DateTime>();
-    public int? DocumentCheckedOutVersionHistoryID => _xClass.Element("DocumentCheckedOutVersionHistoryID")?.Value<int>();
-    public int? DocumentPublishedVersionHistoryID => _xClass.Element("DocumentPublishedVersionHistoryID")?.Value<int>();
-    public int? DocumentWorkflowStepID => _xClass.Element("DocumentWorkflowStepID")?.Value<int>();
-    public string DocumentCulture => _xClass.Element("DocumentCulture")?.Value;
-    public int? DocumentNodeID => _xClass.Element("DocumentNodeID")?.Value<int>();
-    public string DocumentContent => _xClass.Element("DocumentContent")?.Value;
-    public string DocumentLastVersionNumber => _xClass.Element("DocumentLastVersionNumber")?.Value;
-    public bool? DocumentIsArchived => _xClass.Element("DocumentIsArchived")?.ValueAsBool();
-    public Guid? DocumentGUID => _xClass.Element("DocumentGUID")?.Value<Guid>();
-    public Guid? DocumentWorkflowCycleGUID => _xClass.Element("DocumentWorkflowCycleGUID")?.Value<Guid>();
-    public bool? DocumentCanBePublished => _xClass.Element("DocumentCanBePublished")?.ValueAsBool();
-    public string DocumentPageBuilderWidgets => _xClass.Element("DocumentPageBuilderWidgets")?.Value;
-    public string ClassName => _xClass.Element("ClassName")?.Value;
+    public int? NodeID => _xClass.Element(NodeXmlColumns.NODE_ID)?.Value<int>();
+    public string? NodeAliasPath => _xClass.Element(NodeXmlColumns.NODE_ALIAS_PATH)?.Value;
+    public string? NodeName => _xClass.Element(NodeXmlColumns.NODE_NAME)?.Value;
+    public string? NodeAlias => _xClass.Element(NodeXmlColumns.NODE_ALIAS)?.Value;
+    public int? NodeClassID => _xClass.Element(NodeXmlColumns.NODE_CLASS_ID)?.Value<int>();
+    public int? NodeParentID => _xClass.Element(NodeXmlColumns.NODE_PARENT_ID)?.Value<int>();
+    public int? NodeLevel => _xClass.Element(NodeXmlColumns.NODE_LEVEL)?.Value<int>();
+    public int? NodeSiteID => _xClass.Element(NodeXmlColumns.NODE_SITE_ID)?.Value<int>();
+    public Guid? NodeGUID => _xClass.Element(NodeXmlColumns.NODE_GUID)?.Value<Guid>();
+    public int? NodeOrder => _xClass.Element(NodeXmlColumns.NODE_ORDER)?.Value<int>();
+    public int? NodeOwner => _xClass.Element(NodeXmlColumns.NODE_OWNER)?.Value<int>();
+    public bool? NodeHasChildren => _xClass.Element(NodeXmlColumns.NODE_HAS_CHILDREN)?.ValueAsBool();
+    public bool? NodeHasLinks => _xClass.Element(NodeXmlColumns.NODE_HAS_LINKS)?.ValueAsBool();
+    public int? NodeOriginalNodeID => _xClass.Element(NodeXmlColumns.NODE_ORIGINAL_NODE_ID)?.Value<int>();
+    public bool? NodeIsPage => _xClass.Element(NodeXmlColumns.NODE_IS_PAGE)?.ValueAsBool();
+    public bool? NodeIsSecured => _xClass.Element(NodeXmlColumns.NODE_IS_SECURED)?.ValueAsBool();
+    public int? DocumentID => _xClass.Element(NodeXmlColumns.DOCUMENT_ID)?.Value<int>();
+    public string? DocumentName => _xClass.Element(NodeXmlColumns.DOCUMENT_NAME)?.Value;
+    public DateTime? DocumentModifiedWhen => _xClass.Element(NodeXmlColumns.DOCUMENT_MODIFIED_WHEN)?.Value<DateTime>();
+    public int? DocumentModifiedByUserID => _xClass.Element(NodeXmlColumns.DOCUMENT_MODIFIED_BY_USER_ID)?.Value<int>();
+    public int? DocumentCreatedByUserID => _xClass.Element(NodeXmlColumns.DOCUMENT_CREATED_BY_USER_ID)?.Value<int>();
+    public DateTime? DocumentCreatedWhen => _xClass.Element(NodeXmlColumns.DOCUMENT_CREATED_WHEN)?.Value<DateTime>();
+    public int? DocumentCheckedOutVersionHistoryID => _xClass.Element(NodeXmlColumns.DOCUMENT_CHECKED_OUT_VERSION_HISTORY_ID)?.Value<int>();
+    public int? DocumentPublishedVersionHistoryID => _xClass.Element(NodeXmlColumns.DOCUMENT_PUBLISHED_VERSION_HISTORY_ID)?.Value<int>();
+    public int? DocumentWorkflowStepID => _xClass.Element(NodeXmlColumns.DOCUMENT_WORKFLOW_STEP_ID)?.Value<int>();
+    public string? DocumentCulture => _xClass.Element(NodeXmlColumns.DOCUMENT_CULTURE)?.Value;
+    public int? DocumentNodeID => _xClass.Element(NodeXmlColumns.DOCUMENT_NODE_ID)?.Value<int>();
+    public string? DocumentContent => _xClass.Element(NodeXmlColumns.DOCUMENT_CONTENT)?.Value;
+    public string? DocumentLastVersionNumber => _xClass.Element(NodeXmlColumns.DOCUMENT_LAST_VERSION_NUMBER)?.Value;
+    public bool? DocumentIsArchived => _xClass.Element(NodeXmlColumns.DOCUMENT_IS_ARCHIVED)?.ValueAsBool();
+    public Guid? DocumentGUID => _xClass.Element(NodeXmlColumns.DOCUMENT_GUID)?.Value<Guid>();
+    public Guid? DocumentWorkflowCycleGUID => _xClass.Element(NodeXmlColumns.DOCUMENT_WORKFLOW_CYCLE_GUID)?.Value<Guid>();
+    public bool? DocumentCanBePublished => _xClass.Element(NodeXmlColumns.DOCUMENT_CAN_BE_PUBLISHED)?.ValueAsBool();
+    public string? DocumentPageBuilderWidgets => _xClass.Element(NodeXmlColumns.DOCUMENT_PAGE_BUILDER_WIDGETS)?.Value;
+    public string? ClassName => _xClass.Element(NodeXmlColumns.CLASS_NAME)?.Value;
 
-    public string DocumentPageTemplateConfiguration => _xClass.Element("DocumentPageTemplateConfiguration")?.Value;
+    public string? DocumentPageTemplateConfiguration => _xClass.Element(NodeXmlColumns.DOCUMENT_PAGE_TEMPLATE_CONFIGURATION)?.Value;
 }

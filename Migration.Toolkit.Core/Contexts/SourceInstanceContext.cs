@@ -104,9 +104,7 @@ public class SourceInstanceContext
                 ? sectionFcs
                 : null;
         }
-        else
-        {
-            throw new InvalidOperationException($"No info was loaded for site '{siteName}'");
-        }
+
+        throw new InvalidOperationException($"No info was loaded for site '{siteName}'");
     }
 }

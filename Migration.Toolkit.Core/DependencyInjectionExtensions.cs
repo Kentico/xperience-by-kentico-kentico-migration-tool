@@ -60,7 +60,6 @@ public static class DependencyInjectionExtensions
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CommandConstraintBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(XbKApiContextBehavior<,>));
 
-
         services.AddSingleton(s => new TableReflectionService(s.GetRequiredService<ILogger<TableReflectionService>>()));
         services.AddSingleton<SourceInstanceContext>();
         services.AddTransient<IpcService>();
@@ -71,20 +70,14 @@ public static class DependencyInjectionExtensions
         services.AddSingleton<KeyLocatorService>();
 
         // commands
-        // services.AddTransient<MigrateAttachmentsCommandHandler>();
-        // services.AddTransient<MigrateContactGroupsCommand>();
-        // services.AddTransient<MigrateContactManagementCommandHandler>();
         services.AddTransient<MigrateDataProtectionCommandHandler>();
         services.AddTransient<MigrateFormsCommandHandler>();
         services.AddTransient<MigratePagesCommandHandler>();
-        //services.AddTransient<MigratePageTypesCommandHandler>();
         services.AddTransient<MigratePagesCommand>();
         services.AddTransient<MigrateSettingKeysCommandHandler>();
-        // services.AddTransient<MigrateSitesCommandHandler>();
         services.AddTransient<MigrateUsersCommandHandler>();
         services.AddTransient<MigrateMembersCommandHandler>();
         services.AddTransient<MigrateContactManagementCommandHandler>();
-
 
         // umt mappers
         services.AddTransient<IUmtMapper<CmsTreeMapperSource>, ContentItemMapper>();

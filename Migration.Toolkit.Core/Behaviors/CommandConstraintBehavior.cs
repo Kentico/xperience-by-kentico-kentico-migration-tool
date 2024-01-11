@@ -7,17 +7,13 @@ using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
+using Migration.Toolkit.KX13;
 using Migration.Toolkit.KX13.Context;
 
 public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
     where TResponse : CommandResult
 {
-    private const string CmsHotfixVersionKey = "CMSHotfixVersion";
-    private const string CmsHotfixDataVersionKey = "CMSHotfixDataVersion";
-    private const string CmsDbVersionKey = "CMSDBVersion";
-    private const string CmsDataVersionKey = "CMSDataVersion";
-
     private readonly ILogger<CommandConstraintBehavior<TRequest, TResponse>> _logger;
     private readonly IMigrationProtocol _protocol;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
@@ -60,7 +56,6 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
 
     private bool PerformChecks(TRequest request, KX13Context kx13Context)
     {
-        return true;
         var criticalCheckPassed = true;
         const string supportedVersion = "13.0.64";
         if (SemanticVersion.TryParse(supportedVersion, out var minimalVersion))
@@ -142,80 +137,80 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
 
         #endregion
 
-        if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == CmsDataVersionKey) is { } cmsDataVersion)
+        if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == SettingsKeys.CMSDataVersion) is { } cmsDataVersion)
         {
             if (SemanticVersion.TryParse(cmsDataVersion.KeyValue, out var cmsDataVer))
             {
                 if (cmsDataVer.IsLesserThan(minimalVersion))
                 {
-                    UpgradeNeeded(CmsDataVersionKey, cmsDataVer.ToString());
+                    UpgradeNeeded(SettingsKeys.CMSDataVersion, cmsDataVer.ToString());
                 }
             }
             else
             {
-                UnableToReadVersionKey(CmsDataVersionKey);
+                UnableToReadVersionKey(SettingsKeys.CMSDataVersion);
             }
         }
         else
         {
-            VersionKeyNotFound(CmsDataVersionKey);
+            VersionKeyNotFound(SettingsKeys.CMSDataVersion);
         }
 
-        if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == CmsDbVersionKey) is { } cmsDbVersion)
+        if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == SettingsKeys.CMSDBVersion) is { } cmsDbVersion)
         {
             if (SemanticVersion.TryParse(cmsDbVersion.KeyValue, out var cmsDataVer))
             {
                 if (cmsDataVer.IsLesserThan(minimalVersion))
                 {
-                    UpgradeNeeded(CmsDbVersionKey, cmsDataVer.ToString());
+                    UpgradeNeeded(SettingsKeys.CMSDBVersion, cmsDataVer.ToString());
                 }
             }
             else
             {
-                UnableToReadVersionKey(CmsDbVersionKey);
+                UnableToReadVersionKey(SettingsKeys.CMSDBVersion);
             }
         }
         else
         {
-            VersionKeyNotFound(CmsDbVersionKey);
+            VersionKeyNotFound(SettingsKeys.CMSDBVersion);
         }
 
-        if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == CmsHotfixDataVersionKey) is { } cmsHotfixDataVersion)
+        if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == SettingsKeys.CMSHotfixDataVersion) is { } cmsHotfixDataVersion)
         {
             if (int.TryParse(cmsHotfixDataVersion.KeyValue, out var version))
             {
                 if (version < minimalVersion.Hotfix)
                 {
-                    LowHotfix(CmsHotfixDataVersionKey, version);
+                    LowHotfix(SettingsKeys.CMSHotfixDataVersion, version);
                 }
             }
             else
             {
-                UnableToReadVersionKey(CmsHotfixDataVersionKey);
+                UnableToReadVersionKey(SettingsKeys.CMSHotfixDataVersion);
             }
         }
         else
         {
-            VersionKeyNotFound(CmsHotfixDataVersionKey);
+            VersionKeyNotFound(SettingsKeys.CMSHotfixDataVersion);
         }
 
-        if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == CmsHotfixVersionKey) is { } cmsHotfixVersion)
+        if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == SettingsKeys.CMSHotfixVersion) is { } cmsHotfixVersion)
         {
             if (int.TryParse(cmsHotfixVersion.KeyValue, out var version))
             {
                 if (version < minimalVersion.Hotfix)
                 {
-                    LowHotfix(CmsHotfixVersionKey, version);
+                    LowHotfix(SettingsKeys.CMSHotfixVersion, version);
                 }
             }
             else
             {
-                UnableToReadVersionKey(CmsHotfixVersionKey);
+                UnableToReadVersionKey(SettingsKeys.CMSHotfixVersion);
             }
         }
         else
         {
-            VersionKeyNotFound(CmsHotfixVersionKey);
+            VersionKeyNotFound(SettingsKeys.CMSHotfixVersion);
         }
 
         return criticalCheckPassed;
