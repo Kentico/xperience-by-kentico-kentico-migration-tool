@@ -1,30 +1,25 @@
 using System.Reflection;
 using MediatR;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.CLI;
 using Migration.Toolkit.Common;
-using Migration.Toolkit.Common.Services.Ipc;
+using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.Helpers;
+using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.Core;
-using Migration.Toolkit.Core.Contexts;
-using Migration.Toolkit.Core.Services;
+using Migration.Toolkit.KX12;
 using Migration.Toolkit.KX13;
 using Migration.Toolkit.KXP;
 using Migration.Toolkit.KXP.Api;
 using Migration.Toolkit.KXP.Context;
+using Migration.Toolkit.Core.KX12;
+using static Migration.Toolkit.Common.Helpers.ConsoleHelper;
 
-const string red = "\x1b[31m";
-const string yellow = "\x1b[33m";
-const string green = "\x1b[32m";
-const string reset = "\x1b[0m";
-
-string Yellow(string ctext) => $"{yellow}{ctext}{reset}";
-string Green(string ctext) => $"{green}{ctext}{reset}";
-string Red(string ctext) => $"{red}{ctext}{reset}";
-
-ConsoleHelper.EnableVirtualTerminalProcessing();
+EnableVirtualTerminalProcessing();
 
 // https://docs.microsoft.com/en-us/dotnet/core/extensions/configuration
 
@@ -44,10 +39,10 @@ foreach (var (validationMessageType, message, recommendedFix) in validationError
         case ValidationMessageType.Error:
             if (!string.IsNullOrWhiteSpace(message))
             {
-                Console.Write(Resources.ConfigurationError, red, reset, message);
+                Console.Write(Resources.ConfigurationError, RED, RESET, message);
                 if (!string.IsNullOrWhiteSpace(recommendedFix))
                 {
-                    Console.Write(Resources.ConfigurationRecommendedFix, yellow, reset, recommendedFix);
+                    Console.Write(Resources.ConfigurationRecommendedFix, YELLOW, RESET, recommendedFix);
                 }
                 anyValidationErrors = true;
                 Console.WriteLine();
@@ -56,10 +51,10 @@ foreach (var (validationMessageType, message, recommendedFix) in validationError
         case ValidationMessageType.Warning:
             if (!string.IsNullOrWhiteSpace(message))
             {
-                Console.Write(Resources.ConfigurationWarning, yellow, reset, message);
+                Console.Write(Resources.ConfigurationWarning, YELLOW, RESET, message);
                 if (!string.IsNullOrWhiteSpace(recommendedFix))
                 {
-                    Console.Write(Resources.ConfigurationRecommendedFix, yellow, reset, recommendedFix);
+                    Console.Write(Resources.ConfigurationRecommendedFix, YELLOW, RESET, recommendedFix);
                 }
 
                 Console.WriteLine();
@@ -95,7 +90,40 @@ services
         builder.AddFile(config.GetSection(ConfigurationNames.Logging));
     });
 
-services.UseKx13DbContext(settings);
+await using var conn = new SqlConnection(settings.KxConnectionString);
+try
+{
+    await conn.OpenAsync();
+    switch (VersionHelper.GetInstanceVersion(conn))
+    {
+        case { Major: 12 }:
+        {
+            services.UseKx12DbContext(settings);
+            services.UseKx12ToolkitCore();
+            Console.WriteLine($@"Source instance {Green("version 12")} detected");
+            break;
+        }
+        case { Major: 13 }:
+        {
+            services.UseKx13DbContext(settings);
+            services.UseKx13ToolkitCore();
+            Console.WriteLine($@"Source instance {Green("version 13")} detected");
+            break;
+        }
+        default:
+        {
+            Console.WriteLine($@"{Red("Parsing of source instance version failed")}, please check connection string and if source instance settings key with key name 'CMSDBVersion' is correctly filled.");
+            return;
+        }
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($@"Startup failed with error: {ex}");
+    return;
+}
+
+
 services.UseKxpDbContext(settings);
 
 var kxpApiSettings =
@@ -107,182 +135,24 @@ var kxpApiSettings =
 
 services.UseKxpApi(kxpApiSettings, settings.XbKDirPath);
 services.AddSingleton(settings);
-services.UseKx13ToolkitCore();
+
 
 await using var serviceProvider = services.BuildServiceProvider();
 using var scope = serviceProvider.CreateScope();
 // var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
-void WriteCommandDesc(string desc, string commandMoniker)
-{
-    Console.WriteLine($@"{Yellow(commandMoniker)}: {desc}");
-}
+var loader = scope.ServiceProvider.GetRequiredService<IModuleLoader>();
+await loader.LoadAsync();
 
-var mappingContext = scope.ServiceProvider.GetRequiredService<PrimaryKeyMappingContext>();
-var toolkitConfiguration = scope.ServiceProvider.GetRequiredService<ToolkitConfiguration>();
-var tableTypeLookupService = scope.ServiceProvider.GetRequiredService<TableReflectionService>();
-foreach (var (k, ek) in toolkitConfiguration.EntityConfigurations)
-{
-    var tableType = tableTypeLookupService.GetSourceTableTypeByTableName(k);
-
-    foreach (var (kPkName, mappings) in ek.ExplicitPrimaryKeyMapping)
-    {
-        foreach (var (kPk, vPk) in mappings)
-        {
-            // TODO tk: 2022-05-26 report incorrect property setting
-            if (int.TryParse(kPk, out var kPkParsed) && vPk.HasValue)
-            {
-                mappingContext.SetMapping(tableType, kPkName, kPkParsed, vPk.Value);
-            }
-        }
-    }
-}
-
-
-void PrintCommandDescriptions()
-{
-    WriteCommandDesc($"starts migration of {Green(MigratePageTypesCommand.MonikerFriendly)}", $"migrate --{MigratePageTypesCommand.Moniker}");
-    WriteCommandDesc($"starts migration of {Green(MigratePagesCommand.MonikerFriendly)}", $"migrate --{MigratePagesCommand.Moniker}");
-    WriteCommandDesc($"starts migration of {Green(MigrateSettingKeysCommand.MonikerFriendly)}", $"migrate --{MigrateSettingKeysCommand.Moniker}");
-    WriteCommandDesc($"starts migration of {Green(MigrateContactManagementCommand.MonikerFriendly)}", $"migrate --{MigrateContactManagementCommand.Moniker}");
-    WriteCommandDesc($"starts migration of {Green(MigrateDataProtectionCommand.MonikerFriendly)}", $"migrate --{MigrateDataProtectionCommand.Moniker}");
-    WriteCommandDesc($"starts migration of {Green(MigrateFormsCommand.MonikerFriendly)}", $"migrate --{MigrateFormsCommand.Moniker}");
-    WriteCommandDesc($"starts migration of {Green(MigrateMediaLibrariesCommand.MonikerFriendly)}", $"migrate --{MigrateMediaLibrariesCommand.Moniker}");
-    WriteCommandDesc($"starts migration of {Green(MigrateSitesCommand.MonikerFriendly)}", $"migrate --{MigrateSitesCommand.Moniker}");
-    WriteCommandDesc($"starts migration of {Green(MigrateUsersCommand.MonikerFriendly)}", $"migrate --{MigrateUsersCommand.Moniker}");
-    WriteCommandDesc($"starts migration of {Green(MigrateMembersCommand.MonikerFriendly)}", $"migrate --{MigrateMembersCommand.Moniker}");
-    WriteCommandDesc($"starts migration of {Green(MigrateAttachmentsCommand.MonikerFriendly)}", $"migrate --{MigrateAttachmentsCommand.Moniker}");
-    WriteCommandDesc($"starts migration of {Green(MigrateCustomModulesCommand.MonikerFriendly)}", $"migrate --{MigrateCustomModulesCommand.Moniker}");
-}
-
+var commandParser = scope.ServiceProvider.GetRequiredService<ICommandParser>();
 var mediatr = scope.ServiceProvider.GetRequiredService<IMediator>();
 var kxpContext = scope.ServiceProvider.GetRequiredService<IDbContextFactory<KxpContext>>().CreateDbContext();
 
 var argsQ = new Queue<string>(args);
-var commands = new List<ICommand>();
-bool firstHaveToBeMigrate = true;
 var bypassDependencyCheck = false;
-while (argsQ.TryDequeue(out var arg))
-{
-    if (arg.IsIn("help", "h"))
-    {
-        PrintCommandDescriptions();
-        break;
-    }
-
-    if (arg == "migrate" && firstHaveToBeMigrate)
-    {
-        firstHaveToBeMigrate = false;
-        continue;
-    }
-
-    if (arg == "--bypass-dependency-check")
-    {
-        bypassDependencyCheck = true;
-        continue;
-    }
-
-    if (firstHaveToBeMigrate)
-    {
-        Console.WriteLine($@"First must be command, for example {Green("migrate")}");
-        PrintCommandDescriptions();
-        break;
-    }
-
-    // if (arg == $"--{MigrateContactGroupsCommand.Moniker}")
-    // {
-    //     commands.Add(new MigrateContactGroupsCommand());
-    //     continue;
-    // }
-
-    if (arg == $"--{MigrateContactManagementCommand.Moniker}")
-    {
-        commands.Add(new MigrateContactManagementCommand());
-        continue;
-    }
-
-    if (arg == $"--{MigrateDataProtectionCommand.Moniker}")
-    {
-        // RequireNumberParameter("--batchSize", out var batchSize);
-        commands.Add(new MigrateDataProtectionCommand());
-        continue;
-    }
-
-    if (arg == $"--{MigrateFormsCommand.Moniker}")
-    {
-        commands.Add(new MigrateFormsCommand());
-        continue;
-    }
-
-    if (arg == $"--{MigrateMediaLibrariesCommand.Moniker}")
-    {
-        commands.Add(new MigrateMediaLibrariesCommand());
-        continue;
-    }
-
-    if (arg == $"--{MigratePageTypesCommand.Moniker}")
-    {
-        commands.Add(new MigratePageTypesCommand());
-        continue;
-    }
-
-    if (arg == $"--{MigratePagesCommand.Moniker}")
-    {
-        commands.Add(new MigratePagesCommand());
-        continue;
-    }
-
-    if (arg == $"--{MigrateSettingKeysCommand.Moniker}")
-    {
-        commands.Add(new MigrateSettingKeysCommand());
-        continue;
-    }
-
-    if (arg == $"--{MigrateSitesCommand.Moniker}")
-    {
-        commands.Add(new MigrateSitesCommand());
-        continue;
-    }
-
-    if (arg == $"--{MigrateUsersCommand.Moniker}")
-    {
-        commands.Add(new MigrateUsersCommand());
-        continue;
-    }
-
-    if (arg == $"--{MigrateMembersCommand.Moniker}")
-    {
-        commands.Add(new MigrateMembersCommand());
-    }
-
-    if (arg == $"--{MigrateCustomModulesCommand.Moniker}")
-    {
-        commands.Add(new MigrateCustomModulesCommand());
-        continue;
-    }
-}
+var commands = commandParser.Parse(argsQ, ref bypassDependencyCheck);
 
 kxpContext.Dispose();
-
-var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-var ipc = scope.ServiceProvider.GetRequiredService<IpcService>();
-var sourceInstanceContext = scope.ServiceProvider.GetRequiredService<SourceInstanceContext>();
-try
-{
-    if (sourceInstanceContext.IsQuerySourceInstanceEnabled())
-    {
-        var ipcConfigured = await ipc.IsConfiguredAsync();
-        if (ipcConfigured)
-        {
-            await sourceInstanceContext.RequestSourceInstanceInfo();
-        }
-    }
-}
-catch (Exception ex)
-{
-    logger.LogCritical(ex, "Check if opt-in feature 'QuerySourceInstanceApi' is configured correctly and all connections configured are reachable and hosted on localhost");
-    return;
-}
 
 // sort commands
 commands = commands.OrderBy(x => x.Rank).ToList();

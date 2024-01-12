@@ -108,6 +108,11 @@ public class MigratePageTypesCommandHandler : IRequestHandler<MigratePageTypesCo
                 continue;
             }
 
+            if (string.Equals(kx13Class.ClassName, "cms.site", StringComparison.InvariantCultureIgnoreCase))
+            {
+                continue;
+            }
+
             // kx13Class.ClassConnectionString check is not necessary
 
             var kxoDataClass = _kxpClassFacade.GetClass(kx13Class.ClassGuid);
