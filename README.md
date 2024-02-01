@@ -8,15 +8,29 @@
 <!-- ABOUT THE PROJECT -->
 # Migration toolkit for Xperience by Kentico
 
-The Migration toolkit transfers content and other data from **Kentico Xperience 13** to **Xperience by Kentico**.
+The Migration toolkit transfers content and other data from **Kentico Xperience 13** or **Kentico 12** to **Xperience by Kentico**.
 
 ## Prerequisites & Compatibility
 
 ### Source
 
+The migration currently supports the Kentico Xperience 13 or Kentico 12 as the source instance. See the following sections for compatibility information and limitations of respective versions.
+
+#### Kentico Xperience 13
+
 * The source of the migration data must be a Kentico Xperience 13 instance, with **Refresh 5** ([hotfix](https://devnet.kentico.com/download/hotfixes) 13.0.64) or newer applied.
 * The development model (Core or MVC 5) does not affect the migration - both are supported.
 * The source instance's database and file system must be accessible from the environment where you run the Migration toolkit.
+* All features described in this repository are available for migration from Kentico Xperience 13.
+
+#### Kentico 12
+
+* The source of the migration data can be any hotfix version of the Kentico 12.
+* Only MVC development model is supported by the migration tool. Any Portal Engine project that you wish to migrate to Xperience by Kentico needs to be [migrated to MVC](https://www.youtube.com/watch?v=g2oeHU0h1e0) first.
+* The source instance's database and file system must be accessible from the environment where you run the Migration toolkit.
+* Migration of Page Builder content is not supported. Only structured data of pages is migrated.
+  * As a result, [source instance API discovery](/Migration.Toolkit.CLI/README.md#source-instance-api-discovery) is also not available.
+* This repository describes the migration of Kentico Xperience 13 feature set. Only features relevant to Kentico 12 are migrated for this version.
 
 ### Target
 
@@ -27,7 +41,7 @@ The Migration toolkit transfers content and other data from **Kentico Xperience 
 
 ## Supported data and limitations
 
-The Migration toolkit does not transfer all data available in the Kentico Xperience 13 source. Xperience by Kentico currently provides a smaller, more focused set of features. As a result, some objects are discarded or migrated to a suitable alternative.
+The Migration toolkit does not transfer all data available in the source instance. Xperience by Kentico currently provides a smaller, more focused set of features. As a result, some objects are discarded or migrated to a suitable alternative.
 
 The Migration toolkit only supports content and objects **stored in the database** and related binary data on the file system, such as media library files. Code, customizations, and any other types of content need to be migrated manually to the target project and adjusted for Xperience by Kentico.
 
@@ -37,7 +51,7 @@ Currently, the Migration toolkit supports the following types of data:
   * The toolkit migrates each site on the source to a [website channel](https://docs.xperience.io/x/34HFC) object in Xperience by Kentico.
 * **Cultures**
   * The set of cultures used across all sites in the source gets mapped to a [language](https://docs.xperience.io/x/OxT_Cw) in the _Languages_ application.
-* **Content types** (_Page types_ in Kentico Xperience 13)
+* **Content types** (_Page types_ in earlier Kentico versions)
   * The Migration toolkit attempts to map the _Data type_ and _Form control_ of page type fields to an appropriate equivalent in Xperience by Kentico. This mapping is not always possible and does not work for custom data types or form controls. We recommend checking your content type fields after the migration and adjusting them if necessary.
   * The migration includes only page types assigned to at least one site on the source instance.
   * Xperience by Kentico currently does not support:
@@ -53,9 +67,11 @@ Currently, the Migration toolkit supports the following types of data:
   * Each page gets assigned under its corresponding website channel.
   * Linked pages are currently not supported in Xperience by Kentico. The migration creates standard page copies for any linked pages on the source instance.
   * Page permissions (ACLs) are currently not supported in Xperience by Kentico and are not migrated.
+  * Migration of Page Builder content is only available for Kentico Xperience 13.
 * **Page attachments**
   * Page attachments are not supported in Xperience by Kentico. Attachments are migrated into media libraries. See [`Migration.Toolkit.CLI/README.md - Attachments`](./Migration.Toolkit.CLI/README.md#Attachments) for detailed information about the conversion process.
 * **Preset page templates** (_Custom page templates_ in Kentico Xperience 13)
+  * Migration of custom page templates is only available for Kentico Xperience 13.
 * **Media libraries and media files**
   * Media library permissions are currently not supported in Xperience by Kentico and are not migrated.
 * **Forms**
