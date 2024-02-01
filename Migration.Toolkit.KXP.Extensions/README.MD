@@ -2,7 +2,7 @@
 
 Page attachments are not supported in Xperience by Kentico. Instead, the [Migration toolkit](/README.md) transfers attachment files into [media libraries](https://docs.xperience.io/x/agKiCQ).
 
-Any attachment files in the content of pages migrated from Kentico Xperience 13 still use the old attachment handler URLs and will no longer work (return 404 errors). For example, this can include images and file download links. If you wish to continue using these legacy attachment URLs, you need to [add a custom handler](#add-the-handler-to-your-project) to your Xperience by Kentico project.
+Any attachment files in the content of pages migrated from the source instance (KX13/K12) still use the old attachment handler URLs and will no longer work (return 404 errors). For example, this can include images and file download links. If you wish to continue using these legacy attachment URLs, you need to [add a custom handler](#add-the-handler-to-your-project) to your Xperience by Kentico project.
 
 ### Prerequisite
 

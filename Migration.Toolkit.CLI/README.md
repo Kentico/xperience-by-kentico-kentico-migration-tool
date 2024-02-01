@@ -1,6 +1,6 @@
 # Migration CLI
 
-The [Migration toolkit](/README.md) transfers content and other data from **Kentico Xperience 13** to **Xperience by Kentico**.
+The [Migration toolkit](/README.md) transfers content and other data from **Kentico Xperience 13** or **Kentico 12** to **Xperience by Kentico**.
 
 The migration is performed by running a command for the .NET CLI.
 
@@ -122,6 +122,8 @@ Some [Form components](https://docs.xperience.io/x/5ASiCQ) used by content type 
 
 #### Page Builder content
 
+> :information_source: Page Builder content migration is only available when migrating from Kentico Xperience 13.
+
 By default, JSON data storing the Page Builder content of pages and custom page templates is migrated directly without modifications. On the target Xperience by Kentico instance, the migrated data can work in the Page Builder's legacy compatibility mode. However, we strongly recommend updating your codebase to the new Xperience by Kentico components.
 
 The Migration toolkit provides an advanced migration mode for Page Builder content that utilizes API discovery on the source instance. To learn more details and how to configure this feature, see [Source instance API discovery](#source-instance-api-discovery).
@@ -163,7 +165,7 @@ Page attachments are not supported in Xperience by Kentico. Attachment files are
 
 * Page attachments are migrated into a media library named: *"Attachments for site \<sitename\>"*
 * The media library contains folders matching the content tree structure for all pages with attachments (including empty folders for parent pages without attachments). The folders are named after the *node alias* of the source pages.
-  * Each page's folder directly contains all unsorted attachments (files added on the *Attachments* tab in the Xperience 13 *Pages* application).
+  * Each page's folder directly contains all unsorted attachments (files added on the *Attachments* tab in the source's *Pages* application).
   * Attachments stored in specific page fields are placed into subfolders, named in format: *"__fieldname"*. These subfolders can include multiple files for fields of the *Attachments* type, or a single file for *File* type fields.
 * Any "floating" attachments without an associated page are migrated into the media library root folder.
 * The migration does not include temporary attachments (created when a file upload is not finished correctly). If any are present on the source instance, a warning is logged in the [migration protocol](./MIGRATION_PROTOCOL_REFERENCE.md).
@@ -181,7 +183,7 @@ The following is an example of a media library created by the Migration toolkit 
 
 Additionally, any attachments placed into the content of migrated pages **will no longer work** in Xperience by Kentico. This includes images and file download links that use **/getattachment** and **/getimage** URLs.
 
-If you wish to continue using these legacy Kentico Xperience 13 attachment URLs, you need to add a custom handler to your Xperience by Kentico project. See [`Migration.Toolkit.KXP.Extensions/README.MD`](/Migration.Toolkit.KXP.Extensions/README.MD) for instructions.
+If you wish to continue using these legacy Kentico Xperience 13/Kentico 12 attachment URLs, you need to add a custom handler to your Xperience by Kentico project. See [`Migration.Toolkit.KXP.Extensions/README.MD`](/Migration.Toolkit.KXP.Extensions/README.MD) for instructions.
 
 #### Forms
 
@@ -362,6 +364,8 @@ Add the options under the `Settings` section in the configuration file.
 ```
 
 ## Source instance API discovery
+
+> :information_source: **Warning** – source instance API discovery is only available when migrating from Kentico Xperience 13.
 
 By default, JSON data storing the Page Builder content of pages and custom page templates is migrated directly without modifications. Within this content, Page Builder components (widgets, sections, etc.) with properties have their configuration based on Kentico Xperience 13 form components, which are assigned to the properties on the source instance. On the target Xperience by Kentico instance, the migrated data can work in the Page Builder's legacy compatibility mode.
 
