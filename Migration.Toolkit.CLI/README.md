@@ -366,7 +366,7 @@ Add the options under the `Settings` section in the configuration file.
 
 ## Source instance API discovery
 
-> :information_source: **Warning** – source instance API discovery is only available when migrating from Kentico Xperience 13.
+> :warning: **Warning** – source instance API discovery is only available when migrating from Kentico Xperience 13.
 
 By default, JSON data storing the Page Builder content of pages and custom page templates is migrated directly without modifications. Within this content, Page Builder components (widgets, sections, etc.) with properties have their configuration based on Kentico Xperience 13 form components, which are assigned to the properties on the source instance. On the target Xperience by Kentico instance, the migrated data can work in the Page Builder's legacy compatibility mode.
 
