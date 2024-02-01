@@ -69,7 +69,7 @@ Migration.Toolkit.CLI.exe migrate --sites --custom-modules --users --members --f
 
 #### Content types
 
-Content types are named **Page types** in Kentico Xperience 13.
+Content types are named **Page types** in earlier Kentico products.
 
 Xperience by Kentico currently does not support:
 
@@ -119,6 +119,7 @@ Some [Form components](https://docs.xperience.io/x/5ASiCQ) used by content type 
 * Migration includes the URL paths of pages but not Alternative URLs or Former URLs.
 * Linked pages are currently not supported in Xperience by Kentico. The migration creates standard page copies for any linked pages on the source instance.
 * Page permissions (ACLs) are currently not supported in Xperience by Kentico and are not migrated.
+* Migration of Page Builder content is only available for Kentico Xperience 13.
 
 #### Page Builder content
 
