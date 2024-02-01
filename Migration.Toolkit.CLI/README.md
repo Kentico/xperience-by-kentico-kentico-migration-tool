@@ -123,7 +123,7 @@ Some [Form components](https://docs.xperience.io/x/5ASiCQ) used by content type 
 
 #### Page Builder content
 
-> :information_source: Page Builder content migration is only available when migrating from Kentico Xperience 13.
+> :warning: Page Builder content migration is only available when migrating from Kentico Xperience 13.
 
 By default, JSON data storing the Page Builder content of pages and custom page templates is migrated directly without modifications. On the target Xperience by Kentico instance, the migrated data can work in the Page Builder's legacy compatibility mode. However, we strongly recommend updating your codebase to the new Xperience by Kentico components.
 
