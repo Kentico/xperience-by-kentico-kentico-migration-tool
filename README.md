@@ -35,7 +35,7 @@ The migration currently supports the Kentico Xperience 13 or Kentico 12 as the s
 ### Target
 
 * The migration toolkit is periodically updated to support migration to the **latest version** of Xperience by Kentico. However, there may be delays between Xperience by Kentico releases and toolkit updates.
-  * Currently, Xperience by Kentico **28.0.1** is tested and supported.
+  * Currently, Xperience by Kentico **28.0.3** is tested and supported.
 * The target instance's database and file system must be accessible from the environment where you run the Migration toolkit.
 * The target instance's database must be empty except for data from the source instance created by previous runs of the Migration toolkit to avoid conflicts and inconsistencies.
 
