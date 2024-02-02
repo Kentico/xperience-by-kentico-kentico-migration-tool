@@ -138,7 +138,7 @@ Follow the steps below to run the Migration toolkit:
     * The following example shows the command with all parameters for complete migration:
 
         ```powershell
-        Migration.Toolkit.CLI.exe  migrate --sites --users --settings-keys --page-types --pages --attachments --contact-management --forms --media-libraries --data-protection --countries
+        Migration.Toolkit.CLI.exe  migrate --sites --custom-modules --users --settings-keys --page-types --pages --attachments --contact-management --forms --media-libraries --data-protection --countries
         ```
 
 8. Observe the command line output. The command output is also stored in a log file (`logs\log-<date>.txt` under the output directory by default), which you can review later.
