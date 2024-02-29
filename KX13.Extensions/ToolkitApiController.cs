@@ -9,7 +9,6 @@ using Kentico.PageBuilder.Web.Mvc.PageTemplates;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-
 public class ToolkitApiController : Controller
 {
     // TODO configure your own secret

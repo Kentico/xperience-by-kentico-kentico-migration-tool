@@ -182,9 +182,9 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
 
                 if (kx13CmsTreeOriginal is { NodeSkuid: not null })
                 {
-                    _logger.LogWarning("Page has SKU bound, SKU info will be discarded");
+                    _logger.LogWarning("Page '{NodeAliasPath}' has SKU bound, SKU info will be discarded", kx13CmsTreeOriginal.NodeAliasPath);
                     _protocol.Append(HandbookReferences.NotCurrentlySupportedSkip()
-                        .WithMessage("Page has SKU bound, SKU info will be discarded")
+                        .WithMessage($"Page '{kx13CmsTreeOriginal.NodeAliasPath}' has SKU bound, SKU info will be discarded")
                         .WithIdentityPrint(kx13CmsTreeOriginal)
                         .WithData(new { NodeSKUID = kx13CmsTreeOriginal.NodeSkuid })
                     );

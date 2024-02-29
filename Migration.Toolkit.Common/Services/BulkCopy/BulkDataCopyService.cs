@@ -91,8 +91,8 @@ public class BulkDataCopyService
 
         sqlBulkCopy.BulkCopyTimeout = 1200;
         sqlBulkCopy.BatchSize = batchSize;
-        // TODO tk: 2022-05-31  sqlBulkCopy.EnableStreaming
-        // TODO tk: 2022-05-31  sqlBulkCopy.BulkCopyTimeout
+        // sqlBulkCopy.EnableStreaming
+        // sqlBulkCopy.BulkCopyTimeout
 
         sqlBulkCopy.NotifyAfter = 100000;
         sqlBulkCopy.SqlRowsCopied += (sender, args) =>
@@ -189,7 +189,6 @@ public class BulkDataCopyService
         return selectBuilder;
     }
 
-    // TODO tk: 2022-06-30 assert column type is compatible
     public IEnumerable<SqlColumn> GetSqlTableColumns(string tableName, string? connectionString, IEnumerable<string>? allowedColumns = null)
     {
         using var sourceConnection = new SqlConnection(connectionString);

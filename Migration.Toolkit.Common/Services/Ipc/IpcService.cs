@@ -4,35 +4,26 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-public class IpcService
+public class IpcService(ToolkitConfiguration toolkitConfiguration, ILogger<IpcService> logger)
 {
     private const string IPC_PING_PATH = "/ToolkitApi/Test";
     private const string IPC_DISCOVERED_INFO_PATH = "/ToolkitApi/GetAllDefinitions";
 
-    private readonly ToolkitConfiguration _toolkitConfiguration;
-    private readonly ILogger<IpcService> _logger;
-
-    public IpcService(ToolkitConfiguration toolkitConfiguration, ILogger<IpcService> logger)
-    {
-        _toolkitConfiguration = toolkitConfiguration;
-        _logger = logger;
-    }
-
     public async Task<bool> IsConfiguredAsync()
     {
-        var advancedFeatures = _toolkitConfiguration.OptInFeatures?.QuerySourceInstanceApi;
+        var advancedFeatures = toolkitConfiguration.OptInFeatures?.QuerySourceInstanceApi;
         var connections = advancedFeatures?.Connections ?? new List<SourceInstanceInfo>();
 
         if (!(advancedFeatures?.Enabled ?? false))
         {
-            _logger.LogInformation("Advanced features are disabled");
+            logger.LogInformation("Advanced features are disabled");
             return false;
         }
         else
         {
-            _logger.LogInformation("Advanced features are enabled");
+            logger.LogInformation("Advanced features are enabled");
         }
-        
+
         var hc = new HttpClient();
         var results = new List<HttpResponseMessage>();
         foreach (var connectionInfo in connections)
@@ -43,16 +34,16 @@ public class IpcService
                 var request = new HttpRequestMessage(
                     HttpMethod.Post, pingUri
                 );
-                
+
                 var json = JsonConvert.SerializeObject(new { secret = connectionInfo.Secret });
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 request.Content = content;
-                
+
                 results.Add(await hc.SendAsync(request));
             }
             else
             {
-                _logger.LogError("SourceInstanceUri is required");
+                logger.LogError("SourceInstanceUri is required");
                 return false;
             }
         }
@@ -76,7 +67,7 @@ public class IpcService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error while connecting to source instance");
+                logger.LogError(ex, "Error while connecting to source instance");
                 ok = false;
             }
         }
@@ -86,7 +77,7 @@ public class IpcService
 
     public async Task<Dictionary<string, SourceInstanceDiscoveredInfo>> GetSourceInstanceDiscoveredInfos()
     {
-        var advancedFeatures = _toolkitConfiguration.OptInFeatures?.QuerySourceInstanceApi;
+        var advancedFeatures = toolkitConfiguration.OptInFeatures?.QuerySourceInstanceApi;
         var connections = advancedFeatures?.Connections ?? new List<SourceInstanceInfo>();
 
         var discoveredInfoList = new Dictionary<string, SourceInstanceDiscoveredInfo>(StringComparer.InvariantCultureIgnoreCase);
@@ -100,11 +91,11 @@ public class IpcService
                 var request = new HttpRequestMessage(
                     HttpMethod.Post, pingUri
                 );
-                
+
                 var json = JsonConvert.SerializeObject(new { secret = connectionInfo.Secret });
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 request.Content = content;
-                
+
                 var response = await hc.SendAsync(request);
                 response.EnsureSuccessStatusCode();
 
