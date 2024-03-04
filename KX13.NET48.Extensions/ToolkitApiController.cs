@@ -8,7 +8,6 @@ using Kentico.PageBuilder.Web.Mvc;
 using Kentico.PageBuilder.Web.Mvc.PageTemplates;
 using Newtonsoft.Json;
 
-
 public class ToolkitApiController : Controller
 {
     // TODO configure your own secret

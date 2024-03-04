@@ -59,7 +59,10 @@ public class CmsClassMapper : EntityMapperBase<KX13M.CmsClass, DataClassInfo>
         MapFormDefinitionFields(source, target, isCustomizableSystemClass, classIsCustom);
 
         target.ClassHasUnmanagedDbSchema = false;
-        target.ClassTableName = source.ClassTableName;
+        if (!string.IsNullOrWhiteSpace(source.ClassTableName))
+        {
+            target.ClassTableName = source.ClassTableName;
+        }
         target.ClassShowTemplateSelection = source.ClassShowTemplateSelection.UseKenticoDefault();
         target.ClassLastModified = source.ClassLastModified;
         target.ClassGUID = source.ClassGuid;

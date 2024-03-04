@@ -333,8 +333,7 @@ public class K12SystemClass
     public const string Ecommerce_GiftCard = "Ecommerce.GiftCard";
     public const string Ecommerce_ShoppingCartCouponCode = "Ecommerce.ShoppingCartCouponCode";
 
-    public static readonly HashSet<string> All =
-    [
+    public static readonly HashSet<string> All = [
         CMS_AbuseReport, cms_acl, cms_aclitem, CMS_AllowedChildClass, cms_AlternativeForm, CMS_AlternativeUrl, cms_attachment, cms_attachmentforemail, cms_attachmenthistory, CMS_AutomationHistory,
         CMS_AutomationState, cms_avatar, CMS_Badge, cms_BannedIP, CMS_Banner, CMS_BannerCategory, cms_category, cms_class, CMS_ClassSite, CMS_Consent, CMS_ConsentAgreement, CMS_ConsentArchive,
         cms_country, cms_cssstylesheet, CMS_CSSStylesheetSite, cms_culture, CMS_CultureSite, CMS_DeviceProfile, CMS_DeviceProfileLayout, cms_document, CMS_DocumentAlias, cms_documentcategory,

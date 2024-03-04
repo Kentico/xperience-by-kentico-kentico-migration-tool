@@ -4,13 +4,16 @@ using System.Diagnostics;
 using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
 using CMS.DataEngine;
+using CMS.Websites;
 using CMS.Websites.Internal;
+using Kentico.Xperience.UMT.Model;
 using Kentico.Xperience.UMT.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX12.Mappers;
 using Migration.Toolkit.Core.KX12.Providers;
@@ -19,47 +22,26 @@ using Migration.Toolkit.KX12.Models;
 using Newtonsoft.Json;
 
 // ReSharper disable once UnusedType.Global
-public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, CommandResult>
-{
-    private const string CLASS_CMS_ROOT = "CMS.Root";
-
-    private readonly ILogger<MigratePagesCommandHandler> _logger;
-    private readonly IDbContextFactory<KX12Context> _kx12ContextFactory;
-    private readonly ToolkitConfiguration _toolkitConfiguration;
-    private readonly IProtocol _protocol;
-    private readonly IImporter _importer;
-    private readonly IUmtMapper<CmsTreeMapperSource> _mapper;
-    private readonly ContentItemNameProvider _contentItemNameProvider;
-
-    public MigratePagesCommandHandler(
-        ILogger<MigratePagesCommandHandler> logger,
+public class MigratePagesCommandHandler(ILogger<MigratePagesCommandHandler> logger,
         IDbContextFactory<KX12Context> kx12ContextFactory,
         ToolkitConfiguration toolkitConfiguration,
         IProtocol protocol,
         IImporter importer,
-        IUmtMapper<CmsTreeMapperSource> mapper
-    )
-    {
-        _logger = logger;
-        _kx12ContextFactory = kx12ContextFactory;
-        _toolkitConfiguration = toolkitConfiguration;
-        _protocol = protocol;
-        _importer = importer;
-        _mapper = mapper;
-        _contentItemNameProvider = new ContentItemNameProvider(new Providers.ContentItemNameValidator());
+        IUmtMapper<CmsTreeMapperSource> mapper)
+    : IRequestHandler<MigratePagesCommand, CommandResult>
+{
+    private const string CLASS_CMS_ROOT = "CMS.Root";
 
-    }
+    private readonly ContentItemNameProvider _contentItemNameProvider = new(new Providers.ContentItemNameValidator());
 
     private CmsTree? GetFullSourceCmsTree(int siteId, Guid nodeGuid)
     {
-        using var kx12Context = _kx12ContextFactory.CreateDbContext();
+        using var kx12Context = kx12ContextFactory.CreateDbContext();
 
         return kx12Context.CmsTrees
             .Include(t => t.NodeParent)
             .Include(t => t.CmsDocuments)
             .Include(t => t.NodeClass)
-            // TODO tomas.krch: 2023-12-14 KX12
-            //.Include(t => t.CmsPageUrlPaths)
             .Include(t => t.NodeLinkedNode)
             .Where(x => x.NodeSiteId == siteId && x.NodeGuid == nodeGuid)
             .OrderBy(t => t.NodeLevel)
@@ -72,9 +54,9 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
 
     public async Task<CommandResult> Handle(MigratePagesCommand request, CancellationToken cancellationToken)
     {
-        var classEntityConfiguration = _toolkitConfiguration.EntityConfigurations.GetEntityConfiguration<CmsClass>();
+        var classEntityConfiguration = toolkitConfiguration.EntityConfigurations.GetEntityConfiguration<CmsClass>();
 
-        await using var KX12Context = await _kx12ContextFactory.CreateDbContextAsync(cancellationToken);
+        await using var KX12Context = await kx12ContextFactory.CreateDbContextAsync(cancellationToken);
 
         var cultureCodeToLanguageGuid = KX12Context.CmsCultures
             .ToDictionary(c => c.CultureCode, c => c.CultureGuid, StringComparer.InvariantCultureIgnoreCase);
@@ -85,11 +67,11 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
             var channelInfo = ChannelInfoProvider.ProviderObject.Get(k12Site.SiteGuid);
             if (channelInfo == null)
             {
-                _logger.LogError("Target channel for site '{SiteName}' not exists!", k12Site.SiteName);
+                logger.LogError("Target channel for site '{SiteName}' not exists!", k12Site.SiteName);
                 continue;
             }
 
-            _logger.LogInformation("Migrating pages for site '{SourceSiteName}' to target channel '{TargetChannelName}' as content items", k12Site.SiteName, channelInfo.ChannelName);
+            logger.LogInformation("Migrating pages for site '{SourceSiteName}' to target channel '{TargetChannelName}' as content items", k12Site.SiteName, channelInfo.ChannelName);
 
             var k12CmsTrees = KX12Context.CmsTrees
                 .Include(t => t.NodeParent)
@@ -107,9 +89,9 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
 
             foreach (var k12CmsTreeOriginal in k12CmsTrees)
             {
-                _logger.LogDebug("Page '{NodeAliasPath}' migration", k12CmsTreeOriginal.NodeAliasPath);
+                logger.LogDebug("Page '{NodeAliasPath}' migration", k12CmsTreeOriginal.NodeAliasPath);
 
-                _protocol.FetchedSource(k12CmsTreeOriginal);
+                protocol.FetchedSource(k12CmsTreeOriginal);
 
                 var k12CmsTree = k12CmsTreeOriginal;
                 if (k12CmsTree.NodeLinkedNode != null)
@@ -117,8 +99,8 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                     if (k12CmsTree.NodeLinkedNode.NodeSiteId != k12CmsTree.NodeSiteId)
                     {
                         // skip & write to protocol
-                        _logger.LogWarning("Linked node with NodeGuid {NodeGuid} is linked from different site - unable to migrate", k12CmsTreeOriginal.NodeGuid);
-                        _protocol.Warning(HandbookReferences.CmsTreeTreeIsLinkFromDifferentSite, k12CmsTree);
+                        logger.LogWarning("Linked node with NodeGuid {NodeGuid} is linked from different site - unable to migrate", k12CmsTreeOriginal.NodeGuid);
+                        protocol.Warning(HandbookReferences.CmsTreeTreeIsLinkFromDifferentSite, k12CmsTree);
                         continue;
                     }
 
@@ -146,7 +128,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                                         .FirstOrDefault() is { } contentItemCommonDataInfo)
                                 {
                                     fixedDocumentGuid = contentItemCommonDataInfo.ContentItemCommonDataGUID;
-                                    _logger.LogTrace("Page '{NodeAliasPath}' is linked => ContentItemCommonDataGUID copy to DocumentGuid", k12CmsTree.NodeAliasPath);
+                                    logger.LogTrace("Page '{NodeAliasPath}' is linked => ContentItemCommonDataGUID copy to DocumentGuid", k12CmsTree.NodeAliasPath);
                                 }
                             }
                         }
@@ -157,21 +139,21 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                         k12CmsTree.CmsDocuments.Add(originalCmsDocument);
                         k12CmsTree.NodeLinkedNodeId = null;
                         k12CmsTree.NodeLinkedNodeSiteId = null;
-                        _logger.LogTrace("Linked node with NodeGuid {NodeGuid} was materialized", k12CmsTree.NodeGuid);
+                        logger.LogTrace("Linked node with NodeGuid {NodeGuid} was materialized", k12CmsTree.NodeGuid);
                     }
                 }
 
                 var nodeClassClassName = k12CmsTree.NodeClass.ClassName;
                 if (classEntityConfiguration.ExcludeCodeNames.Contains(nodeClassClassName, StringComparer.InvariantCultureIgnoreCase))
                 {
-                    _protocol.Warning(HandbookReferences.EntityExplicitlyExcludedByCodeName(nodeClassClassName, "PageType"), k12CmsTree);
-                    _logger.LogWarning("Page: page of class {ClassName} was skipped => it is explicitly excluded in configuration", nodeClassClassName);
+                    protocol.Warning(HandbookReferences.EntityExplicitlyExcludedByCodeName(nodeClassClassName, "PageType"), k12CmsTree);
+                    logger.LogWarning("Page: page of class {ClassName} was skipped => it is explicitly excluded in configuration", nodeClassClassName);
                     continue;
                 }
 
                 if (nodeClassClassName == CLASS_CMS_ROOT)
                 {
-                    _logger.LogInformation("Root node skipped, V27 has no support for root nodes");
+                    logger.LogInformation("Root node skipped, V27 has no support for root nodes");
                     continue;
                 }
 
@@ -181,9 +163,9 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
 
                 if (k12CmsTreeOriginal is { NodeSkuid: not null })
                 {
-                    _logger.LogWarning("Page has SKU bound, SKU info will be discarded");
-                    _protocol.Append(HandbookReferences.NotCurrentlySupportedSkip()
-                        .WithMessage("Page has SKU bound, SKU info will be discarded")
+                    logger.LogWarning("Page '{NodeAliasPath}' has SKU bound, SKU info will be discarded", k12CmsTreeOriginal.NodeAliasPath);
+                    protocol.Append(HandbookReferences.NotCurrentlySupportedSkip()
+                        .WithMessage($"Page '{k12CmsTreeOriginal.NodeAliasPath}' has SKU bound, SKU info will be discarded")
                         .WithIdentityPrint(k12CmsTreeOriginal)
                         .WithData(new { NodeSKUID = k12CmsTreeOriginal.NodeSkuid })
                     );
@@ -196,7 +178,7 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
 
                 var targetClass = DataClassInfoProvider.ProviderObject.Get(k12CmsTree.NodeClass.ClassGuid);
 
-                var results = _mapper.Map(new CmsTreeMapperSource(
+                var results = mapper.Map(new CmsTreeMapperSource(
                     k12CmsTree,
                     safeNodeName,
                     k12Site.SiteGuid,
@@ -212,10 +194,10 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
                     List<ContentItemCommonDataInfo> commonDataInfos = new List<ContentItemCommonDataInfo>();
                     foreach (var umtModel in results)
                     {
-                        var result = await _importer.ImportAsync(umtModel);
+                        var result = await importer.ImportAsync(umtModel);
                         if (result is { Success: false })
                         {
-                            _logger.LogError("Failed to import: {Exception}, {ValidationResults}", result.Exception, JsonConvert.SerializeObject(result.ModelValidationResults));
+                            logger.LogError("Failed to import: {Exception}, {ValidationResults}", result.Exception, JsonConvert.SerializeObject(result.ModelValidationResults));
                         }
 
                         switch (result)
@@ -241,31 +223,26 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
 
                     AsserVersionStatusRule(commonDataInfos);
 
-                    // TODO tomas.krch: 2023-12-14 KX12
-                    // if (webPageItemInfo != null)
-                    // {
-                    //     foreach (var migratedDocument in migratedDocuments)
-                    //     {
-                    //         await MigratePageUrlPaths(kx13CmsTree.NodeId, migratedDocument.DocumentCulture, webPageItemInfo.WebPageItemGUID, webPageItemInfo.WebPageItemID, kx13Site.SiteGuid,
-                    //             cultureCodeToLanguageGuid[migratedDocument.DocumentCulture],
-                    //             commonDataInfos
-                    //         );
-                    //     }
-                    // }
-                    // else
-                    // {
-                    //     _logger.LogTrace("No webpage item produced for '{NodeAliasPath}'", kx13CmsTree.NodeAliasPath);
-                    // }
+                    if (webPageItemInfo != null)
+                    {
+                        foreach (var migratedDocument in migratedDocuments)
+                        {
+                            await MigratePageUrlPaths(k12CmsTree, migratedDocument, webPageItemInfo.WebPageItemGUID, webPageItemInfo.WebPageItemID, k12Site.SiteGuid,
+                                cultureCodeToLanguageGuid[migratedDocument.DocumentCulture],
+                                commonDataInfos
+                            );
+                        }
+                    }
                 }
 
                 catch (Exception ex)
                 {
-                    _protocol.Append(HandbookReferences
+                    protocol.Append(HandbookReferences
                         .ErrorCreatingTargetInstance<WebPageItemInfo>(ex)
                         .NeedsManualAction()
                         .WithIdentityPrint(k12CmsTree)
                     );
-                    _logger.LogError("Failed to import content item: {Exception}", ex);
+                    logger.LogError("Failed to import content item: {Exception}", ex);
                 }
             }
         }
@@ -300,86 +277,60 @@ public class MigratePagesCommandHandler : IRequestHandler<MigratePagesCommand, C
         }
     }
 
-    // private async Task MigratePageUrlPaths(int nodeId, string documentCulture, Guid webPageItemGuid, int webPageItemId, Guid webSiteChannelGuid, Guid languageGuid, List<ContentItemCommonDataInfo> contentItemCommonDataInfos)
-    // {
-    //     await using var KX12Context = await _kx12ContextFactory.CreateDbContextAsync();
-    //
-    //     var kx13PageUrlPaths = KX12Context
-    //         .CmsPageUrlPaths.Where(p => p.PageUrlPathNodeId == nodeId && p.PageUrlPathCulture == documentCulture);
-    //
-    //     var existingPaths = WebPageUrlPathInfoProvider.ProviderObject.Get()
-    //         .WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID), webPageItemId)
-    //         .ToList();
-    //
-    //     var languageInfo = ContentLanguageInfoProvider.ProviderObject.Get(languageGuid);
-    //
-    //     var webSiteChannel = WebsiteChannelInfoProvider.ProviderObject.Get(webSiteChannelGuid);
-    //
-    //     foreach (var kx13PageUrlPath in kx13PageUrlPaths)
-    //     {
-    //         _logger.LogTrace("Page url path: C={Culture} S={Site} P={Path}", kx13PageUrlPath.PageUrlPathCulture, kx13PageUrlPath.PageUrlPathSiteId, kx13PageUrlPath.PageUrlPathUrlPath);
-    //
-    //         foreach (var contentItemCommonDataInfo in contentItemCommonDataInfos.Where(x=>x.ContentItemCommonDataContentLanguageID == languageInfo.ContentLanguageID))
-    //         {
-    //             _logger.LogTrace("Page url path common data info: CIID={ContentItemId} CLID={Language} ID={Id}", contentItemCommonDataInfo.ContentItemCommonDataContentItemID, contentItemCommonDataInfo.ContentItemCommonDataContentLanguageID, contentItemCommonDataInfo.ContentItemCommonDataID);
-    //
-    //             Debug.Assert(!string.IsNullOrWhiteSpace(kx13PageUrlPath.PageUrlPathUrlPath), "!string.IsNullOrWhiteSpace(kx13PageUrlPath.PageUrlPathUrlPath)");
-    //
-    //             var webPageUrlPath = new WebPageUrlPathModel
-    //             {
-    //                 WebPageUrlPathGUID = Guid.NewGuid(),
-    //                 WebPageUrlPath = kx13PageUrlPath.PageUrlPathUrlPath,
-    //                 WebPageUrlPathHash = kx13PageUrlPath.PageUrlPathUrlPathHash,
-    //                 WebPageUrlPathWebPageItemGuid = webPageItemGuid,
-    //                 WebPageUrlPathWebsiteChannelGuid = webSiteChannelGuid,
-    //                 WebPageUrlPathContentLanguageGuid = languageGuid,
-    //                 WebPageUrlPathIsLatest = contentItemCommonDataInfo.ContentItemCommonDataIsLatest,
-    //                 WebPageUrlPathIsDraft = contentItemCommonDataInfo.ContentItemCommonDataVersionStatus switch
-    //                 {
-    //                     VersionStatus.InitialDraft => false,
-    //                     VersionStatus.Draft => true,
-    //                     VersionStatus.Published => false,
-    //                     VersionStatus.Archived => false,
-    //                     _ => throw new ArgumentOutOfRangeException()
-    //                 },
-    //             };
-    //
-    //             var ep = existingPaths.FirstOrDefault(ep =>
-    //                 ep.WebPageUrlPath == webPageUrlPath.WebPageUrlPath &&
-    //                 ep.WebPageUrlPathContentLanguageID == languageInfo.ContentLanguageID &&
-    //                 ep.WebPageUrlPathIsDraft == webPageUrlPath.WebPageUrlPathIsDraft &&
-    //                 ep.WebPageUrlPathIsLatest == webPageUrlPath.WebPageUrlPathIsLatest &&
-    //                 ep.WebPageUrlPathWebsiteChannelID == webSiteChannel.WebsiteChannelID
-    //             );
-    //
-    //             if (ep != null)
-    //             {
-    //                 webPageUrlPath.WebPageUrlPathGUID = ep.WebPageUrlPathGUID;
-    //                 _logger.LogTrace("Existing page url path found for '{Path}', fixing GUID to '{Guid}'", kx13PageUrlPath.PageUrlPathUrlPath, webPageUrlPath.WebPageUrlPathGUID);
-    //             }
-    //
-    //             switch (await _importer.ImportAsync(webPageUrlPath))
-    //             {
-    //                 case { Success: true, Imported: WebPageUrlPathInfo imported }:
-    //                 {
-    //                     _logger.LogInformation("Page url path imported '{Path}' '{Guid}'", imported.WebPageUrlPath, imported.WebPageUrlPathGUID);
-    //                     break;
-    //                 }
-    //                 case { Success: false, Exception: {} exception }:
-    //                 {
-    //                     _logger.LogError("Failed to import page url path: {Error}", exception.ToString());
-    //                     break;
-    //                 }
-    //                 case { Success: false, ModelValidationResults: { } validation }:
-    //                 {
-    //                     foreach (var validationResult in validation)
-    //                     {
-    //                         _logger.LogError("Failed to import page url path {Members}: {Error}", string.Join(",", validationResult.MemberNames), validationResult.ErrorMessage);
-    //                     }
-    //                     break;
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
+   private async Task MigratePageUrlPaths(CmsTree k12CmsTree, CmsDocument k11CmsDocument, Guid webPageItemGuid, int webPageItemId, Guid webSiteChannelGuid, Guid languageGuid,
+        List<ContentItemCommonDataInfo> contentItemCommonDataInfos)
+    {
+        await using var kx11Context = await kx12ContextFactory.CreateDbContextAsync();
+
+        var languageInfo = ContentLanguageInfoProvider.ProviderObject.Get(languageGuid);
+
+        var webSiteChannel = WebsiteChannelInfoProvider.ProviderObject.Get(webSiteChannelGuid);
+        foreach (var contentItemCommonDataInfo in contentItemCommonDataInfos.Where(x => x.ContentItemCommonDataContentLanguageID == languageInfo.ContentLanguageID))
+        {
+            logger.LogTrace("Page url path common data info: CIID={ContentItemId} CLID={Language} ID={Id}", contentItemCommonDataInfo.ContentItemCommonDataContentItemID,
+                contentItemCommonDataInfo.ContentItemCommonDataContentLanguageID, contentItemCommonDataInfo.ContentItemCommonDataID);
+
+            var urlPath = k11CmsDocument.DocumentUrlPath.NullIf(string.Empty) ?? k12CmsTree.NodeAliasPath;
+            var webPageUrlPath = new WebPageUrlPathModel
+            {
+                WebPageUrlPathGUID = GuidHelper.CreateWebPageUrlPathGuid($"{urlPath}|{k11CmsDocument.DocumentCulture}|{webSiteChannel.WebsiteChannelGUID}"),
+                WebPageUrlPath = urlPath,
+                WebPageUrlPathWebPageItemGuid = webPageItemGuid,
+                WebPageUrlPathWebsiteChannelGuid = webSiteChannelGuid,
+                WebPageUrlPathContentLanguageGuid = languageGuid,
+                WebPageUrlPathIsLatest = contentItemCommonDataInfo.ContentItemCommonDataIsLatest,
+                WebPageUrlPathIsDraft = contentItemCommonDataInfo.ContentItemCommonDataVersionStatus switch
+                {
+                    VersionStatus.InitialDraft => false,
+                    VersionStatus.Draft => true,
+                    VersionStatus.Published => false,
+                    VersionStatus.Archived => false,
+                    _ => throw new ArgumentOutOfRangeException()
+                },
+            };
+
+            switch (await importer.ImportAsync(webPageUrlPath))
+            {
+                case { Success: true, Imported: WebPageUrlPathInfo imported }:
+                {
+                    logger.LogInformation("Page url path imported '{Path}' '{Guid}'", imported.WebPageUrlPath, imported.WebPageUrlPathGUID);
+                    break;
+                }
+                case { Success: false, Exception: { } exception }:
+                {
+                    logger.LogError("Failed to import page url path: {Error}", exception.ToString());
+                    break;
+                }
+                case { Success: false, ModelValidationResults: { } validation }:
+                {
+                    foreach (var validationResult in validation)
+                    {
+                        logger.LogError("Failed to import page url path {Members}: {Error}", string.Join(",", validationResult.MemberNames), validationResult.ErrorMessage);
+                    }
+
+                    break;
+                }
+            }
+        }
+    }
 }

@@ -11,12 +11,14 @@ using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.Core;
+using Migration.Toolkit.Core.K11;
 using Migration.Toolkit.KX12;
 using Migration.Toolkit.KX13;
 using Migration.Toolkit.KXP;
 using Migration.Toolkit.KXP.Api;
 using Migration.Toolkit.KXP.Context;
 using Migration.Toolkit.Core.KX12;
+using Migration.Toolkit.K11;
 using static Migration.Toolkit.Common.Helpers.ConsoleHelper;
 
 EnableVirtualTerminalProcessing();
@@ -44,9 +46,11 @@ foreach (var (validationMessageType, message, recommendedFix) in validationError
                 {
                     Console.Write(Resources.ConfigurationRecommendedFix, YELLOW, RESET, recommendedFix);
                 }
+
                 anyValidationErrors = true;
                 Console.WriteLine();
             }
+
             break;
         case ValidationMessageType.Warning:
             if (!string.IsNullOrWhiteSpace(message))
@@ -96,11 +100,18 @@ try
     await conn.OpenAsync();
     switch (VersionHelper.GetInstanceVersion(conn))
     {
+        case { Major: 11 }:
+        {
+            services.UseK11DbContext(settings);
+            services.UseK11ToolkitCore();
+            Console.WriteLine($@"Source instance {Green($"version 11")} detected.");
+            break;
+        }
         case { Major: 12 }:
         {
             services.UseKx12DbContext(settings);
             services.UseKx12ToolkitCore();
-            Console.WriteLine($@"Source instance {Green("version 12")} detected");
+            Console.WriteLine($@"Source instance {Green($"version 12")} detected");
             break;
         }
         case { Major: 13 }:
@@ -110,9 +121,15 @@ try
             Console.WriteLine($@"Source instance {Green("version 13")} detected");
             break;
         }
+        case { Major: { } version }:
+        {
+            Console.WriteLine($@"Source instance {Green($"version {version}")} detected. This instance is not supported");
+            break;
+        }
         default:
         {
-            Console.WriteLine($@"{Red("Parsing of source instance version failed")}, please check connection string and if source instance settings key with key name 'CMSDBVersion' is correctly filled.");
+            Console.WriteLine(
+                $@"{Red("Parsing of source instance version failed")}, please check connection string and if source instance settings key with key name 'CMSDBVersion' is correctly filled.");
             return;
         }
     }
