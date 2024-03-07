@@ -14,7 +14,7 @@ The Migration toolkit transfers content and other data from **Kentico Xperience 
 
 ### Source
 
-The migration currently supports the Kentico Xperience 13 or Kentico 12 as the source instance. See the following sections for compatibility information and limitations of respective versions.
+The migration currently supports the Kentico Xperience 13, Kentico 12 or Kentico 11 as the source instance. See the following sections for compatibility information and limitations of respective versions.
 
 #### Kentico Xperience 13
 
@@ -31,6 +31,10 @@ The migration currently supports the Kentico Xperience 13 or Kentico 12 as the s
 * Migration of Page Builder content is not supported. Only structured data of pages is migrated.
   * As a result, [source instance API discovery](/Migration.Toolkit.CLI/README.md#source-instance-api-discovery) is also not available.
 * This repository describes the migration of Kentico Xperience 13 feature set. Only features relevant to Kentico 12 are migrated for this version.
+
+#### Kentico 11
+
+* TBD
 
 ### Target
 
