@@ -34,7 +34,12 @@ The migration currently supports the Kentico Xperience 13, Kentico 12 or Kentico
 
 #### Kentico 11
 
-* TBD
+* The source of the migration data can be any hotfix version of the Kentico 11. If you encounter any issues, it is recommended to update to the latest hotfix.
+* Only MVC development model is supported by the migration tool. Any Portal Engine project that you wish to migrate to Xperience by Kentico needs to be [migrated to MVC](https://www.youtube.com/watch?v=g2oeHU0h1e0) first.
+* The source instance's database and file system must be accessible from the environment where you run the Migration toolkit.
+* Only structured data of pages is migrated as Page Builder is not present in Kentico 11.
+  * As a result, [source instance API discovery](/Migration.Toolkit.CLI/README.md#source-instance-api-discovery) is also not available.
+* This repository describes the migration of Kentico Xperience 13 feature set. Only features relevant to Kentico 11 are migrated for this version.
 
 ### Target
 
@@ -52,9 +57,9 @@ The Migration toolkit only supports content and objects **stored in the database
 Currently, the Migration toolkit supports the following types of data:
 
 * **Sites**
-  * The toolkit migrates each site on the source to a [website channel](https://docs.xperience.io/x/34HFC) object in Xperience by Kentico.
+  * The toolkit migrates each site on the source to a [website channel](https://docs.kentico.com/x/34HFC) object in Xperience by Kentico.
 * **Cultures**
-  * The set of cultures used across all sites in the source gets mapped to a [language](https://docs.xperience.io/x/OxT_Cw) in the _Languages_ application.
+  * The set of cultures used across all sites in the source gets mapped to a [language](https://docs.kentico.com/x/OxT_Cw) in the _Languages_ application.
 * **Content types** (_Page types_ in earlier Kentico versions)
   * The Migration toolkit attempts to map the _Data type_ and _Form control_ of page type fields to an appropriate equivalent in Xperience by Kentico. This mapping is not always possible and does not work for custom data types or form controls. We recommend checking your content type fields after the migration and adjusting them if necessary.
   * The migration includes only page types assigned to at least one site on the source instance.
@@ -66,7 +71,7 @@ Currently, the Migration toolkit supports the following types of data:
 * **Pages**
   * The migration includes the following versions of pages:
     * _Published_
-    * _Latest draft version_ - for published pages, the version is migrated to the _Draft_ [workflow step](https://docs.xperience.io/x/JwKQC#Pages-Pageworkflow); for pages that do not have a published version, the version is migrated to the _Draft (initial)_ workflow step.
+    * _Latest draft version_ - for published pages, the version is migrated to the _Draft_ [workflow step](https://docs.kentico.com/x/JwKQC); for pages that do not have a published version, the version is migrated to the _Draft (initial)_ workflow step.
     * _Archived_
   * Each page gets assigned under its corresponding website channel.
   * Linked pages are currently not supported in Xperience by Kentico. The migration creates standard page copies for any linked pages on the source instance.
@@ -79,7 +84,7 @@ Currently, the Migration toolkit supports the following types of data:
 * **Media libraries and media files**
   * Media library permissions are currently not supported in Xperience by Kentico and are not migrated.
 * **Forms**
-  * The migration does not include the content of form autoresponder and notification emails. You can migrate form autoresponders to Xperience by Kentico manually by copying your HTML code and content into Email templates and Emails. See [Emails](https://docs.xperience.io/x/IaDWCQ).
+  * The migration does not include the content of form autoresponder and notification emails. You can migrate form autoresponders to Xperience by Kentico manually by copying your HTML code and content into Email templates and Emails. See [Emails](https://docs.kentico.com/x/IaDWCQ).
 * **Users**
   * Xperience by Kentico uses separate entities for users with access to the administration interface (_CMS\_User_ table) and live site visitor accounts (_CMS\_Member_ table). Consequently, only users whose _Privilege level_ is _Editor_ or higher are migrated (_Users_ -> edit a user -> _General_ tab).
   * Users in Xperience by Kentico must have an email address. Migration is only supported for users who have a unique email address value on the source instance.
@@ -87,7 +92,7 @@ Currently, the Migration toolkit supports the following types of data:
   * Live site users are represented using a separate **Member** entity and stored in the _CMS_Member_ table. The migration identifies live site users as those without access to the administration interface - accounts with _Privilege level_ set to _None_ (Users -> edit a user -> General tab).
 * **Roles**
   * Only roles that have at least one user whose _Privilege level_ is set to _Editor_ and above are migrated.
-  * Because Xperience by Kentico uses a different [permission model](https://docs.xperience.io/x/7IVwCg), no existing role permissions or UI personalization settings are migrated. After the migration, the permissions for each role must be configured again.
+  * Because Xperience by Kentico uses a different [permission model](https://docs.kentico.com/x/7IVwCg), no existing role permissions or UI personalization settings are migrated. After the migration, the permissions for each role must be configured again.
 * **Contacts**
   * The target instance's _OMContact_ and _OMActivity_ database tables must be empty for performance reasons.
   * Custom contact fields are an optional part of _module class_ migration.
@@ -100,10 +105,10 @@ Currently, the Migration toolkit supports the following types of data:
     * All data stored within custom module classes
     * The following customizable system classes and their custom fields: _User_, _Media file_, _Contact management - Account_ (however, accounts are currently not supported in Xperience by Kentico), _Contact management - Contact_
   * Module and class migration does NOT include:
-    * UI elements and all related user interface settings. The administration of Xperience by Kentico uses a different technology stack than Kentico Xperience 13 and is incompatible. To learn how to build the administration UI, see [Extend the administration interface](https://docs.xperience.io/x/GwKQC) and [Example - Offices management application](https://docs.xperience.io/x/hIFwCg).
-    * Alternative forms under classes and UI-related configuration of class fields (field labels, Form controls, etc.). After the migration, you must manually create the appropriate [UI forms](https://docs.xperience.io/x/V6rWCQ) in Xperience by Kentico.
+    * UI elements and all related user interface settings. The administration of Xperience by Kentico uses a different technology stack than earlier Kentico versions and is incompatible. To learn how to build the administration UI, see [Extend the administration interface](https://docs.kentico.com/x/GwKQC) and [Example - Offices management application](https://docs.kentico.com/x/hIFwCg).
+    * Alternative forms under classes and UI-related configuration of class fields (field labels, Form controls, etc.). After the migration, you must manually create the appropriate [UI forms](https://docs.kentico.com/x/V6rWCQ) in Xperience by Kentico.
     * Custom settings under modules, which are currently not supported in Xperience by Kentico
-    * Module permissions (permissions work differently in Xperience by Kentico - see [Role management](https://docs.xperience.io/x/7IVwCg) and [UI page permission checks](https://docs.xperience.io/x/8IKyCg))
+    * Module permissions (permissions work differently in Xperience by Kentico - see [Role management](https://docs.kentico.com/x/7IVwCg) and [UI page permission checks](https://docs.kentico.com/x/8IKyCg))
     * As with all object types, the migration toolkit does not transfer code files to the target project. You must manually move all code files generated for your custom classes (_Info_, _InfoProvider_, etc.).
 * **Setting values**
   * The migration only transfers the settings that exist in Xperience by Kentico.
@@ -119,7 +124,7 @@ The following types of data exist in Xperience by Kentico but are currently **no
   * Static contact groups are currently not supported in Xperience by Kentico.
   * The condition format for dynamic contact groups is not compatible. To migrate contact groups:
     1. Migrate your contacts using the toolkit.
-    2. Create the [contact groups](https://docs.xperience.io/x/o4PWCQ) manually in Xperience by Kentico.
+    2. Create the [contact groups](https://docs.kentico.com/x/o4PWCQ) manually in Xperience by Kentico.
     3. Build equivalent conditions.
     4. Recalculate the contact groups.
 * **License keys**
