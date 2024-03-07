@@ -81,7 +81,7 @@ The Migration toolkit attempts to map the *Data type* and *Form control* of page
 
 The following table describes how the Migration toolkit maps the data types and form controls/components of page type fields:
 
-| KX13 Data type            | XbK Data type            | KX13 Form control             | XbK Form component    |
+| KX13/12/11 Data type      | XbK Data type            | KX13/12/11 Form control       | XbK Form component    |
 | ------------------------- | ------------------------ | ----------------------------- | --------------------- |
 | Text                      | Text                     | Text box                      | Text input            |
 | Text                      | Text                     | Drop-down list                | Dropdown selector     |
