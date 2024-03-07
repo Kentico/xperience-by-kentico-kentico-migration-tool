@@ -1,6 +1,6 @@
 # Migration CLI
 
-The [Migration toolkit](/README.md) transfers content and other data from **Kentico Xperience 13** or **Kentico 12** to **Xperience by Kentico**.
+The [Migration toolkit](/README.md) transfers content and other data from **Kentico Xperience 13**, **Kentico 12** or **Kentico 11** to **Xperience by Kentico**.
 
 The migration is performed by running a command for the .NET CLI.
 
@@ -184,7 +184,7 @@ The following is an example of a media library created by the Migration toolkit 
 
 Additionally, any attachments placed into the content of migrated pages **will no longer work** in Xperience by Kentico. This includes images and file download links that use **/getattachment** and **/getimage** URLs.
 
-If you wish to continue using these legacy Kentico Xperience 13/Kentico 12 attachment URLs, you need to add a custom handler to your Xperience by Kentico project. See [`Migration.Toolkit.KXP.Extensions/README.MD`](/Migration.Toolkit.KXP.Extensions/README.MD) for instructions.
+If you wish to continue using these legacy attachment URLs from earlier Kentico versions, you need to add a custom handler to your Xperience by Kentico project. See [`Migration.Toolkit.KXP.Extensions/README.MD`](/Migration.Toolkit.KXP.Extensions/README.MD) for instructions.
 
 #### Forms
 
