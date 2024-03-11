@@ -1,6 +1,6 @@
 # Migration CLI
 
-The [Migration toolkit](/README.md) transfers content and other data from **Kentico Xperience 13** or **Kentico 12** to **Xperience by Kentico**.
+The [Migration toolkit](/README.md) transfers content and other data from **Kentico Xperience 13**, **Kentico 12** or **Kentico 11** to **Xperience by Kentico**.
 
 The migration is performed by running a command for the .NET CLI.
 
@@ -81,7 +81,7 @@ The Migration toolkit attempts to map the *Data type* and *Form control* of page
 
 The following table describes how the Migration toolkit maps the data types and form controls/components of page type fields:
 
-| KX13 Data type            | XbK Data type            | KX13 Form control             | XbK Form component    |
+| KX13/12/11 Data type      | XbK Data type            | KX13/12/11 Form control       | XbK Form component    |
 | ------------------------- | ------------------------ | ----------------------------- | --------------------- |
 | Text                      | Text                     | Text box                      | Text input            |
 | Text                      | Text                     | Drop-down list                | Dropdown selector     |
@@ -116,7 +116,9 @@ Some [Form components](https://docs.xperience.io/x/5ASiCQ) used by content type 
   * _Published_
   * _Latest draft version_ - for published pages, the version is migrated to the _Draft_ [workflow step](https://docs.xperience.io/x/JwKQC#Pages-Pageworkflow); for pages that do not have a published version, the version is migrated to the _Draft (initial)_ workflow step.
   * _Archived_
-* Migration includes the URL paths of pages but not Alternative URLs or Former URLs.
+* URLs are migrated depending on the source instance version:
+  * For Kentico Xperience 13, the migration includes the URL paths of pages but not Alternative URLs or Former URLs.
+  * For Kentico 12 and Kentico 11, URL paths are not migrated. Instead, a default URL path is created from the `DocumentUrlPath` or `NodeAliasPath`.
 * Linked pages are currently not supported in Xperience by Kentico. The migration creates standard page copies for any linked pages on the source instance.
 * Page permissions (ACLs) are currently not supported in Xperience by Kentico and are not migrated.
 * Migration of Page Builder content is only available for Kentico Xperience 13.
@@ -184,7 +186,7 @@ The following is an example of a media library created by the Migration toolkit 
 
 Additionally, any attachments placed into the content of migrated pages **will no longer work** in Xperience by Kentico. This includes images and file download links that use **/getattachment** and **/getimage** URLs.
 
-If you wish to continue using these legacy Kentico Xperience 13/Kentico 12 attachment URLs, you need to add a custom handler to your Xperience by Kentico project. See [`Migration.Toolkit.KXP.Extensions/README.MD`](/Migration.Toolkit.KXP.Extensions/README.MD) for instructions.
+If you wish to continue using these legacy attachment URLs from earlier Kentico versions, you need to add a custom handler to your Xperience by Kentico project. See [`Migration.Toolkit.KXP.Extensions/README.MD`](/Migration.Toolkit.KXP.Extensions/README.MD) for instructions.
 
 #### Forms
 
