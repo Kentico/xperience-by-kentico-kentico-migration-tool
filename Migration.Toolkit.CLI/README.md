@@ -116,7 +116,9 @@ Some [Form components](https://docs.xperience.io/x/5ASiCQ) used by content type 
   * _Published_
   * _Latest draft version_ - for published pages, the version is migrated to the _Draft_ [workflow step](https://docs.xperience.io/x/JwKQC#Pages-Pageworkflow); for pages that do not have a published version, the version is migrated to the _Draft (initial)_ workflow step.
   * _Archived_
-* Migration includes the URL paths of pages but not Alternative URLs or Former URLs.
+* URLs are migrated depending on the source instance version:
+  * For Kentico Xperience 13, the migration includes the URL paths of pages but not Alternative URLs or Former URLs.
+  * For Kentico 12 and Kentico 11, URL paths are not migrated. Instead, a default URL path is created from the `DocumentUrlPath` or `NodeAliasPath`.
 * Linked pages are currently not supported in Xperience by Kentico. The migration creates standard page copies for any linked pages on the source instance.
 * Page permissions (ACLs) are currently not supported in Xperience by Kentico and are not migrated.
 * Migration of Page Builder content is only available for Kentico Xperience 13.
