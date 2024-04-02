@@ -2,20 +2,13 @@ using System.Runtime.CompilerServices;
 
 namespace Migration.Toolkit.Common.Helpers;
 
-public class DeferrableItemEnumerableWrapper<T>: IDisposable
+public class DeferrableItemEnumerableWrapper<T>(IEnumerable<T> innerEnumerable, int maxRecurrenceLimit = 5) : IDisposable
 {
-    private readonly IEnumerator<T> _innerEnumerator;
-    private readonly int _maxRecurrenceLimit;
+    private readonly IEnumerator<T> _innerEnumerator = innerEnumerable.GetEnumerator();
 
-    public record DeferrableItem(int Recurrence, T Item);    
+    public record DeferrableItem(int Recurrence, T Item);
 
     private readonly Queue<DeferrableItem> _deferredItems = new();
-
-    public DeferrableItemEnumerableWrapper(IEnumerable<T> innerEnumerable, int maxRecurrenceLimit = 5)
-    {
-        _innerEnumerator = innerEnumerable.GetEnumerator();
-        _maxRecurrenceLimit = maxRecurrenceLimit;
-    }
 
     public bool GetNext(out DeferrableItem item)
     {
@@ -33,14 +26,14 @@ public class DeferrableItemEnumerableWrapper<T>: IDisposable
             };
             return true;
         }
-                
+
         Unsafe.SkipInit(out item);
         return false;
     }
 
     public bool TryDeferItem(DeferrableItem item)
     {
-        if (item.Recurrence < _maxRecurrenceLimit)
+        if (item.Recurrence < maxRecurrenceLimit)
         {
             _deferredItems.Enqueue(item);
             return true;

@@ -2,6 +2,7 @@
 
 using System;
 using System.Xml.Linq;
+using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Enumerations;
 
 internal class NodeXmlAdapter {

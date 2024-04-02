@@ -8,8 +8,8 @@ using Migration.Toolkit.Common.Enumerations;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.K11.Contexts;
 using Migration.Toolkit.Core.K11.Services;
-using Migration.Toolkit.Core.K11.Services.CmsClass;
 using Migration.Toolkit.K11.Models;
+using Migration.Toolkit.KXP.Api.Services.CmsClass;
 
 public record AlternativeFormMapperSource(CmsAlternativeForm AlternativeForm, DataClassInfo XbkFormClass);
 

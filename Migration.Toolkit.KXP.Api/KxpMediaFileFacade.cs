@@ -50,7 +50,7 @@ public class KxpMediaFileFacade
 
     public void EnsureMediaFilePathExistsInLibrary(MediaFileInfo mfi, int libraryId)
     {
-        var librarySubDir = Path.GetDirectoryName(mfi.FilePath);
+        var librarySubDir = System.IO.Path.GetDirectoryName(mfi.FilePath);
         // TODOV27 tomas.krch: 2023-09-05: media library => obsolete create method with sitename
         MediaLibraryInfoProvider.CreateMediaLibraryFolder(libraryId, $"{librarySubDir}", false);
     }

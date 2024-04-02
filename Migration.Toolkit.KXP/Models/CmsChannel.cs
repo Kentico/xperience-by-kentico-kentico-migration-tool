@@ -4,41 +4,42 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Migration.Toolkit.KXP.Models
+namespace Migration.Toolkit.KXP.Models;
+
+[Table("CMS_Channel")]
+public partial class CmsChannel
 {
-    [Table("CMS_Channel")]
-    public partial class CmsChannel
-    {
-        public CmsChannel()
-        {
-            CmsContentItems = new HashSet<CmsContentItem>();
-            CmsContentTypeChannels = new HashSet<CmsContentTypeChannel>();
-            CmsWebsiteChannels = new HashSet<CmsWebsiteChannel>();
-            EmailLibraryEmailChannels = new HashSet<EmailLibraryEmailChannel>();
-            OmActivities = new HashSet<OmActivity>();
-        }
+    [Key]
+    [Column("ChannelID")]
+    public int ChannelId { get; set; }
 
-        [Key]
-        [Column("ChannelID")]
-        public int ChannelId { get; set; }
-        [StringLength(200)]
-        public string ChannelDisplayName { get; set; } = null!;
-        [StringLength(200)]
-        public string ChannelName { get; set; } = null!;
-        [StringLength(200)]
-        public string ChannelType { get; set; } = null!;
-        [Column("ChannelGUID")]
-        public Guid ChannelGuid { get; set; }
+    [StringLength(200)]
+    public string ChannelDisplayName { get; set; } = null!;
 
-        [InverseProperty("ContentItemChannel")]
-        public virtual ICollection<CmsContentItem> CmsContentItems { get; set; }
-        [InverseProperty("ContentTypeChannelChannel")]
-        public virtual ICollection<CmsContentTypeChannel> CmsContentTypeChannels { get; set; }
-        [InverseProperty("WebsiteChannelChannel")]
-        public virtual ICollection<CmsWebsiteChannel> CmsWebsiteChannels { get; set; }
-        [InverseProperty("EmailChannelChannel")]
-        public virtual ICollection<EmailLibraryEmailChannel> EmailLibraryEmailChannels { get; set; }
-        [InverseProperty("ActivityChannel")]
-        public virtual ICollection<OmActivity> OmActivities { get; set; }
-    }
+    [StringLength(200)]
+    public string ChannelName { get; set; } = null!;
+
+    [StringLength(200)]
+    public string ChannelType { get; set; } = null!;
+
+    [Column("ChannelGUID")]
+    public Guid ChannelGuid { get; set; }
+
+    [InverseProperty("ContentItemChannel")]
+    public virtual ICollection<CmsContentItem> CmsContentItems { get; set; } = new List<CmsContentItem>();
+
+    [InverseProperty("ContentTypeChannelChannel")]
+    public virtual ICollection<CmsContentTypeChannel> CmsContentTypeChannels { get; set; } = new List<CmsContentTypeChannel>();
+
+    [InverseProperty("HeadlessChannelChannel")]
+    public virtual ICollection<CmsHeadlessChannel> CmsHeadlessChannels { get; set; } = new List<CmsHeadlessChannel>();
+
+    [InverseProperty("WebsiteChannelChannel")]
+    public virtual ICollection<CmsWebsiteChannel> CmsWebsiteChannels { get; set; } = new List<CmsWebsiteChannel>();
+
+    [InverseProperty("EmailChannelChannel")]
+    public virtual ICollection<EmailLibraryEmailChannel> EmailLibraryEmailChannels { get; set; } = new List<EmailLibraryEmailChannel>();
+
+    [InverseProperty("ActivityChannel")]
+    public virtual ICollection<OmActivity> OmActivities { get; set; } = new List<OmActivity>();
 }

@@ -13,8 +13,8 @@ using Migration.Toolkit.Common.Enumerations;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX12.Contexts;
 using Migration.Toolkit.Core.KX12.Services;
-using Migration.Toolkit.Core.KX12.Services.CmsClass;
 using Migration.Toolkit.KX12.Models;
+using Migration.Toolkit.KXP.Api.Services.CmsClass;
 
 public class CmsClassMapper : EntityMapperBase<KX12M.CmsClass, DataClassInfo>
 {

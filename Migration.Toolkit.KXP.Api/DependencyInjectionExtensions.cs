@@ -3,6 +3,7 @@ namespace Migration.Toolkit.KXP.Api;
 using CMS.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Migration.Toolkit.KXP.Api.Services.CmsClass;
 
 public static class DependencyInjectionExtensions
 {
@@ -15,12 +16,10 @@ public static class DependencyInjectionExtensions
         }
 
         services.AddSingleton<KxpApiInitializer>();
+        services.AddSingleton<FieldMigrationService>();
 
         services.AddSingleton<KxpClassFacade>();
         services.AddSingleton<KxpMediaFileFacade>();
-        services.AddSingleton<KxpPageFacade>();
-        // TODOV27 tomas.krch: 2023-09-05: obsolete registration
-        //services.AddSingleton<KxpSiteFacade>();
 
         return services;
     }

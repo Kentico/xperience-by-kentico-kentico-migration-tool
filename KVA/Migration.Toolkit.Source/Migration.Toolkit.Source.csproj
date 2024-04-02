@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\Migration.Toolkit.Common\Migration.Toolkit.Common.csproj" />
+      <ProjectReference Include="..\..\Migration.Toolkit.KXP.Api\Migration.Toolkit.KXP.Api.csproj" />
+      <ProjectReference Include="..\..\Migration.Toolkit.KXP\Migration.Toolkit.KXP.csproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Kentico.Xperience.UMT" Version="1.0.2" />
+        <PackageReference Include="MediatR" Version="10.0.1"/>
+        <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.1"/>
+    </ItemGroup>
+
+</Project>
