@@ -16,10 +16,14 @@ using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Models;
+using Migration.Toolkit.Source.Helpers;
 using Migration.Toolkit.Source.Mappers;
 using Migration.Toolkit.Source.Model;
 using Migration.Toolkit.Source.Providers;
+using Migration.Toolkit.Source.Services;
+using Migration.Toolkit.Source.Services.Model;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 // ReSharper disable once UnusedType.Global
 public class MigratePagesCommandHandler(
@@ -28,7 +32,8 @@ public class MigratePagesCommandHandler(
     IProtocol protocol,
     IImporter importer,
     IUmtMapper<CmsTreeMapperSource> mapper,
-    ModelFacade modelFacade
+    ModelFacade modelFacade,
+    DeferredPathService deferredPathService
 )
     : IRequestHandler<MigratePagesCommand, CommandResult>
 {
@@ -244,6 +249,7 @@ public class MigratePagesCommandHandler(
             }
         }
 
+        await ExecDeferredPageBuilderPatch();
 
         return new GenericCommandResult();
     }
@@ -426,4 +432,81 @@ public class MigratePagesCommandHandler(
             }
         }
     }
+
+
+    #region Deffered patch
+
+    private async Task ExecDeferredPageBuilderPatch()
+    {
+        logger.LogInformation("Executing TreePath patch");
+        
+        foreach (var (uniqueId, className, webSiteChannelId) in deferredPathService.GetWidgetsToPatch())
+        {
+            if (className == ContentItemCommonDataInfo.TYPEINFO.ObjectClassName)
+            {
+                var contentItemCommonDataInfo = await ContentItemCommonDataInfo.Provider.GetAsync(uniqueId);
+
+                contentItemCommonDataInfo.ContentItemCommonDataPageBuilderWidgets = DeferredPatchPageBuilderWidgets(
+                    contentItemCommonDataInfo.ContentItemCommonDataPageBuilderWidgets, webSiteChannelId, out var anythingChangedW);
+                contentItemCommonDataInfo.ContentItemCommonDataPageTemplateConfiguration = DeferredPatchPageTemplateConfiguration(
+                    contentItemCommonDataInfo.ContentItemCommonDataPageTemplateConfiguration, webSiteChannelId, out var anythingChangedC);
+
+                if (anythingChangedC || anythingChangedW)
+                {
+                    contentItemCommonDataInfo.Update();
+                }
+            }
+            else if (className == PageTemplateConfigurationInfo.TYPEINFO.ObjectClassName)
+            {
+                var pageTemplateConfigurationInfo = await PageTemplateConfigurationInfo.Provider.GetAsync(uniqueId);
+                pageTemplateConfigurationInfo.PageTemplateConfigurationWidgets = DeferredPatchPageBuilderWidgets(
+                    pageTemplateConfigurationInfo.PageTemplateConfigurationWidgets,
+                    webSiteChannelId,
+                    out var anythingChangedW
+                );
+                pageTemplateConfigurationInfo.PageTemplateConfigurationTemplate = DeferredPatchPageTemplateConfiguration(
+                    pageTemplateConfigurationInfo.PageTemplateConfigurationTemplate,
+                    webSiteChannelId,
+                    out var anythingChangedC
+                );
+                if (anythingChangedW || anythingChangedC)
+                {
+                    PageTemplateConfigurationInfo.Provider.Set(pageTemplateConfigurationInfo);
+                }
+            }
+        }
+    }
+
+    private string DeferredPatchPageTemplateConfiguration(string documentPageTemplateConfiguration, int webSiteChannelId, out bool anythingChanged)
+    {
+        if (!string.IsNullOrWhiteSpace(documentPageTemplateConfiguration))
+        {
+            var configuration = JObject.Parse(documentPageTemplateConfiguration);
+            PageBuilderWidgetsPatcher.DeferredPatchProperties(configuration, TreePathConvertor.GetSiteConverter(webSiteChannelId), out anythingChanged);
+            return JsonConvert.SerializeObject(configuration);
+        }
+
+        anythingChanged = false;
+        return documentPageTemplateConfiguration;
+    }
+
+    private string DeferredPatchPageBuilderWidgets(string documentPageBuilderWidgets, int webSiteChannelId, out bool anythingChanged)
+    {
+        if (!string.IsNullOrWhiteSpace(documentPageBuilderWidgets))
+        {
+            var patched = PageBuilderWidgetsPatcher.DeferredPatchConfiguration(
+                JsonConvert.DeserializeObject<EditableAreasConfiguration>(documentPageBuilderWidgets),
+                TreePathConvertor.GetSiteConverter(webSiteChannelId),
+                out anythingChanged
+            );
+            return JsonConvert.SerializeObject(patched);
+        }
+        else
+        {
+            anythingChanged = false;
+            return documentPageBuilderWidgets;
+        }
+    }
+
+    #endregion
 }

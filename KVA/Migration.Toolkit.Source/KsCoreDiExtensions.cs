@@ -56,6 +56,7 @@ public static class KsCoreDiExtensions
 
         // services.AddSingleton(s => new TableReflectionService(s.GetRequiredService<ILogger<TableReflectionService>>()));
         services.AddSingleton<SourceInstanceContext>();
+        services.AddSingleton<DeferredPathService>();
         services.AddTransient<IpcService>();
         services.AddTransient<ReusableSchemaService>();
 

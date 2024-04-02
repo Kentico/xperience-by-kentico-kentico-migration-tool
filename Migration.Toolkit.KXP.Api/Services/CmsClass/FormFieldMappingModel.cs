@@ -2,6 +2,7 @@ namespace Migration.Toolkit.KXP.Api.Services.CmsClass;
 
 using System.Text.RegularExpressions;
 using CMS.DataEngine;
+using CMS.OnlineForms;
 using Migration.Toolkit.Common.Enumerations;
 using Migration.Toolkit.KXP.Api.Auxiliary;
 using FcText = Common.Enumerations.Kx13FormControls.UserControlForText;
@@ -11,7 +12,6 @@ public record FormComponentReplacement(string OldFormComponent, string NewFormCo
 
 public record DataTypeMigrationModel(
     FieldMigration[] FieldMigrations,
-    [property: Obsolete("Legacy mode is no longer supported")]
     FormComponentReplacement[] NotSupportedInKxpLegacyMode,
     [property: Obsolete("Legacy mode is no longer supported")]
     string[] SupportedInKxpLegacyMode
@@ -82,13 +82,16 @@ public static class FieldMappingInstance
         new(KsFieldDataType.DocRelationships, FieldDataType.WebPages, SfcDirective.CatchAnyNonMatching, FormComponents.Kentico_Xperience_Admin_Websites_WebPageSelectorComponent, [TcaDirective.ConvertToPages]),
 
         new(KsFieldDataType.TimeSpan, FieldDataType.TimeSpan, SfcDirective.CatchAnyNonMatching, FormComponents.AdminTextInputComponent, [TcaDirective.ConvertToPages]),
-        // TODO tomas.krch 2024-03-27: check!
-        new(KsFieldDataType.BizFormFile, FieldDataType.Assets, SfcDirective.CatchAnyNonMatching, FormComponents.AdminAssetSelectorComponent, [TcaDirective.ConvertToAsset]),
+        new(KsFieldDataType.BizFormFile, BizFormUploadFile.DATATYPE_FORMFILE, SfcDirective.CatchAnyNonMatching, FormComponents.MvcFileUploaderComponent, []),
     ];
 
     public static DataTypeMigrationModel BuiltInModel => new(
         BuiltInFieldMigrations,
-        [], // legacy mode is no more
-        []  // legacy mode is no more
+        [
+            new(Kx13FormComponents.Kentico_AttachmentSelector, FormComponents.AdminAssetSelectorComponent),
+            new(Kx13FormComponents.Kentico_PageSelector, FormComponents.Kentico_Xperience_Admin_Websites_WebPageSelectorComponent),
+            // new(Kx13FormComponents.Kentico_PathSelector, FormComponents.Kentico_Xperience_Admin_Websites_WebPageSelectorComponent)
+        ],
+        [] // legacy mode is no more
     );
 }

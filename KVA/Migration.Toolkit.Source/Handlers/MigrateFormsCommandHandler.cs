@@ -3,6 +3,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Xml.Linq;
+using CMS.Base;
 using CMS.DataEngine;
 using MediatR;
 using Microsoft.Data.SqlClient;
@@ -27,7 +28,8 @@ public class MigrateFormsCommandHandler(
     BulkDataCopyService bulkDataCopyService,
     PrimaryKeyMappingContext primaryKeyMappingContext,
     IProtocol protocol,
-    ModelFacade modelFacade
+    ModelFacade modelFacade,
+    ToolkitConfiguration configuration
     )
     : IRequestHandler<MigrateFormsCommand, CommandResult>, IDisposable
 {
@@ -140,8 +142,80 @@ public class MigrateFormsCommandHandler(
             }
         }
 
+        await GlobalizeBizFormFiles();
+
         return new GenericCommandResult();
     }
+
+    #region Directory globalization
+
+    private async Task GlobalizeBizFormFiles()
+    {
+        foreach (var cmsSite in modelFacade.SelectAll<ICmsSite>())
+        {
+            var globalBizformFiles = CMS.IO.Path.Combine(SystemContext.WebApplicationPhysicalPath, "BizFormFiles");
+            var siteBizFormFiles = CMS.IO.Path.Combine(configuration.KxCmsDirPath, cmsSite.SiteName, "bizformfiles");
+            if (CMS.IO.Directory.Exists(siteBizFormFiles))
+            {
+                Debug.WriteLine($"Copying site bizformfiles from '{siteBizFormFiles}' to global bizformfiles '{globalBizformFiles}'");
+                try
+                {
+                    var source = CMS.IO.DirectoryInfo.New(siteBizFormFiles);
+                    var target = CMS.IO.DirectoryInfo.New(globalBizformFiles);
+                    CopyAll(source, target);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning($"Moving site bizformfiles failed with {ex}");
+                }
+            }
+            else
+            {
+                Debug.WriteLine($"Directory '{siteBizFormFiles}' not exists");
+            }
+        }
+    }
+
+    internal static void CopyAll(CMS.IO.DirectoryInfo source, CMS.IO.DirectoryInfo target)
+    {
+        var stack = new Stack<(CMS.IO.DirectoryInfo source, CMS.IO.DirectoryInfo target)>();
+        stack.Push((source, target));
+
+        while (stack.Count > 0)
+        {
+            var (s, t) = stack.Pop();
+            if (string.Equals(s.FullName, t.FullName, StringComparison.InvariantCultureIgnoreCase))
+            {
+                continue;
+            }
+
+            // Check if the target directory exists, if not, create it.
+            if (!CMS.IO.Directory.Exists(t.FullName))
+            {
+                CMS.IO.Directory.CreateDirectory(t.FullName);
+            }
+
+            // Copy each file into it's new directory.
+            foreach (var fi in s.GetFiles())
+            {
+                Debug.WriteLine($@"Moving {t.FullName}\{fi.Name}");
+                fi.CopyTo(CMS.IO.Path.Combine(t.FullName, fi.Name), true);
+                // fi.Delete();
+            }
+
+            // Copy each subdirectory using recursion.
+            foreach (var diSourceSubDir in s.GetDirectories())
+            {
+                var nextTargetSubDir = t.CreateSubdirectory(diSourceSubDir.Name);
+                stack.Push((diSourceSubDir, nextTargetSubDir));
+            }
+        }
+
+        // missing overload in source.Delete(true);, replaced with:
+        // CMS.IO.Directory.Delete(source.FullName, true);
+    }
+
+    #endregion
 
     private bool MapAndSaveUsingKxoApi(ICmsClass ksClass, DataClassInfo kxoDataClass)
     {
