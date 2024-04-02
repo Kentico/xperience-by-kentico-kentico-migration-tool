@@ -102,7 +102,7 @@ public class MigratePagesCommandHandler(
                     for (var i = 0; i < linkedNodeDocuments.Count; i++)
                     {
                         var linkedDocument = linkedNodeDocuments[i];
-                        var fixedDocumentGuid = GuidHelper.CreateDocumentGuid($"{linkedDocument.DocumentID}|{linkedNode.NodeID}|{linkedNode.NodeSiteID}"); //Guid.NewGuid();
+                        var fixedDocumentGuid = GuidHelper.CreateDocumentGuid($"{linkedDocument.DocumentID}|{ksNode.NodeID}|{ksNode.NodeSiteID}"); //Guid.NewGuid();
                         if (ContentItemInfo.Provider.Get(ksNode.NodeGUID)?.ContentItemID is { } contentItemId)
                         {
                             if (cultureCodeToLanguageGuid.TryGetValue(linkedDocument.DocumentCulture, out var languageGuid) &&
@@ -439,7 +439,7 @@ public class MigratePagesCommandHandler(
     private async Task ExecDeferredPageBuilderPatch()
     {
         logger.LogInformation("Executing TreePath patch");
-        
+
         foreach (var (uniqueId, className, webSiteChannelId) in deferredPathService.GetWidgetsToPatch())
         {
             if (className == ContentItemCommonDataInfo.TYPEINFO.ObjectClassName)
