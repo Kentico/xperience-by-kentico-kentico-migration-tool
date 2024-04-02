@@ -22,6 +22,7 @@ using Migration.Toolkit.Source.Model;
 using Migration.Toolkit.Source.Providers;
 using Migration.Toolkit.Source.Services;
 using Migration.Toolkit.Source.Services.Model;
+using Mono.Cecil.Cil;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -251,6 +252,17 @@ public class MigratePagesCommandHandler(
 
         await ExecDeferredPageBuilderPatch();
 
+        // check urls
+        foreach (var wpi in WebPageItemInfo.Provider.Get())
+        {
+            var urls = WebPageUrlPathInfo.Provider.Get()
+                .WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID), wpi.WebPageItemID);
+            if (urls.Count < 1)
+            {
+                logger.LogWarning("No url for page {Page}", new {wpi.WebPageItemName, wpi.WebPageItemTreePath, wpi.WebPageItemGUID});
+            }
+        }
+
         return new GenericCommandResult();
     }
 
@@ -291,7 +303,7 @@ public class MigratePagesCommandHandler(
             var ksPaths = modelFacade.SelectWhere<CmsPageUrlPathK13>("PageUrlPathNodeId = @nodeId AND PageUrlPathCulture = @culture",
                 new SqlParameter("nodeId", ksTree.NodeID),
                 new SqlParameter("culture", ksDocument.DocumentCulture)
-            );
+            ).ToList();
 
             var existingPaths = WebPageUrlPathInfo.Provider.Get()
                 .WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID), webPageItemId)
@@ -300,25 +312,93 @@ public class MigratePagesCommandHandler(
             var languageInfo = ContentLanguageInfoProvider.ProviderObject.Get(languageGuid);
 
             var webSiteChannel = WebsiteChannelInfoProvider.ProviderObject.Get(webSiteChannelGuid);
-
-            foreach (var ksPath in ksPaths)
+            if (ksPaths.Count > 0)
             {
-                logger.LogTrace("Page url path: C={Culture} S={Site} P={Path}", ksPath.PageUrlPathCulture, ksPath.PageUrlPathSiteID, ksPath.PageUrlPathUrlPath);
+                foreach (var ksPath in ksPaths)
+                {
+                    logger.LogTrace("Page url path: C={Culture} S={Site} P={Path}", ksPath.PageUrlPathCulture, ksPath.PageUrlPathSiteID, ksPath.PageUrlPathUrlPath);
 
+                    foreach (var contentItemCommonDataInfo in contentItemCommonDataInfos.Where(x => x.ContentItemCommonDataContentLanguageID == languageInfo.ContentLanguageID))
+                    {
+                        logger.LogTrace("Page url path common data info: CIID={ContentItemId} CLID={Language} ID={Id}", contentItemCommonDataInfo.ContentItemCommonDataContentItemID,
+                            contentItemCommonDataInfo.ContentItemCommonDataContentLanguageID, contentItemCommonDataInfo.ContentItemCommonDataID);
+
+                        Debug.Assert(!string.IsNullOrWhiteSpace(ksPath.PageUrlPathUrlPath), "!string.IsNullOrWhiteSpace(kx13PageUrlPath.PageUrlPathUrlPath)");
+
+                        var webPageUrlPath = new WebPageUrlPathModel
+                        {
+                            WebPageUrlPathGUID = contentItemCommonDataInfo.ContentItemCommonDataVersionStatus == VersionStatus.Draft
+                                ? Guid.NewGuid()
+                                : ksPath.PageUrlPathGUID,
+                            WebPageUrlPath = ksPath.PageUrlPathUrlPath,
+                            WebPageUrlPathHash = ksPath.PageUrlPathUrlPathHash,
+                            WebPageUrlPathWebPageItemGuid = webPageItemGuid,
+                            WebPageUrlPathWebsiteChannelGuid = webSiteChannelGuid,
+                            WebPageUrlPathContentLanguageGuid = languageGuid,
+                            WebPageUrlPathIsLatest = contentItemCommonDataInfo.ContentItemCommonDataIsLatest,
+                            WebPageUrlPathIsDraft = contentItemCommonDataInfo.ContentItemCommonDataVersionStatus switch
+                            {
+                                VersionStatus.InitialDraft => false,
+                                VersionStatus.Draft => true,
+                                VersionStatus.Published => false,
+                                VersionStatus.Archived => false,
+                                _ => throw new ArgumentOutOfRangeException()
+                            },
+                        };
+
+                        var ep = existingPaths.FirstOrDefault(ep =>
+                            ep.WebPageUrlPath == webPageUrlPath.WebPageUrlPath &&
+                            ep.WebPageUrlPathContentLanguageID == languageInfo.ContentLanguageID &&
+                            ep.WebPageUrlPathIsDraft == webPageUrlPath.WebPageUrlPathIsDraft &&
+                            ep.WebPageUrlPathIsLatest == webPageUrlPath.WebPageUrlPathIsLatest &&
+                            ep.WebPageUrlPathWebsiteChannelID == webSiteChannel.WebsiteChannelID
+                        );
+
+                        if (ep != null)
+                        {
+                            webPageUrlPath.WebPageUrlPathGUID = ep.WebPageUrlPathGUID;
+                            logger.LogTrace("Existing page url path found for '{Path}', fixing GUID to '{Guid}'", ksPath.PageUrlPathUrlPath, webPageUrlPath.WebPageUrlPathGUID);
+                        }
+
+                        switch (await importer.ImportAsync(webPageUrlPath))
+                        {
+                            case { Success: true, Imported: WebPageUrlPathInfo imported }:
+                            {
+                                logger.LogInformation("Page url path imported '{Path}' '{Guid}'", imported.WebPageUrlPath, imported.WebPageUrlPathGUID);
+                                break;
+                            }
+                            case { Success: false, Exception: { } exception }:
+                            {
+                                logger.LogError("Failed to import page url path: {Error}", exception.ToString());
+                                break;
+                            }
+                            case { Success: false, ModelValidationResults: { } validation }:
+                            {
+                                foreach (var validationResult in validation)
+                                {
+                                    logger.LogError("Failed to import page url path {Members}: {Error}", string.Join(",", validationResult.MemberNames), validationResult.ErrorMessage);
+                                }
+
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
                 foreach (var contentItemCommonDataInfo in contentItemCommonDataInfos.Where(x => x.ContentItemCommonDataContentLanguageID == languageInfo.ContentLanguageID))
                 {
-                    logger.LogTrace("Page url path common data info: CIID={ContentItemId} CLID={Language} ID={Id}", contentItemCommonDataInfo.ContentItemCommonDataContentItemID,
-                        contentItemCommonDataInfo.ContentItemCommonDataContentLanguageID, contentItemCommonDataInfo.ContentItemCommonDataID);
-
-                    Debug.Assert(!string.IsNullOrWhiteSpace(ksPath.PageUrlPathUrlPath), "!string.IsNullOrWhiteSpace(kx13PageUrlPath.PageUrlPathUrlPath)");
+                    logger.LogTrace("Page url path common data info: CIID={ContentItemId} CLID={Language} ID={Id} - fallback",
+                        contentItemCommonDataInfo.ContentItemCommonDataContentItemID, contentItemCommonDataInfo.ContentItemCommonDataContentLanguageID, contentItemCommonDataInfo.ContentItemCommonDataID);
 
                     var webPageUrlPath = new WebPageUrlPathModel
                     {
                         WebPageUrlPathGUID = contentItemCommonDataInfo.ContentItemCommonDataVersionStatus == VersionStatus.Draft
                             ? Guid.NewGuid()
-                            : ksPath.PageUrlPathGUID,
-                        WebPageUrlPath = ksPath.PageUrlPathUrlPath,
-                        WebPageUrlPathHash = ksPath.PageUrlPathUrlPathHash,
+                            : GuidHelper.CreateWebPageUrlPathGuid($"{ksDocument.DocumentGUID}|{ksDocument.DocumentCulture}|{ksTree.NodeAliasPath}"),
+                        WebPageUrlPath = ksTree.NodeAliasPath,//ksPath.PageUrlPathUrlPath,
+                        // WebPageUrlPathHash = ksPath.PageUrlPathUrlPathHash,
                         WebPageUrlPathWebPageItemGuid = webPageItemGuid,
                         WebPageUrlPathWebsiteChannelGuid = webSiteChannelGuid,
                         WebPageUrlPathContentLanguageGuid = languageGuid,
@@ -344,7 +424,7 @@ public class MigratePagesCommandHandler(
                     if (ep != null)
                     {
                         webPageUrlPath.WebPageUrlPathGUID = ep.WebPageUrlPathGUID;
-                        logger.LogTrace("Existing page url path found for '{Path}', fixing GUID to '{Guid}'", ksPath.PageUrlPathUrlPath, webPageUrlPath.WebPageUrlPathGUID);
+                        logger.LogTrace("Existing page url path found for '{Path}', fixing GUID to '{Guid}'", webPageUrlPath.WebPageUrlPath, webPageUrlPath.WebPageUrlPathGUID);
                     }
 
                     switch (await importer.ImportAsync(webPageUrlPath))
