@@ -6,8 +6,6 @@ using Migration.Toolkit.Common;
 
 public class ModelFacade(ToolkitConfiguration configuration)
 {
-    // TODO tomas.krch 2024-03-27: connection pooling
-
     private SemanticVersion? _version;
 
     public async IAsyncEnumerable<T> SelectAllAsync<T>([EnumeratorCancellation] CancellationToken cancellationToken) where T : ISourceModel<T>

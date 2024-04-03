@@ -50,38 +50,29 @@ public class MemberInfoMapper(
             throw new InvalidOperationException("Assertion failed, entity key mismatch.");
         }
 
-        // target.UserName = source.UserName;
         target.MemberName = user.UserName;
 
-        // target.FirstName = source.FirstName; // TODO tomas.krch: 2023-04-11 configurable autocreate
-        // target.LastName = source.LastName; // TODO tomas.krch: 2023-04-11 configurable autocreate
+        // target.FirstName = source.FirstName;
+        // target.LastName = source.LastName;
 
         // target.Email = source.Email;
         target.MemberEmail = user.Email;
 
-        // target.SetValue("UserPassword", source.UserPassword);
         target.MemberPassword = null; // source.UserPassword; // not migrated
 
-        // target.UserEnabled = source.UserEnabled;
         target.MemberEnabled = user.UserEnabled;
 
         target.SetValue("UserCreated", user.UserCreated);
         target.MemberCreated = user.UserCreated.GetValueOrDefault();
 
-        // target.SetValue("LastLogon", source.LastLogon); // TODO tomas.krch: 2023-04-11 configurable autocreate
-
-        // target.UserGUID = source.UserGuid;
         target.MemberGuid = user.UserGUID;
-
-        // target.UserLastModified = source.UserLastModified; // TODO tomas.krch: 2023-04-11 configurable autocreate
-        target.MemberSecurityStamp = user.UserSecurityStamp; // TODO tomas.krch: 2023-04-11 still relevant?
+        target.MemberSecurityStamp = user.UserSecurityStamp;
 
         // OBSOLETE: target.UserAdministrationAccess = source.UserPrivilegeLevel == 3;
         // OBSOLETE: target.UserIsPendingRegistration = false;
         // OBSOLETE: target.UserPasswordLastChanged = null;
         // OBSOLETE: target.UserRegistrationLinkExpiration = DateTime.Now.AddDays(365);
 
-        // TODO tomas.krch: 2023-04-11 migrate customized fields
         var customized = kxpClassFacade.GetCustomizedFieldInfosAll(MemberInfo.TYPEINFO.ObjectClassName);
         foreach (var customizedFieldInfo in customized)
         {
@@ -133,9 +124,6 @@ public class MemberInfoMapper(
             }
         }
 
-
-        // using var kx12Context = _k12DbContextFactory.CreateDbContext();
-        //var usDci = kx12Context.CmsClasses.Select(x => new { x.ClassFormDefinition, x.ClassName, x.ClassTableName }).FirstOrDefault(x => x.ClassName == K12SystemClass.cms_usersettings);
         var usDci = modelFacade
             .SelectAll<ICmsClass>()
             .Select(x => new { x.ClassFormDefinition, x.ClassName, x.ClassTableName })

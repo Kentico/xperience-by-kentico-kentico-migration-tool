@@ -32,9 +32,6 @@ public class XbKApiContextBehavior<TRequest, TResponse>(
 
         using (new CMSActionContext(defaultAdmin) { User = defaultAdmin, UseGlobalAdminContext = true })
         {
-            // TODO tk: 2022-11-25 revise in future
-            // MembershipContext.AuthenticatedUser = defaultAdmin;
-
             logger.LogInformation("Using CMSActionContext of user '{UserName}'", UserInfoProvider.DEFAULT_ADMIN_USERNAME);
             return await next();
         }

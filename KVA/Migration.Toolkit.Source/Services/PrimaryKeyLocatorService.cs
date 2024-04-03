@@ -42,7 +42,6 @@ public class PrimaryKeyLocatorService(
         if (sourceType == typeof(ICmsUser) && memberName == nameof(ICmsUser.UserID))
         {
             var sourceUsers = modelFacade.SelectAll<ICmsUser>().ToList();
-            // var sourceUsers = kx12Context.CmsUsers.Select(x => new { x.UserId, x.UserGuid, x.UserName }).ToList();
             var targetUsers = kxpContext.CmsUsers.Select(x => new { x.UserId, x.UserName, x.UserGuid }).ToList();
 
             var result = sourceUsers.Join(targetUsers,
@@ -148,7 +147,6 @@ public class PrimaryKeyLocatorService(
     public bool TryLocate<T>(Expression<Func<T, object>> keyNameSelector, int sourceId, out int targetId)
     {
         using var kxpContext = kxpContextFactory.CreateDbContext();
-        // using var KX12Context = _kx12ContextFactory.CreateDbContext();
 
         var sourceType = typeof(T);
         targetId = -1;
@@ -156,7 +154,6 @@ public class PrimaryKeyLocatorService(
         {
             if (sourceType == typeof(ICmsResource))
             {
-                // var k12Guid = KX12Context.CmsResources.Where(c => c.ResourceId == sourceId).Select(x => x.ResourceGuid).Single();
                 var sourceGuid = modelFacade.SelectById<ICmsResource>(sourceId)?.ResourceGUID;
                 targetId = kxpContext.CmsResources.Where(x => x.ResourceGuid == sourceGuid).Select(x => x.ResourceId).Single();
                 return true;
@@ -164,7 +161,6 @@ public class PrimaryKeyLocatorService(
 
             if (sourceType == typeof(ICmsClass))
             {
-                // var k12Guid = KX12Context.CmsClasses.Where(c => c.ClassId == sourceId).Select(x => x.ClassGuid).Single();
                 var sourceGuid = modelFacade.SelectById<ICmsClass>(sourceId)?.ClassGUID;
                 targetId = kxpContext.CmsClasses.Where(x => x.ClassGuid == sourceGuid).Select(x => x.ClassId).Single();
                 return true;
@@ -172,16 +168,13 @@ public class PrimaryKeyLocatorService(
 
             if (sourceType == typeof(ICmsUser))
             {
-                // TODO tomas.krch 2024-03-20: CHECK THIS
                 var source = modelFacade.SelectById<ICmsUser>(sourceId);
-                // var k12User = KX12Context.CmsUsers.Where(c => c.UserId == sourceId).Select(x => new { x.UserGuid, x.UserName }).Single();
                 targetId = kxpContext.CmsUsers.Where(x => x.UserGuid == source.UserGUID || x.UserName == source.UserName).Select(x => x.UserId).Single();
                 return true;
             }
 
             if (sourceType == typeof(ICmsRole))
             {
-                // var k12User = KX12Context.CmsRoles.Where(c => c.RoleId == sourceId).Select(x => new { x.RoleGuid }).Single();
                 var sourceGuid = modelFacade.SelectById<ICmsRole>(sourceId)?.RoleGUID;
                 targetId = kxpContext.CmsRoles.Where(x => x.RoleGuid == sourceGuid).Select(x => x.RoleId).Single();
                 return true;
@@ -189,7 +182,6 @@ public class PrimaryKeyLocatorService(
 
             if (sourceType == typeof(ICmsSite))
             {
-                //var k12Guid = KX12Context.CmsSites.Where(c => c.SiteId == sourceId).Select(x => x.SiteGuid).Single();
                 var sourceGuid = modelFacade.SelectById<ICmsSite>(sourceId)?.SiteGUID;
                 targetId = kxpContext.CmsChannels.Where(x => x.ChannelGuid == sourceGuid).Select(x => x.ChannelId).Single();
                 return true;
@@ -197,7 +189,6 @@ public class PrimaryKeyLocatorService(
 
             if (sourceType == typeof(ICmsState))
             {
-                // var k12CodeName = KX12Context.CmsStates.Where(c => c.StateId == sourceId).Select(x => x.StateName).Single();
                 var sourceName = modelFacade.SelectById<ICmsState>(sourceId)?.StateName;
                 targetId = kxpContext.CmsStates.Where(x => x.StateName == sourceName).Select(x => x.StateId).Single();
                 return true;
@@ -205,7 +196,6 @@ public class PrimaryKeyLocatorService(
 
             if (sourceType == typeof(ICmsCountry))
             {
-                // var k12CodeName = KX12Context.CmsCountries.Where(c => c.CountryId == sourceId).Select(x => x.CountryName).Single();
                 var sourceName = modelFacade.SelectById<ICmsCountry>(sourceId)?.CountryName;
                 targetId = kxpContext.CmsCountries.Where(x => x.CountryName == sourceName).Select(x => x.CountryId).Single();
                 return true;
@@ -213,7 +203,6 @@ public class PrimaryKeyLocatorService(
 
             if (sourceType == typeof(IOmContactStatus))
             {
-                // var k12Guid = KX12Context.OmContactStatuses.Where(c => c.ContactStatusId == sourceId).Select(x => x.ContactStatusName).Single();
                 var sourceName = modelFacade.SelectById<IOmContactStatus>(sourceId)?.ContactStatusName;
                 targetId = kxpContext.OmContactStatuses.Where(x => x.ContactStatusName == sourceName).Select(x => x.ContactStatusId).Single();
                 return true;
@@ -221,7 +210,6 @@ public class PrimaryKeyLocatorService(
 
             if (sourceType == typeof(IOmContact))
             {
-                //var k12Guid = KX12Context.OmContacts.Where(c => c.ContactId == sourceId).Select(x => x.ContactGuid).Single();
                 var sourceGuid = modelFacade.SelectById<IOmContact>(sourceId)?.ContactGUID;
                 targetId = kxpContext.OmContacts.Where(x => x.ContactGuid == sourceGuid).Select(x => x.ContactId).Single();
                 return true;
@@ -229,8 +217,6 @@ public class PrimaryKeyLocatorService(
 
             if (sourceType == typeof(ICmsTree))
             {
-                // careful - cms.root will have different guid
-                // var k12Guid = KX12Context.CmsTrees.Where(c => c.NodeId == sourceId).Select(x => x.NodeGuid).Single();
                 var sourceGuid = modelFacade.SelectById<ICmsTree>(sourceId)?.NodeGUID;
                 targetId = kxpContext.CmsChannels.Where(x => x.ChannelGuid == sourceGuid).Select(x => x.ChannelId).Single();
                 return true;

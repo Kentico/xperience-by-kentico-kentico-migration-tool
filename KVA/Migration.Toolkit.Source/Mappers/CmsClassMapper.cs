@@ -39,7 +39,6 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
         var classResource = modelFacade.SelectById<ICmsResource>(source.ClassResourceID);
         if (classResource?.ResourceName is { } resourceName)
         {
-            // TODO tomas.krch 2024-03-20: FIX K12SystemResource - shall be version independent
             isCustomizableSystemClass = source.ClassShowAsSystemTable.GetValueOrDefault(false) &&
                                         K12SystemResource.All.Contains(resourceName);
 

@@ -66,7 +66,7 @@ public class SourceInstanceContext(
 
     public List<EditingFormControlModel>? GetWidgetPropertyFormComponents(int siteId, string widgetIdentifier)
     {
-        var siteName = //context.CmsSites.FirstOrDefault(s => s.SiteId == siteId)?.SiteName
+        var siteName =
             modelFacade.SelectById<ICmsSite>(siteId)?.SiteName
             ?? throw new InvalidOperationException($"Source site with SiteID '{siteId}' not exists");
 
@@ -75,8 +75,7 @@ public class SourceInstanceContext(
 
     public List<EditingFormControlModel>? GetPageTemplateFormComponents(int siteId, string pageTemplateIdentifier)
     {
-        // var context = _kx13ContextFactory.CreateDbContext();
-        var siteName = //context.CmsSites.FirstOrDefault(s => s.SiteId == siteId)?.SiteName
+        var siteName =
             modelFacade.SelectById<ICmsSite>(siteId)?.SiteName
             ?? throw new InvalidOperationException($"Source site with SiteID '{siteId}' not exists");
 
@@ -85,8 +84,7 @@ public class SourceInstanceContext(
 
     public List<EditingFormControlModel>? GetSectionFormComponents(int siteId, string sectionIdentifier)
     {
-        // var context = _kx13ContextFactory.CreateDbContext();
-        var siteName = //context.CmsSites.FirstOrDefault(s => s.SiteId == siteId)?.SiteName
+        var siteName =
             modelFacade.SelectById<ICmsSite>(siteId)?.SiteName
             ?? throw new InvalidOperationException($"Source site with SiteID '{siteId}' not exists");
 

@@ -51,19 +51,8 @@ public class MigrateCustomModulesCommandHandler(
 
     private async Task MigrateClasses(EntityConfiguration entityConfiguration, CancellationToken cancellationToken)
     {
-        //
-        // await using var kx12Context = await _kx12ContextFactory.CreateDbContextAsync(cancellationToken);
-        // var kx12ClassesResult = kx12Context.CmsClasses
-        //     .Include(c => c.ClassResource).ThenInclude(cr => cr.Sites)
-        //     .Include(c => c.Sites)
-        //     .Where(x => !(x.ClassIsForm ?? false) && !x.ClassIsDocumentType && !x.ClassResource.ResourceName.StartsWith("CMS."))
-        //     .OrderBy(x => x.ClassId)
-        //     .AsSplitQuery();
-
-
         using var cmsClasses = EnumerableHelper.CreateDeferrableItemWrapper(
             modelFacade.SelectWhere<ICmsClass>("(ClassIsForm=1 OR ClassIsForm IS NULL) AND (ClassIsDocumentType=0 OR ClassIsDocumentType IS NULL)")
-                // .Where(x => !(x.ClassIsForm ?? false) && !x.ClassIsDocumentType)
                 .OrderBy(x => x.ClassID)
         );
 
@@ -71,7 +60,6 @@ public class MigrateCustomModulesCommandHandler(
         {
             var (_, cmsClass) = di;
 
-            // && !x.ClassResource.ResourceName.StartsWith("CMS.")
             var resource = modelFacade.SelectById<ICmsResource>(cmsClass.ClassResourceID);
             if (resource?.ResourceName.StartsWith("CMS.") == true)
             {
@@ -104,7 +92,6 @@ public class MigrateCustomModulesCommandHandler(
 
             protocol.FetchedSource(cmsClass);
 
-            // var k12ResourceName = kx12Class.ClassResource?.ResourceName;
             var k12ResourceName = modelFacade.SelectById<ICmsResource>(cmsClass.ClassResourceID)?.ResourceName;
             if (k12ResourceName != null && K12SystemResource.All.Contains(k12ResourceName) && !K12SystemResource.ConvertToNonSysResource.Contains(k12ResourceName))
             {
@@ -189,11 +176,7 @@ public class MigrateCustomModulesCommandHandler(
 
     private async Task MigrateMemberClass(CancellationToken cancellationToken)
     {
-        // await using var kx12Context = await _kx12ContextFactory.CreateDbContextAsync(cancellationToken);
-
-        // var cmsUser = kx12Context.CmsClasses.FirstOrDefault(x => x.ClassName == K12SystemClass.cms_user);
         var cmsUser = modelFacade.SelectAll<ICmsClass>().FirstOrDefault(x => x.ClassName == K12SystemClass.cms_user);
-        //var cmsUserSettings = kx12Context.CmsClasses.FirstOrDefault(x => x.ClassName == K12SystemClass.cms_usersettings);
         var cmsUserSettings = modelFacade.SelectAll<ICmsClass>().FirstOrDefault(x => x.ClassName == K12SystemClass.cms_usersettings);
 
         if (cmsUser == null)
@@ -266,20 +249,13 @@ public class MigrateCustomModulesCommandHandler(
             false
         );
         patcher.PatchFields();
-        patcher.RemoveCategories(); // TODO tk: 2022-10-11 remove when supported
+        patcher.RemoveCategories();
         var result = patcher.GetPatched();
         cmsUserFormInfo = new FormInfo(result);
     }
 
     private async Task MigrateAlternativeForms(ICmsClass k12Class, DataClassInfo xbkDataClass, CancellationToken cancellationToken)
     {
-        // var kx12Context = await _kx12ContextFactory.CreateDbContextAsync(cancellationToken);
-
-        // var k12AlternativeForms = kx12Context.CmsAlternativeForms
-        //     .Include(af => af.FormClass)
-        //     .Include(af => af.FormCoupledClass)
-        //     .Where(af => af.FormClassId == k12Class.ClassId);
-
         var k12AlternativeForms = modelFacade.SelectAll<ICmsAlternativeForm>()
             .Where(af => af.FormClassID == k12Class.ClassID);
 
@@ -322,21 +298,14 @@ public class MigrateCustomModulesCommandHandler(
 
     private Task<List<ICmsClass>> GetResourceClasses(int k12ResourceId)
     {
-        // await using var kx12Context = await _kx12ContextFactory.CreateDbContextAsync(cancellationToken);
-        // return await kx12Context.CmsClasses.Where(x => x.ClassResourceId == k12ResourceId).ToListAsync();
         return Task.FromResult(modelFacade
             .SelectWhere<ICmsClass>("ClassResourceID = @classResourceId", new SqlParameter("classResourceId", k12ResourceId))
-            // .Where(c => c.ClassResourceID == k12ResourceId)
             .ToList());
     }
 
     private async Task MigrateResources(CancellationToken cancellationToken)
     {
-        // await using var kx12Context = await _kx12ContextFactory.CreateDbContextAsync(cancellationToken);
-
         var k12CmsResources = modelFacade.SelectAll<ICmsResource>();
-        // var k12CmsResources = kx12Context.CmsResources
-        //     .Include(cr => cr.Sites);
 
         foreach (var k12CmsResource in k12CmsResources)
         {

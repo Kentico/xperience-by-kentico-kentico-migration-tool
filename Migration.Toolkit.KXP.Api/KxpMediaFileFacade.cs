@@ -34,11 +34,10 @@ public class KxpMediaFileFacade
         return MediaFileInfoProvider.GetMediaFiles("").Where(nameof(MediaFileInfo.FileGUID), QueryOperator.Equals, mediaFileGuid).SingleOrDefault();
     }
 
-    // TODO tomas.krch: 2023-03-07 flaky feature - can be supported only at cost of performance & data integrity hit
+    // flaky feature - can be supported only at cost of performance & data integrity hit
     // public MediaFileInfo? GetMediaFileByPath(string siteName, string? path)
     // {
     //     if (string.IsNullOrWhiteSpace(path)) return null;
-    //     // TODO tomas.krch: 2023-03-07 split media file path to library path and media file
     //     MediaFileInfoProvider.GetMediaFileInfo(siteName, )
     //     return MediaFileInfoProvider.GetMediaFiles("").Where(nameof(MediaFileInfo.FileGUID), QueryOperator.Equals, mediaFileGuid).SingleOrDefault();
     // }
