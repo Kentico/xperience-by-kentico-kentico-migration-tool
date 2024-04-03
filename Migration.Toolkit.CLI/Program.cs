@@ -18,7 +18,9 @@ using Migration.Toolkit.KXP;
 using Migration.Toolkit.KXP.Api;
 using Migration.Toolkit.KXP.Context;
 using Migration.Toolkit.Core.KX12;
+using Migration.Toolkit.Core.KX13;
 using Migration.Toolkit.K11;
+using Migration.Toolkit.Source;
 using static Migration.Toolkit.Common.Helpers.ConsoleHelper;
 
 EnableVirtualTerminalProcessing();
@@ -94,6 +96,8 @@ services
         builder.AddFile(config.GetSection(ConfigurationNames.Logging));
     });
 
+
+services.UseKsToolkitCore();
 await using var conn = new SqlConnection(settings.KxConnectionString);
 try
 {
@@ -152,11 +156,11 @@ var kxpApiSettings =
 
 services.UseKxpApi(kxpApiSettings, settings.XbKDirPath);
 services.AddSingleton(settings);
-
+services.AddSingleton<ICommandParser, CommandParser>();
+services.UseToolkitCommon();
 
 await using var serviceProvider = services.BuildServiceProvider();
 using var scope = serviceProvider.CreateScope();
-// var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
 var loader = scope.ServiceProvider.GetRequiredService<IModuleLoader>();
 await loader.LoadAsync();

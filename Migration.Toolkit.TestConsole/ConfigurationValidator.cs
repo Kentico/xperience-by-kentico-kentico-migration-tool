@@ -4,7 +4,7 @@ using System.Diagnostics.Contracts;
 using Microsoft.Extensions.Configuration;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Helpers;
-using Migration.Toolkit.Core.Helpers;
+using Migration.Toolkit.Core.KX13.Helpers;
 
 public enum ValidationMessageType
 {

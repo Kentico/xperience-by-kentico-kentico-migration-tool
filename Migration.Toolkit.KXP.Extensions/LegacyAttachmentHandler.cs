@@ -58,8 +58,8 @@ public class AttachmentsService : ActionResultServiceBase
         if (pathAndFileName != null)
         {
             pathAndFileName = pathAndFileName.TrimEnd('/');
-            var dir = Path.GetDirectoryName(pathAndFileName)?.Replace("\\", "/");
-            var fileName = Path.GetFileNameWithoutExtension(pathAndFileName);
+            var dir = System.IO.Path.GetDirectoryName(pathAndFileName)?.Replace("\\", "/");
+            var fileName = System.IO.Path.GetFileNameWithoutExtension(pathAndFileName);
 
             var mediaFiles = MediaFileInfoProvider.ProviderObject.Get()
                 .Columns(
@@ -91,7 +91,7 @@ public class AttachmentsService : ActionResultServiceBase
             var result = new CMSPhysicalFileResult(mediaPath)
             {
                 ContentType = mediaFile.FileMimeType,
-                ContentDisposition = HTTPHelper.GetFileDisposition(mediaPath, Path.GetExtension(mediaPath))
+                ContentDisposition = HTTPHelper.GetFileDisposition(mediaPath, System.IO.Path.GetExtension(mediaPath))
             };
             return result;
         }

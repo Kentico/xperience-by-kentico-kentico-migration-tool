@@ -11,4 +11,4 @@ $result = $result -replace '.*protected override void OnConfiguring.*','';
 $result = $result -replace '.*#warning To protect potentially sensitive information in your connection string, .*','';
 [System.IO.File]::WriteAllText($contextPath, $result)
 
-# ./genModel.ps1 -connection Data Source=.;Initial Catalog=Kentico11_DG;Integrated Security=True;Persist Security Info=False;Connect Timeout=60;Encrypt=False;Current Language=English;
+# ./genModel.ps1 -connection "Data Source=.;Initial Catalog=Kentico11_DG;Integrated Security=True;Persist Security Info=False;Connect Timeout=60;Encrypt=False;Current Language=English;"

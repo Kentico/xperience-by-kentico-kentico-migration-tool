@@ -30,6 +30,8 @@ public class ConfigurationNames
     public const string SourceInstanceUri = "SourceInstanceUri";
     public const string Secret = "Secret";
 
+    public const string CreateReusableFieldSchemaForClasses = "CreateReusableFieldSchemaForClasses";
+
     #region "Section names"
 
     public const string CmsConnectionString = "CMSConnectionString";

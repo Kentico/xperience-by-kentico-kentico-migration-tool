@@ -8,7 +8,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.KXP", "Mi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.Common", "Migration.Toolkit.Common\Migration.Toolkit.Common.csproj", "{CE8ED7D2-DA7B-4106-BADA-A70E2DFCCAAF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.Core", "Migration.Toolkit.Core\Migration.Toolkit.Core.csproj", "{1F7DC18B-CF87-4AB2-A5CC-094125246954}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.Core.KX13", "Migration.Toolkit.Core.KX13\Migration.Toolkit.Core.KX13.csproj", "{1F7DC18B-CF87-4AB2-A5CC-094125246954}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.KXP.Api", "Migration.Toolkit.KXP.Api\Migration.Toolkit.KXP.Api.csproj", "{8E806DDF-6405-4386-B69E-B6FAA672A188}"
 EndProject
@@ -39,6 +39,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.Core.K11", "Migration.Toolkit.Core.K11\Migration.Toolkit.Core.K11.csproj", "{361EF54F-8043-467A-87AC-1F3E0461F1F5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.K11", "Migration.Toolkit.K11\Migration.Toolkit.K11.csproj", "{1829633A-CEF8-47F0-8588-1BE5E9307218}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "KVA", "KVA", "{296DCE8F-D009-4DE5-997D-6BD51611C546}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.Source", "KVA\Migration.Toolkit.Source\Migration.Toolkit.Source.csproj", "{C565B800-032C-44E4-A913-659C24E9A3EC}"
 EndProject
 
 Global
@@ -109,6 +113,10 @@ Global
 		{1829633A-CEF8-47F0-8588-1BE5E9307218}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1829633A-CEF8-47F0-8588-1BE5E9307218}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1829633A-CEF8-47F0-8588-1BE5E9307218}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C565B800-032C-44E4-A913-659C24E9A3EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C565B800-032C-44E4-A913-659C24E9A3EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C565B800-032C-44E4-A913-659C24E9A3EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C565B800-032C-44E4-A913-659C24E9A3EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{EA37FE22-A945-4170-A364-2AD76A4247F2} = {D06721D3-6E2D-4235-B146-2BB80DF2DBA9}
@@ -120,5 +128,6 @@ Global
 		{C834C407-683B-4251-A4CD-52C135DCA518} = {5695AAC9-FF68-4AC2-ABFC-0FD5A512D3C3}
 		{361EF54F-8043-467A-87AC-1F3E0461F1F5} = {1EA44136-F86A-4545-9B77-E480EAB649A3}
 		{1829633A-CEF8-47F0-8588-1BE5E9307218} = {1EA44136-F86A-4545-9B77-E480EAB649A3}
+		{C565B800-032C-44E4-A913-659C24E9A3EC} = {296DCE8F-D009-4DE5-997D-6BD51611C546}
 	EndGlobalSection
 EndGlobal

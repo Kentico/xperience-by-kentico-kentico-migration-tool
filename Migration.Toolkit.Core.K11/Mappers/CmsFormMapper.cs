@@ -70,9 +70,6 @@ public class CmsFormMapperEf(ILogger<CmsFormMapperEf> logger, PrimaryKeyMappingC
         target.FormLogActivity = source.FormLogActivity;
         // target.FormBuilderLayout = source.FormBuilderLayout;
 
-        // TODO tk: 2022-05-20 new deduce: target.FormAfterSubmitMode = source.FormAfterSubmitMode;
-        // TODO tk: 2022-05-20 new deduce: target.FormAfterSubmitRelatedValue = source.FormAfterSubmitRelatedValue;
-
         if (mappingHelper.TranslateRequiredId<Toolkit.K11.Models.CmsClass>(c => c.ClassId, source.FormClassId, out var classId))
         {
             target.FormClassId = classId;

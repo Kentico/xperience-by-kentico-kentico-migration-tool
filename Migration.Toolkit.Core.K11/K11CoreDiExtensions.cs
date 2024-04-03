@@ -24,8 +24,6 @@ using Migration.Toolkit.Core.K11.Handlers;
 using Migration.Toolkit.Core.K11.Helpers;
 using Migration.Toolkit.Core.K11.Mappers;
 using Migration.Toolkit.Core.K11.Services;
-using Migration.Toolkit.Core.K11.Services.CmsClass;
-using Migration.Toolkit.Core.K11.Services.CmsRelationship;
 using Migration.Toolkit.KXP.Models;
 
 public static class K11CoreDiExtensions
@@ -37,22 +35,18 @@ public static class K11CoreDiExtensions
         HandbookReference.PrintService = printService;
         LogExtensions.PrintService = printService;
 
-        services.AddTransient<IModuleLoader, ModuleLoader>();
-        services.AddSingleton<ICommandParser, CommandParser>();
+        // services.AddTransient<IModuleLoader, ModuleLoader>();
+        // services.AddSingleton<ICommandParser, CommandParser>();
 
-        services.AddSingleton<IProtocol, Protocol>();
 
-        services.AddSingleton<IMigrationProtocol, TextMigrationProtocol>();
-        services.AddSingleton<IMigrationProtocol, DebugMigrationProtocol>();
-        services.AddSingleton<FieldMigrationService>();
 
         services.AddTransient<BulkDataCopyService>();
-        services.AddTransient<CmsRelationshipService>();
+        // services.AddTransient<CmsRelationshipService>();
         services.AddTransient<CoupledDataService>();
-        services.AddScoped<AttachmentMigrator>();
+        // services.AddScoped<AttachmentMigrator>();
         // services.AddScoped<PageTemplateMigrator>();
         services.AddScoped<CountryMigrator>();
-        services.AddScoped<ClassService>();
+        // services.AddScoped<ClassService>();
 
         services.AddMediatR(typeof(K11CoreDiExtensions));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestHandlingBehavior<,>));
@@ -70,25 +64,26 @@ public static class K11CoreDiExtensions
 
         // commands
         services.AddTransient<MigrateDataProtectionCommandHandler>();
-        services.AddTransient<MigrateFormsCommandHandler>();
-        services.AddTransient<MigratePagesCommandHandler>();
+        // services.AddTransient<MigrateFormsCommandHandler>();
+        // services.AddTransient<MigratePagesCommandHandler>();
         services.AddTransient<MigratePagesCommand>();
         services.AddTransient<MigrateSettingKeysCommandHandler>();
         services.AddTransient<MigrateUsersCommandHandler>();
         services.AddTransient<MigrateMembersCommandHandler>();
         services.AddTransient<MigrateContactManagementCommandHandler>();
+        // services.AddTransient<MigrateCustomTablesHandler>();
 
         // umt mappers
-        services.AddTransient<IUmtMapper<CmsTreeMapperSource>, ContentItemMapper>();
+        // services.AddTransient<IUmtMapper<CmsTreeMapperSource>, ContentItemMapper>();
 
         // mappers
         services.AddTransient<IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo>, CmsAttachmentMapper>();
-        services.AddTransient<IEntityMapper<Toolkit.K11.Models.CmsClass, DataClassInfo>, CmsClassMapper>();
+        // services.AddTransient<IEntityMapper<Toolkit.K11.Models.CmsClass, DataClassInfo>, CmsClassMapper>();
         services.AddTransient<IEntityMapper<Toolkit.K11.Models.CmsConsent, CmsConsent>, CmsConsentMapper>();
         services.AddTransient<IEntityMapper<Toolkit.K11.Models.CmsConsentAgreement, CmsConsentAgreement>, CmsConsentAgreementMapper>();
         services.AddTransient<IEntityMapper<Toolkit.K11.Models.CmsConsentArchive, CmsConsentArchive>, CmsConsentArchiveMapper>();
-        services.AddTransient<IEntityMapper<Toolkit.K11.Models.CmsForm, BizFormInfo>, CmsFormMapper>();
-        services.AddTransient<IEntityMapper<Toolkit.K11.Models.CmsForm, CmsForm>, CmsFormMapperEf>();
+        // services.AddTransient<IEntityMapper<Toolkit.K11.Models.CmsForm, BizFormInfo>, CmsFormMapper>();
+        // services.AddTransient<IEntityMapper<Toolkit.K11.Models.CmsForm, CmsForm>, CmsFormMapperEf>();
         services.AddTransient<IEntityMapper<Toolkit.K11.Models.CmsResource, ResourceInfo>, ResourceMapper>();
         services.AddTransient<IEntityMapper<AlternativeFormMapperSource, AlternativeFormInfo>, AlternativeFormMapper>();
         services.AddTransient<IEntityMapper<Toolkit.K11.Models.CmsRole, RoleInfo>, RoleInfoMapper>();
@@ -104,7 +99,6 @@ public static class K11CoreDiExtensions
         services.AddTransient<IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo>, MediaFileInfoMapper>();
         services.AddTransient<IEntityMapper<Toolkit.K11.Models.CmsCountry, CountryInfo>, CountryInfoMapper>();
         services.AddTransient<IEntityMapper<Toolkit.K11.Models.CmsState, StateInfo>, StateInfoMapper>();
-        services.AddTransient<IEntityMapper<Toolkit.K11.Models.CmsPageTemplateConfiguration, PageTemplateConfigurationInfo>, PageTemplateConfigurationMapper>();
 
         services.AddUniversalMigrationToolkit();
 

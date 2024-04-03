@@ -23,4 +23,8 @@
       <ProjectReference Include="..\Migration.Toolkit.Common\Migration.Toolkit.Common.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Context\" />
+    </ItemGroup>
+
 </Project>

@@ -103,6 +103,7 @@ public class ToolkitConfiguration
     #region Path to root directory of target instance
 
     private string? _xbKDirPath = null;
+    private HashSet<string>? _classNamesCreateReusableSchema;
 
 
     [ConfigurationKeyName(ConfigurationNames.TargetCmsDirPath)]
@@ -145,7 +146,16 @@ public class ToolkitConfiguration
 
     [ConfigurationKeyName(ConfigurationNames.MemberIncludeUserSystemFields)]
     public string? MemberIncludeUserSystemFields { get; set; }
-    
+
+    [ConfigurationKeyName(ConfigurationNames.CreateReusableFieldSchemaForClasses)]
+    public string? CreateReusableFieldSchemaForClasses { get; set; }
+
+
+    public IReadOnlySet<string> ClassNamesCreateReusableSchema => _classNamesCreateReusableSchema ??= new HashSet<string>(
+        (CreateReusableFieldSchemaForClasses?.Split(new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries) ?? []).Select(x => x.Trim()),
+        StringComparer.InvariantCultureIgnoreCase
+    );
+
     public Dictionary<int, int> RequireExplicitMapping<TEntityType>(Expression<Func<TEntityType, object>> keyNameSelector)
     {
         var memberName = keyNameSelector.GetMemberName();
