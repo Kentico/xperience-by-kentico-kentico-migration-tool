@@ -1,9 +1,11 @@
 ﻿namespace Migration.Toolkit.Source.Handlers;
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
 using CMS.DataEngine;
+using CMS.DataEngine.Query;
 using CMS.Websites;
 using CMS.Websites.Internal;
 using Kentico.Xperience.UMT.Model;
@@ -231,6 +233,8 @@ public class MigratePagesCommandHandler(
                                 migratedDocument, ksNode
                             );
                         }
+
+                        MigrateFormerUrls(ksNode, webPageItemInfo);
                     }
                     else
                     {
@@ -259,7 +263,7 @@ public class MigratePagesCommandHandler(
                 .WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID), wpi.WebPageItemID);
             if (urls.Count < 1)
             {
-                logger.LogWarning("No url for page {Page}", new {wpi.WebPageItemName, wpi.WebPageItemTreePath, wpi.WebPageItemGUID});
+                logger.LogWarning("No url for page {Page}", new { wpi.WebPageItemName, wpi.WebPageItemTreePath, wpi.WebPageItemGUID });
             }
         }
 
@@ -390,14 +394,15 @@ public class MigratePagesCommandHandler(
                 foreach (var contentItemCommonDataInfo in contentItemCommonDataInfos.Where(x => x.ContentItemCommonDataContentLanguageID == languageInfo.ContentLanguageID))
                 {
                     logger.LogTrace("Page url path common data info: CIID={ContentItemId} CLID={Language} ID={Id} - fallback",
-                        contentItemCommonDataInfo.ContentItemCommonDataContentItemID, contentItemCommonDataInfo.ContentItemCommonDataContentLanguageID, contentItemCommonDataInfo.ContentItemCommonDataID);
+                        contentItemCommonDataInfo.ContentItemCommonDataContentItemID, contentItemCommonDataInfo.ContentItemCommonDataContentLanguageID,
+                        contentItemCommonDataInfo.ContentItemCommonDataID);
 
                     var webPageUrlPath = new WebPageUrlPathModel
                     {
                         WebPageUrlPathGUID = contentItemCommonDataInfo.ContentItemCommonDataVersionStatus == VersionStatus.Draft
                             ? Guid.NewGuid()
                             : GuidHelper.CreateWebPageUrlPathGuid($"{ksDocument.DocumentGUID}|{ksDocument.DocumentCulture}|{ksTree.NodeAliasPath}"),
-                        WebPageUrlPath = ksTree.NodeAliasPath,//ksPath.PageUrlPathUrlPath,
+                        WebPageUrlPath = ksTree.NodeAliasPath, //ksPath.PageUrlPathUrlPath,
                         // WebPageUrlPathHash = ksPath.PageUrlPathUrlPathHash,
                         WebPageUrlPathWebPageItemGuid = webPageItemGuid,
                         WebPageUrlPathWebsiteChannelGuid = webSiteChannelGuid,
@@ -506,6 +511,7 @@ public class MigratePagesCommandHandler(
                         {
                             logger.LogError("Failed to import page url path {Members}: {Error}", string.Join(",", validationResult.MemberNames), validationResult.ErrorMessage);
                         }
+
                         break;
                     }
                 }
@@ -513,6 +519,95 @@ public class MigratePagesCommandHandler(
         }
     }
 
+    private readonly ConcurrentDictionary<string, ContentLanguageInfo> _languages = new(StringComparer.InvariantCultureIgnoreCase);
+
+    private void MigrateFormerUrls(ICmsTree ksNode, WebPageItemInfo targetPage)
+    {
+        if (modelFacade.IsAvailable<ICmsPageFormerUrlPath>())
+        {
+            var formerUrlPaths = modelFacade.SelectWhere<ICmsPageFormerUrlPath>(
+                "PageFormerUrlPathSiteID = @siteId AND PageFormerUrlPathNodeID = @nodeId",
+                new SqlParameter("siteId", ksNode.NodeSiteID),
+                new SqlParameter("nodeId", ksNode.NodeID)
+            );
+            foreach (var cmsPageFormerUrlPath in formerUrlPaths)
+            {
+                logger.LogDebug("PageFormerUrlPath migration '{PageFormerUrlPath}' ", cmsPageFormerUrlPath);
+                protocol.FetchedSource(cmsPageFormerUrlPath);
+
+                switch (cmsPageFormerUrlPath)
+                {
+                    case CmsPageFormerUrlPathK11:
+                    case CmsPageFormerUrlPathK12:
+                    {
+                        logger.LogError("Unexpected type '{Type}'", cmsPageFormerUrlPath.GetType().FullName);
+                        break;
+                    }
+                    case CmsPageFormerUrlPathK13 pfup:
+                    {
+                        try
+                        {
+                            var languageInfo = _languages.GetOrAdd(
+                                pfup.PageFormerUrlPathCulture,
+                                s => ContentLanguageInfoProvider.ProviderObject.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageName), s).Single()
+                            );
+
+                            var ktPath = WebPageFormerUrlPathInfo.Provider.Get()
+                                .WhereEquals(nameof(WebPageFormerUrlPathInfo.WebPageFormerUrlPathHash), GetWebPageUrlPathHashQueryExpression(pfup.PageFormerUrlPathUrlPath))
+                                .WhereEquals(nameof(WebPageFormerUrlPathInfo.WebPageFormerUrlPathWebsiteChannelID), targetPage.WebPageItemWebsiteChannelID)
+                                .WhereEquals(nameof(WebPageFormerUrlPathInfo.WebPageFormerUrlPathContentLanguageID), languageInfo.ContentLanguageID)
+                                .SingleOrDefault();
+
+                            if (ktPath != null) protocol.FetchedTarget(ktPath);
+
+                            var webPageFormerUrlPathInfo = ktPath ?? new WebPageFormerUrlPathInfo();
+                            webPageFormerUrlPathInfo.WebPageFormerUrlPath = pfup.PageFormerUrlPathUrlPath;
+                            webPageFormerUrlPathInfo.WebPageFormerUrlPathHash = modelFacade.HashPath(pfup.PageFormerUrlPathUrlPath);
+                            webPageFormerUrlPathInfo.WebPageFormerUrlPathWebPageItemID = targetPage.WebPageItemID;
+                            webPageFormerUrlPathInfo.WebPageFormerUrlPathWebsiteChannelID = targetPage.WebPageItemWebsiteChannelID;
+                            webPageFormerUrlPathInfo.WebPageFormerUrlPathContentLanguageID = languageInfo.ContentLanguageID;
+                            webPageFormerUrlPathInfo.WebPageFormerUrlPathLastModified = pfup.PageFormerUrlPathLastModified;
+
+                            WebPageFormerUrlPathInfo.Provider.Set(webPageFormerUrlPathInfo);
+                            logger.LogInformation("Former page url path imported '{Path}'", webPageFormerUrlPathInfo.WebPageFormerUrlPath);
+                        }
+                        catch (Exception ex)
+                        {
+                            protocol.Append(HandbookReferences
+                                .ErrorCreatingTargetInstance<WebPageFormerUrlPathInfo>(ex)
+                                .NeedsManualAction()
+                                .WithIdentityPrint(pfup)
+                            );
+                            logger.LogError("Failed to import page former url path: {Exception}", ex);
+                        }
+
+                        break;
+                    }
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(cmsPageFormerUrlPath));
+                }
+            }
+        }
+        else
+        {
+            logger.LogDebug("CmsPageFormerUrlPath not supported in source instance");
+        }
+    }
+
+    internal static QueryExpression GetWebPageUrlPathHashQueryExpression(string urlPath)
+    {
+        return $"CONVERT(VARCHAR(64), HASHBYTES('SHA2_256', LOWER(N'{SqlHelper.EscapeQuotes(urlPath)}')), 2)".AsExpression();
+    }
+
+    // private async Task MigrateAlternativeUrls()
+    // {
+    //     if (modelFacade.IsAvailable<ICmsAlternativeUrl>())
+    //     {
+    //     }
+    //     else
+    //     {
+    //     }
+    // }
 
     #region Deffered patch
 
