@@ -198,17 +198,40 @@ public class ContentItemMapper(
                     throw new Exception("Error, unable to find coupled data primary key");
                 }
 
+                var commonFields = UnpackReusableFieldSchemas(fi.GetFields<FormSchemaInfo>()).ToArray();
+                var sourceColumns = commonFields
+                    .Select(cf => ReusableSchemaService.RemoveClassPrefix(nodeClass.ClassName, cf.Name))
+                    .Union(fi.GetColumnNames())
+                    .ToList();
+
                 var coupledDataRow = coupledDataService.GetSourceCoupledDataRow(nodeClass.ClassTableName, primaryKeyName, cmsDocument.DocumentForeignKeyValue);
                 MapCoupledDataFieldValues(dataModel.CustomProperties,
                     (columnName) => coupledDataRow?[columnName],
-                    columnName => coupledDataRow?.ContainsKey(columnName) ?? false
-                    , cmsTree, cmsDocument.DocumentID, fi.GetColumnNames(), sfi, false, nodeClass);
+                    columnName => coupledDataRow?.ContainsKey(columnName) ?? false,
+                    cmsTree, cmsDocument.DocumentID, sourceColumns, sfi, false, nodeClass
+                );
+
+                foreach (var formFieldInfo in commonFields)
+                {
+                    var originalFieldName = ReusableSchemaService.RemoveClassPrefix(nodeClass.ClassName, formFieldInfo.Name);
+                    if (dataModel.CustomProperties.TryGetValue(originalFieldName, out object? value))
+                    {
+                        commonDataModel.CustomProperties ??= [];
+                        logger.LogTrace("Reusable schema field '{FieldName}' from schema '{SchemaGuid}' populated", formFieldInfo.Name, formFieldInfo.Properties[ReusableFieldSchemaConstants.SCHEMA_IDENTIFIER_KEY]);
+                        commonDataModel.CustomProperties[formFieldInfo.Name] = value;
+                        dataModel.CustomProperties.Remove(originalFieldName);
+                    }
+                    else
+                    {
+                        logger.LogTrace("Reusable schema field '{FieldName}' from schema '{SchemaGuid}' missing", formFieldInfo.Name, formFieldInfo.Properties[ReusableFieldSchemaConstants.SCHEMA_IDENTIFIER_KEY]);
+                    }
+                }
             }
 
             if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(nodeClass.ClassName))
             {
                 var fieldName = ReusableSchemaService.GetUniqueFieldName(nodeClass.ClassName, "DocumentName");
-                dataModel.CustomProperties.Add(fieldName, cmsDocument.DocumentName);
+                commonDataModel.CustomProperties.Add(fieldName, cmsDocument.DocumentName);
             }
             else
             {
@@ -383,14 +406,44 @@ public class ContentItemMapper(
                     throw new Exception("Error, unable to find coupled data primary key");
                 }
 
+                var commonFields = UnpackReusableFieldSchemas(fi.GetFields<FormSchemaInfo>()).ToArray();
+                var sourceColumns = commonFields
+                    .Select(cf => ReusableSchemaService.RemoveClassPrefix(nodeClass.ClassName, cf.Name))
+                    .Union(fi.GetColumnNames())
+                    .ToList();
+
                 MapCoupledDataFieldValues(dataModel.CustomProperties,
                     s => adapter.GetValue(s),
                     s => adapter.HasValueSet(s)
-                    , cmsTree, adapter.DocumentID, fi.GetColumnNames(), sfi, true, nodeClass);
+                    , cmsTree, adapter.DocumentID, sourceColumns, sfi, true, nodeClass);
+
+                foreach (var formFieldInfo in commonFields)
+                {
+                    var originalFieldName = ReusableSchemaService.RemoveClassPrefix(nodeClass.ClassName, formFieldInfo.Name);
+                    if (dataModel.CustomProperties.TryGetValue(originalFieldName, out object? value))
+                    {
+                        commonDataModel.CustomProperties ??= [];
+                        logger.LogTrace("Reusable schema field '{FieldName}' from schema '{SchemaGuid}' populated", formFieldInfo.Name, formFieldInfo.Properties[ReusableFieldSchemaConstants.SCHEMA_IDENTIFIER_KEY]);
+                        commonDataModel.CustomProperties[formFieldInfo.Name] = value;
+                        dataModel.CustomProperties.Remove(originalFieldName);
+                    }
+                    else
+                    {
+                        logger.LogTrace("Reusable schema field '{FieldName}' from schema '{SchemaGuid}' missing", formFieldInfo.Name, formFieldInfo.Properties[ReusableFieldSchemaConstants.SCHEMA_IDENTIFIER_KEY]);
+                    }
+                }
             }
 
             // supply document name
-            dataModel.CustomProperties.Add("DocumentName", adapter.DocumentName);
+            if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(nodeClass.ClassName))
+            {
+                var fieldName = ReusableSchemaService.GetUniqueFieldName(nodeClass.ClassName, "DocumentName");
+                commonDataModel.CustomProperties.Add(fieldName, adapter.DocumentName);
+            }
+            else
+            {
+                dataModel.CustomProperties.Add("DocumentName", adapter.DocumentName);
+            }
         }
         catch (Exception ex)
         {
@@ -742,6 +795,28 @@ public class ContentItemMapper(
             {
                 target[columnName] = value;
             }
+        }
+    }
+
+    private static IEnumerable<FormFieldInfo> UnpackReusableFieldSchemas(IEnumerable<FormSchemaInfo> schemaInfos)
+    {
+        using var siEnum = schemaInfos.GetEnumerator();
+
+        if (siEnum.MoveNext() && FormHelper.GetFormInfo(ContentItemCommonDataInfo.TYPEINFO.ObjectClassName, true) is {} cfi)
+        {
+            do
+            {
+                var fsi = siEnum.Current;
+                var formFieldInfos = cfi
+                    .GetFields(true, true, true)
+                    .Where(f => string.Equals(f.Properties[ReusableFieldSchemaConstants.SCHEMA_IDENTIFIER_KEY] as string, fsi.Guid.ToString(),
+                        StringComparison.InvariantCultureIgnoreCase));
+
+                foreach (var formFieldInfo in formFieldInfos)
+                {
+                    yield return formFieldInfo;
+                }
+            } while (siEnum.MoveNext());
         }
     }
 }

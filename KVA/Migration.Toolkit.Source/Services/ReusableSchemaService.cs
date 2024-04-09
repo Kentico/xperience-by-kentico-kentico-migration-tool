@@ -75,4 +75,7 @@ public class ReusableSchemaService(ILogger<ReusableSchemaService> logger, Toolki
     {
         return $"{className}__{fieldName}".Replace(".", "_");
     }
+
+    public static string RemoveClassPrefix(string className, string schemaFieldName)
+        => schemaFieldName.Replace($"{className}__".Replace(".", "_"), "");
 }
