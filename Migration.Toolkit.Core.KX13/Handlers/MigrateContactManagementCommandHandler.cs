@@ -303,12 +303,12 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
 
     private ValueInterceptorResult ActivityValueInterceptor(int columnOrdinal, string columnName, object value, Dictionary<string, object?> currentRow)
     {
-        if (columnName.Equals(nameof(KXP.Models.OmActivity.ActivityChannelId), StringComparison.InvariantCultureIgnoreCase) &&
+        if (columnName.Equals(nameof(KX13M.OmActivity.ActivitySiteId), StringComparison.InvariantCultureIgnoreCase) &&
             value is int sourceActivitySiteId)
         {
-            var result = _keyMappingContext.MapSourceKey<KX13M.CmsTree, ChannelInfo, int?>(
-                s => s.NodeId,
-                s => s.NodeGuid,
+            var result = _keyMappingContext.MapSourceKey<KX13M.CmsSite, ChannelInfo, int?>(
+                s => s.SiteId,
+                s => s.SiteGuid,
                 sourceActivitySiteId.NullIfZero(),
                 t => t.ChannelID,
                 t => t.ChannelGUID
@@ -339,7 +339,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
             }
         }
 
-        if (columnName.Equals(nameof(KXP.Models.OmActivity.ActivityWebPageItemGuid), StringComparison.InvariantCultureIgnoreCase) && value is int activityNodeId)
+        if (columnName.Equals(nameof(KX13M.OmActivity.ActivityNodeId), StringComparison.InvariantCultureIgnoreCase) && value is int activityNodeId)
         {
             var result = _keyMappingContext.MapSourceKey<KX13M.CmsTree, WebPageItemInfo, Guid?>(
                 s => s.NodeId,
@@ -371,7 +371,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
             }
         }
 
-        if (columnName.Equals( nameof(KXP.Models.OmActivity.ActivityLanguageId), StringComparison.InvariantCultureIgnoreCase) && value is string cultureCode)
+        if (columnName.Equals( nameof(KX13M.OmActivity.ActivityCulture), StringComparison.InvariantCultureIgnoreCase) && value is string cultureCode)
         {
             return ValueInterceptorResult.ReplaceValue(ContentLanguageInfoProvider.ProviderObject.Get(cultureCode)?.ContentLanguageID);
         }

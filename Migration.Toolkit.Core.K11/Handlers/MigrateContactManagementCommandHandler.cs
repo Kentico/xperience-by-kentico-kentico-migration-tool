@@ -281,12 +281,12 @@ public class MigrateContactManagementCommandHandler(ILogger<MigrateContactManage
 
     private ValueInterceptorResult ActivityValueInterceptor(int columnOrdinal, string columnName, object value, Dictionary<string, object?> currentRow)
     {
-        if (columnName.Equals(nameof(KXP.Models.OmActivity.ActivityChannelId), StringComparison.InvariantCultureIgnoreCase) &&
+        if (columnName.Equals(nameof(OmActivity.ActivitySiteId), StringComparison.InvariantCultureIgnoreCase) &&
             value is int sourceActivitySiteId)
         {
-            var result = keyMappingContext.MapSourceKey<CmsTree, ChannelInfo, int?>(
-                s => s.NodeId,
-                s => s.NodeGuid,
+            var result = keyMappingContext.MapSourceKey<CmsSite, ChannelInfo, int?>(
+                s => s.SiteId,
+                s => s.SiteGuid,
                 sourceActivitySiteId.NullIfZero(),
                 t => t.ChannelID,
                 t => t.ChannelGUID
@@ -317,7 +317,7 @@ public class MigrateContactManagementCommandHandler(ILogger<MigrateContactManage
             }
         }
 
-        if (columnName.Equals(nameof(KXP.Models.OmActivity.ActivityWebPageItemGuid), StringComparison.InvariantCultureIgnoreCase) && value is int activityNodeId)
+        if (columnName.Equals(nameof(OmActivity.ActivityNodeId), StringComparison.InvariantCultureIgnoreCase) && value is int activityNodeId)
         {
             var result = keyMappingContext.MapSourceKey<CmsTree, WebPageItemInfo, Guid?>(
                 s => s.NodeId,
