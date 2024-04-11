@@ -1,6 +1,7 @@
 namespace Migration.Toolkit.Source;
 
 using System.Runtime.CompilerServices;
+using CMS.DataEngine;
 using Microsoft.Data.SqlClient;
 using Migration.Toolkit.Common;
 
@@ -99,6 +100,7 @@ public class ModelFacade(ToolkitConfiguration configuration)
             Unsafe.SkipInit(out objectGuid);
             return false;
         }
+
         _version ??= SelectVersion();
         using var conn = GetConnection();
         conn.Open();
@@ -158,5 +160,21 @@ public class ModelFacade(ToolkitConfiguration configuration)
     private SqlConnection GetConnection()
     {
         return new SqlConnection(configuration.KxConnectionString);
+    }
+
+    public string HashPath(string path)
+    {
+        _version ??= SelectVersion();
+        using var conn = GetConnection();
+        conn.Open();
+        var cmd = conn.CreateCommand();
+        cmd.CommandText = $"SELECT CONVERT(VARCHAR(64), HASHBYTES('SHA2_256', LOWER(@path)), 2)";
+        cmd.Parameters.AddWithValue("path", path);
+        if (cmd.ExecuteScalar() is string s)
+        {
+            return s;
+        }
+
+        throw new InvalidOperationException($"Unable to hash path '{path}'");
     }
 }
