@@ -8,20 +8,11 @@ using Migration.Toolkit.Common.Helpers;
 
 public record SqlColumn(string ColumnName, int OrdinalPosition);
 
-public class BulkDataCopyService
+public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<BulkDataCopyService> logger)
 {
-    private readonly ToolkitConfiguration _configuration;
-    private readonly ILogger<BulkDataCopyService> _logger;
-
-    public BulkDataCopyService(ToolkitConfiguration configuration, ILogger<BulkDataCopyService> logger)
-    {
-        this._configuration = configuration;
-        this._logger = logger;
-    }
-
     public bool CheckIfDataExistsInTargetTable(string tableName)
     {
-        using var targetConnection = new SqlConnection(_configuration.XbKConnectionString);
+        using var targetConnection = new SqlConnection(configuration.XbKConnectionString);
         using var command = targetConnection.CreateCommand();
         var query = $"SELECT COUNT(*) FROM {tableName}";
         command.CommandText = query;
@@ -34,10 +25,10 @@ public class BulkDataCopyService
     public bool CheckForTableColumnsDifferences(string tableName, Dictionary<string, string>? checkedColumns, out List<(string? sourceColumn, string? targetColumn)> columnsWithFailedCheck)
     {
         var anyFailedColumnCheck = false;
-        var sourceTableColumns = GetSqlTableColumns(tableName, _configuration.KxConnectionString)
+        var sourceTableColumns = GetSqlTableColumns(tableName, configuration.KxConnectionString)
             .Where(c => checkedColumns?.Keys.Any(k=> k.Equals(c.ColumnName, StringComparison.InvariantCultureIgnoreCase)) ?? true)
             .Select(x => x.ColumnName).OrderBy(x => x);
-        var targetTableColumns = GetSqlTableColumns(tableName, _configuration.XbKConnectionString)
+        var targetTableColumns = GetSqlTableColumns(tableName, configuration.XbKConnectionString)
             .Where(c => checkedColumns?.Values.Any(k=> k.Equals(c.ColumnName, StringComparison.InvariantCultureIgnoreCase)) ?? true)
             .Select(x => x.ColumnName).OrderBy(x => x);
 
@@ -56,11 +47,11 @@ public class BulkDataCopyService
             switch (aligner.Current)
             {
                 case SimpleAlignResultMatch<string, string, string> result:
-                    _logger.LogDebug("Table {Table} pairing source({SourceColumnName}) <> target({TargetColumnName}) success", tableName, result?.A, result?.B);
+                    logger.LogDebug("Table {Table} pairing source({SourceColumnName}) <> target({TargetColumnName}) success", tableName, result?.A, result?.B);
                     break;
                 case { } result:
                     columnsWithFailedCheck.Add((result.A, result.B));
-                    _logger.LogError("Table {Table} pairing source({SourceColumnName}) <> target({TargetColumnName}) has failed", tableName, result?.A, result?.B);
+                    logger.LogError("Table {Table} pairing source({SourceColumnName}) <> target({TargetColumnName}) has failed", tableName, result?.A, result?.B);
                     anyFailedColumnCheck = true;
                     break;
             }
@@ -76,18 +67,20 @@ public class BulkDataCopyService
     {
         var (tableName, columnFilter, dataFilter, batchSize, columns, valueInterceptor, skippedRowCallback, orderBy) = request;
 
-        _logger.LogInformation("Copy of {TableName} started", tableName);
+        logger.LogInformation("Copy of {TableName} started", tableName);
 
-        var sourceColumns = GetSqlTableColumns(tableName, _configuration.KxConnectionString, columns)
+        var sourceColumns = GetSqlTableColumns(tableName, configuration.KxConnectionString, columns)
             .ToArray();
-        var targetColumns = GetSqlTableColumns(tableName, _configuration.XbKConnectionString, columns)
+        var targetColumns = GetSqlTableColumns(tableName, configuration.XbKConnectionString, columns)
+            .ToArray();
+        var allTargetColumns = GetSqlTableColumns(tableName, configuration.XbKConnectionString)
             .ToArray();
 
         AssertColumnsMatch(request, sourceColumns, targetColumns);
 
-        using var sourceConnection = new SqlConnection(_configuration.KxConnectionString);
+        using var sourceConnection = new SqlConnection(configuration.KxConnectionString);
         using var sourceCommand = sourceConnection.CreateCommand();
-        using var sqlBulkCopy = new SqlBulkCopy(_configuration.XbKConnectionString, SqlBulkCopyOptions.KeepIdentity);
+        using var sqlBulkCopy = new SqlBulkCopy(configuration.XbKConnectionString, SqlBulkCopyOptions.KeepIdentity);
 
         sqlBulkCopy.BulkCopyTimeout = 1200;
         sqlBulkCopy.BatchSize = batchSize;
@@ -97,12 +90,12 @@ public class BulkDataCopyService
         sqlBulkCopy.NotifyAfter = 100000;
         sqlBulkCopy.SqlRowsCopied += (sender, args) =>
         {
-            _logger.LogInformation("Copy '{TableName}': Rows copied={Rows}", tableName, args.RowsCopied);
+            logger.LogInformation("Copy '{TableName}': Rows copied={Rows}", tableName, args.RowsCopied);
         };
 
 
         var selectQuery = BuildSelectQuery(tableName, sourceColumns, orderBy).ToString();
-
+        logger.LogTrace("Select QUERY: {Query}", selectQuery);
         sqlBulkCopy.DestinationTableName = tableName;
         // foreach (var (columnName, ordinalPosition) in sourceColumns)
         if (request is BulkCopyRequestExtended extended)
@@ -113,7 +106,15 @@ public class BulkDataCopyService
                 {
                     continue;
                 }
-                sqlBulkCopy.ColumnMappings.Add(sourceColumn, targetColumn);
+
+                var tc = allTargetColumns
+                    .FirstOrDefault(tc => tc.ColumnName.Equals(targetColumn, StringComparison.InvariantCultureIgnoreCase))
+                    ?? throw new InvalidOperationException($"Missing column '{targetColumn}'");
+                sqlBulkCopy.ColumnMappings.Add(sourceColumn, tc.ColumnName);
+                logger.LogTrace("Column mapping '{Source}' => '{Target}', {SC} {TC}", sourceColumn, tc.ColumnName,
+                    sourceColumns.Any(s => s.ColumnName.Equals(sourceColumn, StringComparison.InvariantCultureIgnoreCase)),
+                    targetColumns.Any(s => s.ColumnName.Equals(tc.ColumnName, StringComparison.InvariantCultureIgnoreCase))
+                );
             }
         }
         else
@@ -125,6 +126,10 @@ public class BulkDataCopyService
                     continue;
                 }
                 sqlBulkCopy.ColumnMappings.Add(columnName, columnName);
+                logger.LogTrace("Column mapping '{Source}' => '{Target}', {SC} {TC}", columnName, columnName,
+                    sourceColumns.Any(s => s.ColumnName.Equals(columnName, StringComparison.InvariantCultureIgnoreCase)),
+                    targetColumns.Any(s => s.ColumnName.Equals(columnName, StringComparison.InvariantCultureIgnoreCase))
+                );
             }
         }
 
@@ -148,7 +153,7 @@ public class BulkDataCopyService
             throw;
         }
 
-        _logger.LogInformation("Copy of {TableName} finished! Total={Total}, TotalCopied={TotalCopied}", tableName, filteredReader.TotalItems, filteredReader.TotalNonFiltered);
+        logger.LogInformation("Copy of {TableName} finished! Total={Total}, TotalCopied={TotalCopied}", tableName, filteredReader.TotalItems, filteredReader.TotalNonFiltered);
     }
 
     private void AssertColumnsMatch(BulkCopyRequest request, SqlColumn[] sourceColumns, SqlColumn[] targetColumns)
@@ -157,7 +162,7 @@ public class BulkDataCopyService
         {
             if (sourceColumns.All(x => x.ColumnName != columnName))
             {
-                _logger.LogWarning("{TableName} target column '{TargetColumn}' has no match", request.TableName, columnName);
+                logger.LogWarning("{TableName} target column '{TargetColumn}' has no match", request.TableName, columnName);
             }
         }
 
@@ -165,7 +170,7 @@ public class BulkDataCopyService
         {
             if (targetColumns.All(x => x.ColumnName != columnName))
             {
-                _logger.LogDebug("{TableName} source column '{SourceColumn}' has no match", request.TableName, columnName);
+                logger.LogDebug("{TableName} source column '{SourceColumn}' has no match", request.TableName, columnName);
             }
         }
     }
@@ -214,10 +219,14 @@ public class BulkDataCopyService
             var columnName = reader.GetString("COLUMN_NAME");
             if (columnFiler(columnName))
             {
+                logger.LogTrace("[{Table}].{ColumnName} INCLUDED", tableName, columnName);
                 yield return new(columnName, ordinal);// reader.GetInt32("ORDINAL_POSITION"));
                 ordinal++;
             }
-
+            else
+            {
+                logger.LogTrace("[{Table}].{ColumnName} SKIPPED", tableName, columnName);
+            }
             // TODO tk: 2022-05-31 IS_NULLABLE, DATA_TYPE, ... check column compatibility
 
         }

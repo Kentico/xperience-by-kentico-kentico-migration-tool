@@ -43,7 +43,7 @@ public record MigrateContactManagementCommand : IRequest<CommandResult>, IComman
     public Type[] Dependencies => new[] {  typeof(MigrateUsersCommand), typeof(MigrateCustomModulesCommand) };
 }
 
-public record MigrateDataProtectionCommand() : IRequest<CommandResult>, ICommand
+public record MigrateDataProtectionCommand : IRequest<CommandResult>, ICommand
 {
     public static readonly int Rank = 5 + + MigrateSitesCommand.Rank + MigrateContactManagementCommand.Rank;
 
@@ -83,7 +83,7 @@ public record MigratePageTypesCommand : IRequest<CommandResult>, ICommand
     public Type[] Dependencies => new[] { typeof(MigrateSitesCommand) };
 }
 
-public record MigratePagesCommand(): IRequest<CommandResult>, ICommand
+public record MigratePagesCommand : IRequest<CommandResult>, ICommand
 {
     public static readonly int Rank = 1 + MigrateSitesCommand.Rank + MigrateUsersCommand.Rank + MigratePageTypesCommand.Rank;
 
@@ -113,7 +113,7 @@ public record MigrateAttachmentsCommand(string CultureCode) : IRequest<CommandRe
     public Type[] Dependencies => new[] { typeof(MigrateSitesCommand), typeof(MigrateCustomModulesCommand) };
 }
 
-public record MigrateCustomModulesCommand(): IRequest<CommandResult>, ICommand
+public record MigrateCustomModulesCommand : IRequest<CommandResult>, ICommand
 {
     public static readonly int Rank = 1 + MigrateSitesCommand.Rank;
 
@@ -124,7 +124,7 @@ public record MigrateCustomModulesCommand(): IRequest<CommandResult>, ICommand
 }
 
 
-public record MigrateCustomTablesCommand(): IRequest<CommandResult>, ICommand
+public record MigrateCustomTablesCommand : IRequest<CommandResult>, ICommand
 {
     public static readonly int Rank = 1 + MigrateSitesCommand.Rank;
 

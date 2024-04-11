@@ -3,12 +3,8 @@ namespace Migration.Toolkit.Source.Handlers;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Xml.Linq;
-using CMS.ContentEngine.Internal;
-using CMS.Core;
 using CMS.DataEngine;
-using CMS.FormEngine;
 using CMS.Modules;
-using Kentico.Xperience.Admin.Base.UIPages;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
@@ -20,7 +16,6 @@ using Migration.Toolkit.KXP.Api;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Helpers;
 using Migration.Toolkit.Source.Model;
-using Migration.Toolkit.Source.Services;
 
 public class MigrateCustomTablesHandler(
     ILogger<MigrateCustomTablesHandler> logger,
@@ -29,8 +24,9 @@ public class MigrateCustomTablesHandler(
     IProtocol protocol,
     BulkDataCopyService bulkDataCopyService,
     IEntityMapper<ICmsClass, DataClassInfo> dataClassMapper,
-    PrimaryKeyMappingContext primaryKeyMappingContext,
-    ReusableSchemaService reusableSchemaService)
+    PrimaryKeyMappingContext primaryKeyMappingContext
+    // ReusableSchemaService reusableSchemaService
+    )
     : IRequestHandler<MigrateCustomTablesCommand, CommandResult>
 {
     public async Task<CommandResult> Handle(MigrateCustomTablesCommand request, CancellationToken cancellationToken)
@@ -178,10 +174,10 @@ public class MigrateCustomTablesHandler(
 
                 ArgumentNullException.ThrowIfNull(dataClassInfo, nameof(dataClassInfo));
 
-                if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(dataClassInfo.ClassName))
-                {
-                    dataClassInfo = reusableSchemaService.ConvertToReusableSchema(dataClassInfo);
-                }
+                // if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(dataClassInfo.ClassName))
+                // {
+                //     dataClassInfo = reusableSchemaService.ConvertToReusableSchema(dataClassInfo);
+                // }
 
                 var containerResource = await EnsureCustomTablesResource();
                 dataClassInfo.ClassResourceID = containerResource.ResourceID;
