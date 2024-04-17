@@ -27,7 +27,7 @@ public static class PageBuilderWidgetsPatcher
         return configuration;
     }
 
-    private static void DeferredPatchWidget(WidgetConfiguration configurationZoneWidget, TreePathConvertor convertor, out bool anythingChanged)
+    private static void DeferredPatchWidget(WidgetConfiguration? configurationZoneWidget, TreePathConvertor convertor, out bool anythingChanged)
     {
         anythingChanged = false;
         if (configurationZoneWidget == null) return;
@@ -38,7 +38,7 @@ public static class PageBuilderWidgetsPatcher
             var variant = JObject.FromObject(list[i]);
             DeferredPatchProperties(variant, convertor, out var anythingChangedTmp);
 
-            list[i] = variant.ToObject<WidgetVariantConfiguration>();
+            list[i] = variant.ToObject<WidgetVariantConfiguration>() ?? throw new InvalidOperationException("Widget variant is not supported");
             anythingChanged = anythingChanged || anythingChangedTmp;
         }
     }
@@ -52,9 +52,8 @@ public static class PageBuilderWidgetsPatcher
             {
                 switch (key)
                 {
-                    case "TreePath":
+                    case "TreePath" when value?.Value<string>() is {} nodeAliasPath:
                     {
-                        var nodeAliasPath = value?.Value<string>();
                         var treePath = convertor.GetConvertedOrUnchangedAssumingChannel(nodeAliasPath);
                         if (!TreePathConvertor.TreePathComparer.Equals(nodeAliasPath, treePath))
                         {

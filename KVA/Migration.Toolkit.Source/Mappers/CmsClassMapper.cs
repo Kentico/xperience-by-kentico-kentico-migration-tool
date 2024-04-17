@@ -102,7 +102,6 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
                 :
             {
                 throw new Exception("Unable to map obsolete dataclass");
-                return target;
             }
             // Target Other,null
             // Target System,null

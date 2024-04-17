@@ -4,9 +4,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Source.Model;
 
-public class CmsRelationshipService(
-    ILogger<CmsRelationshipService> logger,
-    ModelFacade modelFacade)
+public class CmsRelationshipService(ModelFacade modelFacade)
 {
     public record NodeRelationShipResult(ICmsRelationship Relationship, ICmsTree? RightNode);
     public IEnumerable<NodeRelationShipResult> GetNodeRelationships(int nodeId)
@@ -16,12 +14,5 @@ public class CmsRelationshipService(
         {
             yield return new (cmsRelationship, modelFacade.SelectById<ICmsTree>(cmsRelationship.RightNodeID));
         }
-        // foreach (var cmsRelationship in kx13Context.CmsRelationships
-        //              .Include(r => r.RelationshipName)
-        //              .Include(r => r.RightNode)
-        //              .Where(r => r.LeftNodeId == nodeId))
-        // {
-        //     yield return cmsRelationship;
-        // }
     }
 }

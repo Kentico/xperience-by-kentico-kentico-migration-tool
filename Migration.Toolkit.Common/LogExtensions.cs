@@ -8,7 +8,7 @@ using Migration.Toolkit.Common.Services;
 
 public static class LogExtensions
 {
-    public static IPrintService PrintService = default;
+    public static IPrintService PrintService = default!;
 
     public static IModelMappingResult<TResult> Log<TResult>(this IModelMappingResult<TResult> mappingResult, ILogger logger, IMigrationProtocol protocol)
     {

@@ -40,9 +40,9 @@ public class SourceInstanceContext(
         return _sourceInfoLoaded;
     }
 
-    public List<EditingFormControlModel>? GetWidgetPropertyFormComponents(string siteName, string widgetIdentifier)
+    public List<EditingFormControlModel>? GetWidgetPropertyFormComponents(string siteName, string? widgetIdentifier)
     {
-        if (_cachedInfos.TryGetValue(siteName, out var info))
+        if (_cachedInfos.TryGetValue(siteName, out var info) && widgetIdentifier != null)
         {
             return info.WidgetProperties != null && info.WidgetProperties.TryGetValue(widgetIdentifier, out var widgetProperties)
                 ? widgetProperties
@@ -64,7 +64,7 @@ public class SourceInstanceContext(
         throw new InvalidOperationException($"No info was loaded for site '{siteName}'");
     }
 
-    public List<EditingFormControlModel>? GetWidgetPropertyFormComponents(int siteId, string widgetIdentifier)
+    public List<EditingFormControlModel>? GetWidgetPropertyFormComponents(int siteId, string? widgetIdentifier)
     {
         var siteName =
             modelFacade.SelectById<ICmsSite>(siteId)?.SiteName
@@ -82,13 +82,13 @@ public class SourceInstanceContext(
         return GetPageTemplateFormComponents(siteName, pageTemplateIdentifier);
     }
 
-    public List<EditingFormControlModel>? GetSectionFormComponents(int siteId, string sectionIdentifier)
+    public List<EditingFormControlModel>? GetSectionFormComponents(int siteId, string? sectionIdentifier)
     {
         var siteName =
             modelFacade.SelectById<ICmsSite>(siteId)?.SiteName
             ?? throw new InvalidOperationException($"Source site with SiteID '{siteId}' not exists");
 
-        if (_cachedInfos.TryGetValue(siteName, out var info))
+        if (_cachedInfos.TryGetValue(siteName, out var info) && sectionIdentifier != null)
         {
             return info.SectionProperties != null && info.SectionProperties.TryGetValue(sectionIdentifier, out var sectionFcs)
                 ? sectionFcs

@@ -30,7 +30,7 @@ public class TreePathConvertor(int webSiteChannel)
             : nodeAliasPath;
     }
 
-    public record TreePathConversionResult(bool AnythingChanged, string Result);
+    public record TreePathConversionResult(bool AnythingChanged, string? Result);
     public async Task<TreePathConversionResult> ConvertAndEnsureUniqueness(string nodeAliasPath)
     {
         TreePathConversionResult result;

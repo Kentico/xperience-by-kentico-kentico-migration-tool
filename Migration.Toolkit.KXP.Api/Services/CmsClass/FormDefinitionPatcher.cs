@@ -227,15 +227,14 @@ public class FormDefinitionPatcher
                     visibleAttr?.SetValue(false);
                     break;
                 case TfcDirective.CopySourceControl:
-                    // TODO tk: 2022-10-06 support only for custom controls
                     _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective} => {ControlName}", fieldDescriptor, targetFormComponent, controlName);
-                    controlNameElem?.SetValue(controlName);
+                    controlNameElem?.SetValue(controlName ?? throw new InvalidOperationException("Empty control name is not supported"));
                     PerformActionsOnField(field, fieldDescriptor, actions);
                     break;
                 default:
                 {
                     _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:NONE => from control '{ControlName}' => {TargetFormComponent}", fieldDescriptor, controlName, targetFormComponent);
-                    controlNameElem?.SetValue(targetFormComponent);
+                    controlNameElem?.SetValue(targetFormComponent ?? throw new InvalidOperationException("Empty target form component is not supported"));
                     PerformActionsOnField(field, fieldDescriptor, actions);
                     break;
                 }

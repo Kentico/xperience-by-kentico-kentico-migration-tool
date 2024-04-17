@@ -29,7 +29,7 @@ public sealed class EditableAreaConfiguration
     /// <summary>Identifier of the editable area.</summary>
     [DataMember]
     [JsonProperty("identifier")]
-    public string Identifier { get; set; }
+    public string? Identifier { get; set; }
 
     /// <summary>Sections within editable area.</summary>
     [DataMember]
@@ -39,7 +39,7 @@ public sealed class EditableAreaConfiguration
     /// <summary>
     /// A flag indicating whether the output of the individual widgets within the editable area can be cached. The default value is <c>false</c>.
     /// </summary>
-    public bool AllowWidgetOutputCache { get; set; }
+    public bool? AllowWidgetOutputCache { get; set; }
 
     /// <summary>
     /// An absolute expiration date for the cached output of the individual widgets.
@@ -71,12 +71,12 @@ public sealed class SectionConfiguration
     /// <summary>Identifier of the section.</summary>
     [DataMember]
     [JsonProperty("identifier")]
-    public Guid Identifier { get; set; }
+    public Guid? Identifier { get; set; }
 
     /// <summary>Type section identifier.</summary>
     [DataMember]
     [JsonProperty("type")]
-    public string TypeIdentifier { get; set; }
+    public string? TypeIdentifier { get; set; }
 
     /// <summary>Section properties.</summary>
     [DataMember]
@@ -104,12 +104,12 @@ public sealed class ZoneConfiguration
     /// <summary>Identifier of the widget zone.</summary>
     [DataMember]
     [JsonProperty("identifier")]
-    public Guid Identifier { get; set; }
+    public Guid? Identifier { get; set; }
 
     /// <summary>Name of the widget zone.</summary>
     [DataMember]
     [JsonProperty("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     /// <summary>List of widgets within the zone.</summary>
     [DataMember]
@@ -131,17 +131,17 @@ public sealed class WidgetConfiguration
     /// <summary>Identifier of the widget instance.</summary>
     [DataMember]
     [JsonProperty("identifier")]
-    public Guid Identifier { get; set; }
+    public Guid? Identifier { get; set; }
 
     /// <summary>Type widget identifier.</summary>
     [DataMember]
     [JsonProperty("type")]
-    public string TypeIdentifier { get; set; }
+    public string? TypeIdentifier { get; set; }
 
     /// <summary>Personalization condition type identifier.</summary>
     [DataMember]
     [JsonProperty("conditionType")]
-    public string PersonalizationConditionTypeIdentifier { get; set; }
+    public string? PersonalizationConditionTypeIdentifier { get; set; }
 
     /// <summary>List of widget variants.</summary>
     [DataMember]
@@ -168,19 +168,19 @@ public sealed class WidgetVariantConfiguration
     /// <summary>Widget variant name.</summary>
     [DataMember]
     [JsonProperty("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     /// <summary>Widget variant properties.</summary>
     [DataMember]
     [JsonProperty("properties")]
     // public IWidgetProperties Properties { get; set; }
-    public JObject Properties { get; set; }
+    public JObject? Properties { get; set; }
 
     /// <summary>Widget variant personalization condition type.</summary>
     /// <remarks>Only personalization condition type parameters are serialized to JSON.</remarks>
     [DataMember]
     [JsonProperty("conditionTypeParameters")]
-    public JObject PersonalizationConditionType { get; set; }
+    public JObject? PersonalizationConditionType { get; set; }
 }
 
 #endregion

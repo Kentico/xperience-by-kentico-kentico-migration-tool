@@ -78,8 +78,7 @@ if (anyValidationErrors)
 }
 
 var settingsSection = config.GetRequiredSection(ConfigurationNames.Settings);
-var settings = settingsSection.Get<ToolkitConfiguration>();
-settings.EntityConfigurations ??= new EntityConfigurations();
+var settings = settingsSection.Get<ToolkitConfiguration>() ?? throw new InvalidOperationException("Failed to parse toolkit configuration");
 
 var services = new ServiceCollection();
 

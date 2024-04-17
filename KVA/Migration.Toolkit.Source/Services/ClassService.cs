@@ -8,8 +8,10 @@ using Migration.Toolkit.Source.Model;
 public class ClassService(ILogger<ClassService> logger, ModelFacade modelFacade)
 {
     private readonly ConcurrentDictionary<string, ICmsFormUserControl?> _userControlsCache = new(StringComparer.InvariantCultureIgnoreCase);
-    public ICmsFormUserControl? GetFormControlDefinition(string userControlCodeName)
+    public ICmsFormUserControl? GetFormControlDefinition(string? userControlCodeName)
     {
+        if (userControlCodeName == null) return null;
+        
         return _userControlsCache.GetOrAdd(userControlCodeName, s =>
         {
             try
@@ -23,7 +25,7 @@ public class ClassService(ILogger<ClassService> logger, ModelFacade modelFacade)
             }
             catch (Exception ex)
             {
-                logger.LogError("Error while retrieving FormUserControl with codename {CodeName}", s);
+                logger.LogError(ex, "Error while retrieving FormUserControl with codename {CodeName}", s);
             }
 
             return null;

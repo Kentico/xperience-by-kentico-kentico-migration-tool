@@ -102,7 +102,10 @@ public class IpcService(ToolkitConfiguration toolkitConfiguration, ILogger<IpcSe
                 var responseBody = await response.Content.ReadAsStringAsync();
                 if (JsonConvert.DeserializeObject<SourceInstanceDiscoveredInfo>(responseBody) is {} deserializedResponse)
                 {
-                    discoveredInfoList.Add(deserializedResponse.SiteName, deserializedResponse);
+                    discoveredInfoList.Add(
+                        deserializedResponse.SiteName ?? throw new InvalidOperationException("Unspecified sitename is not supported"),
+                        deserializedResponse
+                    );
                 }
                 else
                 {

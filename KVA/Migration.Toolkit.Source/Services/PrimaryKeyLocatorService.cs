@@ -169,7 +169,9 @@ public class PrimaryKeyLocatorService(
             if (sourceType == typeof(ICmsUser))
             {
                 var source = modelFacade.SelectById<ICmsUser>(sourceId);
+#pragma warning disable CS8602 // Dereference of a possibly null reference. //expression
                 targetId = kxpContext.CmsUsers.Where(x => x.UserGuid == source.UserGUID || x.UserName == source.UserName).Select(x => x.UserId).Single();
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
                 return true;
             }
 

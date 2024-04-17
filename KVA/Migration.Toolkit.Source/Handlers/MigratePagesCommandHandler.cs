@@ -670,7 +670,7 @@ public class MigratePagesCommandHandler(
         if (!string.IsNullOrWhiteSpace(documentPageBuilderWidgets))
         {
             var patched = PageBuilderWidgetsPatcher.DeferredPatchConfiguration(
-                JsonConvert.DeserializeObject<EditableAreasConfiguration>(documentPageBuilderWidgets),
+                JsonConvert.DeserializeObject<EditableAreasConfiguration>(documentPageBuilderWidgets)!,
                 TreePathConvertor.GetSiteConverter(webSiteChannelId),
                 out anythingChanged
             );

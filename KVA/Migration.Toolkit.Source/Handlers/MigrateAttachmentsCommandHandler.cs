@@ -12,7 +12,7 @@ public class MigrateAttachmentsCommandHandler(
     AttachmentMigrator attachmentMigrator
 ) : IRequestHandler<MigrateAttachmentsCommand, CommandResult>
 {
-    public async Task<CommandResult> Handle(MigrateAttachmentsCommand request, CancellationToken cancellationToken)
+    public Task<CommandResult> Handle(MigrateAttachmentsCommand request, CancellationToken cancellationToken)
     {
         var kx13CmsAttachments = modelFacade.SelectAll<ICmsAttachment>();
 
@@ -29,6 +29,6 @@ public class MigrateAttachmentsCommandHandler(
                 break;
         }
 
-        return new GenericCommandResult();
+        return Task.FromResult<CommandResult>(new GenericCommandResult());
     }
 }

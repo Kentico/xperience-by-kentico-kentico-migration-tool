@@ -142,14 +142,14 @@ public class MigrateFormsCommandHandler(
             }
         }
 
-        await GlobalizeBizFormFiles();
+        GlobalizeBizFormFiles();
 
         return new GenericCommandResult();
     }
 
     #region Directory globalization
 
-    private async Task GlobalizeBizFormFiles()
+    private void GlobalizeBizFormFiles()
     {
         foreach (var cmsSite in modelFacade.SelectAll<ICmsSite>())
         {

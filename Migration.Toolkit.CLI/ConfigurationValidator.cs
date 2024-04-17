@@ -22,13 +22,10 @@ public static class ConfigurationValidator
     {
         var settings = root.GetSection(ConfigurationNames.Settings);
 
-        if (settings is null)
-        {
-            yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_Settings_IsRequired);
-        }
-
         if (
+#pragma warning disable CS0618 // Type or member is obsolete
             CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.SourceConnectionString)) &&
+#pragma warning restore CS0618 // Type or member is obsolete
             CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.KxConnectionString))
         )
         {
@@ -36,7 +33,9 @@ public static class ConfigurationValidator
         }
 
         if (
+#pragma warning disable CS0618 // Type or member is obsolete
             CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.SourceCmsDirPath)) &&
+#pragma warning restore CS0618 // Type or member is obsolete
             CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.KxCmsDirPath))
         )
         {
@@ -45,7 +44,9 @@ public static class ConfigurationValidator
         }
 
         if (
+#pragma warning disable CS0618 // Type or member is obsolete
             CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.TargetConnectionString)) &&
+#pragma warning restore CS0618 // Type or member is obsolete
             CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.XbKConnectionString))
         )
         {
@@ -53,7 +54,9 @@ public static class ConfigurationValidator
         }
 
         if (
+#pragma warning disable CS0618 // Type or member is obsolete
             CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.TargetCmsDirPath)) &&
+#pragma warning restore CS0618 // Type or member is obsolete
             CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.XbKDirPath))
            )
         {
@@ -63,7 +66,9 @@ public static class ConfigurationValidator
 
         var targetKxpApiSettings =
                 settings?.GetSection(ConfigurationNames.XbKApiSettings) ??
+#pragma warning disable CS0618 // Type or member is obsolete
                 settings?.GetSection(ConfigurationNames.TargetKxpApiSettings)
+#pragma warning restore CS0618 // Type or member is obsolete
             ;
 
         if (targetKxpApiSettings is null)

@@ -27,10 +27,12 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
         var anyFailedColumnCheck = false;
         var sourceTableColumns = GetSqlTableColumns(tableName, configuration.KxConnectionString)
             .Where(c => checkedColumns?.Keys.Any(k=> k.Equals(c.ColumnName, StringComparison.InvariantCultureIgnoreCase)) ?? true)
-            .Select(x => x.ColumnName).OrderBy(x => x);
+            .Select(x => x.ColumnName).OrderBy(x => x)
+            .ToList();
         var targetTableColumns = GetSqlTableColumns(tableName, configuration.XbKConnectionString)
             .Where(c => checkedColumns?.Values.Any(k=> k.Equals(c.ColumnName, StringComparison.InvariantCultureIgnoreCase)) ?? true)
-            .Select(x => x.ColumnName).OrderBy(x => x);
+            .Select(x => x.ColumnName).OrderBy(x => x)
+            .ToList();
 
         var aligner = EnumerableHelper.CreateAligner(
             sourceTableColumns,
@@ -41,7 +43,7 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
             false
         );
 
-        columnsWithFailedCheck = new List<(string sourceColumn, string targetColumn)>();
+        columnsWithFailedCheck = [];
         while (aligner.MoveNext())
         {
             switch (aligner.Current)
@@ -60,7 +62,7 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
         return anyFailedColumnCheck;
     }
 
-    public bool CheckForTableColumnsDifferences(string tableName, out List<(string sourceColumn, string targetColumn)> columnsWithFailedCheck)
+    public bool CheckForTableColumnsDifferences(string tableName, out List<(string? sourceColumn, string? targetColumn)> columnsWithFailedCheck)
         => CheckForTableColumnsDifferences(tableName, null, out columnsWithFailedCheck);
 
     public void CopyTableToTable(BulkCopyRequest request)
@@ -119,7 +121,7 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
         }
         else
         {
-            foreach (var (columnName, ordinalPosition) in sourceColumns)
+            foreach (var (columnName, _) in sourceColumns)
             {
                 if (!columnFilter(columnName))
                 {
@@ -144,21 +146,14 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
             readerPipeline = new ValueInterceptingReader(readerPipeline, valueInterceptor, sourceColumns, skippedRowCallback);
         }
 
-        try
-        {
-            sqlBulkCopy.WriteToServer(readerPipeline);
-        }
-        catch(Exception ex)
-        {
-            throw;
-        }
+        sqlBulkCopy.WriteToServer(readerPipeline);
 
         logger.LogInformation("Copy of {TableName} finished! Total={Total}, TotalCopied={TotalCopied}", tableName, filteredReader.TotalItems, filteredReader.TotalNonFiltered);
     }
 
     private void AssertColumnsMatch(BulkCopyRequest request, SqlColumn[] sourceColumns, SqlColumn[] targetColumns)
     {
-        foreach (var (columnName, ordinalPosition) in targetColumns)
+        foreach (var (columnName, _) in targetColumns)
         {
             if (sourceColumns.All(x => x.ColumnName != columnName))
             {
@@ -166,7 +161,7 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
             }
         }
 
-        foreach (var (columnName, ordinalPosition) in sourceColumns)
+        foreach (var (columnName, _) in sourceColumns)
         {
             if (targetColumns.All(x => x.ColumnName != columnName))
             {
@@ -227,8 +222,6 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
             {
                 logger.LogTrace("[{Table}].{ColumnName} SKIPPED", tableName, columnName);
             }
-            // TODO tk: 2022-05-31 IS_NULLABLE, DATA_TYPE, ... check column compatibility
-
         }
     }
 }

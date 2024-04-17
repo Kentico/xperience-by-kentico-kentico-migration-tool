@@ -37,7 +37,7 @@ public class AlternativeFormMapper(
             : 0;
 
         var formCoupledClass = modelFacade.SelectById<ICmsClass>(source.FormCoupledClassID);
-        var formClass = modelFacade.SelectById<ICmsClass>(source.FormClassID);
+        var formClass = modelFacade.SelectById<ICmsClass>(source.FormClassID) ?? throw new InvalidOperationException("Migration of form without class is not supported");
 
         var coupledClassIsDeprecated =
             formCoupledClass?.ClassName is { } coupledClassName &&

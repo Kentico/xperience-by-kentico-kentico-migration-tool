@@ -93,7 +93,7 @@ public class PageTemplateConfigurationMapper(
         }
         else
         {
-            return null;
+            return null!;
         }
     }
 
@@ -160,13 +160,14 @@ public class PageTemplateConfigurationMapper(
         }
     }
 
-    private void WalkProperties(JObject properties, List<EditingFormControlModel>? formControlModels)
+    private void WalkProperties(JObject? properties, List<EditingFormControlModel>? formControlModels)
     {
+        if (properties == null) return;
         foreach (var (key, value) in properties)
         {
             logger.LogTrace("Walk property {Name}|{Identifier}", key, value?.ToString());
 
-            var editingFcm = formControlModels?.FirstOrDefault(x => x.PropertyName.Equals(key, StringComparison.InvariantCultureIgnoreCase));
+            var editingFcm = formControlModels?.FirstOrDefault(x => x.PropertyName?.Equals(key, StringComparison.InvariantCultureIgnoreCase) == true);
             if (editingFcm != null)
             {
                 if (FieldMappingInstance.BuiltInModel.NotSupportedInKxpLegacyMode
@@ -200,23 +201,14 @@ public class PageTemplateConfigurationMapper(
                         }
                         case Kx13FormComponents.Kentico_FileUploader:
                         {
-                            // TODO tomas.krch 2024-03-27: implement!
                             break;
                         }
                     }
                 }
-                else if (FieldMappingInstance.BuiltInModel.SupportedInKxpLegacyMode.Contains(editingFcm.FormComponentIdentifier))
-                {
-                    // TODO tomas.krch 2024-03-27: nothing is supported in legacy mode (no legacy mode)
-
-                    // OK
-                    logger.LogTrace("Editing form component found {FormComponentName} => supported in legacy mode",
-                        editingFcm.FormComponentIdentifier);
-                }
                 else
                 {
                     // unknown control, probably custom
-                    Protocol.Append(HandbookReferences.FormComponentCustom(editingFcm.FormComponentIdentifier));
+                    Protocol.Append(HandbookReferences.FormComponentCustom(editingFcm.FormComponentIdentifier!));
                     logger.LogTrace(
                         "Editing form component found {FormComponentName} => custom or inlined component, don't forget to migrate code accordingly",
                         editingFcm.FormComponentIdentifier);

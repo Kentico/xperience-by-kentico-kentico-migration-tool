@@ -109,7 +109,7 @@ public static class Extensions
 
     #endregion
 
-    public static T Unbox<T>(this DbDataReader reader, string propertyName)
+    public static T? Unbox<T>(this DbDataReader reader, string propertyName)
     {
         if (reader.GetOrdinal(propertyName) < 0)
         {
@@ -124,7 +124,7 @@ public static class Extensions
         };
     }
 
-    public static T Value<T>(this XElement element)
+    public static T? Value<T>(this XElement element)
     {
         return element?.Value == default
             ? default

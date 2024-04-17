@@ -23,7 +23,9 @@ public class ToolkitConfiguration
 
     private string? _kxConnectionString;
 
+#pragma warning disable CS0618 // usage is related to resolving deprecation and backwards compatibility
     [ConfigurationKeyName(ConfigurationNames.SourceConnectionString)]
+#pragma warning restore CS0618 // usage is related to resolving deprecation and backwards compatibility
     [Obsolete("Use KxConnectionString instead")]
     public string? ObsoleteSourceConnectionString { get; set; }
 
@@ -50,7 +52,9 @@ public class ToolkitConfiguration
 
     private string? _kxCmsDirPath;
 
+#pragma warning disable CS0618 // usage is related to resolving deprecation and backwards compatibility
     [ConfigurationKeyName(ConfigurationNames.SourceCmsDirPath)]
+#pragma warning restore CS0618 // usage is related to resolving deprecation and backwards compatibility
     [Obsolete("Use KxCmsDirPath instead")]
     public string? ObsoleteSourceCmsDirPath { get; set; }
 
@@ -77,7 +81,9 @@ public class ToolkitConfiguration
 
     private string? _xbKConnectionString;
 
+#pragma warning disable CS0618 // usage is related to resolving deprecation and backwards compatibility
     [ConfigurationKeyName(ConfigurationNames.TargetConnectionString)]
+#pragma warning restore CS0618 // usage is related to resolving deprecation and backwards compatibility
     [Obsolete("Use XbKConnectionString instead")]
     public string? ObsoleteTargetConnectionString { get; set; }
 
@@ -105,8 +111,9 @@ public class ToolkitConfiguration
     private string? _xbKDirPath = null;
     private HashSet<string>? _classNamesCreateReusableSchema;
 
-
+#pragma warning disable CS0618 // usage is related to resolving deprecation and backwards compatibility
     [ConfigurationKeyName(ConfigurationNames.TargetCmsDirPath)]
+#pragma warning restore CS0618
     [Obsolete("Use XbKDirPath instead")]
     public string? ObsoleteTargetCmsDirPath { get; set; } = null;
 

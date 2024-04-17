@@ -44,12 +44,12 @@ public class MigrateCustomModulesCommandHandler(
 
         await MigrateResources(cancellationToken);
 
-        await MigrateClasses(entityConfiguration, cancellationToken);
+        MigrateClasses(entityConfiguration, cancellationToken);
 
         return new GenericCommandResult();
     }
 
-    private async Task MigrateClasses(EntityConfiguration entityConfiguration, CancellationToken cancellationToken)
+    private void MigrateClasses(EntityConfiguration entityConfiguration, CancellationToken cancellationToken)
     {
         using var cmsClasses = EnumerableHelper.CreateDeferrableItemWrapper(
             modelFacade.SelectWhere<ICmsClass>("(ClassIsForm=1 OR ClassIsForm IS NULL) AND (ClassIsDocumentType=0 OR ClassIsDocumentType IS NULL)")
@@ -120,7 +120,7 @@ public class MigrateCustomModulesCommandHandler(
             {
                 Debug.Assert(savedDataClass.ClassID != 0, "xbkDataClass.ClassID != 0");
                 xbkDataClass = DataClassInfoProvider.ProviderObject.Get(savedDataClass.ClassID);
-                await MigrateAlternativeForms(cmsClass, savedDataClass, cancellationToken);
+                MigrateAlternativeForms(cmsClass, savedDataClass, cancellationToken);
 
                 #region Migrate coupled data class data
 
@@ -171,10 +171,10 @@ public class MigrateCustomModulesCommandHandler(
         }
 
         // special case - member migration (CMS_User splits into CMS_User and CMS_Member in XbK)
-        await MigrateMemberClass(cancellationToken);
+        MigrateMemberClass(cancellationToken);
     }
 
-    private async Task MigrateMemberClass(CancellationToken cancellationToken)
+    private void MigrateMemberClass(CancellationToken cancellationToken)
     {
         var cmsUser = modelFacade.SelectAll<ICmsClass>().FirstOrDefault(x => x.ClassName == K12SystemClass.cms_user);
         var cmsUserSettings = modelFacade.SelectAll<ICmsClass>().FirstOrDefault(x => x.ClassName == K12SystemClass.cms_usersettings);
@@ -254,7 +254,7 @@ public class MigrateCustomModulesCommandHandler(
         cmsUserFormInfo = new FormInfo(result);
     }
 
-    private async Task MigrateAlternativeForms(ICmsClass k12Class, DataClassInfo xbkDataClass, CancellationToken cancellationToken)
+    private void MigrateAlternativeForms(ICmsClass k12Class, DataClassInfo xbkDataClass, CancellationToken cancellationToken)
     {
         var k12AlternativeForms = modelFacade.SelectAll<ICmsAlternativeForm>()
             .Where(af => af.FormClassID == k12Class.ClassID);

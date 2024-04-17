@@ -41,7 +41,9 @@ public class DataReaderProxyBase: IDataReader
     public virtual string GetName(int i) => _innerReader.GetName(i);
     public virtual int GetOrdinal(string name) => _innerReader.GetOrdinal(name);
     public virtual string GetString(int i) => _innerReader.GetString(i);
-    public virtual object GetValue(int i) => _innerReader.GetValue(i);
+#pragma warning disable CS8766 // Nullability of reference types in return type doesn't match implicitly implemented member (possibly because of nullability attributes).
+    public virtual object? GetValue(int i) => _innerReader.GetValue(i);
+#pragma warning restore CS8766 // Nullability of reference types in return type doesn't match implicitly implemented member (possibly because of nullability attributes).
     public virtual int GetValues(object[] values) => _innerReader.GetValues(values);
     public virtual bool IsDBNull(int i) => _innerReader.IsDBNull(i);
     public virtual object this[int i] => _innerReader[i];

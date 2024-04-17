@@ -129,7 +129,7 @@ public class MemberInfoMapper(
             .Select(x => new { x.ClassFormDefinition, x.ClassName, x.ClassTableName })
             .FirstOrDefault(x => x.ClassName == K12SystemClass.cms_usersettings);
 
-        if (usDci != null)
+        if (usDci is {ClassTableName:{} classTableName})
         {
             var userSettingsCustomizedFields = kxpClassFacade.GetCustomizedFieldInfos(new FormInfo(usDci?.ClassFormDefinition)).ToList();
             if (userSettingsCustomizedFields.Count > 0)
@@ -137,7 +137,7 @@ public class MemberInfoMapper(
                 try
                 {
                     var query =
-                        $"SELECT {string.Join(", ", userSettingsCustomizedFields.Select(x => x.FieldName))} FROM {usDci.ClassTableName} WHERE UserSettingsID = @id";
+                        $"SELECT {string.Join(", ", userSettingsCustomizedFields.Select(x => x.FieldName))} FROM {classTableName} WHERE UserSettingsID = @id";
 
                     using var conn = new SqlConnection(toolkitConfiguration.KxConnectionString);
                     using var cmd = conn.CreateCommand();

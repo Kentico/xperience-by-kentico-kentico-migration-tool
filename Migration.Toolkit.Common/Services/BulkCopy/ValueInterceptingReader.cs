@@ -8,7 +8,7 @@ public record ValueInterceptorResult(object? Value = null, bool OverwriteValue =
     public static ValueInterceptorResult SkipRow => new ValueInterceptorResult(null, false, true);
     public static ValueInterceptorResult ReplaceValue(object? value) => new ValueInterceptorResult(value, true, false);
 };
-public delegate ValueInterceptorResult ValueInterceptor(int columnOrdinal, string columnName, object value, Dictionary<string, object?> currentRow);
+public delegate ValueInterceptorResult ValueInterceptor(int columnOrdinal, string columnName, object? value, Dictionary<string, object?> currentRow);
 public delegate void ValueInterceptingReaderSkippedRow(Dictionary<string, object?> current);
 
 public class ValueInterceptingReader : DataReaderProxyBase
@@ -33,12 +33,12 @@ public class ValueInterceptingReader : DataReaderProxyBase
         while (base.Read())
         {
             _overwrittenValues = new Dictionary<int, object?>();
-            
+
             var skipCurrentDataRow = false;
             var currentRow = _columnOrdinals.ToDictionary(k => k.Value, v => base.GetValue(v.Key));
             foreach (var (columnOrdinal, columnName) in this._columnOrdinals)
             {
-                
+
                 var (newValue, overwriteValue, skipDataRow) = _valueInterceptor.Invoke(columnOrdinal, columnName, base.GetValue(columnOrdinal), currentRow);
                 if (skipDataRow)
                 {
@@ -57,7 +57,7 @@ public class ValueInterceptingReader : DataReaderProxyBase
                 _skippedValueCallback?.Invoke(currentRow);
                 continue;
             }
-            
+
             return true;
         }
 

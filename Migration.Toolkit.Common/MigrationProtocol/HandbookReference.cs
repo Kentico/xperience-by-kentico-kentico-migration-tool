@@ -6,7 +6,7 @@ using Migration.Toolkit.Common.Services;
 
 public class HandbookReference
 {
-    public static IPrintService PrintService = default;
+    public static IPrintService PrintService = default!;
 
     public override string ToString()
     {
@@ -103,10 +103,10 @@ public class HandbookReference
     /// <param name="data">All public instance properties of object are written to dictionary for user to see. Anonymous object can be used</param>
     public HandbookReference WithData(object data)
     {
-        this.Data ??= new();
+        this.Data ??= new Dictionary<string, object?>();
         var dataUpdate = data.GetType()
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .ToDictionary(p => p.Name, p => p.GetMethod.Invoke(data, Array.Empty<object>())
+            .ToDictionary(p => p.Name, p => p.GetMethod?.Invoke(data, [])
             );
         foreach (var (key, value) in dataUpdate)
         {

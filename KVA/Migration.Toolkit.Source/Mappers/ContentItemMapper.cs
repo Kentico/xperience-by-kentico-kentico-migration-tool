@@ -180,7 +180,7 @@ public class ContentItemMapper(
                 ContentItemContentTypeName = nodeClass.ClassName
             };
 
-            if (nodeClass.ClassIsCoupledClass)
+            if (nodeClass is {ClassIsCoupledClass:true, ClassTableName: {} classTableName})
             {
                 var fi = new FormInfo(targetFormDefinition);
                 var sfi = new FormInfo(sourceFormDefinition);
@@ -204,9 +204,9 @@ public class ContentItemMapper(
                     .Union(fi.GetColumnNames())
                     .ToList();
 
-                var coupledDataRow = coupledDataService.GetSourceCoupledDataRow(nodeClass.ClassTableName, primaryKeyName, cmsDocument.DocumentForeignKeyValue);
+                var coupledDataRow = coupledDataService.GetSourceCoupledDataRow(classTableName, primaryKeyName, cmsDocument.DocumentForeignKeyValue);
                 MapCoupledDataFieldValues(dataModel.CustomProperties,
-                    (columnName) => coupledDataRow?[columnName],
+                    (columnName) => coupledDataRow?[columnName]!,
                     columnName => coupledDataRow?.ContainsKey(columnName) ?? false,
                     cmsTree, cmsDocument.DocumentID, sourceColumns, sfi, false, nodeClass
                 );
@@ -300,9 +300,8 @@ public class ContentItemMapper(
                     logger.LogTrace("Walk page template configuration {Identifier}", pageTemplateConfigurationObj.Identifier);
 
                     var pageTemplateConfigurationFcs =
-                        sourceInstanceContext.GetPageTemplateFormComponents(sourceSiteId, pageTemplateConfigurationObj?.Identifier);
-                    if (pageTemplateConfigurationObj.Properties is { Count: > 0 })
-                    {
+                        sourceInstanceContext.GetPageTemplateFormComponents(sourceSiteId, pageTemplateConfigurationObj?.Identifier!);
+                    if (pageTemplateConfigurationObj is { Properties.Count: > 0 }) {
                         WalkProperties(pageTemplateConfigurationObj.Properties, pageTemplateConfigurationFcs, out var ndp);
                         needsDeferredPatch = ndp || needsDeferredPatch;
                     }
@@ -413,7 +412,7 @@ public class ContentItemMapper(
                     .ToList();
 
                 MapCoupledDataFieldValues(dataModel.CustomProperties,
-                    s => adapter.GetValue(s),
+                    s => adapter.GetValue(s)!,
                     s => adapter.HasValueSet(s)
                     , cmsTree, adapter.DocumentID, sourceColumns, sfi, true, nodeClass);
 
@@ -451,11 +450,8 @@ public class ContentItemMapper(
             throw;
         }
 
-        if (dataModel != null && commonDataModel != null)
-        {
-            yield return commonDataModel;
-            yield return dataModel;
-        }
+        yield return commonDataModel;
+        yield return dataModel;
     }
 
     #region "Page template & page widget walkers"
@@ -482,7 +478,6 @@ public class ContentItemMapper(
         {
             logger.LogTrace("Walk section {TypeIdentifier}|{Identifier}", section.TypeIdentifier, section.Identifier);
 
-            // TODO tk: 2022-09-14 find other acronym for FormComponents
             var sectionFcs = sourceInstanceContext.GetSectionFormComponents(siteId, section.TypeIdentifier);
             WalkProperties(section.Properties, sectionFcs, out var ndp1);
             needsDeferredPatch = ndp1 || needsDeferredPatch;
@@ -531,14 +526,15 @@ public class ContentItemMapper(
         }
     }
 
-    private void WalkProperties(JObject properties, List<EditingFormControlModel>? formControlModels, out bool needsDeferredPatch)
+    private void WalkProperties(JObject? properties, List<EditingFormControlModel>? formControlModels, out bool needsDeferredPatch)
     {
         needsDeferredPatch = false;
+        if (properties == null) return;
         foreach (var (key, value) in properties)
         {
             logger.LogTrace("Walk property {Name}|{Identifier}", key, value?.ToString());
 
-            var editingFcm = formControlModels?.FirstOrDefault(x => x.PropertyName.Equals(key, StringComparison.InvariantCultureIgnoreCase));
+            var editingFcm = formControlModels?.FirstOrDefault(x => x.PropertyName?.Equals(key, StringComparison.InvariantCultureIgnoreCase) == true);
             if (editingFcm != null)
             {
                 if (FieldMappingInstance.BuiltInModel.NotSupportedInKxpLegacyMode
@@ -575,11 +571,6 @@ public class ContentItemMapper(
                             break;
                         }
                     }
-                }
-                else if (FieldMappingInstance.BuiltInModel.SupportedInKxpLegacyMode.Contains(editingFcm.FormComponentIdentifier))
-                {
-                    // OK
-                    logger.LogTrace("Editing form component found {FormComponentName} => supported in legacy mode", editingFcm.FormComponentIdentifier);
                 }
                 else
                 {
@@ -757,7 +748,7 @@ public class ContentItemMapper(
                 if (hasMigratedMediaFile && mfis is { Length: > 0 })
                 {
                     target.SetValueAsJson(columnName,
-                        mfis.Select(x => new AssetRelatedItem
+                        mfis.Where(x => x is not null).Cast<MediaFileInfo>().Select(x => new AssetRelatedItem
                         {
                             Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth, }, Name = x.FileName, Size = x.FileSize
                         })
@@ -767,13 +758,15 @@ public class ContentItemMapper(
                 continue;
             }
 
-            if (controlName != null)
+            if (controlName != null && fieldMigration != null)
             {
                 if (fieldMigration.Actions?.Contains(TcaDirective.ConvertToPages) ?? false)
                 {
                     // relation to other document
-                    var convertedRelation = relationshipService.GetNodeRelationships(cmsTree.NodeID)
-                        .Select(r => new WebPageRelatedItem { WebPageGuid = r.RightNode.NodeGUID });
+                    var convertedRelation = relationshipService
+                        .GetNodeRelationships(cmsTree.NodeID)
+                        .Where(r => r.RightNode is not null)
+                        .Select(r => new WebPageRelatedItem { WebPageGuid = r.RightNode!.NodeGUID });
 
                     target.SetValueAsJson(columnName, convertedRelation);
                 }
