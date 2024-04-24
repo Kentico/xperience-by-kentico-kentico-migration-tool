@@ -44,7 +44,7 @@ The migration currently supports the Kentico Xperience 13, Kentico 12 or Kentico
 ### Target
 
 * The migration toolkit is periodically updated to support migration to the **latest version** of Xperience by Kentico. However, there may be delays between Xperience by Kentico releases and toolkit updates.
-  * Currently, Xperience by Kentico **28.0.3** is tested and supported.
+  * Currently, Xperience by Kentico **28.4.1** is tested and supported.
 * The target instance's database and file system must be accessible from the environment where you run the Migration toolkit.
 * The target instance's database must be empty except for data from the source instance created by previous runs of the Migration toolkit to avoid conflicts and inconsistencies.
 
@@ -110,6 +110,10 @@ Currently, the Migration toolkit supports the following types of data:
     * Custom settings under modules, which are currently not supported in Xperience by Kentico
     * Module permissions (permissions work differently in Xperience by Kentico - see [Role management](https://docs.kentico.com/x/7IVwCg) and [UI page permission checks](https://docs.kentico.com/x/8IKyCg))
     * As with all object types, the migration toolkit does not transfer code files to the target project. You must manually move all code files generated for your custom classes (_Info_, _InfoProvider_, etc.).
+* **Custom tables**
+  * Custom tables are not supported in Xperience by Kentico. Data from custom tables is migrated to the target instance as custom modules.
+  * The migration only transfers data from custom tables to the custom module (_CMS\_Resource_) database table.
+  * Any user interface, listings, filters, and other functionality related to migrated custom tables needs to be implemented in the target instance.
 * **Setting values**
   * The migration only transfers the settings that exist in Xperience by Kentico.
   * The migration excludes site-specific settings that do not have a corresponding website channel-specific alternative in Xperience by Kentico.

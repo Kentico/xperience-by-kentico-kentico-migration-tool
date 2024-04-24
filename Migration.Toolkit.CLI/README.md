@@ -43,6 +43,7 @@ Migration.Toolkit.CLI.exe migrate --sites --custom-modules --users --members --f
 |-----------------------------|----------------------------------------------------------|---------------------------------------|
 | `--sites`                   | Enables migration of sites to [website channels](https://docs.xperience.io/x/34HFC). The site's basic properties and settings are transferred to the target instance.|  |
 | `--custom-modules`          | Enables migration of custom modules, [custom module classes and their data](https://docs.xperience.io/x/AKDWCQ), and [custom fields in supported system classes](https://docs.xperience.io/x/V6rWCQ).<br /><br />See: [Migration details for specific object types - Custom modules and classes](#custom-modules-and-classes)  | `--sites` |
+| `--custom-tables`          | Enables migration of [custom tables](https://docs.kentico.com/x/eQ2RBg).<br /><br />See: [Migration details for specific object types - Custom tables](#custom-tables)  |  |
 | `--users`                   | Enables migration of [users](https://docs.xperience.io/x/8ILWCQ) and [roles](https://docs.xperience.io/x/7IVwCg).<br /><br />See: [Migration details for specific object types - Users](#users) | `--sites`, `--custom-modules` |
 | `--members`                 | Enables migration of live site user accounts to [members](https://docs.xperience.io/x/BIsuCw). <br /><br />See: [Migration details for specific object types - Members](#members) | `--sites`, `--custom-modules` |
 | `--settings-keys`           | Enables migration of values for [settings](https://docs.xperience.io/x/7YjFC) that are available in Xperience by Kentico. | `--sites`                             |
@@ -117,7 +118,9 @@ Some [Form components](https://docs.xperience.io/x/5ASiCQ) used by content type 
   * _Latest draft version_ - for published pages, the version is migrated to the _Draft_ [workflow step](https://docs.xperience.io/x/JwKQC#Pages-Pageworkflow); for pages that do not have a published version, the version is migrated to the _Draft (initial)_ workflow step.
   * _Archived_
 * URLs are migrated depending on the source instance version:
-  * For Kentico Xperience 13, the migration includes the URL paths of pages but not Alternative URLs or Former URLs.
+  * For Kentico Xperience 13, the migration:
+      * includes the URL paths of pages and Former URLs
+      * does not include Alternative URLs
   * For Kentico 12 and Kentico 11, URL paths are not migrated. Instead, a default URL path is created from the `DocumentUrlPath` or `NodeAliasPath`.
 * Linked pages are currently not supported in Xperience by Kentico. The migration creates standard page copies for any linked pages on the source instance.
 * Page permissions (ACLs) are currently not supported in Xperience by Kentico and are not migrated.
@@ -155,6 +158,18 @@ Module and class migration does NOT include:
 As with all object types, the migration toolkit does not transfer code files to the target project. You need to manually move all code files generated for your custom classes (*Info*, *InfoProvider*, etc.).
 
 To learn more about custom modules and classes in Xperience by Kentico, see the [Object types](https://docs.xperience.io/x/AKDWCQ) documentation.
+
+#### Custom tables
+
+The migration includes the following:
+
+* Basic information about custom tables (from the `CMS_Class` table) is migrated to the custom module table (`CMS_Resource`) as a special `customtables` resource.
+* Content of individual custom tables is migrated as module classes.
+
+Custom table migration does NOT include:
+
+* Any other data related to custom tables (queries, alternative forms) are discarded by the migration.
+* UI elements related to custom tables such as listings and filters are not migrated and need to be implemented. The administration of Xperience by Kentico uses a different technology stack than Kentico Xperience 13 and is incompatible. To learn how to build the administration UI, see [Extend the administration interface](https://docs.xperience.io/x/GwKQC) and [Example - Offices management application](https://docs.xperience.io/x/hIFwCg).
 
 #### Media libraries
 
