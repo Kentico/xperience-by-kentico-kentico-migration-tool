@@ -6,6 +6,7 @@ using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Services;
+using Migration.Toolkit.Source.Services;
 
 public class PrimaryKeyMappingContext(
     ILogger<PrimaryKeyMappingContext> logger,

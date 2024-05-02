@@ -52,7 +52,7 @@ public class MigrateCustomModulesCommandHandler(
     private async Task MigrateClasses(EntityConfiguration entityConfiguration, CancellationToken cancellationToken)
     {
         using var cmsClasses = EnumerableHelper.CreateDeferrableItemWrapper(
-            modelFacade.SelectWhere<ICmsClass>("(ClassIsForm=1 OR ClassIsForm IS NULL) AND (ClassIsDocumentType=0 OR ClassIsDocumentType IS NULL)")
+            modelFacade.SelectWhere<ICmsClass>("(ClassIsForm=0 OR ClassIsForm IS NULL) AND (ClassIsDocumentType=0 OR ClassIsDocumentType IS NULL)")
                 .OrderBy(x => x.ClassID)
         );
 

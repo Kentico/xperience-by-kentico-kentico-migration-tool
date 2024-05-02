@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Common.Services;
+﻿namespace Migration.Toolkit.Core.KX13.Services;
 
 using System.Linq.Expressions;
 

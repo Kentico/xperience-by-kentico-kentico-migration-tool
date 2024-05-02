@@ -118,9 +118,12 @@ public class MigratePageTypesCommandHandler(
 
     private async Task MigratePageTemplateConfigurations()
     {
-        foreach (var ksPageTemplateConfiguration in modelFacade.SelectAll<ICmsPageTemplateConfiguration>())
+        if (modelFacade.IsAvailable<ICmsPageTemplateConfiguration>())
         {
-            await pageTemplateMigrator.MigratePageTemplateConfigurationAsync(ksPageTemplateConfiguration);
+            foreach (var ksPageTemplateConfiguration in modelFacade.SelectAll<ICmsPageTemplateConfiguration>())
+            {
+                await pageTemplateMigrator.MigratePageTemplateConfigurationAsync(ksPageTemplateConfiguration);
+            }
         }
     }
 
