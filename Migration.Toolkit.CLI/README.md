@@ -111,6 +111,10 @@ Additionally, you can enable the Conversion of text fields with media links (*Me
 
 Some [Form components](https://docs.xperience.io/x/5ASiCQ) used by content type fields in Xperience by Kentico store data differently than their equivalent Form control in Xperience 13. To ensure that content is displayed correctly on pages, you must manually adjust your website's implementation to match the new data format. See [Editing components in Xperience by Kentico](https://docs.xperience.io/x/wIfWCQ) to learn more about some of the most common components and selectors.
 
+#### Reusable field schemas
+
+You can create [reusable field schemas](https://docs.kentico.com/x/D4_OD) from page types from which other page types inherit, by setting the `Settings.CreateReusableFieldSchemaForClasses` [configuration option](#convert-page-types-to-reusable-field-schemas).
+
 #### Pages
 
 * The migration includes the following versions of pages:
@@ -301,6 +305,7 @@ Add the options under the `Settings` section in the configuration file.
 | UseOmActivitySiteRelationAutofix                         | Determines how the migration handles site references from Contact management activities.<br /><br />Possible options: `DiscardData`,`AttemptFix`,`Error` |
 | EntityConfigurations                                           | Contains options that allow you to fine-tune the migration of specific object types.                 |
 | EntityConfigurations.*&lt;object table name&gt;*.ExcludeCodeNames      | Excludes objects with the specified code names from the migration.                                   |
+| CreateReusableFieldSchemaForClasses | Specifies which page types are also converted to [reusable field schemas](#convert-page-types-to-reusable-field-schemas). |
 | OptInFeatures.QuerySourceInstanceApi.Enabled                   | If `true`, [source instance API discovery](#source-instance-api-discovery) is enabled to allow advanced migration of Page Builder content for pages and page templates. |
 | OptInFeatures.QuerySourceInstanceApi.Connections               | To use [source instance API discovery](#source-instance-api-discovery), you need to add a connection JSON object containing the following values:<br />`SourceInstanceUri` - the base URI where the source instance's live site application is running.<br />`Secret` - the secret that you set in the *ToolkitApiController.cs* file on the source instance.  |
 | OptInFeatures.CustomMigration.FieldMigrations                  | Enables conversion of media selection text fields to media library files. See [Convert text fields with media links to media libraries](#convert-text-fields-with-media-links-to-media-libraries) for more information.|
@@ -483,6 +488,25 @@ public class MyWidgetProperties : IWidgetProperties
 You can test the source instance API discovery by making a POST request to `<source instance live site URI>/ToolkitApi/Test` with `{ "secret":"__your secret string__" }` in the body. If your setup is correct, the response should be: `{ "pong": true }`
 
 When you now [Migrate data](#migrate-data), the toolkit performs API discovery of Page Builder component code on the source instance and advanced migration of Page Builder data.
+
+## Convert page types to reusable field schemas
+
+It is not possible to migrate any page types that inherit fields from other page types. However, to make the manual migration of such page types easier, you can create [reusable field schemas](https://docs.kentico.com/x/D4_OD) from specified parent page types. Specify a list of page types to be converted to reusable field schemas (separated with either `;` or `,`) in the `Settings.CreateReusableFieldSchemaForClasses` [configuration option](#configuration).
+
+The following example specifies two page types from which reusable schemas are created:
+
+```json
+"Settings":{
+  ...
+
+  "CreateReusableFieldSchemaForClasses": "Acme.SeoFields;Acme.ArticleFields"
+},
+```
+
+> :warning: **Notes**
+>
+> * Conversion of page types to reusable field schemas works best when all field names of page types are unique (i.e., prefixed with the page type name). If multiple page types converted to reusable field schemas have fields with the same code name, the code name is prefixed with the content type name in the converted reusable field schemas.
+> * Page types specified by this configuration option are also migrated as content types into to the target instance.
 
 ## Convert text fields with media links to media libraries
 
