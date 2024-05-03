@@ -66,7 +66,7 @@ Currently, the Migration toolkit supports the following types of data:
   * Xperience by Kentico currently does not support:
     * Macro expressions in page type field default values or other settings. Content type fields containing macros will not work correctly after the migration.
     * Categories for page type fields. Field categories are not migrated with page types.
-    * Page type inheritance. You cannot migrate page types that inherit fields from other page types.
+    * Page type inheritance. Page types that inherit fields are migrated including all inherited fields but the binding to the parent page type is not preserved.
       * However, you can create [reusable field schemas](./Migration.Toolkit.CLI/README.md#convert-page-types-to-reusable-field-schemas) for page types from which other page types inherit.
   * All migrated Content types have the **Include in routing** option enabled (the migration never creates pages without URL and routing).
 * **Pages**
