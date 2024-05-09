@@ -38,6 +38,7 @@ public class ConfigurationNames
     public const string ConnectionStrings = "ConnectionStrings";
     public const string Settings = "Settings";
     public const string Logging = "Logging";
+    public const string File = "File";
     public const string EntityConfigurations = "EntityConfigurations";
 
     public const string OptInFeatures = "OptInFeatures";
