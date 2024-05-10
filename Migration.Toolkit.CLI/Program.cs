@@ -73,7 +73,10 @@ foreach (var (validationMessageType, message, recommendedFix) in validationError
 if (anyValidationErrors)
 {
     Console.WriteLine(Resources.ProgramAwaitingExitMessage);
-    Console.ReadKey();
+    if (!args.Contains("--nowait"))
+    {
+        Console.ReadKey();
+    }
     return;
 }
 
@@ -93,7 +96,7 @@ services
             options.SingleLine = true;
             options.TimestampFormat = "hh:mm:ss.fff ";
         });
-        builder.AddFile(config.GetSection(ConfigurationNames.Logging));
+        builder.AddFile(config.GetSection($"{ConfigurationNames.Logging}:File"));
     });
 
 

@@ -13,7 +13,7 @@
     </ItemGroup>
     
     <ItemGroup>
-        <PackageReference Include="Kentico.Xperience.UMT" Version="1.0.3" />
+        <PackageReference Include="Kentico.Xperience.UMT" Version="1.0.4" />
         <PackageReference Include="MediatR" Version="10.0.1"/>
         <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.1"/>
     </ItemGroup>
