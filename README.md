@@ -8,7 +8,7 @@
 <!-- ABOUT THE PROJECT -->
 # Xperience by Kentico: Kentico Migration Tool
 
-The Migration toolkit transfers content and other data from **Kentico Xperience 13**, **Kentico 12** or **Kentico 11** to **Xperience by Kentico**.
+The Migration tool transfers content and other data from **Kentico Xperience 13**, **Kentico 12** or **Kentico 11** to **Xperience by Kentico**.
 
 ## Prerequisites & Compatibility
 
