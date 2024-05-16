@@ -244,7 +244,7 @@ The migration includes:
 
   ```powershell
   Migration.Toolkit.CLI.exe migrate --sites --custom-modules  --users --members
-  ```  
+  ```
 
 The migration ***DOES NOT*** include:
 
@@ -422,7 +422,7 @@ public class MyWidgetProperties : IWidgetProperties
 1. Copy the `ToolkitApiController.cs` file to the `Controllers` folder in the **live site project** of your Kentico Xperience 13 source instance. Get the file from the following location in the Migration toolkit repository:
 
     * For .NET Core projects: `KX13.Extensions\ToolkitApiController.cs`
-    * For MVC 5 (.NET Framework 4.8) projects: `KX13.NET48.Extensions\ToolkitApiController.cs`
+    * For MVC 5 (.NET Framework 4.8) projects: `KX13.NET48.Extensions\ToolkitApiController.NET48.cs`
 
 2. Register routes for the `ToolkitApi` controller's actions into the source instance's live site application.
 
