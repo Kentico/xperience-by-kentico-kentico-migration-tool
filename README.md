@@ -18,7 +18,7 @@ The migration currently supports the Kentico Xperience 13, Kentico 12 or Kentico
 
 #### Kentico Xperience 13
 
-* The source of the migration data must be a Kentico Xperience 13 instance, with **Refresh 5** ([hotfix](https://devnet.kentico.com/download/hotfixes) 13.0.64) or newer applied.
+* The source of the migration data must be a Kentico Xperience 13 instance, with **Refresh 11** ([hotfix](https://devnet.kentico.com/download/hotfixes) 13.0.137) or newer applied.
 * The development model (Core or MVC 5) does not affect the migration - both are supported.
 * The source instance's database and file system must be accessible from the environment where you run the Migration toolkit.
 * All features described in this repository are available for migration from Kentico Xperience 13.
