@@ -56,7 +56,7 @@ public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKey
 
             if (!canBeMigrated)
             {
-                _logger.LogWarning("Setting with key '{KeyName}' is currently not supported for migration", k12CmsSettingsKey.KeyName);
+                _logger.LogInformation("Setting with key '{KeyName}' is currently not supported for migration", k12CmsSettingsKey.KeyName);
                 _protocol.Append(
                     HandbookReferences
                         .NotCurrentlySupportedSkip<SettingsKeyInfo>()

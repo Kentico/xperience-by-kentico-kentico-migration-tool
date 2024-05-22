@@ -40,7 +40,7 @@ public class MigrateSettingKeysCommandHandler(ILogger<MigrateSettingKeysCommandH
 
             if (!canBeMigrated)
             {
-                logger.LogWarning("Setting with key '{KeyName}' is currently not supported for migration", k11CmsSettingsKey.KeyName);
+                logger.LogInformation("Setting with key '{KeyName}' is currently not supported for migration", k11CmsSettingsKey.KeyName);
                 protocol.Append(
                     HandbookReferences
                         .NotCurrentlySupportedSkip<SettingsKeyInfo>()
