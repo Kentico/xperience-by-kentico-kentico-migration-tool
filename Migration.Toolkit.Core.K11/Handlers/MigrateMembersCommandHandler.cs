@@ -18,16 +18,13 @@ using Migration.Toolkit.KXP.Api.Enums;
 public class MigrateMembersCommandHandler(ILogger<MigrateMembersCommandHandler> logger,
         IDbContextFactory<K11Context> k11ContextFactory,
         IEntityMapper<MemberInfoMapperSource, MemberInfo> memberInfoMapper,
-        ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol)
     : IRequestHandler<MigrateMembersCommand, CommandResult>, IDisposable
 {
     private const string USER_PUBLIC = "public";
 
-    private readonly ToolkitConfiguration _toolkitConfiguration = toolkitConfiguration;
-
-    private static int[] MigratedAdminUserPrivilegeLevels => new[] { (int)UserPrivilegeLevelEnum.None };
+    private static int[] MigratedAdminUserPrivilegeLevels => [(int)UserPrivilegeLevelEnum.None];
 
     public async Task<CommandResult> Handle(MigrateMembersCommand request, CancellationToken cancellationToken)
     {
@@ -56,13 +53,13 @@ public class MigrateMembersCommandHandler(ILogger<MigrateMembersCommandHandler> 
             var mapped = memberInfoMapper.Map(new MemberInfoMapperSource(k11User, k11User.CmsUserSettingUserSettingsUserNavigation), xbkMemberInfo);
             protocol.MappedTarget(mapped);
 
-            await SaveUserUsingKenticoApi(cancellationToken, mapped, k11User);
+            SaveUserUsingKenticoApi(mapped, k11User);
         }
 
         return new GenericCommandResult();
     }
 
-    private async Task<bool> SaveUserUsingKenticoApi(CancellationToken cancellationToken, IModelMappingResult<MemberInfo> mapped, CmsUser k11User)
+    private void SaveUserUsingKenticoApi(IModelMappingResult<MemberInfo> mapped, CmsUser k11User)
     {
         if (mapped is { Success : true } result)
         {
@@ -84,7 +81,6 @@ public class MigrateMembersCommandHandler(ILogger<MigrateMembersCommandHandler> 
                     .WithData(new { k11User.UserName, k11User.UserGuid, k11User.UserId, })
                     .WithMessage("Failed to migrate user, target database broken.")
                 );
-                return false;
             }
             catch (Exception ex)
             {
@@ -94,15 +90,11 @@ public class MigrateMembersCommandHandler(ILogger<MigrateMembersCommandHandler> 
                     .NeedsManualAction()
                     .WithIdentityPrint(memberInfo)
                 );
-                return false;
             }
 
             // left for OM_Activity
             primaryKeyMappingContext.SetMapping<CmsUser>(r => r.UserId, k11User.UserId, memberInfo.MemberID);
-            return true;
         }
-
-        return false;
     }
 
     public void Dispose()

@@ -85,7 +85,7 @@ public class MemberInfoMapper(
             }
         }
 
-        var userCustomizedFields = kxpClassFacade.GetCustomizedFieldInfos(K12SystemClass.cms_user).ToList();
+        var userCustomizedFields = kxpClassFacade.GetCustomizedFieldInfos(MemberInfo.TYPEINFO.ObjectClassName).ToList();
         if (userCustomizedFields.Count > 0)
         {
             try
