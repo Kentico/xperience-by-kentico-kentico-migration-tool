@@ -16,7 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Kentico.Xperience.UMT" Version="1.0.4" />
+      <PackageReference Include="Kentico.Xperience.UMT" Version="1.0.5" />
       <PackageReference Include="MediatR" Version="10.0.1" />
 <!--      <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.0" />-->
       <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />

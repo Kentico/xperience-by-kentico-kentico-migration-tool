@@ -306,12 +306,12 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         if (columnName.Equals(nameof(KX13M.OmActivity.ActivitySiteId), StringComparison.InvariantCultureIgnoreCase) &&
             value is int sourceActivitySiteId)
         {
-            var result = _keyMappingContext.MapSourceKey<KX13M.CmsSite, ChannelInfo, int?>(
+            var result = _keyMappingContext.MapSourceKey<KX13M.CmsSite, Migration.Toolkit.KXP.Models.CmsChannel, int?>(
                 s => s.SiteId,
                 s => s.SiteGuid,
                 sourceActivitySiteId.NullIfZero(),
-                t => t.ChannelID,
-                t => t.ChannelGUID
+                t => t.ChannelId,
+                t => t.ChannelGuid
             );
             switch(result)
             {
@@ -341,10 +341,10 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
 
         if (columnName.Equals(nameof(KX13M.OmActivity.ActivityNodeId), StringComparison.InvariantCultureIgnoreCase) && value is int activityNodeId)
         {
-            var result = _keyMappingContext.MapSourceKey<KX13M.CmsTree, WebPageItemInfo, Guid?>(
+            var result = _keyMappingContext.MapSourceKey<KX13M.CmsTree, Migration.Toolkit.KXP.Models.CmsWebPageItem, Guid?>(
                 s => s.NodeId,
                 s => s.NodeGuid,
-                activityNodeId.NullIfZero(), t => t.WebPageItemGUID, t => t.WebPageItemGUID);
+                activityNodeId.NullIfZero(), t => t.WebPageItemGuid, t => t.WebPageItemGuid);
             switch(result)
             {
                 case (true, var guid):

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_ContentItem")]
+[Index("ContentItemContentFolderId", Name = "IX_CMS_ContentItem_ContentItemContentFolderID")]
 [Index("ContentItemContentTypeId", Name = "IX_CMS_ContentItem_ContentItemContentTypeID")]
 [Index("ContentItemName", Name = "IX_CMS_ContentItem_ContentItemName", IsUnique = true)]
 public partial class CmsContentItem
@@ -31,6 +32,9 @@ public partial class CmsContentItem
     [Column("ContentItemChannelID")]
     public int? ContentItemChannelId { get; set; }
 
+    [Column("ContentItemContentFolderID")]
+    public int? ContentItemContentFolderId { get; set; }
+
     [InverseProperty("ContentItemCommonDataContentItem")]
     public virtual ICollection<CmsContentItemCommonDatum> CmsContentItemCommonData { get; set; } = new List<CmsContentItemCommonDatum>();
 
@@ -49,6 +53,10 @@ public partial class CmsContentItem
     [ForeignKey("ContentItemChannelId")]
     [InverseProperty("CmsContentItems")]
     public virtual CmsChannel? ContentItemChannel { get; set; }
+
+    [ForeignKey("ContentItemContentFolderId")]
+    [InverseProperty("CmsContentItems")]
+    public virtual CmsContentFolder? ContentItemContentFolder { get; set; }
 
     [ForeignKey("ContentItemContentTypeId")]
     [InverseProperty("CmsContentItems")]

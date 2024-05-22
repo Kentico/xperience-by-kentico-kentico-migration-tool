@@ -46,6 +46,11 @@ public partial class CmsContentItemLanguageMetadatum
     [Column("ContentItemLanguageMetadataContentWorkflowStepID")]
     public int? ContentItemLanguageMetadataContentWorkflowStepId { get; set; }
 
+    public DateTime? ContentItemLanguageMetadataScheduledPublishWhen { get; set; }
+
+    [InverseProperty("ContentItemTagContentItemLanguageMetadata")]
+    public virtual ICollection<CmsContentItemTag> CmsContentItemTags { get; set; } = new List<CmsContentItemTag>();
+
     [ForeignKey("ContentItemLanguageMetadataContentItemId")]
     [InverseProperty("CmsContentItemLanguageMetadata")]
     public virtual CmsContentItem ContentItemLanguageMetadataContentItem { get; set; } = null!;

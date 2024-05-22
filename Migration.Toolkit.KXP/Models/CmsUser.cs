@@ -60,6 +60,12 @@ public partial class CmsUser
     [InverseProperty("StateUser")]
     public virtual ICollection<CmsAutomationState> CmsAutomationStates { get; set; } = new List<CmsAutomationState>();
 
+    [InverseProperty("ContentFolderCreatedByUser")]
+    public virtual ICollection<CmsContentFolder> CmsContentFolderContentFolderCreatedByUsers { get; set; } = new List<CmsContentFolder>();
+
+    [InverseProperty("ContentFolderModifiedByUser")]
+    public virtual ICollection<CmsContentFolder> CmsContentFolderContentFolderModifiedByUsers { get; set; } = new List<CmsContentFolder>();
+
     [InverseProperty("ContentItemLanguageMetadataCreatedByUser")]
     public virtual ICollection<CmsContentItemLanguageMetadatum> CmsContentItemLanguageMetadatumContentItemLanguageMetadataCreatedByUsers { get; set; } = new List<CmsContentItemLanguageMetadatum>();
 

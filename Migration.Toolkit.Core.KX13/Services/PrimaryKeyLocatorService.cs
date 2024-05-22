@@ -150,8 +150,6 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
             yield break;
         }
 
-
-
         throw new NotImplementedException();
     }
 
@@ -231,7 +229,7 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
             {
                 // careful - cms.root will have different guid
                 var kx13Guid = kx13Context.CmsTrees.Where(c => c.NodeId == sourceId).Select(x => x.NodeGuid).Single();
-                targetId = kxpContext.CmsChannels.Where(x => x.ChannelGuid == kx13Guid).Select(x => x.ChannelId).Single();
+                targetId = kxpContext.CmsWebPageItems.Where(x => x.WebPageItemGuid == kx13Guid).Select(x => x.WebPageItemId).Single();
                 return true;
             }
         }
