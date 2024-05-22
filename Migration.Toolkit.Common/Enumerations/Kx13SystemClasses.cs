@@ -173,6 +173,6 @@ public static class Kx13SystemClass
             CMS_Consent, CMS_ConsentAgreement, CMS_ConsentArchive, CMS_AlternativeUrl, CMS_PageTemplateConfiguration, CMS_AutomationTemplate, CMS_PageUrlPath, CMS_PageFormerUrlPath,
         }, StringComparer.InvariantCultureIgnoreCase);
 
-    public static HashSet<string> Customizable = new(new[] { cms_user, media_file, OM_Account, OM_Contact }, StringComparer.InvariantCultureIgnoreCase);
+    public static HashSet<string> Customizable = new(new[] { cms_user, cms_usersettings, media_file, OM_Account, OM_Contact }, StringComparer.InvariantCultureIgnoreCase);
     public static HashSet<string> NoLongerSupported = new(new[] { cms_usersettings }, StringComparer.InvariantCultureIgnoreCase);
 }

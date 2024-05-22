@@ -94,49 +94,51 @@ public class MemberInfoMapper(ILogger<MemberInfoMapper> logger,
             }
         }
 
-        var userCustomizedFields = kxpClassFacade.GetCustomizedFieldInfos(K12SystemClass.cms_user).ToList();
-        if (userCustomizedFields.Count > 0)
+        using var k11Context = k11DbContextFactory.CreateDbContext();
+        var uDci = k11Context.CmsClasses.Select(x => new { x.ClassFormDefinition, x.ClassName, x.ClassTableName }).FirstOrDefault(x => x.ClassName == Kx13SystemClass.cms_user);
+        if (uDci != null)
         {
-            try
+            var userCustomizedFields = kxpClassFacade.GetCustomizedFieldInfos(new FormInfo(uDci?.ClassFormDefinition)).ToList();
+            if (userCustomizedFields.Count > 0)
             {
-                var query =
-                    $"SELECT {string.Join(", ", userCustomizedFields.Select(x => x.FieldName))} FROM {UserInfo.TYPEINFO.ClassStructureInfo.TableName} WHERE {UserInfo.TYPEINFO.ClassStructureInfo.IDColumn} = @id";
-
-                using var conn = new SqlConnection(toolkitConfiguration.KxConnectionString);
-                using var cmd = conn.CreateCommand();
-
-                cmd.CommandText = query;
-                cmd.CommandType = CommandType.Text;
-                cmd.CommandTimeout = 3;
-                cmd.Parameters.AddWithValue("id", source.User.UserId);
-
-                conn.Open();
-
-                using var reader = cmd.ExecuteReader();
-                if (reader.Read())
+                try
                 {
-                    foreach (var customizedFieldInfo in userCustomizedFields)
+                    var query =
+                        $"SELECT {string.Join(", ", userCustomizedFields.Select(x => x.FieldName))} FROM {UserInfo.TYPEINFO.ClassStructureInfo.TableName} WHERE {UserInfo.TYPEINFO.ClassStructureInfo.IDColumn} = @id";
+
+                    using var conn = new SqlConnection(toolkitConfiguration.KxConnectionString);
+                    using var cmd = conn.CreateCommand();
+
+                    cmd.CommandText = query;
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandTimeout = 3;
+                    cmd.Parameters.AddWithValue("id", source.User.UserId);
+
+                    conn.Open();
+
+                    using var reader = cmd.ExecuteReader();
+                    if (reader.Read())
                     {
-                        logger.LogDebug("Map customized field '{FieldName}'", customizedFieldInfo.FieldName);
-                        target.SetValue(customizedFieldInfo.FieldName, reader.GetValue(customizedFieldInfo.FieldName));
+                        foreach (var customizedFieldInfo in userCustomizedFields)
+                        {
+                            logger.LogDebug("Map customized field '{FieldName}'", customizedFieldInfo.FieldName);
+                            target.SetValue(customizedFieldInfo.FieldName, reader.GetValue(customizedFieldInfo.FieldName));
+                        }
+                    }
+                    else
+                    {
+                        // failed!
+                        logger.LogError("Failed to load UserInfo custom data from source database");
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    // failed!
-                    logger.LogError("Failed to load UserInfo custom data from source database");
+                    logger.LogError(ex, "Failed to load UserInfo custom data from source database");
                 }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to load UserInfo custom data from source database");
             }
         }
 
-
-        using var k11Context = k11DbContextFactory.CreateDbContext();
         var usDci = k11Context.CmsClasses.Select(x => new { x.ClassFormDefinition, x.ClassName, x.ClassTableName }).FirstOrDefault(x => x.ClassName == K12SystemClass.cms_usersettings);
-
         if (usDci != null)
         {
             var userSettingsCustomizedFields = kxpClassFacade.GetCustomizedFieldInfos(new FormInfo(usDci?.ClassFormDefinition)).ToList();

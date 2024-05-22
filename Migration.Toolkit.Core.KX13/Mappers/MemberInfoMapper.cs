@@ -17,28 +17,15 @@ using Migration.Toolkit.KXP.Api;
 
 public record MemberInfoMapperSource(KX13M.CmsUser User, KX13M.CmsUserSetting UserSetting);
 
-public class MemberInfoMapper : EntityMapperBase<MemberInfoMapperSource, MemberInfo>
+public class MemberInfoMapper(
+    ILogger<MemberInfoMapper> logger,
+    PrimaryKeyMappingContext primaryKeyMappingContext,
+    IProtocol protocol,
+    KxpClassFacade kxpClassFacade,
+    ToolkitConfiguration toolkitConfiguration,
+    IDbContextFactory<KX13Context> kx13DbContextFactory)
+    : EntityMapperBase<MemberInfoMapperSource, MemberInfo>(logger, primaryKeyMappingContext, protocol)
 {
-    private readonly ILogger<MemberInfoMapper> _logger;
-    private readonly KxpClassFacade _kxpClassFacade;
-    private readonly ToolkitConfiguration _toolkitConfiguration;
-    private readonly IDbContextFactory<KX13Context> _kx13DbContextFactory;
-
-    public MemberInfoMapper(
-        ILogger<MemberInfoMapper> logger,
-        PrimaryKeyMappingContext primaryKeyMappingContext,
-        IProtocol protocol,
-        KxpClassFacade kxpClassFacade,
-        ToolkitConfiguration toolkitConfiguration,
-        IDbContextFactory<KX13Context> kx13DbContextFactory
-    ) : base(logger, primaryKeyMappingContext, protocol)
-    {
-        _logger = logger;
-        _kxpClassFacade = kxpClassFacade;
-        _toolkitConfiguration = toolkitConfiguration;
-        _kx13DbContextFactory = kx13DbContextFactory;
-    }
-
     protected override MemberInfo CreateNewInstance(MemberInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
     public static IReadOnlyList<string> MigratedUserFields = new List<string>
@@ -59,7 +46,7 @@ public class MemberInfoMapper : EntityMapperBase<MemberInfoMapperSource, MemberI
         if (!newInstance && user.UserGuid != target.MemberGuid)
         {
             // assertion failed
-            _logger.LogTrace("Assertion failed, entity key mismatch");
+            logger.LogTrace("Assertion failed, entity key mismatch");
             throw new InvalidOperationException("Assertion failed, entity key mismatch.");
         }
 
@@ -95,7 +82,7 @@ public class MemberInfoMapper : EntityMapperBase<MemberInfoMapperSource, MemberI
         // OBSOLETE: target.UserRegistrationLinkExpiration = DateTime.Now.AddDays(365);
 
         // TODO tomas.krch: 2023-04-11 migrate customized fields
-        var customized = _kxpClassFacade.GetCustomizedFieldInfosAll(MemberInfo.TYPEINFO.ObjectClassName);
+        var customized = kxpClassFacade.GetCustomizedFieldInfosAll(MemberInfo.TYPEINFO.ObjectClassName);
         foreach (var customizedFieldInfo in customized)
         {
             var fieldName = customizedFieldInfo.FieldName;
@@ -107,52 +94,54 @@ public class MemberInfoMapper : EntityMapperBase<MemberInfoMapperSource, MemberI
             }
         }
 
-        var userCustomizedFields = _kxpClassFacade.GetCustomizedFieldInfos(Kx13SystemClass.cms_user).ToList();
-        if (userCustomizedFields.Count > 0)
+        using var kx13Context = kx13DbContextFactory.CreateDbContext();
+        var uDci = kx13Context.CmsClasses.Select(x => new { x.ClassFormDefinition, x.ClassName, x.ClassTableName }).FirstOrDefault(x => x.ClassName == Kx13SystemClass.cms_user);
+        if (uDci != null)
         {
-            try
+            var userCustomizedFields = kxpClassFacade.GetCustomizedFieldInfos(new FormInfo(uDci?.ClassFormDefinition)).ToList();
+            if (userCustomizedFields.Count > 0)
             {
-                var query =
-                    $"SELECT {string.Join(", ", userCustomizedFields.Select(x => x.FieldName))} FROM {UserInfo.TYPEINFO.ClassStructureInfo.TableName} WHERE {UserInfo.TYPEINFO.ClassStructureInfo.IDColumn} = @id";
-
-                using var conn = new SqlConnection(_toolkitConfiguration.KxConnectionString);
-                using var cmd = conn.CreateCommand();
-
-                cmd.CommandText = query;
-                cmd.CommandType = CommandType.Text;
-                cmd.CommandTimeout = 3;
-                cmd.Parameters.AddWithValue("id", source.User.UserId);
-
-                conn.Open();
-
-                using var reader = cmd.ExecuteReader();
-                if (reader.Read())
+                try
                 {
-                    foreach (var customizedFieldInfo in userCustomizedFields)
+                    var query =
+                        $"SELECT {string.Join(", ", userCustomizedFields.Select(x => x.FieldName))} FROM {UserInfo.TYPEINFO.ClassStructureInfo.TableName} WHERE {UserInfo.TYPEINFO.ClassStructureInfo.IDColumn} = @id";
+
+                    using var conn = new SqlConnection(toolkitConfiguration.KxConnectionString);
+                    using var cmd = conn.CreateCommand();
+
+                    cmd.CommandText = query;
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandTimeout = 3;
+                    cmd.Parameters.AddWithValue("id", source.User.UserId);
+
+                    conn.Open();
+
+                    using var reader = cmd.ExecuteReader();
+                    if (reader.Read())
                     {
-                        _logger.LogDebug("Map customized field '{FieldName}'", customizedFieldInfo.FieldName);
-                        target.SetValue(customizedFieldInfo.FieldName, reader.GetValue(customizedFieldInfo.FieldName));
+                        foreach (var customizedFieldInfo in userCustomizedFields)
+                        {
+                            logger.LogDebug("Map customized field '{FieldName}'", customizedFieldInfo.FieldName);
+                            target.SetValue(customizedFieldInfo.FieldName, reader.GetValue(customizedFieldInfo.FieldName));
+                        }
+                    }
+                    else
+                    {
+                        // failed!
+                        logger.LogError("Failed to load UserInfo custom data from source database");
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    // failed!
-                    _logger.LogError("Failed to load UserInfo custom data from source database");
+                    logger.LogError(ex, "Failed to load UserInfo custom data from source database");
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to load UserInfo custom data from source database");
             }
         }
 
-
-        using var kx13Context = _kx13DbContextFactory.CreateDbContext();
         var usDci = kx13Context.CmsClasses.Select(x => new { x.ClassFormDefinition, x.ClassName, x.ClassTableName }).FirstOrDefault(x => x.ClassName == Kx13SystemClass.cms_usersettings);
-
         if (usDci != null)
         {
-            var userSettingsCustomizedFields = _kxpClassFacade.GetCustomizedFieldInfos(new FormInfo(usDci?.ClassFormDefinition)).ToList();
+            var userSettingsCustomizedFields = kxpClassFacade.GetCustomizedFieldInfos(new FormInfo(usDci?.ClassFormDefinition)).ToList();
             if (userSettingsCustomizedFields.Count > 0)
             {
                 try
@@ -160,7 +149,7 @@ public class MemberInfoMapper : EntityMapperBase<MemberInfoMapperSource, MemberI
                     var query =
                         $"SELECT {string.Join(", ", userSettingsCustomizedFields.Select(x => x.FieldName))} FROM {usDci.ClassTableName} WHERE UserSettingsID = @id";
 
-                    using var conn = new SqlConnection(_toolkitConfiguration.KxConnectionString);
+                    using var conn = new SqlConnection(toolkitConfiguration.KxConnectionString);
                     using var cmd = conn.CreateCommand();
 
                     cmd.CommandText = query;
@@ -175,19 +164,19 @@ public class MemberInfoMapper : EntityMapperBase<MemberInfoMapperSource, MemberI
                     {
                         foreach (var customizedFieldInfo in userSettingsCustomizedFields)
                         {
-                            _logger.LogDebug("Map customized field '{FieldName}'", customizedFieldInfo.FieldName);
+                            logger.LogDebug("Map customized field '{FieldName}'", customizedFieldInfo.FieldName);
                             target.SetValue(customizedFieldInfo.FieldName, reader.GetValue(customizedFieldInfo.FieldName));
                         }
                     }
                     else
                     {
                         // failed!
-                        _logger.LogError("Failed to load UserSettingsInfo custom data from source database");
+                        logger.LogError("Failed to load UserSettingsInfo custom data from source database");
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to load UserSettingsInfo custom data from source database");
+                    logger.LogError(ex, "Failed to load UserSettingsInfo custom data from source database");
                 }
             }
         }

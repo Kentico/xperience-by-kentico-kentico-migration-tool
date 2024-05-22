@@ -41,24 +41,15 @@ public class KxpClassFacade
     public IEnumerable<CustomizedFieldInfo> GetCustomizedFieldInfos(string className)
     {
         var dci = DataClassInfoProvider.GetDataClassInfo(className);
-        if (Kx13SystemClass.Customizable.Contains(dci.ClassName)) //customizable class
+        var fi = new FormInfo(dci.ClassFormDefinition);
+        foreach (var columnName in fi.GetColumnNames())
         {
-            var fi = new FormInfo(dci.ClassFormDefinition);
-            foreach (var columnName in fi.GetColumnNames())
+            var field = fi.GetFormField(columnName);
+            if (!field.System)
             {
-                var field = fi.GetFormField(columnName);
-                if (!field.System)
-                {
-                    yield return new CustomizedFieldInfo(columnName);
-                }
+                yield return new CustomizedFieldInfo(columnName);
             }
         }
-        // if (dci.ClassShowAsSystemTable) // custom class
-        // {
-        //     yield break;
-        // }
-
-        yield break;
     }
 
     public IEnumerable<CustomizedFieldInfo> GetCustomizedFieldInfos(FormInfo formInfo)
