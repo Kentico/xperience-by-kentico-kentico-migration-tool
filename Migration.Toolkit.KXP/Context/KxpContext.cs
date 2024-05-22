@@ -42,6 +42,8 @@ public partial class KxpContext : DbContext
 
     public virtual DbSet<CmsConsentArchive> CmsConsentArchives { get; set; }
 
+    public virtual DbSet<CmsContentFolder> CmsContentFolders { get; set; }
+
     public virtual DbSet<CmsContentItem> CmsContentItems { get; set; }
 
     public virtual DbSet<CmsContentItemCommonDatum> CmsContentItemCommonData { get; set; }
@@ -49,6 +51,8 @@ public partial class KxpContext : DbContext
     public virtual DbSet<CmsContentItemLanguageMetadatum> CmsContentItemLanguageMetadata { get; set; }
 
     public virtual DbSet<CmsContentItemReference> CmsContentItemReferences { get; set; }
+
+    public virtual DbSet<CmsContentItemTag> CmsContentItemTags { get; set; }
 
     public virtual DbSet<CmsContentLanguage> CmsContentLanguages { get; set; }
 
@@ -232,6 +236,10 @@ public partial class KxpContext : DbContext
 
     public virtual DbSet<ViewOmContactGroupMemberAccountJoined> ViewOmContactGroupMemberAccountJoineds { get; set; }
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Data Source=.;Initial Catalog=XK29_1_0_BP;Integrated Security=True;Persist Security Info=False;Connect Timeout=60;Encrypt=False;Current Language=English;");
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<CdMigration>(entity =>
@@ -367,6 +375,20 @@ public partial class KxpContext : DbContext
                 .HasConstraintName("FK_CMS_ConsentArchive_ConsentArchiveConsentID_CMS_Consent");
         });
 
+        modelBuilder.Entity<CmsContentFolder>(entity =>
+        {
+            entity.Property(e => e.ContentFolderCreatedWhen).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
+            entity.Property(e => e.ContentFolderDisplayName).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.ContentFolderModifiedWhen).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
+            entity.Property(e => e.ContentFolderName).HasDefaultValueSql("(N'')");
+
+            entity.HasOne(d => d.ContentFolderCreatedByUser).WithMany(p => p.CmsContentFolderContentFolderCreatedByUsers).HasConstraintName("FK_CMS_ContentFolder_ContentFolderCreatedByUserID_CMS_User");
+
+            entity.HasOne(d => d.ContentFolderModifiedByUser).WithMany(p => p.CmsContentFolderContentFolderModifiedByUsers).HasConstraintName("FK_CMS_ContentFolder_ContentFolderModifiedByUserID_CMS_User");
+
+            entity.HasOne(d => d.ContentFolderParentFolder).WithMany(p => p.InverseContentFolderParentFolder).HasConstraintName("FK_CMS_ContentFolder_ContentFolderParentFolderID_CMS_ContentFolder");
+        });
+
         modelBuilder.Entity<CmsContentItem>(entity =>
         {
             entity.HasIndex(e => e.ContentItemChannelId, "IX_CMS_ContentItem_ContentItemChannelID").HasFilter("([ContentItemChannelID] IS NOT NULL)");
@@ -374,6 +396,8 @@ public partial class KxpContext : DbContext
             entity.Property(e => e.ContentItemName).HasDefaultValueSql("(N'')");
 
             entity.HasOne(d => d.ContentItemChannel).WithMany(p => p.CmsContentItems).HasConstraintName("FK_CMS_ContentItem_ContentItemChannelID");
+
+            entity.HasOne(d => d.ContentItemContentFolder).WithMany(p => p.CmsContentItems).HasConstraintName("FK_CMS_ContentItem_ContentItemContentFolderID_CMS_ContentFolder");
 
             entity.HasOne(d => d.ContentItemContentType).WithMany(p => p.CmsContentItems).HasConstraintName("FK_CMS_ContentItem_ContentItemContentTypeID_CMS_Class");
         });
@@ -419,6 +443,13 @@ public partial class KxpContext : DbContext
             entity.HasOne(d => d.ContentItemReferenceTargetItem).WithMany(p => p.CmsContentItemReferences)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CMS_ContentItemReference_ContentItemReferenceTargetItemID_CMS_ContentItem");
+        });
+
+        modelBuilder.Entity<CmsContentItemTag>(entity =>
+        {
+            entity.HasOne(d => d.ContentItemTagContentItemLanguageMetadata).WithMany(p => p.CmsContentItemTags)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CMS_ContentItemTag_ContentItemTagContentItemLanguageMetadataID_CMS_ContentItemLanguageMetadata");
         });
 
         modelBuilder.Entity<CmsContentLanguage>(entity =>
@@ -737,8 +768,6 @@ public partial class KxpContext : DbContext
         {
             entity.Property(e => e.TaskExecutingServerName).HasDefaultValueSql("(N'')");
             entity.Property(e => e.TaskInterval).HasDefaultValueSql("(N'')");
-
-            entity.HasOne(d => d.TaskResource).WithMany(p => p.CmsScheduledTasks).HasConstraintName("FK_CMS_ScheduledTask_TaskResourceID_CMS_Resource");
 
             entity.HasOne(d => d.TaskUser).WithMany(p => p.CmsScheduledTasks).HasConstraintName("FK_CMS_ScheduledTask_TaskUserID_CMS_User");
         });

@@ -32,9 +32,6 @@ public partial class CmsResource
     [InverseProperty("ClassResource")]
     public virtual ICollection<CmsClass> CmsClasses { get; set; } = new List<CmsClass>();
 
-    [InverseProperty("TaskResource")]
-    public virtual ICollection<CmsScheduledTask> CmsScheduledTasks { get; set; } = new List<CmsScheduledTask>();
-
     [InverseProperty("CategoryResource")]
     public virtual ICollection<CmsSettingsCategory> CmsSettingsCategories { get; set; } = new List<CmsSettingsCategory>();
 

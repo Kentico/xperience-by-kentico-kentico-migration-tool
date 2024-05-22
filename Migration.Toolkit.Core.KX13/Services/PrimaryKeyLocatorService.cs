@@ -150,8 +150,6 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
             yield break;
         }
 
-
-
         throw new NotImplementedException();
     }
 
@@ -227,13 +225,13 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
                 return true;
             }
 
-            if (sourceType == typeof(Toolkit.KX13.Models.CmsTree))
-            {
-                // careful - cms.root will have different guid
-                var kx13Guid = kx13Context.CmsTrees.Where(c => c.NodeId == sourceId).Select(x => x.NodeGuid).Single();
-                targetId = kxpContext.CmsChannels.Where(x => x.ChannelGuid == kx13Guid).Select(x => x.ChannelId).Single();
-                return true;
-            }
+            // if (sourceType == typeof(Toolkit.KX13.Models.CmsTree))
+            // {
+            //     // careful - cms.root will have different guid
+            //     var kx13Guid = kx13Context.CmsTrees.Where(c => c.NodeId == sourceId).Select(x => x.NodeGuid).Single();
+            //     targetId = kxpContext.CmsChannels.Where(x => x.ChannelGuid == kx13Guid).Select(x => x.ChannelId).Single();
+            //     return true;
+            // }
         }
         catch (InvalidOperationException ioex)
         {
