@@ -71,6 +71,60 @@ public class ReusableSchemaService(ILogger<ReusableSchemaService> logger, Toolki
         return kxoDataClass;
     }
 
+    public bool HasClassReusableSchema(DataClassInfo dataClassInfo, Guid reusableFieldSchemaGuid)
+    {
+        var formInfo = new FormInfo(dataClassInfo.ClassFormDefinition);
+        return formInfo
+            .GetFields<FormSchemaInfo>()
+            .Any(x => x.Guid.Equals(reusableFieldSchemaGuid));
+    }
+
+    public void AddReusableSchemaToDataClass(DataClassInfo dataClassInfo, Guid reusableFieldSchemaGuid)
+    {
+        var formInfo = new FormInfo(dataClassInfo.ClassFormDefinition);
+        formInfo.AddFormItem(new FormSchemaInfo { Name = dataClassInfo.ClassName, Guid = reusableFieldSchemaGuid });
+        dataClassInfo.ClassFormDefinition = formInfo.GetXmlDefinition();
+    }
+
+    public Guid EnsureReusableFieldSchema(string name, string displayName, string description, params FormFieldInfo[] fields)
+    {
+        var reusableSchemaGuid = GuidHelper.CreateReusableSchemaGuid($"{name}|{displayName}");
+        var schema = _reusableFieldSchemaManager.Get(reusableSchemaGuid);
+        if (schema == null)
+        {
+            _reusableFieldSchemaManager.CreateSchema(new CreateReusableFieldSchemaParameters(name, displayName, description) { Guid = reusableSchemaGuid });
+        }
+
+        foreach (var formFieldInfo in fields)
+        {
+            if (formFieldInfo is { PrimaryKey: false, System: false })
+            {
+                try
+                {
+                    try
+                    {
+                        _reusableFieldSchemaManager.AddField(name, formFieldInfo);
+                    }
+                    catch (InvalidOperationException ioex) when (ioex.Message.Contains("already exist on reusable field schema"))
+                    {
+                        // exists - we do not support update of reusable field schema
+                        // _reusableFieldSchemaManager.UpdateField(kxoDataClass.ClassName, formFieldInfo.Name, formFieldInfo);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Failed to convert field {Name} for reusable schema: {FormFieldInfo}", formFieldInfo.Name, formFieldInfo.ToString());
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Unable to add field to reusable schema, field is primary key or system");
+            }
+        }
+
+        return reusableSchemaGuid;
+    }
+
     public static string GetUniqueFieldName(string className, string fieldName)
     {
         return $"{className}__{fieldName}".Replace(".", "_");
