@@ -167,7 +167,7 @@ public class MigrateCategoriesCommandHandler(
     private Guid EnsureReusableFieldSchema(TaxonomyInfo taxonomy, string categoryFieldName, string categoryFieldDisplayName)
     {
         return reusableSchemaService.EnsureReusableFieldSchema(
-            "Categories container",
+            "categories_container",
             "Categories container",
             "Container for legacy categories",
             new FormFieldInfo
