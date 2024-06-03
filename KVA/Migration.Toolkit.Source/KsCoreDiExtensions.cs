@@ -81,6 +81,7 @@ public static class KsCoreDiExtensions
 
         // umt mappers
         services.AddTransient<IUmtMapper<CmsTreeMapperSource>, ContentItemMapper>();
+        services.AddTransient<IUmtMapper<TagModelSource>, TagMapper>();
 
         // mappers
         services.AddTransient<IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo>, CmsAttachmentMapper>();

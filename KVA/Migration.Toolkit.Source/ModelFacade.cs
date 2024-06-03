@@ -74,6 +74,21 @@ public class ModelFacade(ToolkitConfiguration configuration)
         }
     }
 
+    public IEnumerable<TResult> Select<TResult>(string query, Func<SqlDataReader, SemanticVersion, TResult> convertor, params SqlParameter[] parameters)
+    {
+        _version ??= SelectVersion();
+        using var conn = GetConnection();
+        conn.Open();
+        var cmd = conn.CreateCommand();
+        cmd.CommandText = query;
+        cmd.Parameters.AddRange(parameters);
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            yield return convertor(reader, _version);
+        }
+    }
+
     public T? SelectById<T>(int? id) where T : ISourceModel<T>
     {
         if (!id.HasValue) return default;
