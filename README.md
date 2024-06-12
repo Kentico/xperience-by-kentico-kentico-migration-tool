@@ -82,6 +82,9 @@ Currently, the Migration toolkit supports the following types of data:
   * Page attachments are not supported in Xperience by Kentico. Attachments are migrated into media libraries. See [`Migration.Toolkit.CLI/README.md - Attachments`](./Migration.Toolkit.CLI/README.md#Attachments) for detailed information about the conversion process.
 * **Preset page templates** (_Custom page templates_ in Kentico Xperience 13)
   * Migration of custom page templates is only available for Kentico Xperience 13.
+* **Categories**
+  * Xperience by Kentico uses a different approach to categorization. Categories are migrated to [taxonomies](https://docs.kentico.com/x/taxonomies_xp) and selected categories for each page are assigned to pages in the target instance via a [reusable field schema](https://docs.kentico.com/x/D4_OD). See [`Migration.Toolkit.CLI/README.md - Categories`](./Migration.Toolkit.CLI/README.md#categories).
+  * Categories stored as a field of pages and personal categories are not supported.
 * **Media libraries and media files**
   * Media library permissions are currently not supported in Xperience by Kentico and are not migrated.
 * **Forms**
@@ -162,6 +165,15 @@ Follow the steps below to run the Migration toolkit:
     * For more information, see [`Migration.Toolkit.CLI/MIGRATION_PROTOCOL_REFERENCE.md`](./Migration.Toolkit.CLI/MIGRATION_PROTOCOL_REFERENCE.md).
 
 The data is now migrated to the target Xperience by Kentico instance according to your configuration. See [`Migration.Toolkit.CLI/README.md`](./Migration.Toolkit.CLI/README.md) for detailed information about the migration CLI, configuration options, instructions related to individual object types, and manual migration steps.
+
+## Changelog of recent updates
+
+* **June 13, 2024**
+  * Migration of categories to taxonomies is available
+* **March 11, 2024**
+  * Kentico Xperience 11 instances are supported as a source of migration
+* **February 1, 2024**
+  * Kentico Xperience 12 instances are supported as a source of migration
 
 <!-- CONTRIBUTING -->
 ## Contributing

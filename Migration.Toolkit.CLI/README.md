@@ -49,6 +49,7 @@ Migration.Toolkit.CLI.exe migrate --sites --custom-modules --users --members --f
 | `--settings-keys`           | Enables migration of values for [settings](https://docs.xperience.io/x/7YjFC) that are available in Xperience by Kentico. | `--sites`                             |
 | `--page-types`              | Enables migration of [content types](https://docs.xperience.io/x/gYHWCQ) (originally *page types* in Kentico Xperience 13) and [preset page templates](https://docs.xperience.io/x/KZnWCQ) (originally *custom page templates*). Required to migrate Pages.<br /><br />See: [Migration details for specific object types - Content types](#content-types)  | `--sites`              |
 | `--pages`                   | Enables migration of [pages](https://docs.xperience.io/x/bxzfBw).<br /><br />The target instance must not contain pages other than those created by previous runs of the Migration toolkit.<br /><br />See: [Migration details for specific object types - Pages](#pages) | `--sites`, `--users`, `--page-types` |
+| `--categories`              | Enables migration of categories to taxonomies. Xperience by Kentico uses a different approach to categorization. Categories are migrated to [taxonomies](https://docs.kentico.com/x/taxonomies_xp) and selected categories for each page are assigned to pages in the target instance via a [reusable field schema](https://docs.kentico.com/x/D4_OD). See [`Categories`](#categories). | `--sites`, `--users`, `--pagetypes`, `--pages` |
 | `--attachments`             | Enables migration of page attachments to [media libraries](https://docs.xperience.io/x/agKiCQ) (page attachments are not supported in Xperience by Kentico).<br /><br />See: [Migration details for specific object types - Attachments](#attachments)   | `--sites`, `--custom-modules`  |
 | `--contact-management`      | Enables migration of [contacts](https://docs.xperience.io/x/nYPWCQ) and [activities](https://docs.xperience.io/x/oYPWCQ). The target instance must not contain any contacts or activities. May run for a long time depending on the number of contacts in the source database. | `--users`, `--custom-modules` |
 | `--data-protection`         | Enables migration of [consents](https://docs.xperience.io/x/zoB1CQ) and consent agreements.   | `--sites`, `--users`, `--contact management`  |
@@ -137,6 +138,26 @@ You can create [reusable field schemas](https://docs.kentico.com/x/D4_OD) from p
 By default, JSON data storing the Page Builder content of pages and custom page templates is migrated directly without modifications. On the target Xperience by Kentico instance, the migrated data can work in the Page Builder's legacy compatibility mode. However, we strongly recommend updating your codebase to the new Xperience by Kentico components.
 
 The Migration toolkit provides an advanced migration mode for Page Builder content that utilizes API discovery on the source instance. To learn more details and how to configure this feature, see [Source instance API discovery](#source-instance-api-discovery).
+
+#### Categories
+
+Xperience by Kentico uses a different approach to categorization than older Kentico versions. [Categories](https://docs.kentico.com/13/configuring-xperience/configuring-the-environment-for-content-editors/configuring-categories) were replaced by [taxonomies](https://docs.kentico.com/developers-and-admins/configuration/taxonomies) and selected categories for each page are assigned to pages in the target instance via a [reusable field schema](https://docs.kentico.com/x/D4_OD). The key differences are:
+
+* Categories in older versions can be added to any page via the *Properties -> Categories* tab. Taxonomies can only be added to content items (pages, emails...) that have a field with the *Taxonomy* data type configured to select tags from a certain taxonomy.
+* Categories can be global or site-specific. Taxonomies are always global, as there are no sites in Xperience by Kentico.
+* Categories are assigned to pages regardless of their workflow step. Taxonomies are stored as a field and are covered by the workflow, therefore selected tags can be different in each workflow step.
+* [Categories be stored as a field](https://docs.kentico.com/x/wA_RBg) and [personal categories](https://docs.kentico.com/x/IgqRBg) are not supported by the migration.
+
+The migration process for categories performs the following steps:
+
+1. A new [taxonomy](https://docs.kentico.com/developers-and-admins/configuration/taxonomies) named **Categories** (code name `categories`) is created to house all categories from the source instance.
+2. A new [reusable field schema](https://docs.kentico.com/x/D4_OD) named **Categories container** (code name `categories_container`) is created to allow linking tags to pages.
+  * The schema contains one field, **Categories_Legacy** (data type **Taxonomy**, configured to enable selection from the *Categories* taxonomy).
+3. The *Categories container* reusable field schema is added to all pages in the target instance where categories were selected in the source instance.
+4. All categories (global, site-specific, personal) from the source instance are migrated as tags to the target instance to the *Categories* taxonomy. The tree structure from the source instance is maintained in the target instance.
+5. In the target instance, each tag is selected on pages according to the source instance.
+  * Different tags for different [language variants](https://docs.kentico.com/business-users/website-content/translate-pages) of pages are maintained from the source instance.
+  * The same tags are added to all [workflow steps](https://docs.kentico.com/developers-and-admins/configuration/workflows) of a page, if available.
 
 #### Custom modules and classes
 
