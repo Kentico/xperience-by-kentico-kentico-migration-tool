@@ -146,7 +146,7 @@ Xperience by Kentico uses a different approach to categorization than older Kent
 * Categories in older versions can be added to any page via the *Properties -> Categories* tab. Taxonomies can only be added to content items (pages, emails...) that have a field with the *Taxonomy* data type configured to select tags from a certain taxonomy.
 * Categories can be global or site-specific. Taxonomies are always global, as there are no sites in Xperience by Kentico.
 * Categories are assigned to pages regardless of their workflow step. Taxonomies are stored as a field and are covered by the workflow, therefore selected tags can be different in each workflow step.
-* [Categories be stored as a field](https://docs.kentico.com/x/wA_RBg) and [personal categories](https://docs.kentico.com/x/IgqRBg) are not supported by the migration.
+* [Categories stored as a field](https://docs.kentico.com/x/wA_RBg) and [personal categories](https://docs.kentico.com/x/IgqRBg) are not supported by the migration.
 
 The migration process for categories performs the following steps:
 
