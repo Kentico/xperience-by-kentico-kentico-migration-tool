@@ -45,6 +45,7 @@ public class MigrateCategoriesCommandHandler(
                         FROM View_CMS_Tree_Joined [TJ]
                                  JOIN dbo.CMS_DocumentCategory [CDC] on [TJ].DocumentID = [CDC].DocumentID
                                  JOIN CMS_Class [C] ON TJ.NodeClassID = [C].ClassID
+                                 JOIN dbo.CMS_Category CC on CDC.CategoryID = CC.CategoryID AND CC.CategoryUserID IS NULL
                         GROUP BY C.ClassName, C.ClassGuid, C.ClassID
                         """;
 
@@ -81,7 +82,7 @@ public class MigrateCategoriesCommandHandler(
             }
 
             var categories = modelFacade.Select<ICmsCategory>(
-                "CategoryEnabled = 1",
+                "CategoryEnabled = 1 AND CategoryUserID IS NULL",
                 "CategoryLevel ASC, CategoryOrder ASC"
             );
 
@@ -108,6 +109,7 @@ public class MigrateCategoriesCommandHandler(
                                 SELECT TJ.DocumentGUID, CDC.CategoryID, TJ.DocumentCheckedOutVersionHistoryID, TJ.NodeClassID
                                 FROM View_CMS_Tree_Joined [TJ]
                                          JOIN dbo.CMS_DocumentCategory [CDC] on [TJ].DocumentID = [CDC].DocumentID
+                                         JOIN dbo.CMS_Category CC on CDC.CategoryID = CC.CategoryID AND CC.CategoryUserID IS NULL
                                 WHERE CDC.CategoryID = @categoryId
                                 """;
 
