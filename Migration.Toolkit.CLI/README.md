@@ -154,7 +154,7 @@ The migration process for categories performs the following steps:
 2. A new [reusable field schema](https://docs.kentico.com/x/D4_OD) named **Categories container** (code name `categories_container`) is created to allow linking tags to pages.
   * The schema contains one field, **Categories_Legacy** (data type **Taxonomy**, configured to enable selection from the *Categories* taxonomy).
 3. The *Categories container* reusable field schema is added to all pages in the target instance where categories were selected in the source instance.
-4. All categories (global, site-specific, personal) from the source instance are migrated as tags to the target instance to the *Categories* taxonomy. The tree structure from the source instance is maintained in the target instance.
+4. Supported categories from the source instance are migrated as tags to the target instance to the *Categories* taxonomy. The tree structure from the source instance is maintained in the target instance.
 5. In the target instance, each tag is selected on pages according to the source instance.
   * Different tags for different [language variants](https://docs.kentico.com/business-users/website-content/translate-pages) of pages are maintained from the source instance.
   * The same tags are added to all [workflow steps](https://docs.kentico.com/developers-and-admins/configuration/workflows) of a page, if available.
