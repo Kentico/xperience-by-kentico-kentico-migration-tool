@@ -143,9 +143,9 @@ The Migration toolkit provides an advanced migration mode for Page Builder conte
 
 Xperience by Kentico uses a different approach to categorization than older Kentico versions. [Categories](https://docs.kentico.com/13/configuring-xperience/configuring-the-environment-for-content-editors/configuring-categories) were replaced by [taxonomies](https://docs.kentico.com/developers-and-admins/configuration/taxonomies) and selected categories for each page are assigned to pages in the target instance via a [reusable field schema](https://docs.kentico.com/x/D4_OD). The key differences are:
 
-* Categories in older versions can be added to any page via the *Properties -> Categories* tab. Taxonomies can only be added to content items (pages, emails...) that have a field with the *Taxonomy* data type configured to select tags from a certain taxonomy.
+* Categories in older versions can be added to any page via the *Properties -> Categories* tab. Taxonomies can only be used for content items (pages, emails...) that have a field with the *Taxonomy* data type.
 * Categories can be global or site-specific. Taxonomies are always global, as there are no sites in Xperience by Kentico.
-* Categories are assigned to pages regardless of their workflow step. Taxonomies are stored as a field and are covered by the workflow, therefore selected tags can be different in each workflow step.
+* Categories are assigned to pages regardless of their workflow step. Taxonomies are stored as a field and are covered by workflow. As a result, assigned tags can be different in each workflow step.
 * [Categories stored as a field](https://docs.kentico.com/x/wA_RBg) and [personal categories](https://docs.kentico.com/x/IgqRBg) are not supported by the migration.
 
 The migration process for categories performs the following steps:
@@ -153,10 +153,10 @@ The migration process for categories performs the following steps:
 1. A new [taxonomy](https://docs.kentico.com/developers-and-admins/configuration/taxonomies) named **Categories** (code name `categories`) is created to house all categories from the source instance.
 2. A new [reusable field schema](https://docs.kentico.com/x/D4_OD) named **Categories container** (code name `categories_container`) is created to allow linking tags to pages.
   * The schema contains one field, **Categories_Legacy** (data type **Taxonomy**, configured to enable selection from the *Categories* taxonomy).
-3. The *Categories container* reusable field schema is added to all pages in the target instance where categories were selected in the source instance.
-4. Supported categories from the source instance are migrated as tags to the target instance to the *Categories* taxonomy. The tree structure from the source instance is maintained in the target instance.
-5. In the target instance, each tag is selected on pages according to the source instance.
-  * Different tags for different [language variants](https://docs.kentico.com/business-users/website-content/translate-pages) of pages are maintained from the source instance.
+3. On the target instance, the *Categories container* reusable field schema is added to all content types where at least one page had a category assigned in the source instance.
+4. Supported categories from the source instance are migrated as tags to the *Categories* taxonomy in the target instance. The category hierarchy from the source instance is maintained in the target instance.
+5. On the target instance, tags are assigned to pages according to the source instance.
+  * Each [language variant](https://docs.kentico.com/business-users/website-content/translate-pages) of a page is treated individually and receives its corresponding group of tags based on the source instance.
   * The same tags are added to all [workflow steps](https://docs.kentico.com/developers-and-admins/configuration/workflows) of a page, if available.
 
 #### Custom modules and classes
