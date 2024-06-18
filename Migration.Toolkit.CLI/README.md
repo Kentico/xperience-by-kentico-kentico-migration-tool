@@ -157,7 +157,7 @@ The migration process for categories performs the following steps:
 4. Supported categories from the source instance are migrated as tags to the *Categories* taxonomy in the target instance. The category hierarchy from the source instance is maintained in the target instance.
 5. On the target instance, tags are assigned to pages according to the source instance.
   * Each [language variant](https://docs.kentico.com/business-users/website-content/translate-pages) of a page is treated individually and receives its corresponding group of tags based on the source instance.
-  * The same tags are added to all [workflow steps](https://docs.kentico.com/developers-and-admins/configuration/workflows) of a page, if available.
+  * Tags from the source page are added to all available [workflow steps](https://docs.kentico.com/developers-and-admins/configuration/workflows) of the target page.
 
 #### Custom modules and classes
 

@@ -84,7 +84,7 @@ Currently, the Migration toolkit supports the following types of data:
   * Migration of custom page templates is only available for Kentico Xperience 13.
 * **Categories**
   * Xperience by Kentico uses a different approach to categorization. Categories are migrated to [taxonomies](https://docs.kentico.com/x/taxonomies_xp) and selected categories for each page are assigned to pages in the target instance via a [reusable field schema](https://docs.kentico.com/x/D4_OD). See [`Migration.Toolkit.CLI/README.md - Categories`](./Migration.Toolkit.CLI/README.md#categories).
-  * Categories stored as a field of pages and personal categories are not supported.
+  * [Categories stored as a field of pages](https://docs.kentico.com/x/wA_RBg) and [personal categories](https://docs.kentico.com/x/IgqRBg) are not supported.
 * **Media libraries and media files**
   * Media library permissions are currently not supported in Xperience by Kentico and are not migrated.
 * **Forms**
