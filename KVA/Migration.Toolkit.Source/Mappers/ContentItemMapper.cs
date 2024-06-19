@@ -203,7 +203,7 @@ public class ContentItemMapper(
                 var sourceColumns = commonFields
                     .Select(cf => ReusableSchemaService.RemoveClassPrefix(nodeClass.ClassName, cf.Name))
                     .Union(fi.GetColumnNames(false))
-                    .Except([CmsClassMapper.GetLegacyDocumentName(fi)])
+                    .Except([CmsClassMapper.GetLegacyDocumentName(fi, nodeClass.ClassName)])
                     .ToList();
 
                 var coupledDataRow = coupledDataService.GetSourceCoupledDataRow(nodeClass.ClassTableName, primaryKeyName, cmsDocument.DocumentForeignKeyValue);
@@ -230,7 +230,7 @@ public class ContentItemMapper(
                 }
             }
 
-            if (CmsClassMapper.GetLegacyDocumentName(fi) is { } legacyDocumentNameFieldName)
+            if (CmsClassMapper.GetLegacyDocumentName(fi, nodeClass.ClassName) is { } legacyDocumentNameFieldName)
             {
                 if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(nodeClass.ClassName))
                 {
@@ -415,7 +415,7 @@ public class ContentItemMapper(
                 var sourceColumns = commonFields
                     .Select(cf => ReusableSchemaService.RemoveClassPrefix(nodeClass.ClassName, cf.Name))
                     .Union(fi.GetColumnNames(false))
-                    .Except([CmsClassMapper.GetLegacyDocumentName(fi)])
+                    .Except([CmsClassMapper.GetLegacyDocumentName(fi, nodeClass.ClassName)])
                     .ToList();
 
                 MapCoupledDataFieldValues(dataModel.CustomProperties,
@@ -626,7 +626,7 @@ public class ContentItemMapper(
                 columnName.Equals("ContentItemDataID", StringComparison.InvariantCultureIgnoreCase) ||
                 columnName.Equals("ContentItemDataCommonDataID", StringComparison.InvariantCultureIgnoreCase) ||
                 columnName.Equals("ContentItemDataGUID", StringComparison.InvariantCultureIgnoreCase) ||
-                columnName.Equals(CmsClassMapper.GetLegacyDocumentName(newFormInfo), StringComparison.InvariantCultureIgnoreCase)
+                columnName.Equals(CmsClassMapper.GetLegacyDocumentName(newFormInfo, nodeClass.ClassName), StringComparison.InvariantCultureIgnoreCase)
             )
             {
                 continue;
