@@ -82,7 +82,11 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
         target.ClassIconClass = source.ClassIconClass;
         if (source.ClassIsDocumentType)
         {
-            target.ClassWebPageHasUrl = true;
+            target.ClassWebPageHasUrl = source switch
+            {
+                CmsClassK13 { ClassHasURL: false } => false,
+                _ => true
+            };
         }
 
         if (mappingHelper.TranslateIdAllowNulls<ICmsResource>(c => c.ResourceID, source.ClassResourceID, out var resourceId))
@@ -230,7 +234,6 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
                 dataClass.ClassTableName = tableName;
             }
             var nfi = new FormInfo(dataClass.ClassFormDefinition);
-            AppendDocumentNameField(nfi, out documentNameField);
 
             foreach (var dataDefinitionItem in fi.GetFormElements(true, true) ?? new())
             {
@@ -267,19 +270,42 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
 
             Debug.WriteLineIf(oldPrimaryKeyName == null, $"WARN: old PK is null for class '{dataClass.ClassName}'");
 
+            AppendDocumentNameField(nfi, out documentNameField);
+
             dataClass.ClassFormDefinition = nfi.GetXmlDefinition();
+
             return dataClass;
         }
 
         return dataClass;
     }
 
+    private static readonly Guid DocumentNameFieldGuid = new("53FE33C3-E464-49D5-AA56-BFDE185F5D78");
+
+    public static string? GetLegacyDocumentName(FormInfo nfi)
+    {
+        if (nfi.GetFields(true, true, true).FirstOrDefault(f => DocumentNameFieldGuid.Equals(f.Guid)) is {} foundField)
+        {
+            return foundField.Name;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
     private static void AppendDocumentNameField(FormInfo nfi, out string documentNameField)
     {
+        if (GetLegacyDocumentName(nfi) is {} fieldName)
+        {
+            documentNameField = fieldName;
+            return;
+        }
+
         // no DocumentName in v27, we supply one in migration
         documentNameField = "DocumentName";
         var i = 0;
-        while (nfi.GetFormField(documentNameField) is { })
+        while (nfi.GetFormField(documentNameField) is not null)
         {
             documentNameField = $"DocumentName{++i}";
         }
@@ -293,7 +319,7 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
             Size = 100,
             Precision = 0,
             DefaultValue = null,
-            Guid = Guid.NewGuid(),
+            Guid = new Guid("53FE33C3-E464-49D5-AA56-BFDE185F5D78"),
             System = false, // no longer system field, system doesn't rely on this field anymore
             Settings = { { "controlname", "Kentico.Administration.TextInput" } }
         });
