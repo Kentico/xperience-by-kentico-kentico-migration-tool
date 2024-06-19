@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Enumerations;
+using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Api.Services.CmsClass;
 using Migration.Toolkit.Source.Contexts;
@@ -270,7 +271,7 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
 
             Debug.WriteLineIf(oldPrimaryKeyName == null, $"WARN: old PK is null for class '{dataClass.ClassName}'");
 
-            AppendDocumentNameField(nfi, out documentNameField);
+            AppendDocumentNameField(nfi, dataClass.ClassName, out documentNameField);
 
             dataClass.ClassFormDefinition = nfi.GetXmlDefinition();
 
@@ -280,11 +281,9 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
         return dataClass;
     }
 
-    private static readonly Guid DocumentNameFieldGuid = new("53FE33C3-E464-49D5-AA56-BFDE185F5D78");
-
-    public static string? GetLegacyDocumentName(FormInfo nfi)
+    public static string? GetLegacyDocumentName(FormInfo nfi, string className)
     {
-        if (nfi.GetFields(true, true, true).FirstOrDefault(f => DocumentNameFieldGuid.Equals(f.Guid)) is {} foundField)
+        if (nfi.GetFields(true, true, true).FirstOrDefault(f => GuidHelper.CreateDocumentNameFieldGuid($"documentname|{className}").Equals(f.Guid)) is {} foundField)
         {
             return foundField.Name;
         }
@@ -294,9 +293,9 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
         }
     }
 
-    private static void AppendDocumentNameField(FormInfo nfi, out string documentNameField)
+    private static void AppendDocumentNameField(FormInfo nfi, string className, out string documentNameField)
     {
-        if (GetLegacyDocumentName(nfi) is {} fieldName)
+        if (GetLegacyDocumentName(nfi, className) is {} fieldName)
         {
             documentNameField = fieldName;
             return;
@@ -319,7 +318,7 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
             Size = 100,
             Precision = 0,
             DefaultValue = null,
-            Guid = new Guid("53FE33C3-E464-49D5-AA56-BFDE185F5D78"),
+            Guid = GuidHelper.CreateDocumentNameFieldGuid($"documentname|{className}"),
             System = false, // no longer system field, system doesn't rely on this field anymore
             Settings = { { "controlname", "Kentico.Administration.TextInput" } }
         });
