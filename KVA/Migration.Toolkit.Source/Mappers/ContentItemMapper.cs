@@ -18,6 +18,7 @@ using Migration.Toolkit.Common.Services.Ipc;
 using Migration.Toolkit.KXP.Api;
 using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Api.Services.CmsClass;
+using Migration.Toolkit.KXP.Models;
 using Migration.Toolkit.Source.Auxiliary;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Model;
@@ -180,9 +181,9 @@ public class ContentItemMapper(
                 ContentItemContentTypeName = nodeClass.ClassName
             };
 
+            var fi = new FormInfo(targetFormDefinition);
             if (nodeClass.ClassIsCoupledClass)
             {
-                var fi = new FormInfo(targetFormDefinition);
                 var sfi = new FormInfo(sourceFormDefinition);
                 var primaryKeyName = "";
                 foreach (var sourceFieldInfo in sfi.GetFields(true, true))
@@ -201,14 +202,15 @@ public class ContentItemMapper(
                 var commonFields = UnpackReusableFieldSchemas(fi.GetFields<FormSchemaInfo>()).ToArray();
                 var sourceColumns = commonFields
                     .Select(cf => ReusableSchemaService.RemoveClassPrefix(nodeClass.ClassName, cf.Name))
-                    .Union(fi.GetColumnNames())
+                    .Union(fi.GetColumnNames(false))
+                    .Except([CmsClassMapper.GetLegacyDocumentName(fi)])
                     .ToList();
 
                 var coupledDataRow = coupledDataService.GetSourceCoupledDataRow(nodeClass.ClassTableName, primaryKeyName, cmsDocument.DocumentForeignKeyValue);
                 MapCoupledDataFieldValues(dataModel.CustomProperties,
                     (columnName) => coupledDataRow?[columnName],
                     columnName => coupledDataRow?.ContainsKey(columnName) ?? false,
-                    cmsTree, cmsDocument.DocumentID, sourceColumns, sfi, false, nodeClass
+                    cmsTree, cmsDocument.DocumentID, sourceColumns, sfi, fi, false, nodeClass
                 );
 
                 foreach (var formFieldInfo in commonFields)
@@ -228,14 +230,17 @@ public class ContentItemMapper(
                 }
             }
 
-            if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(nodeClass.ClassName))
+            if (CmsClassMapper.GetLegacyDocumentName(fi) is { } legacyDocumentNameFieldName)
             {
-                var fieldName = ReusableSchemaService.GetUniqueFieldName(nodeClass.ClassName, "DocumentName");
-                commonDataModel.CustomProperties.Add(fieldName, cmsDocument.DocumentName);
-            }
-            else
-            {
-                dataModel.CustomProperties.Add("DocumentName", cmsDocument.DocumentName);
+                if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(nodeClass.ClassName))
+                {
+                    var fieldName = ReusableSchemaService.GetUniqueFieldName(nodeClass.ClassName, legacyDocumentNameFieldName);
+                    commonDataModel.CustomProperties.Add(fieldName, cmsDocument.DocumentName);
+                }
+                else
+                {
+                    dataModel.CustomProperties.Add(legacyDocumentNameFieldName, cmsDocument.DocumentName);
+                }
             }
 
             yield return commonDataModel;
@@ -409,13 +414,14 @@ public class ContentItemMapper(
                 var commonFields = UnpackReusableFieldSchemas(fi.GetFields<FormSchemaInfo>()).ToArray();
                 var sourceColumns = commonFields
                     .Select(cf => ReusableSchemaService.RemoveClassPrefix(nodeClass.ClassName, cf.Name))
-                    .Union(fi.GetColumnNames())
+                    .Union(fi.GetColumnNames(false))
+                    .Except([CmsClassMapper.GetLegacyDocumentName(fi)])
                     .ToList();
 
                 MapCoupledDataFieldValues(dataModel.CustomProperties,
                     s => adapter.GetValue(s),
                     s => adapter.HasValueSet(s)
-                    , cmsTree, adapter.DocumentID, sourceColumns, sfi, true, nodeClass);
+                    , cmsTree, adapter.DocumentID, sourceColumns, sfi, fi, true, nodeClass);
 
                 foreach (var formFieldInfo in commonFields)
                 {
@@ -601,12 +607,13 @@ public class ContentItemMapper(
 
     private void MapCoupledDataFieldValues(
         Dictionary<string, object?> target,
-        Func<string, object> getSourceValue,
+        Func<string, object?> getSourceValue,
         Func<string, bool> containsSourceValue,
         ICmsTree cmsTree,
         int? documentId,
         List<string> newColumnNames,
         FormInfo oldFormInfo,
+        FormInfo newFormInfo,
         bool migratingFromVersionHistory,
         ICmsClass nodeClass
     )
@@ -619,8 +626,15 @@ public class ContentItemMapper(
                 columnName.Equals("ContentItemDataID", StringComparison.InvariantCultureIgnoreCase) ||
                 columnName.Equals("ContentItemDataCommonDataID", StringComparison.InvariantCultureIgnoreCase) ||
                 columnName.Equals("ContentItemDataGUID", StringComparison.InvariantCultureIgnoreCase) ||
-                columnName.Equals("DocumentName", StringComparison.InvariantCultureIgnoreCase)
+                columnName.Equals(CmsClassMapper.GetLegacyDocumentName(newFormInfo), StringComparison.InvariantCultureIgnoreCase)
             )
+            {
+                continue;
+            }
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            if (oldFormInfo.GetFormField(columnName)?.External is true)
+#pragma warning restore CS0618 // Type or member is obsolete
             {
                 continue;
             }
