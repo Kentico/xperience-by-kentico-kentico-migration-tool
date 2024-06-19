@@ -319,7 +319,7 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
             Size = 100,
             Precision = 0,
             DefaultValue = null,
-            Guid = new Guid("53FE33C3-E464-49D5-AA56-BFDE185F5D78"),
+            Guid = DocumentNameFieldGuid,
             System = false, // no longer system field, system doesn't rely on this field anymore
             Settings = { { "controlname", "Kentico.Administration.TextInput" } }
         });
