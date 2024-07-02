@@ -8,8 +8,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="MediatR" Version="10.0.1"/>
-        <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.1"/>
+        <PackageReference Include="MediatR" Version="12.3.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
     </ItemGroup>
 

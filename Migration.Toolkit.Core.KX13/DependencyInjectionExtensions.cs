@@ -35,20 +35,11 @@ public static class DependencyInjectionExtensions
         HandbookReference.PrintService = printService;
         LogExtensions.PrintService = printService;
 
-        // services.AddTransient<IModuleLoader, ModuleLoader>();
-        // services.AddSingleton<ICommandParser, CommandParser>();
-
-        // services.AddSingleton<FieldMigrationService>();
-
         services.AddTransient<BulkDataCopyService>();
-        // services.AddTransient<CmsRelationshipService>();
         services.AddTransient<CoupledDataService>();
-        // services.AddScoped<AttachmentMigrator>();
-        // services.AddScoped<PageTemplateMigrator>();
         services.AddScoped<CountryMigrator>();
-        // services.AddScoped<ClassService>();
 
-        services.AddMediatR(typeof(DependencyInjectionExtensions));
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(KX13.DependencyInjectionExtensions).Assembly));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestHandlingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CommandConstraintBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(XbKApiContextBehavior<,>));
@@ -64,25 +55,17 @@ public static class DependencyInjectionExtensions
 
         // commands
         services.AddTransient<MigrateDataProtectionCommandHandler>();
-        // services.AddTransient<MigrateFormsCommandHandler>();
-        // services.AddTransient<MigratePagesCommandHandler>();
         services.AddTransient<MigratePagesCommand>();
         services.AddTransient<MigrateSettingKeysCommandHandler>();
         services.AddTransient<MigrateUsersCommandHandler>();
         services.AddTransient<MigrateMembersCommandHandler>();
         services.AddTransient<MigrateContactManagementCommandHandler>();
 
-        // umt mappers
-        // services.AddTransient<IUmtMapper<CmsTreeMapperSource>, ContentItemMapper>();
-
         // mappers
         services.AddTransient<IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo>, CmsAttachmentMapper>();
-        // services.AddTransient<IEntityMapper<KX13M.CmsClass, DataClassInfo>, CmsClassMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsConsent, CmsConsent>, CmsConsentMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsConsentAgreement, CmsConsentAgreement>, CmsConsentAgreementMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsConsentArchive, CmsConsentArchive>, CmsConsentArchiveMapper>();
-        // services.AddTransient<IEntityMapper<KX13M.CmsForm, BizFormInfo>, CmsFormMapper>();
-        // services.AddTransient<IEntityMapper<KX13M.CmsForm, CmsForm>, CmsFormMapperEf>();
         services.AddTransient<IEntityMapper<KX13M.CmsResource, ResourceInfo>, ResourceMapper>();
         services.AddTransient<IEntityMapper<AlternativeFormMapperSource, AlternativeFormInfo>, AlternativeFormMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsRole, RoleInfo>, RoleInfoMapper>();
@@ -98,7 +81,6 @@ public static class DependencyInjectionExtensions
         services.AddTransient<IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo>, MediaFileInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsCountry, CountryInfo>, CountryInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsState, StateInfo>, StateInfoMapper>();
-        // services.AddTransient<IEntityMapper<KX13M.CmsPageTemplateConfiguration, PageTemplateConfigurationInfo>, PageTemplateConfigurationMapper>();
 
         services.AddUniversalMigrationToolkit();
 

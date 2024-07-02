@@ -27,45 +27,28 @@ public static class ConfigurationValidator
             yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_Settings_IsRequired);
         }
 
-        if (
-            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.SourceConnectionString)) &&
-            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.KxConnectionString))
-        )
+        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.KxConnectionString)))
         {
             yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_SourceConnectionString_IsRequired);
         }
 
-        if (
-            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.SourceCmsDirPath)) &&
-            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.KxCmsDirPath))
-        )
+        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.KxCmsDirPath)))
         {
-            yield return new ValidationMessage(ValidationMessageType.Warning,
-                Resources.ConfigurationValidator_GetValidationErrors_SourceCmsDirPath_IsRecommended);
+            yield return new ValidationMessage(ValidationMessageType.Warning, Resources.ConfigurationValidator_GetValidationErrors_SourceCmsDirPath_IsRecommended);
         }
 
-        if (
-            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.TargetConnectionString)) &&
-            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.XbKConnectionString))
-        )
+        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.XbKConnectionString)))
         {
             yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_TargetConnectionString_IsRequired);
         }
 
-        if (
-            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.TargetCmsDirPath)) &&
-            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.XbKDirPath))
-           )
+        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.XbKDirPath)))
         {
             yield return new ValidationMessage(ValidationMessageType.Error,
                 Resources.ConfigurationValidator_GetValidationErrors_TargetCmsDirPath_IsRequired);
         }
 
-        var targetKxpApiSettings =
-                settings?.GetSection(ConfigurationNames.XbKApiSettings) ??
-                settings?.GetSection(ConfigurationNames.TargetKxpApiSettings)
-            ;
-
+        var targetKxpApiSettings = settings?.GetSection(ConfigurationNames.XbKApiSettings);
         if (targetKxpApiSettings is null)
         {
             yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_TargetKxpApiSettings_IsRequired);

@@ -10,33 +10,20 @@ using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KX13;
 using Migration.Toolkit.KX13.Context;
 
-public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+public class CommandConstraintBehavior<TRequest, TResponse>(
+    ILogger<CommandConstraintBehavior<TRequest, TResponse>> logger,
+    IMigrationProtocol protocol,
+    IDbContextFactory<KX13Context> kx13ContextFactory,
+    ToolkitConfiguration toolkitConfiguration)
+    : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
     where TResponse : CommandResult
 {
-    private readonly ILogger<CommandConstraintBehavior<TRequest, TResponse>> _logger;
-    private readonly IMigrationProtocol _protocol;
-    private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
-    private readonly ToolkitConfiguration _toolkitConfiguration;
-
-    public CommandConstraintBehavior(
-        ILogger<CommandConstraintBehavior<TRequest, TResponse>> logger,
-        IMigrationProtocol protocol,
-        IDbContextFactory<KX13Context> kx13ContextFactory,
-        ToolkitConfiguration toolkitConfiguration
-    )
-    {
-        _logger = logger;
-        _protocol = protocol;
-        _kx13ContextFactory = kx13ContextFactory;
-        _toolkitConfiguration = toolkitConfiguration;
-    }
-
-    public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
+    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
         try
         {
-            var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
+            var kx13Context = await kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
             var criticalCheckPassed = PerformChecks(request, kx13Context);
             if (!criticalCheckPassed)
@@ -46,8 +33,8 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
         }
         catch (Exception ex)
         {
-            _protocol.CommandError<TRequest, TResponse>(ex, request);
-            _logger.LogCritical(ex, "Error occured while checking command constraints");
+            protocol.CommandError<TRequest, TResponse>(ex, request);
+            logger.LogCritical(ex, "Error occured while checking command constraints");
             return (TResponse)(CommandResult)new CommandCheckFailedResult(false);
         }
 
@@ -92,8 +79,8 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
 
         void UnableToReadVersionKey(string keyName)
         {
-            _logger.LogCritical("Unable to read CMS version (incorrect format) - SettingsKeyName '{Key}'. Ensure Kentico version is at least '{SupportedVersion}'", keyName, minimalVersion.ToString());
-            _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
+            logger.LogCritical("Unable to read CMS version (incorrect format) - SettingsKeyName '{Key}'. Ensure Kentico version is at least '{SupportedVersion}'", keyName, minimalVersion.ToString());
+            protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
             {
                 ErrorKind = "Settings key value incorrect format",
                 SettingsKeyName = keyName,
@@ -104,8 +91,8 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
 
         void VersionKeyNotFound(string keyName)
         {
-            _logger.LogCritical("CMS version not found - SettingsKeyName '{Key}'. Ensure Kentico version is at least '{SupportedVersion}'", keyName, minimalVersion.ToString());
-            _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
+            logger.LogCritical("CMS version not found - SettingsKeyName '{Key}'. Ensure Kentico version is at least '{SupportedVersion}'", keyName, minimalVersion.ToString());
+            protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
             {
                 ErrorKind = "Settings key not found",
                 SettingsKeyName = keyName,
@@ -116,8 +103,8 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
 
         void UpgradeNeeded(string keyName, string currentVersion)
         {
-            _logger.LogCritical("{Key} '{CurrentVersion}' is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'", keyName, currentVersion, minimalVersion.ToString());
-            _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
+            logger.LogCritical("{Key} '{CurrentVersion}' is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'", keyName, currentVersion, minimalVersion.ToString());
+            protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
             {
                 CurrentVersion = currentVersion,
                 SupportedVersion = minimalVersion.ToString()
@@ -127,8 +114,8 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
 
         void LowHotfix(string keyName, int currentHotfix)
         {
-            _logger.LogCritical("{Key} '{CurrentVersion}' hotfix is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'", keyName, currentHotfix, minimalVersion.ToString());
-            _protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
+            logger.LogCritical("{Key} '{CurrentVersion}' hotfix is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'", keyName, currentHotfix, minimalVersion.ToString());
+            protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
             {
                 CurrentHotfix = currentHotfix.ToString(),
                 SupportedVersion = minimalVersion.ToString()
@@ -228,9 +215,9 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
                 x.SiteId
             }).ToArray();
             var supportedSitesStr = string.Join(", ", supportedSites.Select(x => x.ToString()));
-            _logger.LogCritical("Unable to find site with ID '{SourceSiteId}'. Check --siteId parameter. Supported sites: {SupportedSites}", sourceSiteId,
+            logger.LogCritical("Unable to find site with ID '{SourceSiteId}'. Check --siteId parameter. Supported sites: {SupportedSites}", sourceSiteId,
                 supportedSitesStr);
-            _protocol.Append(HandbookReferences.CommandConstraintBroken("Site exists")
+            protocol.Append(HandbookReferences.CommandConstraintBroken("Site exists")
                 .WithMessage("Check program argument '--siteId'")
                 .WithData(new
                 {
@@ -258,8 +245,8 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
                 if (!siteCultures.Contains(cultureCode.ToLowerInvariant()))
                 {
                     var supportedCultures = string.Join(", ", siteCultures);
-                    _logger.LogCritical("Unable to find culture '{Culture}' mapping to site '{SiteId}'. Check --culture parameter. Supported cultures for site: {SupportedCultures}", cultureCode, site.SiteId, supportedCultures);
-                    _protocol.Append(HandbookReferences.CommandConstraintBroken("Culture is mapped to site")
+                    logger.LogCritical("Unable to find culture '{Culture}' mapping to site '{SiteId}'. Check --culture parameter. Supported cultures for site: {SupportedCultures}", cultureCode, site.SiteId, supportedCultures);
+                    protocol.Append(HandbookReferences.CommandConstraintBroken("Culture is mapped to site")
                         .WithMessage("Check program argument '--culture'")
                         .WithData(new
                         {
@@ -278,12 +265,12 @@ public class CommandConstraintBehavior<TRequest, TResponse> : IPipelineBehavior<
     // TODO tk: 2022-11-02 create global rule
     private bool CheckDbCollations()
     {
-        var kxCollation = GetDbCollationName(_toolkitConfiguration.KxConnectionString ?? throw new InvalidOperationException("KxConnectionString is required"));
-        var xbkCollation = GetDbCollationName(_toolkitConfiguration.XbKConnectionString ?? throw new InvalidOperationException("XbKConnectionString is required"));
+        var kxCollation = GetDbCollationName(toolkitConfiguration.KxConnectionString ?? throw new InvalidOperationException("KxConnectionString is required"));
+        var xbkCollation = GetDbCollationName(toolkitConfiguration.XbKConnectionString ?? throw new InvalidOperationException("XbKConnectionString is required"));
         var collationAreSame = kxCollation == xbkCollation;
         if (!collationAreSame)
         {
-            _logger.LogCritical("Source db collation '{SourceDbCollation}' is not same as target db collation {TargetDbCollation} => same collations are required", kxCollation, xbkCollation);
+            logger.LogCritical("Source db collation '{SourceDbCollation}' is not same as target db collation {TargetDbCollation} => same collations are required", kxCollation, xbkCollation);
         }
 
         return collationAreSame;

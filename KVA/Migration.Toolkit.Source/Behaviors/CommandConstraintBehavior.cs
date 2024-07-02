@@ -1,9 +1,7 @@
 namespace Migration.Toolkit.Source.Behaviors;
 
 using MediatR;
-using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Source.Model;
@@ -11,13 +9,12 @@ using Migration.Toolkit.Source.Model;
 public class CommandConstraintBehavior<TRequest, TResponse>(
     ILogger<CommandConstraintBehavior<TRequest, TResponse>> logger,
     IMigrationProtocol protocol,
-    ToolkitConfiguration toolkitConfiguration,
     ModelFacade modelFacade)
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
     where TResponse : CommandResult
 {
-    public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
+    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
         try
         {
@@ -40,14 +37,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
     private bool PerformChecks(TRequest request)
     {
         var criticalCheckPassed = true;
-        // const string supportedVersion = "13.0.64";
-        // const string supportedVersion = "13.0.0";
-        // if (SemanticVersion.TryParse(supportedVersion, out var minimalVersion))
-        // {
-        //     criticalCheckPassed &= CheckVersion(minimalVersion);
-        // }
 
-        // var sites = _toolkitConfiguration.RequireExplicitMapping<KX13M.CmsSite>(s => s.SiteId);
         var sourceSites = modelFacade.SelectAll<ICmsSite>()
             .ToList();
 
@@ -64,143 +54,8 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
             criticalCheckPassed &= CheckCulture(cultureReliantCommand, sourceSites, cultures, siteCultures);
         }
 
-        // criticalCheckPassed &= CheckDbCollations();
-
         return criticalCheckPassed;
     }
-
-    // private bool CheckVersion(KX13Context kx13Context, SemanticVersion minimalVersion)
-    // {
-    //     var criticalCheckPassed = true;
-    //
-    //     #region Check conclusion methods
-    //
-    //     void UnableToReadVersionKey(string keyName)
-    //     {
-    //         logger.LogCritical("Unable to read CMS version (incorrect format) - SettingsKeyName '{Key}'. Ensure Kentico version is at least '{SupportedVersion}'", keyName, minimalVersion.ToString());
-    //         protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
-    //         {
-    //             ErrorKind = "Settings key value incorrect format",
-    //             SettingsKeyName = keyName,
-    //             SupportedVersion = minimalVersion.ToString()
-    //         }));
-    //         criticalCheckPassed = false;
-    //     }
-    //
-    //     void VersionKeyNotFound(string keyName)
-    //     {
-    //         logger.LogCritical("CMS version not found - SettingsKeyName '{Key}'. Ensure Kentico version is at least '{SupportedVersion}'", keyName, minimalVersion.ToString());
-    //         protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
-    //         {
-    //             ErrorKind = "Settings key not found",
-    //             SettingsKeyName = keyName,
-    //             SupportedVersion = minimalVersion.ToString()
-    //         }));
-    //         criticalCheckPassed = false;
-    //     }
-    //
-    //     void UpgradeNeeded(string keyName, string currentVersion)
-    //     {
-    //         logger.LogCritical("{Key} '{CurrentVersion}' is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'", keyName, currentVersion, minimalVersion.ToString());
-    //         protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
-    //         {
-    //             CurrentVersion = currentVersion,
-    //             SupportedVersion = minimalVersion.ToString()
-    //         }));
-    //         criticalCheckPassed = false;
-    //     }
-    //
-    //     void LowHotfix(string keyName, int currentHotfix)
-    //     {
-    //         logger.LogCritical("{Key} '{CurrentVersion}' hotfix is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'", keyName, currentHotfix, minimalVersion.ToString());
-    //         protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new
-    //         {
-    //             CurrentHotfix = currentHotfix.ToString(),
-    //             SupportedVersion = minimalVersion.ToString()
-    //         }));
-    //         criticalCheckPassed = false;
-    //     }
-    //
-    //     #endregion
-    //
-    //     if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == SettingsKeys.CMSDataVersion) is { } cmsDataVersion)
-    //     {
-    //         if (SemanticVersion.TryParse(cmsDataVersion.KeyValue, out var cmsDataVer))
-    //         {
-    //             if (cmsDataVer.IsLesserThan(minimalVersion))
-    //             {
-    //                 UpgradeNeeded(SettingsKeys.CMSDataVersion, cmsDataVer.ToString());
-    //             }
-    //         }
-    //         else
-    //         {
-    //             UnableToReadVersionKey(SettingsKeys.CMSDataVersion);
-    //         }
-    //     }
-    //     else
-    //     {
-    //         VersionKeyNotFound(SettingsKeys.CMSDataVersion);
-    //     }
-    //
-    //     if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == SettingsKeys.CMSDBVersion) is { } cmsDbVersion)
-    //     {
-    //         if (SemanticVersion.TryParse(cmsDbVersion.KeyValue, out var cmsDataVer))
-    //         {
-    //             if (cmsDataVer.IsLesserThan(minimalVersion))
-    //             {
-    //                 UpgradeNeeded(SettingsKeys.CMSDBVersion, cmsDataVer.ToString());
-    //             }
-    //         }
-    //         else
-    //         {
-    //             UnableToReadVersionKey(SettingsKeys.CMSDBVersion);
-    //         }
-    //     }
-    //     else
-    //     {
-    //         VersionKeyNotFound(SettingsKeys.CMSDBVersion);
-    //     }
-    //
-    //     if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == SettingsKeys.CMSHotfixDataVersion) is { } cmsHotfixDataVersion)
-    //     {
-    //         if (int.TryParse(cmsHotfixDataVersion.KeyValue, out var version))
-    //         {
-    //             if (version < minimalVersion.Hotfix)
-    //             {
-    //                 LowHotfix(SettingsKeys.CMSHotfixDataVersion, version);
-    //             }
-    //         }
-    //         else
-    //         {
-    //             UnableToReadVersionKey(SettingsKeys.CMSHotfixDataVersion);
-    //         }
-    //     }
-    //     else
-    //     {
-    //         VersionKeyNotFound(SettingsKeys.CMSHotfixDataVersion);
-    //     }
-    //
-    //     if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == SettingsKeys.CMSHotfixVersion) is { } cmsHotfixVersion)
-    //     {
-    //         if (int.TryParse(cmsHotfixVersion.KeyValue, out var version))
-    //         {
-    //             if (version < minimalVersion.Hotfix)
-    //             {
-    //                 LowHotfix(SettingsKeys.CMSHotfixVersion, version);
-    //             }
-    //         }
-    //         else
-    //         {
-    //             UnableToReadVersionKey(SettingsKeys.CMSHotfixVersion);
-    //         }
-    //     }
-    //     else
-    //     {
-    //         VersionKeyNotFound(SettingsKeys.CMSHotfixVersion);
-    //     }
-    //
-    //     return criticalCheckPassed;
-    // }
 
     private bool CheckSite(List<ICmsSite> sourceSites, int sourceSiteId)
     {
@@ -255,29 +110,5 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
         }
 
         return criticalCheckPassed;
-    }
-
-    // TODO tk: 2022-11-02 create global rule
-    private bool CheckDbCollations()
-    {
-        var kxCollation = GetDbCollationName(toolkitConfiguration.KxConnectionString ?? throw new InvalidOperationException("KxConnectionString is required"));
-        var xbkCollation = GetDbCollationName(toolkitConfiguration.XbKConnectionString ?? throw new InvalidOperationException("XbKConnectionString is required"));
-        var collationAreSame = kxCollation == xbkCollation;
-        if (!collationAreSame)
-        {
-            logger.LogCritical("Source db collation '{SourceDbCollation}' is not same as target db collation {TargetDbCollation} => same collations are required", kxCollation, xbkCollation);
-        }
-
-        return collationAreSame;
-    }
-
-    private string? GetDbCollationName(string connectionString)
-    {
-        using var sqlConnection = new SqlConnection(connectionString);
-        using var sqlCommand = sqlConnection.CreateCommand();
-        sqlCommand.CommandText = "SELECT DATABASEPROPERTYEX(DB_NAME(), 'Collation')";
-
-        sqlConnection.Open();
-        return sqlCommand.ExecuteScalar() as string;
     }
 }

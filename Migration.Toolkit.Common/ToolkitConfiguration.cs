@@ -23,24 +23,10 @@ public class ToolkitConfiguration
 
     private string? _kxConnectionString;
 
-    [ConfigurationKeyName(ConfigurationNames.SourceConnectionString)]
-    [Obsolete("Use KxConnectionString instead")]
-    public string? ObsoleteSourceConnectionString { get; set; }
-
     [ConfigurationKeyName(ConfigurationNames.KxConnectionString)]
     public string KxConnectionString
     {
-        get
-        {
-            if (string.IsNullOrWhiteSpace(_kxConnectionString.NullIf(ConfigurationNames.TodoPlaceholder)))
-            {
-#pragma warning disable CS0618 // usage is related to resolving deprecation and backwards compatibility
-                return ObsoleteSourceConnectionString!;
-#pragma warning restore CS0618
-            }
-
-            return _kxConnectionString!;
-        }
+        get => _kxConnectionString!;
         set => _kxConnectionString = value;
     }
 
@@ -48,84 +34,24 @@ public class ToolkitConfiguration
 
     #region Path to CMS dir of source instance
 
-    private string? _kxCmsDirPath;
-
-    [ConfigurationKeyName(ConfigurationNames.SourceCmsDirPath)]
-    [Obsolete("Use KxCmsDirPath instead")]
-    public string? ObsoleteSourceCmsDirPath { get; set; }
-
     [ConfigurationKeyName(ConfigurationNames.KxCmsDirPath)]
-    public string? KxCmsDirPath
-    {
-        get
-        {
-            if (string.IsNullOrWhiteSpace(_kxCmsDirPath.NullIf(ConfigurationNames.TodoPlaceholder)))
-            {
-#pragma warning disable CS0618
-                return ObsoleteSourceCmsDirPath;
-#pragma warning restore CS0618
-            }
-
-            return _kxCmsDirPath;
-        }
-        set => _kxCmsDirPath = value;
-    }
+    public string? KxCmsDirPath { get; set; }
 
     #endregion
 
     #region Connection string of target instance
 
-    private string? _xbKConnectionString;
-
-    [ConfigurationKeyName(ConfigurationNames.TargetConnectionString)]
-    [Obsolete("Use XbKConnectionString instead")]
-    public string? ObsoleteTargetConnectionString { get; set; }
-
     [ConfigurationKeyName(ConfigurationNames.XbKConnectionString)]
-    public string? XbKConnectionString
-    {
-        get
-        {
-            if (string.IsNullOrWhiteSpace(_xbKConnectionString.NullIf(ConfigurationNames.TodoPlaceholder)))
-            {
-#pragma warning disable CS0618 // usage is related to resolving deprecation and backwards compatibility
-                return ObsoleteTargetConnectionString;
-#pragma warning restore CS0618
-            }
-
-            return _xbKConnectionString;
-        }
-        set => _xbKConnectionString = value;
-    }
+    public string? XbKConnectionString { get; set; }
 
     #endregion
 
     #region Path to root directory of target instance
 
-    private string? _xbKDirPath = null;
     private HashSet<string>? _classNamesCreateReusableSchema;
 
-
-    [ConfigurationKeyName(ConfigurationNames.TargetCmsDirPath)]
-    [Obsolete("Use XbKDirPath instead")]
-    public string? ObsoleteTargetCmsDirPath { get; set; } = null;
-
     [ConfigurationKeyName(ConfigurationNames.XbKDirPath)]
-    public string? XbKDirPath
-    {
-        get
-        {
-            if (string.IsNullOrWhiteSpace(_xbKDirPath.NullIf(ConfigurationNames.TodoPlaceholder)))
-            {
-#pragma warning disable CS0618 // usage is related to resolving deprecation and backwards compatibility
-                return ObsoleteTargetCmsDirPath;
-#pragma warning restore CS0618
-            }
-
-            return _xbKDirPath;
-        }
-        set => _xbKDirPath = value;
-    }
+    public string? XbKDirPath { get; set; } = null;
 
     #endregion
 

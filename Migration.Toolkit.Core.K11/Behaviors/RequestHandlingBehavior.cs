@@ -11,7 +11,7 @@ public class RequestHandlingBehavior<TRequest, TResponse>(ILogger<RequestHandlin
     where TRequest : IRequest<TResponse>
     where TResponse : CommandResult
 {
-    public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
+    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
         var sw = Stopwatch.StartNew();
         logger.LogInformation("Handling {CommandName}", typeof(TRequest).Name);

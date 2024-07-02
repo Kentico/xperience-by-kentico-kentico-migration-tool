@@ -150,13 +150,7 @@ catch (Exception ex)
 
 services.UseKxpDbContext(settings);
 
-var kxpApiSettings =
-    settingsSection.GetSection(ConfigurationNames.XbKApiSettings) ??
-#pragma warning disable CS0618 // usage of obsolete symbol is related to backwards compatibility maintenance
-    settingsSection.GetSection(ConfigurationNames.TargetKxpApiSettings) ??
-    settingsSection.GetSection(ConfigurationNames.TargetKxoApiSettings);
-#pragma warning restore CS0618
-
+var kxpApiSettings = settingsSection.GetSection(ConfigurationNames.XbKApiSettings);
 services.UseKxpApi(kxpApiSettings, settings.XbKDirPath);
 services.AddSingleton(settings);
 services.AddSingleton<ICommandParser, CommandParser>();
