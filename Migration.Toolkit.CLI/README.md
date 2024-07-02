@@ -1,6 +1,6 @@
 # Migration CLI
 
-The [Migration Tool](/README.md) transfers content and other data from **Kentico Xperience 13**, **Kentico 12** or **Kentico 11** to **Xperience by Kentico**.
+The [Xperience by Kentico: Kentico Migration Tool](/README.md) transfers content and other data from **Kentico Xperience 13**, **Kentico 12** or **Kentico 11** to **Xperience by Kentico**.
 
 The migration is performed by running a command for the .NET CLI.
 
@@ -10,7 +10,7 @@ The target of the migration must be an Xperience by Kentico instance that fulfil
 
 * The instance's database and file system must be accessible from the environment where you run the migration.
 * The target application *must not be running* when you start the migration.
-* The target instance must be empty except for data from the source instance created by previous runs of the Migration Tool.
+* The target instance must be empty except for data from the source instance created by previous runs of this tool.
 * For performance optimization, the migration transfers certain objects using bulk SQL queries. As a result, you always need to delete all objects of the following types before running repeated migrations:
   * **Contacts**, including their **Activities** (when using the `migrate --contact-management` parameter)
   * **Consent agreements** (when using the `migrate --data-protection` parameter)
@@ -48,7 +48,7 @@ Migration.Toolkit.CLI.exe migrate --sites --custom-modules --users --members --f
 | `--members`                 | Enables migration of live site user accounts to [members](https://docs.xperience.io/x/BIsuCw). <br /><br />See: [Migration details for specific object types - Members](#members) | `--sites`, `--custom-modules` |
 | `--settings-keys`           | Enables migration of values for [settings](https://docs.xperience.io/x/7YjFC) that are available in Xperience by Kentico. | `--sites`                             |
 | `--page-types`              | Enables migration of [content types](https://docs.xperience.io/x/gYHWCQ) (originally *page types* in Kentico Xperience 13) and [preset page templates](https://docs.xperience.io/x/KZnWCQ) (originally *custom page templates*). Required to migrate Pages.<br /><br />See: [Migration details for specific object types - Content types](#content-types)  | `--sites`              |
-| `--pages`                   | Enables migration of [pages](https://docs.xperience.io/x/bxzfBw).<br /><br />The target instance must not contain pages other than those created by previous runs of the Migration Tool.<br /><br />See: [Migration details for specific object types - Pages](#pages) | `--sites`, `--users`, `--page-types` |
+| `--pages`                   | Enables migration of [pages](https://docs.xperience.io/x/bxzfBw).<br /><br />The target instance must not contain pages other than those created by previous runs of the Kentico Migration Tool.<br /><br />See: [Migration details for specific object types - Pages](#pages) | `--sites`, `--users`, `--page-types` |
 | `--categories`              | Enables migration of categories to taxonomies. Xperience by Kentico uses a different approach to categorization. Categories are migrated to [taxonomies](https://docs.kentico.com/x/taxonomies_xp) and selected categories for each page are assigned to pages in the target instance via a [reusable field schema](https://docs.kentico.com/x/D4_OD). See [`Categories`](#categories). | `--sites`, `--users`, `--pagetypes`, `--pages` |
 | `--attachments`             | Enables migration of page attachments to [media libraries](https://docs.xperience.io/x/agKiCQ) (page attachments are not supported in Xperience by Kentico).<br /><br />See: [Migration details for specific object types - Attachments](#attachments)   | `--sites`, `--custom-modules`  |
 | `--contact-management`      | Enables migration of [contacts](https://docs.xperience.io/x/nYPWCQ) and [activities](https://docs.xperience.io/x/oYPWCQ). The target instance must not contain any contacts or activities. May run for a long time depending on the number of contacts in the source database. | `--users`, `--custom-modules` |
@@ -79,9 +79,9 @@ Xperience by Kentico currently does not support:
 * Page type inheritance. You cannot migrate page types that inherit fields from other types.
 * Categories for page type fields. Field categories are not migrated with page types.
 
-The Migration Tool attempts to map the *Data type* and *Form control* of page type fields to an appropriate equivalent in Xperience by Kentico. This is not always possible, and cannot be done for custom data types or form controls. We recommend that you check your content type fields after the migration and adjust them if necessary.
+The Kentico Migration Tool attempts to map the *Data type* and *Form control* of page type fields to an appropriate equivalent in Xperience by Kentico. This is not always possible, and cannot be done for custom data types or form controls. We recommend that you check your content type fields after the migration and adjust them if necessary.
 
-The following table describes how the Migration Tool maps the data types and form controls/components of page type fields:
+The following table describes how the Kentico Migration Tool maps the data types and form controls/components of page type fields:
 
 | KX13/12/11 Data type      | XbK Data type            | KX13/12/11 Form control       | XbK Form component    |
 | ------------------------- | ------------------------ | ----------------------------- | --------------------- |
@@ -137,7 +137,7 @@ You can create [reusable field schemas](https://docs.kentico.com/x/D4_OD) from p
 
 By default, JSON data storing the Page Builder content of pages and custom page templates is migrated directly without modifications. On the target Xperience by Kentico instance, the migrated data can work in the Page Builder's legacy compatibility mode. However, we strongly recommend updating your codebase to the new Xperience by Kentico components.
 
-The Migration Tool provides an advanced migration mode for Page Builder content that utilizes API discovery on the source instance. To learn more details and how to configure this feature, see [Source instance API discovery](#source-instance-api-discovery).
+The Kentico Migration Tool provides an advanced migration mode for Page Builder content that utilizes API discovery on the source instance. To learn more details and how to configure this feature, see [Source instance API discovery](#source-instance-api-discovery).
 
 #### Categories
 
@@ -180,7 +180,7 @@ Module and class migration does NOT include:
 * Custom settings under modules, which are currently not supported in Xperience by Kentico
 * Module permissions (permissions work differently in Xperience by Kentico, see [Role management](https://docs.xperience.io/x/7IVwCg) and [UI page permission checks](https://docs.xperience.io/x/8IKyCg))
 
-As with all object types, the Migration Tool does not transfer code files to the target project. You need to manually move all code files generated for your custom classes (*Info*, *InfoProvider*, etc.).
+As with all object types, the Kentico Migration Tool does not transfer code files to the target project. You need to manually move all code files generated for your custom classes (*Info*, *InfoProvider*, etc.).
 
 To learn more about custom modules and classes in Xperience by Kentico, see the [Object types](https://docs.xperience.io/x/AKDWCQ) documentation.
 
@@ -213,7 +213,7 @@ Page attachments are not supported in Xperience by Kentico. Attachment files are
 * Any "floating" attachments without an associated page are migrated into the media library root folder.
 * The migration does not include temporary attachments (created when a file upload is not finished correctly). If any are present on the source instance, a warning is logged in the [migration protocol](./MIGRATION_PROTOCOL_REFERENCE.md).
 
-The following is an example of a media library created by the Migration Tool for page attachments:
+The following is an example of a media library created by the Kentico Migration Tool for page attachments:
 
 #### Media library "Attachments for site DancingGoat"
 
@@ -415,7 +415,7 @@ By default, JSON data storing the Page Builder content of pages and custom page 
 
 However, we strongly recommend updating your codebase to the new Xperience by Kentico components. See [Editing components in Xperience by Kentico](https://docs.xperience.io/x/wIfWCQ) to learn more.
 
-To convert Page Builder data to a format suitable for the Xperience by Kentico components, the Migration Tool provides an advanced migration mode that utilizes API discovery on the source instance. The advanced mode currently provides the following data conversion:
+To convert Page Builder data to a format suitable for the Xperience by Kentico components, the Kentico Migration Tool provides an advanced migration mode that utilizes API discovery on the source instance. The advanced mode currently provides the following data conversion:
 
 * **Attachment selector** properties - converted to a format suitable for the Xperience by Kentico **Media selector** component, with `IEnumerable<AssetRelatedItem>` values.
 * **Page selector** properties - converted to a format suitable for the Xperience by Kentico Page selector component, with `IEnumerable<WebPageRelatedItem>` values.
@@ -440,7 +440,7 @@ public class MyWidgetProperties : IWidgetProperties
 
 ### API discovery setup
 
-1. Copy the `ToolkitApiController.cs` file to the `Controllers` folder in the **live site project** of your Kentico Xperience 13 source instance. Get the file from the following location in the Migration Tool repository:
+1. Copy the `ToolkitApiController.cs` file to the `Controllers` folder in the **live site project** of your Kentico Xperience 13 source instance. Get the file from the following location in the Kentico Migration Tool repository:
 
     * For .NET Core projects: `KX13.Extensions\ToolkitApiController.cs`
     * For MVC 5 (.NET Framework 4.8) projects: `KX13.NET48.Extensions\ToolkitApiController.NET48.cs`
@@ -531,7 +531,7 @@ The following example specifies two page types from which reusable schemas are c
 
 ## Convert text fields with media links to media libraries
 
-By default, page type and module class fields with the _Text_ data type and the _Media selection_ [form control](https://docs.xperience.io/x/0A_RBg) from the source instance are converted to plain _Text_ fields in the target instance. You can instead configure the Migration Tool to convert these fields to the _Media files_ data type and use the _Media file selector_ form component.
+By default, page type and module class fields with the _Text_ data type and the _Media selection_ [form control](https://docs.xperience.io/x/0A_RBg) from the source instance are converted to plain _Text_ fields in the target instance. You can instead configure the Kentico Migration Tool to convert these fields to the _Media files_ data type and use the _Media file selector_ form component.
 
 * Attachment links (containing a `getattachment` handler) are migrated as [attachments](#attachments) and changed to the _Media files_ data type.
 * Media file links (containing a `getmedia` handler) are changed to the _Media files_ data type. It is expected that the media library containing the targeted file has been migrated.
@@ -541,7 +541,7 @@ By default, page type and module class fields with the _Text_ data type and the 
 > * Only media libraries using the **Permanent** [file URL format](https://docs.xperience.io/x/xQ_RBg) are supported. Content from media libraries with enabled **Use direct path for files in content** setting will not be converted.
 > * If you enable this feature, you also need to change retrieval and handling of affected files in your code, as the structure of the stored data changes from a text path (e.g.,`~/getmedia/CCEAD0F0-E2BF-459B-814A-36699E5C773E/somefile.jpeg?width=300&height=100`) to a _Media files_ data type (internally stored as e.g., `[{"Identifier":"CCEAD0F0-E2BF-459B-814A-36699E5C773E","Some file":"somefile.jpeg","Size":11803,"Dimensions":{"Width":300,"Height":100}}]`). The value of the field now needs to be [retrieved as a media library file](https://docs.xperience.io/x/LA2RBg).
 
-To enable this feature, configure the `OptInFeatures.CustomMigration.FieldMigrations` [options](#configuration) for the Migration Tool. Use the values in the code snippet below:
+To enable this feature, configure the `OptInFeatures.CustomMigration.FieldMigrations` [options](#configuration) for this tool. Use the values in the code snippet below:
 
 ```json
 "OptInFeatures":{
