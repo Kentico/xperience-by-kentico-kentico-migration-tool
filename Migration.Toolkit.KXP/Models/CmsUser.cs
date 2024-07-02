@@ -87,6 +87,12 @@ public partial class CmsUser
     [InverseProperty("TaskUser")]
     public virtual ICollection<CmsScheduledTask> CmsScheduledTasks { get; set; } = new List<CmsScheduledTask>();
 
+    [InverseProperty("SmartFolderCreatedByUser")]
+    public virtual ICollection<CmsSmartFolder> CmsSmartFolderSmartFolderCreatedByUsers { get; set; } = new List<CmsSmartFolder>();
+
+    [InverseProperty("SmartFolderModifiedByUser")]
+    public virtual ICollection<CmsSmartFolder> CmsSmartFolderSmartFolderModifiedByUsers { get; set; } = new List<CmsSmartFolder>();
+
     [InverseProperty("UserMacroIdentityUser")]
     public virtual CmsUserMacroIdentity? CmsUserMacroIdentity { get; set; }
 

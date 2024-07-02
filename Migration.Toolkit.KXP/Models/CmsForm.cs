@@ -40,8 +40,7 @@ public partial class CmsForm
 
     public DateTime FormLastModified { get; set; }
 
-    [Required]
-    public bool? FormLogActivity { get; set; }
+    public bool FormLogActivity { get; set; }
 
     public string? FormBuilderLayout { get; set; }
 

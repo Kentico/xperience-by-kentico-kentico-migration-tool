@@ -48,6 +48,8 @@ public partial class CmsContentItemLanguageMetadatum
 
     public DateTime? ContentItemLanguageMetadataScheduledPublishWhen { get; set; }
 
+    public DateTime? ContentItemLanguageMetadataScheduledUnpublishWhen { get; set; }
+
     [InverseProperty("ContentItemTagContentItemLanguageMetadata")]
     public virtual ICollection<CmsContentItemTag> CmsContentItemTags { get; set; } = new List<CmsContentItemTag>();
 

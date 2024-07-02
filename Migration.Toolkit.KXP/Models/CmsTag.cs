@@ -9,7 +9,6 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("CMS_Tag")]
 [Index("TagParentId", Name = "IX_CMS_Tag_TagParentID")]
 [Index("TagTaxonomyId", Name = "IX_CMS_Tag_TagTaxonomyID")]
-[Index("TagTitle", "TagTaxonomyId", Name = "IX_CMS_Tag_TagTitle_TagTaxonomyID_Unique", IsUnique = true)]
 public partial class CmsTag
 {
     [Key]

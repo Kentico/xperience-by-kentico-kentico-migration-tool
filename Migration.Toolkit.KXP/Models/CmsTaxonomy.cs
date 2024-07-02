@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_Taxonomy")]
-[Index("TaxonomyTitle", Name = "IX_CMS_Taxonomy_TaxonomyTitle_Unique", IsUnique = true)]
 public partial class CmsTaxonomy
 {
     [Key]

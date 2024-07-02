@@ -26,8 +26,7 @@ public partial class CmsHeadlessToken
     [StringLength(200)]
     public string HeadlessTokenDisplayName { get; set; } = null!;
 
-    [Required]
-    public bool? HeadlessTokenEnabled { get; set; }
+    public bool HeadlessTokenEnabled { get; set; }
 
     public DateTime HeadlessTokenCreatedWhen { get; set; }
 

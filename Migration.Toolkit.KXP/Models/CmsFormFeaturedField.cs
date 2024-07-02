@@ -35,6 +35,5 @@ public partial class CmsFormFeaturedField
     [StringLength(200)]
     public string FormFeaturedFieldIconClass { get; set; } = null!;
 
-    [Required]
-    public bool? FormFeaturedFieldEnabled { get; set; }
+    public bool FormFeaturedFieldEnabled { get; set; }
 }

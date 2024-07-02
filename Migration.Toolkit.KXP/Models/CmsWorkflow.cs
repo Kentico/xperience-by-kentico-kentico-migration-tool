@@ -63,8 +63,7 @@ public partial class CmsWorkflow
 
     public int? WorkflowRecurrenceType { get; set; }
 
-    [Required]
-    public bool? WorkflowEnabled { get; set; }
+    public bool WorkflowEnabled { get; set; }
 
     [InverseProperty("HistoryWorkflow")]
     public virtual ICollection<CmsAutomationHistory> CmsAutomationHistories { get; set; } = new List<CmsAutomationHistory>();

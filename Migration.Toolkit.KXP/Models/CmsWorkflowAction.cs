@@ -38,8 +38,7 @@ public partial class CmsWorkflowAction
 
     public DateTime ActionLastModified { get; set; }
 
-    [Required]
-    public bool? ActionEnabled { get; set; }
+    public bool ActionEnabled { get; set; }
 
     public string? ActionAllowedObjects { get; set; }
 

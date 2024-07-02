@@ -76,11 +76,8 @@ public class CmsFormMapperEf : EntityMapperBase<KX12M.CmsForm, Migration.Toolkit
         target.FormSubmitButtonImage = source.FormSubmitButtonImage;
         target.FormGuid = source.FormGuid;
         target.FormLastModified = source.FormLastModified;
-        target.FormLogActivity = source.FormLogActivity;
+        target.FormLogActivity = source.FormLogActivity ?? false;
         target.FormBuilderLayout = source.FormBuilderLayout;
-
-        // TODO tk: 2022-05-20 new deduce: target.FormAfterSubmitMode = source.FormAfterSubmitMode;
-        // TODO tk: 2022-05-20 new deduce: target.FormAfterSubmitRelatedValue = source.FormAfterSubmitRelatedValue;
 
         if (mappingHelper.TranslateRequiredId<KX12M.CmsClass>(c => c.ClassId, source.FormClassId, out var classId))
         {

@@ -20,8 +20,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Instance.Extensions", "Inst
 		KX13.NET48.Extensions\ToolkitApiController.NET48.cs = KX13.NET48.Extensions\ToolkitApiController.NET48.cs
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Experiments", "Experiments", "{ECDC90AD-5A66-4C0E-BD87-C328E3B6A287}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.Tests", "Migration.Toolkit.Tests\Migration.Toolkit.Tests.csproj", "{FEA68426-F772-419D-989D-C6ADDA757344}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.KX12", "Migration.Toolkit.KX12\Migration.Toolkit.KX12.csproj", "{CAC43720-697A-43C2-8F75-2D029AD2ABFD}"

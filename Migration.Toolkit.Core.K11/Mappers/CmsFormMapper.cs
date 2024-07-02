@@ -67,7 +67,7 @@ public class CmsFormMapperEf(ILogger<CmsFormMapperEf> logger, PrimaryKeyMappingC
         target.FormSubmitButtonImage = source.FormSubmitButtonImage;
         target.FormGuid = source.FormGuid;
         target.FormLastModified = source.FormLastModified;
-        target.FormLogActivity = source.FormLogActivity;
+        target.FormLogActivity = source.FormLogActivity ?? false;
         // target.FormBuilderLayout = source.FormBuilderLayout;
 
         if (mappingHelper.TranslateRequiredId<Toolkit.K11.Models.CmsClass>(c => c.ClassId, source.FormClassId, out var classId))

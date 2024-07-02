@@ -32,8 +32,7 @@ public partial class CmsWebsiteChannel
 
     public int WebsiteChannelDefaultCookieLevel { get; set; }
 
-    [Required]
-    public bool? WebsiteChannelStoreFormerUrls { get; set; }
+    public bool WebsiteChannelStoreFormerUrls { get; set; }
 
     [InverseProperty("WebPageFormerUrlPathWebsiteChannel")]
     public virtual ICollection<CmsWebPageFormerUrlPath> CmsWebPageFormerUrlPaths { get; set; } = new List<CmsWebPageFormerUrlPath>();

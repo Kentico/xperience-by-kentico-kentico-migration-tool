@@ -26,8 +26,7 @@ public partial class CmsWebPageUrlPath
     [Column("WebPageUrlPathWebPageItemID")]
     public int WebPageUrlPathWebPageItemId { get; set; }
 
-    [Required]
-    public bool? WebPageUrlPathIsLatest { get; set; }
+    public bool WebPageUrlPathIsLatest { get; set; }
 
     [Column("WebPageUrlPathGUID")]
     public Guid WebPageUrlPathGuid { get; set; }

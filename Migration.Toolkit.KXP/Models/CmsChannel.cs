@@ -25,6 +25,9 @@ public partial class CmsChannel
     [Column("ChannelGUID")]
     public Guid ChannelGuid { get; set; }
 
+    [StringLength(20)]
+    public string ChannelSize { get; set; } = null!;
+
     [InverseProperty("ContentItemChannel")]
     public virtual ICollection<CmsContentItem> CmsContentItems { get; set; } = new List<CmsContentItem>();
 
