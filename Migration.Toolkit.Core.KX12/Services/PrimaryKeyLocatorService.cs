@@ -96,6 +96,7 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
 
         if (sourceType == typeof(KX12M.CmsTree) && memberName == nameof(KX12M.CmsTree.NodeId))
         {
+#error "NodeGuid may not be unique, use other means of searching for node!"
             var source = kx12Context.CmsTrees.Select(x => new { x.NodeId, x.NodeGuid }).ToList();
             var target = kxpContext.CmsChannels.Select(x => new { x.ChannelId, x.ChannelGuid }).ToList();
 
@@ -231,6 +232,7 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
             if (sourceType == typeof(KX12M.CmsTree))
             {
                 // careful - cms.root will have different guid
+#error "NodeGuid may not be unique, use other means of searching for node!"
                 var k12Guid = KX12Context.CmsTrees.Where(c => c.NodeId == sourceId).Select(x => x.NodeGuid).Single();
                 targetId = kxpContext.CmsChannels.Where(x => x.ChannelGuid == k12Guid).Select(x => x.ChannelId).Single();
                 return true;

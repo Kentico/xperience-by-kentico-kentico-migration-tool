@@ -90,6 +90,7 @@ public class MigratePagesCommandHandler(
                         continue;
                     }
 
+#error "NodeGuid may not be unique, use other means of searching for node!"
                     // materialize linked node & write to protocol
                     var linkedNode = modelFacade.SelectWhere<ICmsTree>("NodeSiteID = @nodeSiteID AND NodeGUID = @nodeGuid",
                         new SqlParameter("nodeSiteID", ksNode.NodeSiteID),
@@ -109,6 +110,7 @@ public class MigratePagesCommandHandler(
                     {
                         var linkedDocument = linkedNodeDocuments[i];
                         var fixedDocumentGuid = GuidHelper.CreateDocumentGuid($"{linkedDocument.DocumentID}|{ksNode.NodeID}|{ksNode.NodeSiteID}"); //Guid.NewGuid();
+#error "NodeGuid may not be unique, use other means of searching for node!"
                         if (ContentItemInfo.Provider.Get(ksNode.NodeGUID)?.ContentItemID is { } contentItemId)
                         {
                             if (cultureCodeToLanguageGuid.TryGetValue(linkedDocument.DocumentCulture, out var languageGuid) &&
@@ -177,6 +179,7 @@ public class MigratePagesCommandHandler(
                 var ksNodeParent = modelFacade.SelectById<ICmsTree>(ksNode.NodeParentID);
                 var nodeParentGuid = ksNodeParent?.NodeAliasPath == "/" || ksNodeParent == null
                     ? (Guid?)null
+#error "NodeGuid may not be unique, use other means of searching for node!"
                     : ksNodeParent?.NodeGUID;
 
                 var targetClass = DataClassInfoProvider.ProviderObject.Get(ksNodeClass.ClassGUID);
@@ -415,7 +418,7 @@ public class MigratePagesCommandHandler(
                             VersionStatus.InitialDraft => false,
                             VersionStatus.Draft => true,
                             VersionStatus.Published => false,
-                            VersionStatus.Archived => false,
+                            VersionStatus.Unpublished => false,
                             _ => throw new ArgumentOutOfRangeException()
                         },
                     };

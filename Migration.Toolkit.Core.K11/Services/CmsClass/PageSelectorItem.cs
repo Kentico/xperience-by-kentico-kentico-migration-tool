@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 public class PageSelectorItem
 {
     /// <summary>Node Guid of a page.</summary>
+#error "NodeGuid may not be unique, use other means of searching for node!"
     [JsonProperty("nodeGuid")]
     public Guid NodeGuid { get; set; }
 }

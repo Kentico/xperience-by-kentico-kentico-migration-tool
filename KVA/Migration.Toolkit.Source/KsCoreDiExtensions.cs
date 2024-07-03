@@ -37,6 +37,7 @@ public static class KsCoreDiExtensions
         services.AddTransient<IModuleLoader, ModuleLoader>();
 
         services.AddSingleton<ModelFacade>();
+        services.AddSingleton<SpoiledGuidContext>();
 
         services.AddTransient<BulkDataCopyService>();
         services.AddTransient<CmsRelationshipService>();

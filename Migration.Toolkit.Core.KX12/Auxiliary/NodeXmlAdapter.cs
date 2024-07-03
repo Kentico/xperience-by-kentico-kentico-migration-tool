@@ -41,6 +41,7 @@ internal class NodeXmlAdapter {
     public int? NodeParentID => _xClass.Element(NodeXmlColumns.NODE_PARENT_ID)?.Value<int>();
     public int? NodeLevel => _xClass.Element(NodeXmlColumns.NODE_LEVEL)?.Value<int>();
     public int? NodeSiteID => _xClass.Element(NodeXmlColumns.NODE_SITE_ID)?.Value<int>();
+    [Obsolete("NodeGUID is not unique, use other means of node identification", true)]
     public Guid? NodeGUID => _xClass.Element(NodeXmlColumns.NODE_GUID)?.Value<Guid>();
     public int? NodeOrder => _xClass.Element(NodeXmlColumns.NODE_ORDER)?.Value<int>();
     public int? NodeOwner => _xClass.Element(NodeXmlColumns.NODE_OWNER)?.Value<int>();
@@ -63,6 +64,7 @@ internal class NodeXmlAdapter {
     public string? DocumentContent => _xClass.Element(NodeXmlColumns.DOCUMENT_CONTENT)?.Value;
     public string? DocumentLastVersionNumber => _xClass.Element(NodeXmlColumns.DOCUMENT_LAST_VERSION_NUMBER)?.Value;
     public bool? DocumentIsArchived => _xClass.Element(NodeXmlColumns.DOCUMENT_IS_ARCHIVED)?.ValueAsBool();
+    [Obsolete("DocumentGUID is not unique, use other means of document identification", true)]
     public Guid? DocumentGUID => _xClass.Element(NodeXmlColumns.DOCUMENT_GUID)?.Value<Guid>();
     public Guid? DocumentWorkflowCycleGUID => _xClass.Element(NodeXmlColumns.DOCUMENT_WORKFLOW_CYCLE_GUID)?.Value<Guid>();
     public bool? DocumentCanBePublished => _xClass.Element(NodeXmlColumns.DOCUMENT_CAN_BE_PUBLISHED)?.ValueAsBool();

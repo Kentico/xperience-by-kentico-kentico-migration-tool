@@ -192,6 +192,7 @@ public class PageTemplateConfigurationMapper(
                         {
                             if (value?.ToObject<List<Migration.Toolkit.Source.Services.Model.PageSelectorItem>>() is { Count: > 0 } items)
                             {
+#error "NodeGuid may not be unique, use other means of searching for node!"
                                 properties[key] = JToken.FromObject(items.Select(x => new WebPageRelatedItem { WebPageGuid = x.NodeGuid }).ToList());
                             }
 

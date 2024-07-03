@@ -95,10 +95,12 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
 
         if (sourceType == typeof(Toolkit.KX13.Models.CmsTree) && memberName == nameof(KX13M.CmsTree.NodeId))
         {
+#error "NodeGuid may not be unique, use other means of searching for node!"
             var source = kx13Context.CmsTrees.Select(x => new { x.NodeId, x.NodeGuid }).ToList();
             var target = kxpContext.CmsChannels.Select(x => new { x.ChannelId, x.ChannelGuid }).ToList();
 
             var result = source.Join(target,
+#error "NodeGuid may not be unique, use other means of searching for node!"
                 a => a.NodeGuid,
                 b => b.ChannelGuid,
                 (a, b) => new SourceTargetKeyMapping(a.NodeId, b.ChannelId)
@@ -228,6 +230,7 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
             if (sourceType == typeof(Toolkit.KX13.Models.CmsTree))
             {
                 // careful - cms.root will have different guid
+#error "NodeGuid may not be unique, use other means of searching for node!"
                 var kx13Guid = kx13Context.CmsTrees.Where(c => c.NodeId == sourceId).Select(x => x.NodeGuid).Single();
                 targetId = kxpContext.CmsWebPageItems.Where(x => x.WebPageItemGuid == kx13Guid).Select(x => x.WebPageItemId).Single();
                 return true;
