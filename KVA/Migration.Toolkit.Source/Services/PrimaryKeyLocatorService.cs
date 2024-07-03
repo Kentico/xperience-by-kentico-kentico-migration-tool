@@ -84,10 +84,12 @@ public class PrimaryKeyLocatorService(
 
         if (sourceType == typeof(ICmsTree) && memberName == nameof(ICmsTree.NodeID))
         {
+#error "NodeGuid may not be unique, use other means of searching for node!"
             var source = modelFacade.SelectAll<ICmsTree>().Select(x => new { x.NodeID, x.NodeGUID }).ToList();
             var target = kxpContext.CmsChannels.Select(x => new { x.ChannelId, x.ChannelGuid }).ToList();
 
             var result = source.Join(target,
+#error "NodeGuid may not be unique, use other means of searching for node!"
                 a => a.NodeGUID,
                 b => b.ChannelGuid,
                 (a, b) => new SourceTargetKeyMapping(a.NodeID, b.ChannelId)
@@ -217,6 +219,7 @@ public class PrimaryKeyLocatorService(
 
             if (sourceType == typeof(ICmsTree))
             {
+#error "NodeGuid may not be unique, use other means of searching for node!"
                 var sourceGuid = modelFacade.SelectById<ICmsTree>(sourceId)?.NodeGUID;
                 targetId = kxpContext.CmsChannels.Where(x => x.ChannelGuid == sourceGuid).Select(x => x.ChannelId).Single();
                 return true;

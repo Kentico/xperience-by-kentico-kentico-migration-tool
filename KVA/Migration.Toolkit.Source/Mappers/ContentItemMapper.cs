@@ -49,7 +49,8 @@ public class ContentItemMapper(
     KxpMediaFileFacade mediaFileFacade,
     ModelFacade modelFacade,
     ReusableSchemaService reusableSchemaService,
-    DeferredPathService deferredPathService
+    DeferredPathService deferredPathService,
+    SpoiledGuidContext spoiledGuidContext
 ) : UmtMapperBase<CmsTreeMapperSource>
 {
     private const string CLASS_FIELD_CONTROL_NAME = "controlname";
@@ -64,6 +65,7 @@ public class ContentItemMapper(
             throw new InvalidOperationException($"Fatal: node class is missing, class id '{cmsTree.NodeClassID}'");
         }
 
+#error "NodeGuid may not be unique, use other means of searching for node!"
         var contentItemGuid = cmsTree.NodeGUID;
         yield return new ContentItemModel
         {
@@ -154,9 +156,16 @@ public class ContentItemMapper(
 
             PatchJsonDefinitions(source.CmsTree.NodeSiteID, ref contentItemCommonDataPageTemplateConfiguration, ref contentItemCommonDataPageBuilderWidgets, out var ndp);
 
+            var documentGuid = spoiledGuidContext.EnsureDocumentGuid(
+                cmsDocument.DocumentGUID ?? throw new InvalidOperationException($"DocumentGUID is null"),
+                cmsTree.NodeSiteID,
+                cmsTree.NodeID,
+                cmsDocument.DocumentID
+            );
+
             var commonDataModel = new ContentItemCommonDataModel
             {
-                ContentItemCommonDataGUID = cmsDocument.DocumentGUID ?? throw new InvalidOperationException($"DocumentGUID is null"),
+                ContentItemCommonDataGUID = documentGuid,
                 ContentItemCommonDataContentItemGuid = contentItemGuid,
                 ContentItemCommonDataContentLanguageGuid = languageGuid, // DocumentCulture -> language entity needs to be created and its ID used here
                 ContentItemCommonDataVersionStatus = versionStatus,
@@ -260,7 +269,7 @@ public class ContentItemMapper(
 
             var languageMetadataInfo = new ContentItemLanguageMetadataModel
             {
-                ContentItemLanguageMetadataGUID = cmsDocument.DocumentGUID,
+                ContentItemLanguageMetadataGUID = documentGuid,
                 ContentItemLanguageMetadataContentItemGuid = contentItemGuid,
                 ContentItemLanguageMetadataDisplayName = cmsDocument.DocumentName, // For the admin UI only
                 ContentItemLanguageMetadataLatestVersionStatus = draftMigrated ? VersionStatus.Draft : versionStatus, // That's the latest status of th item for admin optimization
@@ -574,6 +583,7 @@ public class ContentItemMapper(
                         {
                             if (value?.ToObject<List<Services.Model.PageSelectorItem>>() is { Count: > 0 } items)
                             {
+#error "NodeGuid may not be unique, use other means of searching for node!"
                                 properties[key] = JToken.FromObject(items.Select(x => new WebPageRelatedItem { WebPageGuid = x.NodeGuid }).ToList());
                             }
 
@@ -785,6 +795,7 @@ public class ContentItemMapper(
             {
                 if (fieldMigration.Actions?.Contains(TcaDirective.ConvertToPages) ?? false)
                 {
+#error "NodeGuid may not be unique, use other means of searching for node!"
                     // relation to other document
                     var convertedRelation = relationshipService.GetNodeRelationships(cmsTree.NodeID)
                         .Select(r => new WebPageRelatedItem { WebPageGuid = r.RightNode.NodeGUID });
@@ -801,6 +812,7 @@ public class ContentItemMapper(
                 {
                     if (value is string pageReferenceJson)
                     {
+#error "NodeGuid may not be unique, use other means of searching for node!"
                         target[columnName] = pageReferenceJson.Replace("\"NodeGuid\"", "\"WebPageGuid\"");
                     }
                 }

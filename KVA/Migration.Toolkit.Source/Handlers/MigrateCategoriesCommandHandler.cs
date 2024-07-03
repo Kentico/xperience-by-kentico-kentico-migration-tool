@@ -105,6 +105,7 @@ public class MigrateCategoriesCommandHandler(
                             .ImportAsync(umtModel)
                             .AssertSuccess<TagInfo>(logger) is {Success:true, Info: {} tag})
                     {
+#error "Migration of taxonimies is broken due to DocumentGUID possible conflicts!!"
                         query = """
                                 SELECT TJ.DocumentGUID, CDC.CategoryID, TJ.DocumentCheckedOutVersionHistoryID, TJ.NodeClassID
                                 FROM View_CMS_Tree_Joined [TJ]

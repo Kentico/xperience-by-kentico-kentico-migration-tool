@@ -192,6 +192,7 @@ public class PageTemplateConfigurationMapper : EntityMapperBase<KX13M.CmsPageTem
                             {
                                 properties[key] = JToken.FromObject(items.Select(x => new WebPageRelatedItem
                                 {
+#error "NodeGuid may not be unique, use other means of searching for node!"
                                     WebPageGuid = x.NodeGuid
                                 }).ToList());
                             }

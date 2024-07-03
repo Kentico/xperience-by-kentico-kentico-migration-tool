@@ -343,6 +343,7 @@ public class MigrateContactManagementCommandHandler : IRequestHandler<MigrateCon
         {
             var result = _keyMappingContext.MapSourceKey<KX13M.CmsTree, Migration.Toolkit.KXP.Models.CmsWebPageItem, Guid?>(
                 s => s.NodeId,
+#error "NodeGuid may not be unique, use other means of searching for node!"
                 s => s.NodeGuid,
                 activityNodeId.NullIfZero(), t => t.WebPageItemGuid, t => t.WebPageItemGuid);
             switch(result)
