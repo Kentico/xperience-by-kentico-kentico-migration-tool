@@ -53,16 +53,16 @@ public static class PageBuilderWidgetsPatcher
                 switch (key)
                 {
                     case "TreePath":
-                    {
-                        var nodeAliasPath = value?.Value<string>();
-                        var treePath = convertor.GetConvertedOrUnchangedAssumingChannel(nodeAliasPath);
-                        if (!TreePathConvertor.TreePathComparer.Equals(nodeAliasPath, treePath))
                         {
-                            properties["TreePath"] = JToken.FromObject(treePath);
-                            anythingChanged = true;
+                            var nodeAliasPath = value?.Value<string>();
+                            var treePath = convertor.GetConvertedOrUnchangedAssumingChannel(nodeAliasPath);
+                            if (!TreePathConvertor.TreePathComparer.Equals(nodeAliasPath, treePath))
+                            {
+                                properties["TreePath"] = JToken.FromObject(treePath);
+                                anythingChanged = true;
+                            }
+                            break;
                         }
-                        break;
-                    }
                 }
             }
         }

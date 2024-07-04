@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Common;
+namespace Migration.Toolkit.Common;
 
 using MediatR;
 using Migration.Toolkit.Common.Abstractions;
@@ -45,7 +45,7 @@ public record MigrateContactManagementCommand : IRequest<CommandResult>, IComman
 
 public record MigrateDataProtectionCommand : IRequest<CommandResult>, ICommand
 {
-    public static readonly int Rank = 5 + + MigrateSitesCommand.Rank + MigrateContactManagementCommand.Rank;
+    public static readonly int Rank = 5 + +MigrateSitesCommand.Rank + MigrateContactManagementCommand.Rank;
 
     public static string Moniker => "data-protection";
     public static string MonikerFriendly => "Data protection";

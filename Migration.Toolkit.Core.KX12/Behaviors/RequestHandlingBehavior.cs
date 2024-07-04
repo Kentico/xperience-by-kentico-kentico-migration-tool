@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.KX12.Behaviors;
+namespace Migration.Toolkit.Core.KX12.Behaviors;
 
 using System.Diagnostics;
 using MediatR;

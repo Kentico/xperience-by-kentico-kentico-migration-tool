@@ -14,7 +14,7 @@ public class CmsRelationshipService(
         var relationships = modelFacade.SelectWhere<ICmsRelationship>("LeftNodeId = @nodeId", new SqlParameter("nodeId", nodeId));
         foreach (var cmsRelationship in relationships)
         {
-            yield return new (cmsRelationship, modelFacade.SelectById<ICmsTree>(cmsRelationship.RightNodeID));
+            yield return new(cmsRelationship, modelFacade.SelectById<ICmsTree>(cmsRelationship.RightNodeID));
         }
         // foreach (var cmsRelationship in kx13Context.CmsRelationships
         //              .Include(r => r.RelationshipName)

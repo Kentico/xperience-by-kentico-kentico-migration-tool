@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.KX13.Mappers;
+namespace Migration.Toolkit.Core.KX13.Mappers;
 
 using CMS.Membership;
 using Microsoft.Extensions.Logging;

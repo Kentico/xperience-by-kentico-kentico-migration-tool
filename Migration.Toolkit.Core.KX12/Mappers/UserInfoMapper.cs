@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.KX12.Mappers;
+namespace Migration.Toolkit.Core.KX12.Mappers;
 
 using System.Data;
 using CMS.Membership;

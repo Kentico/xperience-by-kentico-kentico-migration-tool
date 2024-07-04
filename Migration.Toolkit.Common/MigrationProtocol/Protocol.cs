@@ -3,7 +3,7 @@ namespace Migration.Toolkit.Common.MigrationProtocol;
 using MediatR;
 using Migration.Toolkit.Common.Abstractions;
 
-public class Protocol: IProtocol
+public class Protocol : IProtocol
 {
     private readonly IEnumerable<IMigrationProtocol> _protocols;
 

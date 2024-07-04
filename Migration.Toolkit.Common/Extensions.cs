@@ -1,4 +1,4 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 
 namespace Migration.Toolkit.Common;
 
@@ -28,7 +28,7 @@ public static class Extensions
 
     public static bool IsIn<T>(this T value, params T[] values) => values.Contains(value);
 
-    public static string GetMemberName<T>(this Expression<Func<T,object>> expr)
+    public static string GetMemberName<T>(this Expression<Func<T, object>> expr)
     {
         var stack = new Stack<string>();
 
@@ -132,9 +132,11 @@ public static class Extensions
     }
 
 
-    public static bool? ValueAsBool(this XElement element) {
+    public static bool? ValueAsBool(this XElement element)
+    {
 
-        if (element != null && bool.TryParse(element.Value, out var value)) {
+        if (element != null && bool.TryParse(element.Value, out var value))
+        {
             return value;
         }
         else return default;

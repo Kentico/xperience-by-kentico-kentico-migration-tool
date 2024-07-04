@@ -6,11 +6,11 @@ namespace Migration.Toolkit.Common;
 
 public class EntityConfigurations : Dictionary<string, EntityConfiguration>
 {
-    public EntityConfigurations(): base(StringComparer.OrdinalIgnoreCase)
+    public EntityConfigurations() : base(StringComparer.OrdinalIgnoreCase)
     {
-        
+
     }
-    
+
     public EntityConfiguration GetEntityConfiguration(string? tableName)
     {
         if (this.TryGetValue(tableName ?? "*", out var result))
@@ -45,7 +45,7 @@ public class EntityConfiguration
 {
     [JsonPropertyName(ConfigurationNames.ExcludeCodeNames)]
     public string[] ExcludeCodeNames { get; set; } = Array.Empty<string>();
-    
+
     [JsonPropertyName(ConfigurationNames.ExplicitPrimaryKeyMapping)]
     public Dictionary<string, Dictionary<string, int?>> ExplicitPrimaryKeyMapping { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }

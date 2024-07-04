@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.KX12.Providers;
+namespace Migration.Toolkit.Core.KX12.Providers;
 
 using System;
 using System.Threading.Tasks;

@@ -108,37 +108,37 @@ try
     switch (VersionHelper.GetInstanceVersion(conn))
     {
         case { Major: 11 }:
-        {
-            services.UseK11DbContext(settings);
-            services.UseK11ToolkitCore();
-            Console.WriteLine($@"Source instance {Green($"version 11")} detected.");
-            break;
-        }
+            {
+                services.UseK11DbContext(settings);
+                services.UseK11ToolkitCore();
+                Console.WriteLine($@"Source instance {Green($"version 11")} detected.");
+                break;
+            }
         case { Major: 12 }:
-        {
-            services.UseKx12DbContext(settings);
-            services.UseKx12ToolkitCore();
-            Console.WriteLine($@"Source instance {Green($"version 12")} detected");
-            break;
-        }
+            {
+                services.UseKx12DbContext(settings);
+                services.UseKx12ToolkitCore();
+                Console.WriteLine($@"Source instance {Green($"version 12")} detected");
+                break;
+            }
         case { Major: 13 }:
-        {
-            services.UseKx13DbContext(settings);
-            services.UseKx13ToolkitCore();
-            Console.WriteLine($@"Source instance {Green("version 13")} detected");
-            break;
-        }
+            {
+                services.UseKx13DbContext(settings);
+                services.UseKx13ToolkitCore();
+                Console.WriteLine($@"Source instance {Green("version 13")} detected");
+                break;
+            }
         case { Major: { } version }:
-        {
-            Console.WriteLine($@"Source instance {Green($"version {version}")} detected. This instance is not supported");
-            break;
-        }
+            {
+                Console.WriteLine($@"Source instance {Green($"version {version}")} detected. This instance is not supported");
+                break;
+            }
         default:
-        {
-            Console.WriteLine(
-                $@"{Red("Parsing of source instance version failed")}, please check connection string and if source instance settings key with key name 'CMSDBVersion' is correctly filled.");
-            return;
-        }
+            {
+                Console.WriteLine(
+                    $@"{Red("Parsing of source instance version failed")}, please check connection string and if source instance settings key with key name 'CMSDBVersion' is correctly filled.");
+                return;
+            }
     }
 }
 catch (Exception ex)

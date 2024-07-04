@@ -90,13 +90,14 @@ public class Printer
         return string.Join(separator, models.Select(m => GetEntityIdentityPrint(m, false)));
     }
 
-    public static string PrintEnumValues<TEnum>(string separator) where TEnum: struct, Enum
+    public static string PrintEnumValues<TEnum>(string separator) where TEnum : struct, Enum
     {
         return string.Join(separator, Enum.GetValues<TEnum>());
     }
 }
 
-public class PrintService: IPrintService {
+public class PrintService : IPrintService
+{
     public string PrintKxpModelInfo<T>(T model)
     {
         return Printer.PrintKxpModelInfo(model);

@@ -48,7 +48,7 @@ public class LegacyAttachmentHandler : CMS.DataEngine.Module
 
 public class AttachmentsService : ActionResultServiceBase
 {
-    private const string LegacyOriginalPath = "__LegacyOriginalPath";
+    private const string LEGACY_ORIGINAL_PATH = "__LegacyOriginalPath";
 
     protected override RequestStatusEnum RequestStatusEnum => RequestStatusEnum.GetFileHandler;
 
@@ -74,7 +74,7 @@ public class AttachmentsService : ActionResultServiceBase
             if (mediaFiles.Length > 1)
             {
                 var narrowedByOriginalPath = mediaFiles
-                    .Where(mf => mf.FileCustomData.GetValue(LegacyOriginalPath)?.ToString()
+                    .Where(mf => mf.FileCustomData.GetValue(LEGACY_ORIGINAL_PATH)?.ToString()
                         ?.Equals($"/{dir}", StringComparison.InvariantCultureIgnoreCase) == true)
                     .ToArray();
 

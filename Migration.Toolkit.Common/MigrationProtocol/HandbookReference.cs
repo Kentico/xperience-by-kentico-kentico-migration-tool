@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Common.MigrationProtocol;
+namespace Migration.Toolkit.Common.MigrationProtocol;
 
 using System.Reflection;
 using System.Text;

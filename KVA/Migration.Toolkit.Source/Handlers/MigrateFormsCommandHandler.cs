@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Source.Handlers;
+namespace Migration.Toolkit.Source.Handlers;
 
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -64,7 +64,7 @@ public class MigrateFormsCommandHandler(
                 var mapped = cmsFormMapper.Map(ksCmsForm, kxoCmsForm);
                 protocol.MappedTarget(mapped);
 
-                if (mapped is { Success : true } result)
+                if (mapped is { Success: true } result)
                 {
                     var (cmsForm, newInstance) = result;
                     ArgumentNullException.ThrowIfNull(cmsForm, nameof(cmsForm));
@@ -222,7 +222,7 @@ public class MigrateFormsCommandHandler(
         var mapped = dataClassMapper.Map(ksClass, kxoDataClass);
         protocol.MappedTarget(mapped);
 
-        if (mapped is { Success : true })
+        if (mapped is { Success: true })
         {
             var (dataClassInfo, newInstance) = mapped;
             ArgumentNullException.ThrowIfNull(dataClassInfo, nameof(dataClassInfo));

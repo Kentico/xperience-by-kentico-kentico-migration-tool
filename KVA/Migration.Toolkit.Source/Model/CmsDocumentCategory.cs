@@ -4,10 +4,10 @@ namespace Migration.Toolkit.Source.Model;
 using System.Data;
 using Migration.Toolkit.Common;
 
-public interface ICmsDocumentCategory: ISourceModel<ICmsDocumentCategory>
+public interface ICmsDocumentCategory : ISourceModel<ICmsDocumentCategory>
 {
     int DocumentID { get; }
-    int CategoryID { get; }    
+    int CategoryID { get; }
 
     static string ISourceModel<ICmsDocumentCategory>.GetPrimaryKeyName(SemanticVersion version)
     {
@@ -42,61 +42,60 @@ public interface ICmsDocumentCategory: ISourceModel<ICmsDocumentCategory>
         };
     }
 }
-public partial record CmsDocumentCategoryK11(int DocumentID, int CategoryID): ICmsDocumentCategory, ISourceModel<CmsDocumentCategoryK11>
+public partial record CmsDocumentCategoryK11(int DocumentID, int CategoryID) : ICmsDocumentCategory, ISourceModel<CmsDocumentCategoryK11>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "CategoryID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "CategoryID";
     public static string TableName => "CMS_DocumentCategory";
     public static string GuidColumnName => "";
     static CmsDocumentCategoryK11 ISourceModel<CmsDocumentCategoryK11>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsDocumentCategoryK11(
-            reader.Unbox<int>("DocumentID"), reader.Unbox<int>("CategoryID")                
+            reader.Unbox<int>("DocumentID"), reader.Unbox<int>("CategoryID")
         );
     }
     public static CmsDocumentCategoryK11 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsDocumentCategoryK11(
-            reader.Unbox<int>("DocumentID"), reader.Unbox<int>("CategoryID")                
+            reader.Unbox<int>("DocumentID"), reader.Unbox<int>("CategoryID")
         );
     }
 };
-public partial record CmsDocumentCategoryK12(int DocumentID, int CategoryID): ICmsDocumentCategory, ISourceModel<CmsDocumentCategoryK12>
+public partial record CmsDocumentCategoryK12(int DocumentID, int CategoryID) : ICmsDocumentCategory, ISourceModel<CmsDocumentCategoryK12>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "CategoryID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "CategoryID";
     public static string TableName => "CMS_DocumentCategory";
     public static string GuidColumnName => "";
     static CmsDocumentCategoryK12 ISourceModel<CmsDocumentCategoryK12>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsDocumentCategoryK12(
-            reader.Unbox<int>("DocumentID"), reader.Unbox<int>("CategoryID")                
+            reader.Unbox<int>("DocumentID"), reader.Unbox<int>("CategoryID")
         );
     }
     public static CmsDocumentCategoryK12 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsDocumentCategoryK12(
-            reader.Unbox<int>("DocumentID"), reader.Unbox<int>("CategoryID")                
+            reader.Unbox<int>("DocumentID"), reader.Unbox<int>("CategoryID")
         );
     }
 };
-public partial record CmsDocumentCategoryK13(int DocumentID, int CategoryID): ICmsDocumentCategory, ISourceModel<CmsDocumentCategoryK13>
+public partial record CmsDocumentCategoryK13(int DocumentID, int CategoryID) : ICmsDocumentCategory, ISourceModel<CmsDocumentCategoryK13>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "CategoryID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "CategoryID";
     public static string TableName => "CMS_DocumentCategory";
     public static string GuidColumnName => "";
     static CmsDocumentCategoryK13 ISourceModel<CmsDocumentCategoryK13>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsDocumentCategoryK13(
-            reader.Unbox<int>("DocumentID"), reader.Unbox<int>("CategoryID")                
+            reader.Unbox<int>("DocumentID"), reader.Unbox<int>("CategoryID")
         );
     }
     public static CmsDocumentCategoryK13 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsDocumentCategoryK13(
-            reader.Unbox<int>("DocumentID"), reader.Unbox<int>("CategoryID")                
+            reader.Unbox<int>("DocumentID"), reader.Unbox<int>("CategoryID")
         );
     }
 };
-

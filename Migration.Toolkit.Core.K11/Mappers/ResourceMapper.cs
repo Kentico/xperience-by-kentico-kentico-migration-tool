@@ -35,7 +35,7 @@ public class ResourceMapper(ILogger<ResourceMapper> logger, PrimaryKeyMappingCon
             if (target.ResourceName.StartsWith("CMS.", StringComparison.InvariantCultureIgnoreCase))
             {
                 var targetResourceNamePatched = target.ResourceName.Substring(4, target.ResourceName.Length - 4);
-                logger.LogInformation("Patching CMS Resource '{ResourceName}': name changed to '{ResourceNamePatched}'",  target.ResourceName, targetResourceNamePatched);
+                logger.LogInformation("Patching CMS Resource '{ResourceName}': name changed to '{ResourceNamePatched}'", target.ResourceName, targetResourceNamePatched);
                 target.ResourceName = targetResourceNamePatched;
             }
         }

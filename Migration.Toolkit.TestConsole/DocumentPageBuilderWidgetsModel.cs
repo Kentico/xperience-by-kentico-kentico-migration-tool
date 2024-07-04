@@ -185,4 +185,3 @@ public sealed class WidgetVariantConfiguration
 }
 
 #endregion
-

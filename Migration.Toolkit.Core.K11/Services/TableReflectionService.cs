@@ -8,7 +8,7 @@ using Migration.Toolkit.K11;
 public class TableReflectionService
 {
     private readonly ILogger<TableReflectionService> _logger;
-    private readonly Dictionary<string,Type> _tableNameLookup;
+    private readonly Dictionary<string, Type> _tableNameLookup;
 
     public TableReflectionService(ILogger<TableReflectionService> logger)
     {
@@ -20,7 +20,7 @@ public class TableReflectionService
         {
             var rh = new ReflectionHelper(type);
 
-            if (rh.GetFirstAttributeOrNull<TableAttribute>()?.Name is {} tableName && !string.IsNullOrWhiteSpace(tableName))
+            if (rh.GetFirstAttributeOrNull<TableAttribute>()?.Name is { } tableName && !string.IsNullOrWhiteSpace(tableName))
             {
                 lookups.tableNameLookup[tableName] = type;
                 lookups.nameLookup[type.Name] = type;
