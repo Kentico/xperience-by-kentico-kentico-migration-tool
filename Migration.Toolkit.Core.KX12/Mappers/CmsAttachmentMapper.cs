@@ -12,9 +12,9 @@ using Migration.Toolkit.KX12.Models;
 public record CmsAttachmentMapperSource(CmsAttachment Attachment, int TargetLibraryId, IUploadedFile File, string LibrarySubFolder,
     CmsDocument? AttachmentDocument);
 
-public class CmsAttachmentMapper: EntityMapperBase<CmsAttachmentMapperSource, MediaFileInfo>
+public class CmsAttachmentMapper : EntityMapperBase<CmsAttachmentMapperSource, MediaFileInfo>
 {
-    private const string LegacyOriginalPath = "__LegacyOriginalPath";
+    private const string LEGACY_ORIGINAL_PATH = "__LegacyOriginalPath";
 
     public CmsAttachmentMapper(ILogger<CmsAttachmentMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : base(logger, pkContext, protocol)
     {
@@ -51,7 +51,7 @@ public class CmsAttachmentMapper: EntityMapperBase<CmsAttachmentMapperSource, Me
 
         if (attachmentDocument != null)
         {
-            target.FileCustomData.SetValue(LegacyOriginalPath, attachmentDocument.DocumentNode.NodeAliasPath);
+            target.FileCustomData.SetValue(LEGACY_ORIGINAL_PATH, attachmentDocument.DocumentNode.NodeAliasPath);
         }
 
         return target;

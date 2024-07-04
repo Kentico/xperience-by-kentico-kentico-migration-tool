@@ -2,10 +2,10 @@ namespace Migration.Toolkit.KXP.Api.Auxiliary;
 
 using CMS.Base;
 
-public class DummyUploadedFile: IUploadedFile
+public class DummyUploadedFile : IUploadedFile
 {
     public Stream InputStream { get; }
-    
+
     public string ContentType { get; }
 
     public long Length { get; }
@@ -24,7 +24,7 @@ public class DummyUploadedFile: IUploadedFile
     {
         return new DummyUploadedFile(stream, contentType, length, fileName);
     }
-    
+
     public static IUploadedFile FromByteArray(byte[] byteArray, string contentType, long length, string fileName)
     {
         return new DummyUploadedFile(new MemoryStream(byteArray), contentType, length, fileName);

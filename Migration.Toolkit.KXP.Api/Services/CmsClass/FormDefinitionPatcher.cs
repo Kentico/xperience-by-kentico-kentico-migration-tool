@@ -7,29 +7,29 @@ using Migration.Toolkit.Common;
 
 public class FormDefinitionPatcher
 {
-    private const string CATEGORY_ELEM                   = "category";
-    private const string CATEGORY_ATTR_NAME              = FIELD_ATTR_NAME;
-    private const string FIELD_ATTR_COLUMN               = "column";
-    private const string FIELD_ATTR_COLUMNTYPE           = "columntype";
-    private const string FIELD_ATTR_ENABLED              = "enabled";
-    private const string FIELD_ATTR_GUID                 = "guid";
-    private const string FIELD_ATTR_ISPK                 = "isPK";
-    private const string FIELD_ATTR_NAME                 = "name";
-    private const string FIELD_ATTR_SIZE                 = "size";
-    private const int    FIELD_ATTR_SIZE_ZERO            = 0;
-    private const string FIELD_ATTR_SYSTEM               = "system";
-    private const string FIELD_ATTR_VISIBLE              = "visible";
-    private const string FIELD_ELEM                      = "field";
-    private const string FIELD_ELEM_PROPERTIES           = "properties";
-    private const string FIELD_ELEM_SETTINGS             = "settings";
-    private const string PROPERTIES_ELEM_DEFAULTVALUE    = "defaultvalue";
-    private const string SETTINGS_ELEM_CONTROLNAME       = "controlname";
-    private const string SETTINGS_MAXIMUMASSETS          = "MaximumAssets";
+    private const string CATEGORY_ELEM = "category";
+    private const string CATEGORY_ATTR_NAME = FIELD_ATTR_NAME;
+    private const string FIELD_ATTR_COLUMN = "column";
+    private const string FIELD_ATTR_COLUMNTYPE = "columntype";
+    private const string FIELD_ATTR_ENABLED = "enabled";
+    private const string FIELD_ATTR_GUID = "guid";
+    private const string FIELD_ATTR_ISPK = "isPK";
+    private const string FIELD_ATTR_NAME = "name";
+    private const string FIELD_ATTR_SIZE = "size";
+    private const int FIELD_ATTR_SIZE_ZERO = 0;
+    private const string FIELD_ATTR_SYSTEM = "system";
+    private const string FIELD_ATTR_VISIBLE = "visible";
+    private const string FIELD_ELEM = "field";
+    private const string FIELD_ELEM_PROPERTIES = "properties";
+    private const string FIELD_ELEM_SETTINGS = "settings";
+    private const string PROPERTIES_ELEM_DEFAULTVALUE = "defaultvalue";
+    private const string SETTINGS_ELEM_CONTROLNAME = "controlname";
+    private const string SETTINGS_MAXIMUMASSETS = "MaximumAssets";
     private const string SETTINGS_MAXIMUMASSETS_FALLBACK = "99";
-    private const string SETTINGS_MAXIMUMPAGES           = "MaximumPages";
-    private const string SETTINGS_MAXIMUMPAGES_FALLBACK  = "99";
-    private const string SETTINGS_ROOTPATH               = "RootPath";
-    private const string SETTINGS_ROOTPATH_FALLBACK      = "/";
+    private const string SETTINGS_MAXIMUMPAGES = "MaximumPages";
+    private const string SETTINGS_MAXIMUMPAGES_FALLBACK = "99";
+    private const string SETTINGS_ROOTPATH = "RootPath";
+    private const string SETTINGS_ROOTPATH_FALLBACK = "/";
 
     private readonly ILogger _logger;
     private readonly string _formDefinitionXml;
@@ -233,12 +233,12 @@ public class FormDefinitionPatcher
                     PerformActionsOnField(field, fieldDescriptor, actions);
                     break;
                 default:
-                {
-                    _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:NONE => from control '{ControlName}' => {TargetFormComponent}", fieldDescriptor, controlName, targetFormComponent);
-                    controlNameElem?.SetValue(targetFormComponent);
-                    PerformActionsOnField(field, fieldDescriptor, actions);
-                    break;
-                }
+                    {
+                        _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:NONE => from control '{ControlName}' => {TargetFormComponent}", fieldDescriptor, controlName, targetFormComponent);
+                        controlNameElem?.SetValue(targetFormComponent);
+                        PerformActionsOnField(field, fieldDescriptor, actions);
+                        break;
+                    }
             }
         }
 
@@ -279,29 +279,29 @@ public class FormDefinitionPatcher
                 switch (fieldChildNode.Name.ToString())
                 {
                     case FIELD_ELEM_PROPERTIES:
-                    {
-                        PatchProperties(fieldChildNode);
-                        break;
-                    }
+                        {
+                            PatchProperties(fieldChildNode);
+                            break;
+                        }
                     case FIELD_ELEM_SETTINGS:
-                    {
-                        if (_altForm)
                         {
-                            PatchSettings(fieldChildNode);
+                            if (_altForm)
+                            {
+                                PatchSettings(fieldChildNode);
+                            }
+                            else
+                            {
+                                // XbK Resource / Module class no longer supports visual representation
+                                ClearSettings(fieldChildNode);
+                            }
+                            break;
                         }
-                        else
-                        {
-                            // XbK Resource / Module class no longer supports visual representation
-                            ClearSettings(fieldChildNode);
-                        }
-                        break;
-                    }
                     default:
-                    {
-                        _logger.LogDebug("Removing field element '{ElementName}'", fieldChildNode.Name);
-                        fieldChildNode.Remove();
-                        break;
-                    }
+                        {
+                            _logger.LogDebug("Removing field element '{ElementName}'", fieldChildNode.Name);
+                            fieldChildNode.Remove();
+                            break;
+                        }
                 }
             }
         }
@@ -379,39 +379,39 @@ public class FormDefinitionPatcher
             switch (action)
             {
                 case TcaDirective.ClearSettings:
-                {
-                    field.Element(FIELD_ELEM_SETTINGS)?.Remove();
-                    break;
-                }
+                    {
+                        field.Element(FIELD_ELEM_SETTINGS)?.Remove();
+                        break;
+                    }
                 case TcaDirective.ClearMacroTable:
-                {
-                    // TODO tk: 2022-10-11 really needed?
-                    break;
-                }
+                    {
+                        // TODO tk: 2022-10-11 really needed?
+                        break;
+                    }
                 case TcaDirective.ConvertToAsset:
-                {
-                    field
-                        .EnsureElement(FIELD_ELEM_SETTINGS)
-                        .EnsureElement(SETTINGS_MAXIMUMASSETS, maxAssets => maxAssets.Value = SETTINGS_MAXIMUMASSETS_FALLBACK);
-                    break;
-                }
+                    {
+                        field
+                            .EnsureElement(FIELD_ELEM_SETTINGS)
+                            .EnsureElement(SETTINGS_MAXIMUMASSETS, maxAssets => maxAssets.Value = SETTINGS_MAXIMUMASSETS_FALLBACK);
+                        break;
+                    }
                 case TcaDirective.ConvertToPages:
-                {
-                    field
-                        .EnsureElement(FIELD_ELEM_SETTINGS, settings =>
-                        {
-                            settings.EnsureElement(SETTINGS_MAXIMUMPAGES, maxAssets => maxAssets.Value = SETTINGS_MAXIMUMPAGES_FALLBACK);
-                            settings.EnsureElement(SETTINGS_ROOTPATH, maxAssets => maxAssets.Value = SETTINGS_ROOTPATH_FALLBACK); // TODO tk: 2022-08-31 describe why?
-                        });
+                    {
+                        field
+                            .EnsureElement(FIELD_ELEM_SETTINGS, settings =>
+                            {
+                                settings.EnsureElement(SETTINGS_MAXIMUMPAGES, maxAssets => maxAssets.Value = SETTINGS_MAXIMUMPAGES_FALLBACK);
+                                settings.EnsureElement(SETTINGS_ROOTPATH, maxAssets => maxAssets.Value = SETTINGS_ROOTPATH_FALLBACK); // TODO tk: 2022-08-31 describe why?
+                            });
 
-                    field.SetAttributeValue(FIELD_ATTR_SIZE, FIELD_ATTR_SIZE_ZERO); // TODO tk: 2022-08-31 describe why?
+                        field.SetAttributeValue(FIELD_ATTR_SIZE, FIELD_ATTR_SIZE_ZERO); // TODO tk: 2022-08-31 describe why?
 
-                    var settings = field.EnsureElement(FIELD_ELEM_SETTINGS);
-                    settings.EnsureElement("TreePath", element => element.Value = settings.Element("RootPath")?.Value ?? "");
-                    settings.EnsureElement("RootPath").Remove();
+                        var settings = field.EnsureElement(FIELD_ELEM_SETTINGS);
+                        settings.EnsureElement("TreePath", element => element.Value = settings.Element("RootPath")?.Value ?? "");
+                        settings.EnsureElement("RootPath").Remove();
 
-                    break;
-                }
+                        break;
+                    }
             }
         }
     }

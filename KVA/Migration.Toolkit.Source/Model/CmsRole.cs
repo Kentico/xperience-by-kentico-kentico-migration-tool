@@ -4,7 +4,7 @@ namespace Migration.Toolkit.Source.Model;
 using System.Data;
 using Migration.Toolkit.Common;
 
-public interface ICmsRole: ISourceModel<ICmsRole>
+public interface ICmsRole : ISourceModel<ICmsRole>
 {
     int RoleID { get; }
     string RoleDisplayName { get; }
@@ -13,7 +13,7 @@ public interface ICmsRole: ISourceModel<ICmsRole>
     int? SiteID { get; }
     Guid RoleGUID { get; }
     DateTime RoleLastModified { get; }
-    bool? RoleIsDomain { get; }    
+    bool? RoleIsDomain { get; }
 
     static string ISourceModel<ICmsRole>.GetPrimaryKeyName(SemanticVersion version)
     {
@@ -48,61 +48,60 @@ public interface ICmsRole: ISourceModel<ICmsRole>
         };
     }
 }
-public partial record CmsRoleK11(int RoleID, string RoleDisplayName, string RoleName, string? RoleDescription, int? SiteID, Guid RoleGUID, DateTime RoleLastModified, int? RoleGroupID, bool? RoleIsGroupAdministrator, bool? RoleIsDomain): ICmsRole, ISourceModel<CmsRoleK11>
+public partial record CmsRoleK11(int RoleID, string RoleDisplayName, string RoleName, string? RoleDescription, int? SiteID, Guid RoleGUID, DateTime RoleLastModified, int? RoleGroupID, bool? RoleIsGroupAdministrator, bool? RoleIsDomain) : ICmsRole, ISourceModel<CmsRoleK11>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "RoleID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "RoleID";
     public static string TableName => "CMS_Role";
     public static string GuidColumnName => "RoleGUID";
     static CmsRoleK11 ISourceModel<CmsRoleK11>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsRoleK11(
-            reader.Unbox<int>("RoleID"), reader.Unbox<string>("RoleDisplayName"), reader.Unbox<string>("RoleName"), reader.Unbox<string?>("RoleDescription"), reader.Unbox<int?>("SiteID"), reader.Unbox<Guid>("RoleGUID"), reader.Unbox<DateTime>("RoleLastModified"), reader.Unbox<int?>("RoleGroupID"), reader.Unbox<bool?>("RoleIsGroupAdministrator"), reader.Unbox<bool?>("RoleIsDomain")                
+            reader.Unbox<int>("RoleID"), reader.Unbox<string>("RoleDisplayName"), reader.Unbox<string>("RoleName"), reader.Unbox<string?>("RoleDescription"), reader.Unbox<int?>("SiteID"), reader.Unbox<Guid>("RoleGUID"), reader.Unbox<DateTime>("RoleLastModified"), reader.Unbox<int?>("RoleGroupID"), reader.Unbox<bool?>("RoleIsGroupAdministrator"), reader.Unbox<bool?>("RoleIsDomain")
         );
     }
     public static CmsRoleK11 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsRoleK11(
-            reader.Unbox<int>("RoleID"), reader.Unbox<string>("RoleDisplayName"), reader.Unbox<string>("RoleName"), reader.Unbox<string?>("RoleDescription"), reader.Unbox<int?>("SiteID"), reader.Unbox<Guid>("RoleGUID"), reader.Unbox<DateTime>("RoleLastModified"), reader.Unbox<int?>("RoleGroupID"), reader.Unbox<bool?>("RoleIsGroupAdministrator"), reader.Unbox<bool?>("RoleIsDomain")                
+            reader.Unbox<int>("RoleID"), reader.Unbox<string>("RoleDisplayName"), reader.Unbox<string>("RoleName"), reader.Unbox<string?>("RoleDescription"), reader.Unbox<int?>("SiteID"), reader.Unbox<Guid>("RoleGUID"), reader.Unbox<DateTime>("RoleLastModified"), reader.Unbox<int?>("RoleGroupID"), reader.Unbox<bool?>("RoleIsGroupAdministrator"), reader.Unbox<bool?>("RoleIsDomain")
         );
     }
 };
-public partial record CmsRoleK12(int RoleID, string RoleDisplayName, string RoleName, string? RoleDescription, int? SiteID, Guid RoleGUID, DateTime RoleLastModified, int? RoleGroupID, bool? RoleIsGroupAdministrator, bool? RoleIsDomain): ICmsRole, ISourceModel<CmsRoleK12>
+public partial record CmsRoleK12(int RoleID, string RoleDisplayName, string RoleName, string? RoleDescription, int? SiteID, Guid RoleGUID, DateTime RoleLastModified, int? RoleGroupID, bool? RoleIsGroupAdministrator, bool? RoleIsDomain) : ICmsRole, ISourceModel<CmsRoleK12>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "RoleID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "RoleID";
     public static string TableName => "CMS_Role";
     public static string GuidColumnName => "RoleGUID";
     static CmsRoleK12 ISourceModel<CmsRoleK12>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsRoleK12(
-            reader.Unbox<int>("RoleID"), reader.Unbox<string>("RoleDisplayName"), reader.Unbox<string>("RoleName"), reader.Unbox<string?>("RoleDescription"), reader.Unbox<int?>("SiteID"), reader.Unbox<Guid>("RoleGUID"), reader.Unbox<DateTime>("RoleLastModified"), reader.Unbox<int?>("RoleGroupID"), reader.Unbox<bool?>("RoleIsGroupAdministrator"), reader.Unbox<bool?>("RoleIsDomain")                
+            reader.Unbox<int>("RoleID"), reader.Unbox<string>("RoleDisplayName"), reader.Unbox<string>("RoleName"), reader.Unbox<string?>("RoleDescription"), reader.Unbox<int?>("SiteID"), reader.Unbox<Guid>("RoleGUID"), reader.Unbox<DateTime>("RoleLastModified"), reader.Unbox<int?>("RoleGroupID"), reader.Unbox<bool?>("RoleIsGroupAdministrator"), reader.Unbox<bool?>("RoleIsDomain")
         );
     }
     public static CmsRoleK12 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsRoleK12(
-            reader.Unbox<int>("RoleID"), reader.Unbox<string>("RoleDisplayName"), reader.Unbox<string>("RoleName"), reader.Unbox<string?>("RoleDescription"), reader.Unbox<int?>("SiteID"), reader.Unbox<Guid>("RoleGUID"), reader.Unbox<DateTime>("RoleLastModified"), reader.Unbox<int?>("RoleGroupID"), reader.Unbox<bool?>("RoleIsGroupAdministrator"), reader.Unbox<bool?>("RoleIsDomain")                
+            reader.Unbox<int>("RoleID"), reader.Unbox<string>("RoleDisplayName"), reader.Unbox<string>("RoleName"), reader.Unbox<string?>("RoleDescription"), reader.Unbox<int?>("SiteID"), reader.Unbox<Guid>("RoleGUID"), reader.Unbox<DateTime>("RoleLastModified"), reader.Unbox<int?>("RoleGroupID"), reader.Unbox<bool?>("RoleIsGroupAdministrator"), reader.Unbox<bool?>("RoleIsDomain")
         );
     }
 };
-public partial record CmsRoleK13(int RoleID, string RoleDisplayName, string RoleName, string? RoleDescription, int? SiteID, Guid RoleGUID, DateTime RoleLastModified, bool? RoleIsDomain): ICmsRole, ISourceModel<CmsRoleK13>
+public partial record CmsRoleK13(int RoleID, string RoleDisplayName, string RoleName, string? RoleDescription, int? SiteID, Guid RoleGUID, DateTime RoleLastModified, bool? RoleIsDomain) : ICmsRole, ISourceModel<CmsRoleK13>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "RoleID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "RoleID";
     public static string TableName => "CMS_Role";
     public static string GuidColumnName => "RoleGUID";
     static CmsRoleK13 ISourceModel<CmsRoleK13>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsRoleK13(
-            reader.Unbox<int>("RoleID"), reader.Unbox<string>("RoleDisplayName"), reader.Unbox<string>("RoleName"), reader.Unbox<string?>("RoleDescription"), reader.Unbox<int?>("SiteID"), reader.Unbox<Guid>("RoleGUID"), reader.Unbox<DateTime>("RoleLastModified"), reader.Unbox<bool?>("RoleIsDomain")                
+            reader.Unbox<int>("RoleID"), reader.Unbox<string>("RoleDisplayName"), reader.Unbox<string>("RoleName"), reader.Unbox<string?>("RoleDescription"), reader.Unbox<int?>("SiteID"), reader.Unbox<Guid>("RoleGUID"), reader.Unbox<DateTime>("RoleLastModified"), reader.Unbox<bool?>("RoleIsDomain")
         );
     }
     public static CmsRoleK13 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsRoleK13(
-            reader.Unbox<int>("RoleID"), reader.Unbox<string>("RoleDisplayName"), reader.Unbox<string>("RoleName"), reader.Unbox<string?>("RoleDescription"), reader.Unbox<int?>("SiteID"), reader.Unbox<Guid>("RoleGUID"), reader.Unbox<DateTime>("RoleLastModified"), reader.Unbox<bool?>("RoleIsDomain")                
+            reader.Unbox<int>("RoleID"), reader.Unbox<string>("RoleDisplayName"), reader.Unbox<string>("RoleName"), reader.Unbox<string?>("RoleDescription"), reader.Unbox<int?>("SiteID"), reader.Unbox<Guid>("RoleGUID"), reader.Unbox<DateTime>("RoleLastModified"), reader.Unbox<bool?>("RoleIsDomain")
         );
     }
 };
-

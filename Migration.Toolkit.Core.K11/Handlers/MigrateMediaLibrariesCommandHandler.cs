@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.K11.Handlers;
+namespace Migration.Toolkit.Core.K11.Handlers;
 
 using CMS.Base;
 using CMS.MediaLibrary;
@@ -58,7 +58,7 @@ public class MigrateMediaLibrariesCommandHandler(ILogger<MigrateMediaLibrariesCo
                 protocol.Append(HandbookReferences.NotCurrentlySupportedSkip()
                     .WithMessage($"Media library '{ml.LibraryName}' with LibraryGuid '{ml.LibraryGuid}' doesn't satisfy unique LibraryName and LibraryFolder condition for migration")
                     .WithIdentityPrint(ml)
-                    .WithData(new { ml.LibraryGuid, ml.LibraryName, ml.LibrarySiteId, ml.LibraryFolder})
+                    .WithData(new { ml.LibraryGuid, ml.LibraryName, ml.LibrarySiteId, ml.LibraryFolder })
                 );
             }
         }
@@ -71,7 +71,7 @@ public class MigrateMediaLibrariesCommandHandler(ILogger<MigrateMediaLibrariesCo
         var migratedMediaLibraries = new List<(MediaLibrary sourceLibrary, MediaLibraryInfo targetLibrary)>();
         foreach (var k11MediaLibrary in k11MediaLibraries)
         {
-            if (k11MediaLibrary.LibraryGuid is {} libraryGuid && skippedMediaLibraries.Contains(libraryGuid))
+            if (k11MediaLibrary.LibraryGuid is { } libraryGuid && skippedMediaLibraries.Contains(libraryGuid))
             {
                 continue;
             }
@@ -95,7 +95,7 @@ public class MigrateMediaLibrariesCommandHandler(ILogger<MigrateMediaLibrariesCo
             var mapped = mediaLibraryInfoMapper.Map(k11MediaLibrary, mediaLibraryInfo);
             protocol.MappedTarget(mapped);
 
-            if (mapped is { Success : true } result)
+            if (mapped is { Success: true } result)
             {
                 var (mfi, newInstance) = result;
                 ArgumentNullException.ThrowIfNull(mfi, nameof(mfi));
@@ -202,7 +202,7 @@ public class MigrateMediaLibrariesCommandHandler(ILogger<MigrateMediaLibrariesCo
                     var mapped = mediaFileInfoMapper.Map(source, kxoMediaFile);
                     protocol.MappedTarget(mapped);
 
-                    if (mapped is { Success : true } result)
+                    if (mapped is { Success: true } result)
                     {
                         var (mf, newInstance) = result;
                         ArgumentNullException.ThrowIfNull(mf, nameof(mf));

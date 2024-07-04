@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Source.Behaviors;
+namespace Migration.Toolkit.Source.Behaviors;
 
 using System.Diagnostics;
 using MediatR;

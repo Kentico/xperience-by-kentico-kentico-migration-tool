@@ -4,7 +4,7 @@ namespace Migration.Toolkit.Source.Model;
 using System.Data;
 using Migration.Toolkit.Common;
 
-public interface ICmsSite: ISourceModel<ICmsSite>
+public interface ICmsSite : ISourceModel<ICmsSite>
 {
     int SiteID { get; }
     string SiteName { get; }
@@ -14,7 +14,7 @@ public interface ICmsSite: ISourceModel<ICmsSite>
     string SiteDomainName { get; }
     string? SiteDefaultVisitorCulture { get; }
     Guid SiteGUID { get; }
-    DateTime SiteLastModified { get; }    
+    DateTime SiteLastModified { get; }
 
     static string ISourceModel<ICmsSite>.GetPrimaryKeyName(SemanticVersion version)
     {
@@ -49,61 +49,60 @@ public interface ICmsSite: ISourceModel<ICmsSite>
         };
     }
 }
-public partial record CmsSiteK11(int SiteID, string SiteName, string SiteDisplayName, string? SiteDescription, string SiteStatus, string SiteDomainName, int? SiteDefaultStylesheetID, string? SiteDefaultVisitorCulture, int? SiteDefaultEditorStylesheet, Guid SiteGUID, DateTime SiteLastModified, bool? SiteIsOffline, string? SiteOfflineRedirectURL, string? SiteOfflineMessage, string? SitePresentationURL, bool? SiteIsContentOnly): ICmsSite, ISourceModel<CmsSiteK11>
+public partial record CmsSiteK11(int SiteID, string SiteName, string SiteDisplayName, string? SiteDescription, string SiteStatus, string SiteDomainName, int? SiteDefaultStylesheetID, string? SiteDefaultVisitorCulture, int? SiteDefaultEditorStylesheet, Guid SiteGUID, DateTime SiteLastModified, bool? SiteIsOffline, string? SiteOfflineRedirectURL, string? SiteOfflineMessage, string? SitePresentationURL, bool? SiteIsContentOnly) : ICmsSite, ISourceModel<CmsSiteK11>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "SiteID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "SiteID";
     public static string TableName => "CMS_Site";
     public static string GuidColumnName => "";
     static CmsSiteK11 ISourceModel<CmsSiteK11>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsSiteK11(
-            reader.Unbox<int>("SiteID"), reader.Unbox<string>("SiteName"), reader.Unbox<string>("SiteDisplayName"), reader.Unbox<string?>("SiteDescription"), reader.Unbox<string>("SiteStatus"), reader.Unbox<string>("SiteDomainName"), reader.Unbox<int?>("SiteDefaultStylesheetID"), reader.Unbox<string?>("SiteDefaultVisitorCulture"), reader.Unbox<int?>("SiteDefaultEditorStylesheet"), reader.Unbox<Guid>("SiteGUID"), reader.Unbox<DateTime>("SiteLastModified"), reader.Unbox<bool?>("SiteIsOffline"), reader.Unbox<string?>("SiteOfflineRedirectURL"), reader.Unbox<string?>("SiteOfflineMessage"), reader.Unbox<string?>("SitePresentationURL"), reader.Unbox<bool?>("SiteIsContentOnly")                
+            reader.Unbox<int>("SiteID"), reader.Unbox<string>("SiteName"), reader.Unbox<string>("SiteDisplayName"), reader.Unbox<string?>("SiteDescription"), reader.Unbox<string>("SiteStatus"), reader.Unbox<string>("SiteDomainName"), reader.Unbox<int?>("SiteDefaultStylesheetID"), reader.Unbox<string?>("SiteDefaultVisitorCulture"), reader.Unbox<int?>("SiteDefaultEditorStylesheet"), reader.Unbox<Guid>("SiteGUID"), reader.Unbox<DateTime>("SiteLastModified"), reader.Unbox<bool?>("SiteIsOffline"), reader.Unbox<string?>("SiteOfflineRedirectURL"), reader.Unbox<string?>("SiteOfflineMessage"), reader.Unbox<string?>("SitePresentationURL"), reader.Unbox<bool?>("SiteIsContentOnly")
         );
     }
     public static CmsSiteK11 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsSiteK11(
-            reader.Unbox<int>("SiteID"), reader.Unbox<string>("SiteName"), reader.Unbox<string>("SiteDisplayName"), reader.Unbox<string?>("SiteDescription"), reader.Unbox<string>("SiteStatus"), reader.Unbox<string>("SiteDomainName"), reader.Unbox<int?>("SiteDefaultStylesheetID"), reader.Unbox<string?>("SiteDefaultVisitorCulture"), reader.Unbox<int?>("SiteDefaultEditorStylesheet"), reader.Unbox<Guid>("SiteGUID"), reader.Unbox<DateTime>("SiteLastModified"), reader.Unbox<bool?>("SiteIsOffline"), reader.Unbox<string?>("SiteOfflineRedirectURL"), reader.Unbox<string?>("SiteOfflineMessage"), reader.Unbox<string?>("SitePresentationURL"), reader.Unbox<bool?>("SiteIsContentOnly")                
+            reader.Unbox<int>("SiteID"), reader.Unbox<string>("SiteName"), reader.Unbox<string>("SiteDisplayName"), reader.Unbox<string?>("SiteDescription"), reader.Unbox<string>("SiteStatus"), reader.Unbox<string>("SiteDomainName"), reader.Unbox<int?>("SiteDefaultStylesheetID"), reader.Unbox<string?>("SiteDefaultVisitorCulture"), reader.Unbox<int?>("SiteDefaultEditorStylesheet"), reader.Unbox<Guid>("SiteGUID"), reader.Unbox<DateTime>("SiteLastModified"), reader.Unbox<bool?>("SiteIsOffline"), reader.Unbox<string?>("SiteOfflineRedirectURL"), reader.Unbox<string?>("SiteOfflineMessage"), reader.Unbox<string?>("SitePresentationURL"), reader.Unbox<bool?>("SiteIsContentOnly")
         );
     }
 };
-public partial record CmsSiteK12(int SiteID, string SiteName, string SiteDisplayName, string? SiteDescription, string SiteStatus, string SiteDomainName, int? SiteDefaultStylesheetID, string? SiteDefaultVisitorCulture, int? SiteDefaultEditorStylesheet, Guid SiteGUID, DateTime SiteLastModified, bool? SiteIsOffline, string? SiteOfflineRedirectURL, string? SiteOfflineMessage, string? SitePresentationURL, bool? SiteIsContentOnly): ICmsSite, ISourceModel<CmsSiteK12>
+public partial record CmsSiteK12(int SiteID, string SiteName, string SiteDisplayName, string? SiteDescription, string SiteStatus, string SiteDomainName, int? SiteDefaultStylesheetID, string? SiteDefaultVisitorCulture, int? SiteDefaultEditorStylesheet, Guid SiteGUID, DateTime SiteLastModified, bool? SiteIsOffline, string? SiteOfflineRedirectURL, string? SiteOfflineMessage, string? SitePresentationURL, bool? SiteIsContentOnly) : ICmsSite, ISourceModel<CmsSiteK12>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "SiteID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "SiteID";
     public static string TableName => "CMS_Site";
     public static string GuidColumnName => "";
     static CmsSiteK12 ISourceModel<CmsSiteK12>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsSiteK12(
-            reader.Unbox<int>("SiteID"), reader.Unbox<string>("SiteName"), reader.Unbox<string>("SiteDisplayName"), reader.Unbox<string?>("SiteDescription"), reader.Unbox<string>("SiteStatus"), reader.Unbox<string>("SiteDomainName"), reader.Unbox<int?>("SiteDefaultStylesheetID"), reader.Unbox<string?>("SiteDefaultVisitorCulture"), reader.Unbox<int?>("SiteDefaultEditorStylesheet"), reader.Unbox<Guid>("SiteGUID"), reader.Unbox<DateTime>("SiteLastModified"), reader.Unbox<bool?>("SiteIsOffline"), reader.Unbox<string?>("SiteOfflineRedirectURL"), reader.Unbox<string?>("SiteOfflineMessage"), reader.Unbox<string?>("SitePresentationURL"), reader.Unbox<bool?>("SiteIsContentOnly")                
+            reader.Unbox<int>("SiteID"), reader.Unbox<string>("SiteName"), reader.Unbox<string>("SiteDisplayName"), reader.Unbox<string?>("SiteDescription"), reader.Unbox<string>("SiteStatus"), reader.Unbox<string>("SiteDomainName"), reader.Unbox<int?>("SiteDefaultStylesheetID"), reader.Unbox<string?>("SiteDefaultVisitorCulture"), reader.Unbox<int?>("SiteDefaultEditorStylesheet"), reader.Unbox<Guid>("SiteGUID"), reader.Unbox<DateTime>("SiteLastModified"), reader.Unbox<bool?>("SiteIsOffline"), reader.Unbox<string?>("SiteOfflineRedirectURL"), reader.Unbox<string?>("SiteOfflineMessage"), reader.Unbox<string?>("SitePresentationURL"), reader.Unbox<bool?>("SiteIsContentOnly")
         );
     }
     public static CmsSiteK12 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsSiteK12(
-            reader.Unbox<int>("SiteID"), reader.Unbox<string>("SiteName"), reader.Unbox<string>("SiteDisplayName"), reader.Unbox<string?>("SiteDescription"), reader.Unbox<string>("SiteStatus"), reader.Unbox<string>("SiteDomainName"), reader.Unbox<int?>("SiteDefaultStylesheetID"), reader.Unbox<string?>("SiteDefaultVisitorCulture"), reader.Unbox<int?>("SiteDefaultEditorStylesheet"), reader.Unbox<Guid>("SiteGUID"), reader.Unbox<DateTime>("SiteLastModified"), reader.Unbox<bool?>("SiteIsOffline"), reader.Unbox<string?>("SiteOfflineRedirectURL"), reader.Unbox<string?>("SiteOfflineMessage"), reader.Unbox<string?>("SitePresentationURL"), reader.Unbox<bool?>("SiteIsContentOnly")                
+            reader.Unbox<int>("SiteID"), reader.Unbox<string>("SiteName"), reader.Unbox<string>("SiteDisplayName"), reader.Unbox<string?>("SiteDescription"), reader.Unbox<string>("SiteStatus"), reader.Unbox<string>("SiteDomainName"), reader.Unbox<int?>("SiteDefaultStylesheetID"), reader.Unbox<string?>("SiteDefaultVisitorCulture"), reader.Unbox<int?>("SiteDefaultEditorStylesheet"), reader.Unbox<Guid>("SiteGUID"), reader.Unbox<DateTime>("SiteLastModified"), reader.Unbox<bool?>("SiteIsOffline"), reader.Unbox<string?>("SiteOfflineRedirectURL"), reader.Unbox<string?>("SiteOfflineMessage"), reader.Unbox<string?>("SitePresentationURL"), reader.Unbox<bool?>("SiteIsContentOnly")
         );
     }
 };
-public partial record CmsSiteK13(int SiteID, string SiteName, string SiteDisplayName, string? SiteDescription, string SiteStatus, string SiteDomainName, string? SiteDefaultVisitorCulture, Guid SiteGUID, DateTime SiteLastModified, string SitePresentationURL): ICmsSite, ISourceModel<CmsSiteK13>
+public partial record CmsSiteK13(int SiteID, string SiteName, string SiteDisplayName, string? SiteDescription, string SiteStatus, string SiteDomainName, string? SiteDefaultVisitorCulture, Guid SiteGUID, DateTime SiteLastModified, string SitePresentationURL) : ICmsSite, ISourceModel<CmsSiteK13>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "SiteID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "SiteID";
     public static string TableName => "CMS_Site";
     public static string GuidColumnName => "";
     static CmsSiteK13 ISourceModel<CmsSiteK13>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsSiteK13(
-            reader.Unbox<int>("SiteID"), reader.Unbox<string>("SiteName"), reader.Unbox<string>("SiteDisplayName"), reader.Unbox<string?>("SiteDescription"), reader.Unbox<string>("SiteStatus"), reader.Unbox<string>("SiteDomainName"), reader.Unbox<string?>("SiteDefaultVisitorCulture"), reader.Unbox<Guid>("SiteGUID"), reader.Unbox<DateTime>("SiteLastModified"), reader.Unbox<string>("SitePresentationURL")                
+            reader.Unbox<int>("SiteID"), reader.Unbox<string>("SiteName"), reader.Unbox<string>("SiteDisplayName"), reader.Unbox<string?>("SiteDescription"), reader.Unbox<string>("SiteStatus"), reader.Unbox<string>("SiteDomainName"), reader.Unbox<string?>("SiteDefaultVisitorCulture"), reader.Unbox<Guid>("SiteGUID"), reader.Unbox<DateTime>("SiteLastModified"), reader.Unbox<string>("SitePresentationURL")
         );
     }
     public static CmsSiteK13 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsSiteK13(
-            reader.Unbox<int>("SiteID"), reader.Unbox<string>("SiteName"), reader.Unbox<string>("SiteDisplayName"), reader.Unbox<string?>("SiteDescription"), reader.Unbox<string>("SiteStatus"), reader.Unbox<string>("SiteDomainName"), reader.Unbox<string?>("SiteDefaultVisitorCulture"), reader.Unbox<Guid>("SiteGUID"), reader.Unbox<DateTime>("SiteLastModified"), reader.Unbox<string>("SitePresentationURL")                
+            reader.Unbox<int>("SiteID"), reader.Unbox<string>("SiteName"), reader.Unbox<string>("SiteDisplayName"), reader.Unbox<string?>("SiteDescription"), reader.Unbox<string>("SiteStatus"), reader.Unbox<string>("SiteDomainName"), reader.Unbox<string?>("SiteDefaultVisitorCulture"), reader.Unbox<Guid>("SiteGUID"), reader.Unbox<DateTime>("SiteLastModified"), reader.Unbox<string>("SitePresentationURL")
         );
     }
 };
-

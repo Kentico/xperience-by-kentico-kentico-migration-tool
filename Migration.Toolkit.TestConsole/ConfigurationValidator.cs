@@ -25,7 +25,7 @@ public static class ConfigurationValidator
         {
             yield return new ValidationMessage(ValidationMessageType.Error, "Section 'Settings' is required");
         }
-        
+
         if (CheckCfgValue(settings?.GetValue<string>("SourceConnectionString")))
         {
             yield return new ValidationMessage(ValidationMessageType.Error,
@@ -87,7 +87,7 @@ public static class ConfigurationValidator
     #region "Helper methods"
 
     [Pure]
-    private static bool StringIsNullOrFitsOneOf<TEnum>(string? s) where TEnum: Enum
+    private static bool StringIsNullOrFitsOneOf<TEnum>(string? s) where TEnum : Enum
     {
         return s is null || Enum.TryParse(ReflectionHelper<TEnum>.CurrentType, s, out var _);
     }

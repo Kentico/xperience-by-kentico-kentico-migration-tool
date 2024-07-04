@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.KX12.Handlers;
+namespace Migration.Toolkit.Core.KX12.Handlers;
 
 using CMS.Base;
 using CMS.MediaLibrary;
@@ -86,7 +86,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
             var mapped = _mediaLibraryInfoMapper.Map(k12MediaLibrary, mediaLibraryInfo);
             _protocol.MappedTarget(mapped);
 
-            if (mapped is { Success : true } result)
+            if (mapped is { Success: true } result)
             {
                 var (mfi, newInstance) = result;
                 ArgumentNullException.ThrowIfNull(mfi, nameof(mfi));
@@ -193,7 +193,7 @@ public class MigrateMediaLibrariesCommandHandler : IRequestHandler<MigrateMediaL
                     var mapped = _mediaFileInfoMapper.Map(source, kxoMediaFile);
                     _protocol.MappedTarget(mapped);
 
-                    if (mapped is { Success : true } result)
+                    if (mapped is { Success: true } result)
                     {
                         var (mf, newInstance) = result;
                         ArgumentNullException.ThrowIfNull(mf, nameof(mf));

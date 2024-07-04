@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common.MigrationProtocol;
 
-public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMapper<TSourceEntity, TTargetEntity>
+public abstract class EntityMapperBase<TSourceEntity, TTargetEntity> : IEntityMapper<TSourceEntity, TTargetEntity>
 {
     private readonly ILogger _logger;
     private readonly IPrimaryKeyMappingContext _pkContext;

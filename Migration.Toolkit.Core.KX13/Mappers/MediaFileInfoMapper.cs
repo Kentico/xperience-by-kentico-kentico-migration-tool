@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.KX13.Mappers;
+namespace Migration.Toolkit.Core.KX13.Mappers;
 
 using System.Data;
 using CMS.Base;
@@ -16,7 +16,7 @@ using Migration.Toolkit.KXP.Api;
 public record MediaFileInfoMapperSource(MediaFile MediaFile, int TargetLibraryId, IUploadedFile? File, string? LibrarySubFolder,
     bool MigrateOnlyMediaFileInfo);
 
-public class MediaFileInfoMapper: EntityMapperBase<MediaFileInfoMapperSource, MediaFileInfo>
+public class MediaFileInfoMapper : EntityMapperBase<MediaFileInfoMapperSource, MediaFileInfo>
 {
     private readonly ILogger<MediaFileInfoMapper> _logger;
     private readonly KxpClassFacade _classFacade;
@@ -31,7 +31,7 @@ public class MediaFileInfoMapper: EntityMapperBase<MediaFileInfoMapperSource, Me
         IProtocol protocol,
         ToolkitConfiguration toolkitConfiguration,
         KeyMappingContext keyMappingContext
-        ): base(logger, primaryKeyMappingContext, protocol)
+        ) : base(logger, primaryKeyMappingContext, protocol)
     {
         _logger = logger;
         _classFacade = classFacade;
@@ -41,7 +41,8 @@ public class MediaFileInfoMapper: EntityMapperBase<MediaFileInfoMapperSource, Me
     }
 
 
-    protected override MediaFileInfo? CreateNewInstance(MediaFileInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) {
+    protected override MediaFileInfo? CreateNewInstance(MediaFileInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure)
+    {
         if (source.File != null)
         {
             var mf = new MediaFileInfo(source.File, source.TargetLibraryId, source.LibrarySubFolder ?? "", 0, 0, 0);

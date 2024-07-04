@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.K11.Mappers;
+namespace Migration.Toolkit.Core.K11.Mappers;
 
 using CMS.MediaLibrary;
 using Microsoft.Extensions.Logging;

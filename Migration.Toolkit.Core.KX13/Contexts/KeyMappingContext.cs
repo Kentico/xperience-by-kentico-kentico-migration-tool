@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.KX13.Contexts;
+namespace Migration.Toolkit.Core.KX13.Contexts;
 
 using System.Linq.Expressions;
 using Migration.Toolkit.Core.KX13.Services;
@@ -22,7 +22,7 @@ public class KeyMappingContext
         Expression<Func<TTarget, TTargetKey>> targetKeySelector,
         Expression<Func<TTarget, Guid>> targetGuidSelector) where TSource : class where TTarget : class
     {
-        if (sourceKey is int id && _primaryKeyMappingContext.MapSourceId<TSource>(sourceKeySelector, id) is {Success:true, MappedId: TTargetKey targetKey })
+        if (sourceKey is int id && _primaryKeyMappingContext.MapSourceId<TSource>(sourceKeySelector, id) is { Success: true, MappedId: TTargetKey targetKey })
         {
             return new MapSourceKeyResult<TTargetKey>(true, targetKey);
         }

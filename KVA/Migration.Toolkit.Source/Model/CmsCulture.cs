@@ -4,7 +4,7 @@ namespace Migration.Toolkit.Source.Model;
 using System.Data;
 using Migration.Toolkit.Common;
 
-public interface ICmsCulture: ISourceModel<ICmsCulture>
+public interface ICmsCulture : ISourceModel<ICmsCulture>
 {
     int CultureID { get; }
     string CultureName { get; }
@@ -13,7 +13,7 @@ public interface ICmsCulture: ISourceModel<ICmsCulture>
     Guid CultureGUID { get; }
     DateTime CultureLastModified { get; }
     string? CultureAlias { get; }
-    bool? CultureIsUICulture { get; }    
+    bool? CultureIsUICulture { get; }
 
     static string ISourceModel<ICmsCulture>.GetPrimaryKeyName(SemanticVersion version)
     {
@@ -48,61 +48,60 @@ public interface ICmsCulture: ISourceModel<ICmsCulture>
         };
     }
 }
-public partial record CmsCultureK11(int CultureID, string CultureName, string CultureCode, string CultureShortName, Guid CultureGUID, DateTime CultureLastModified, string? CultureAlias, bool? CultureIsUICulture): ICmsCulture, ISourceModel<CmsCultureK11>
+public partial record CmsCultureK11(int CultureID, string CultureName, string CultureCode, string CultureShortName, Guid CultureGUID, DateTime CultureLastModified, string? CultureAlias, bool? CultureIsUICulture) : ICmsCulture, ISourceModel<CmsCultureK11>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "CultureID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "CultureID";
     public static string TableName => "CMS_Culture";
     public static string GuidColumnName => "CultureGUID";
     static CmsCultureK11 ISourceModel<CmsCultureK11>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsCultureK11(
-            reader.Unbox<int>("CultureID"), reader.Unbox<string>("CultureName"), reader.Unbox<string>("CultureCode"), reader.Unbox<string>("CultureShortName"), reader.Unbox<Guid>("CultureGUID"), reader.Unbox<DateTime>("CultureLastModified"), reader.Unbox<string?>("CultureAlias"), reader.Unbox<bool?>("CultureIsUICulture")                
+            reader.Unbox<int>("CultureID"), reader.Unbox<string>("CultureName"), reader.Unbox<string>("CultureCode"), reader.Unbox<string>("CultureShortName"), reader.Unbox<Guid>("CultureGUID"), reader.Unbox<DateTime>("CultureLastModified"), reader.Unbox<string?>("CultureAlias"), reader.Unbox<bool?>("CultureIsUICulture")
         );
     }
     public static CmsCultureK11 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsCultureK11(
-            reader.Unbox<int>("CultureID"), reader.Unbox<string>("CultureName"), reader.Unbox<string>("CultureCode"), reader.Unbox<string>("CultureShortName"), reader.Unbox<Guid>("CultureGUID"), reader.Unbox<DateTime>("CultureLastModified"), reader.Unbox<string?>("CultureAlias"), reader.Unbox<bool?>("CultureIsUICulture")                
+            reader.Unbox<int>("CultureID"), reader.Unbox<string>("CultureName"), reader.Unbox<string>("CultureCode"), reader.Unbox<string>("CultureShortName"), reader.Unbox<Guid>("CultureGUID"), reader.Unbox<DateTime>("CultureLastModified"), reader.Unbox<string?>("CultureAlias"), reader.Unbox<bool?>("CultureIsUICulture")
         );
     }
 };
-public partial record CmsCultureK12(int CultureID, string CultureName, string CultureCode, string CultureShortName, Guid CultureGUID, DateTime CultureLastModified, string? CultureAlias, bool? CultureIsUICulture): ICmsCulture, ISourceModel<CmsCultureK12>
+public partial record CmsCultureK12(int CultureID, string CultureName, string CultureCode, string CultureShortName, Guid CultureGUID, DateTime CultureLastModified, string? CultureAlias, bool? CultureIsUICulture) : ICmsCulture, ISourceModel<CmsCultureK12>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "CultureID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "CultureID";
     public static string TableName => "CMS_Culture";
     public static string GuidColumnName => "CultureGUID";
     static CmsCultureK12 ISourceModel<CmsCultureK12>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsCultureK12(
-            reader.Unbox<int>("CultureID"), reader.Unbox<string>("CultureName"), reader.Unbox<string>("CultureCode"), reader.Unbox<string>("CultureShortName"), reader.Unbox<Guid>("CultureGUID"), reader.Unbox<DateTime>("CultureLastModified"), reader.Unbox<string?>("CultureAlias"), reader.Unbox<bool?>("CultureIsUICulture")                
+            reader.Unbox<int>("CultureID"), reader.Unbox<string>("CultureName"), reader.Unbox<string>("CultureCode"), reader.Unbox<string>("CultureShortName"), reader.Unbox<Guid>("CultureGUID"), reader.Unbox<DateTime>("CultureLastModified"), reader.Unbox<string?>("CultureAlias"), reader.Unbox<bool?>("CultureIsUICulture")
         );
     }
     public static CmsCultureK12 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsCultureK12(
-            reader.Unbox<int>("CultureID"), reader.Unbox<string>("CultureName"), reader.Unbox<string>("CultureCode"), reader.Unbox<string>("CultureShortName"), reader.Unbox<Guid>("CultureGUID"), reader.Unbox<DateTime>("CultureLastModified"), reader.Unbox<string?>("CultureAlias"), reader.Unbox<bool?>("CultureIsUICulture")                
+            reader.Unbox<int>("CultureID"), reader.Unbox<string>("CultureName"), reader.Unbox<string>("CultureCode"), reader.Unbox<string>("CultureShortName"), reader.Unbox<Guid>("CultureGUID"), reader.Unbox<DateTime>("CultureLastModified"), reader.Unbox<string?>("CultureAlias"), reader.Unbox<bool?>("CultureIsUICulture")
         );
     }
 };
-public partial record CmsCultureK13(int CultureID, string CultureName, string CultureCode, string CultureShortName, Guid CultureGUID, DateTime CultureLastModified, string? CultureAlias, bool? CultureIsUICulture): ICmsCulture, ISourceModel<CmsCultureK13>
+public partial record CmsCultureK13(int CultureID, string CultureName, string CultureCode, string CultureShortName, Guid CultureGUID, DateTime CultureLastModified, string? CultureAlias, bool? CultureIsUICulture) : ICmsCulture, ISourceModel<CmsCultureK13>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "CultureID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "CultureID";
     public static string TableName => "CMS_Culture";
     public static string GuidColumnName => "CultureGUID";
     static CmsCultureK13 ISourceModel<CmsCultureK13>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsCultureK13(
-            reader.Unbox<int>("CultureID"), reader.Unbox<string>("CultureName"), reader.Unbox<string>("CultureCode"), reader.Unbox<string>("CultureShortName"), reader.Unbox<Guid>("CultureGUID"), reader.Unbox<DateTime>("CultureLastModified"), reader.Unbox<string?>("CultureAlias"), reader.Unbox<bool?>("CultureIsUICulture")                
+            reader.Unbox<int>("CultureID"), reader.Unbox<string>("CultureName"), reader.Unbox<string>("CultureCode"), reader.Unbox<string>("CultureShortName"), reader.Unbox<Guid>("CultureGUID"), reader.Unbox<DateTime>("CultureLastModified"), reader.Unbox<string?>("CultureAlias"), reader.Unbox<bool?>("CultureIsUICulture")
         );
     }
     public static CmsCultureK13 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsCultureK13(
-            reader.Unbox<int>("CultureID"), reader.Unbox<string>("CultureName"), reader.Unbox<string>("CultureCode"), reader.Unbox<string>("CultureShortName"), reader.Unbox<Guid>("CultureGUID"), reader.Unbox<DateTime>("CultureLastModified"), reader.Unbox<string?>("CultureAlias"), reader.Unbox<bool?>("CultureIsUICulture")                
+            reader.Unbox<int>("CultureID"), reader.Unbox<string>("CultureName"), reader.Unbox<string>("CultureCode"), reader.Unbox<string>("CultureShortName"), reader.Unbox<Guid>("CultureGUID"), reader.Unbox<DateTime>("CultureLastModified"), reader.Unbox<string?>("CultureAlias"), reader.Unbox<bool?>("CultureIsUICulture")
         );
     }
 };
-

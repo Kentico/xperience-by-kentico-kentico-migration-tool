@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Common.Helpers;
+namespace Migration.Toolkit.Common.Helpers;
 
 public static class GuidHelper
 {

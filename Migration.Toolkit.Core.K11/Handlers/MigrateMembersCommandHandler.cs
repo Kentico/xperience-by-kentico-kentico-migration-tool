@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.K11.Handlers;
+namespace Migration.Toolkit.Core.K11.Handlers;
 
 using System.Diagnostics;
 using CMS.Membership;
@@ -61,7 +61,7 @@ public class MigrateMembersCommandHandler(ILogger<MigrateMembersCommandHandler> 
 
     private void SaveUserUsingKenticoApi(IModelMappingResult<MemberInfo> mapped, CmsUser k11User)
     {
-        if (mapped is { Success : true } result)
+        if (mapped is { Success: true } result)
         {
             var (memberInfo, newInstance) = result;
             ArgumentNullException.ThrowIfNull(memberInfo);

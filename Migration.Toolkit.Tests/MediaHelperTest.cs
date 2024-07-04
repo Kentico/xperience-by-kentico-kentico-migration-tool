@@ -47,7 +47,8 @@ public class UnitTest1
     [InlineData("~/custom_library_global_dir/mysite/sub-dir/sub-sub-dir/somefile.png?ext=.png", "/custom_library_global_dir/mysite/sub-dir/sub-sub-dir/somefile.png", null, true, MediaKind.MediaFile, MediaLinkKind.DirectMediaPath)]
     // direct media path is not supported for absolute physical paths eg. C:\MyLibraries
     // direct media path is not supported for absolute network share paths eg. \\myserver\MyLibraries
-    public void ParseMediaLink(string mediaUri, string? expectedPath, string? expectedGuid, bool expectSuccess, MediaKind expectedMediaKind, MediaLinkKind expectedMediaLinkKind) {
+    public void ParseMediaLink(string mediaUri, string? expectedPath, string? expectedGuid, bool expectSuccess, MediaKind expectedMediaKind, MediaLinkKind expectedMediaLinkKind)
+    {
         Guid? expectedMediaId = Guid.TryParse(expectedGuid ?? "", out var eg) ? eg : null;
 
         var (success, mediaLinkKind, mediaKind, path, mediaGuid) = MediaHelper.MatchMediaLink(mediaUri);

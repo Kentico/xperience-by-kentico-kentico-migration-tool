@@ -17,7 +17,7 @@ public class KeyLocatorService(ILogger<KeyLocatorService> logger,
         Expression<Func<TSource, Guid>> sourceGuidSelector,
         Expression<Func<TTarget, Guid>> targetGuidSelector,
         object? sourceKey, out TTargetKey targetId
-    ) where TSource : class where TTarget: class
+    ) where TSource : class where TTarget : class
     {
         using var kxpContext = kxpContextFactory.CreateDbContext();
         using var k11Context = k11ContextFactory.CreateDbContext();
@@ -70,7 +70,7 @@ public class KeyLocatorService(ILogger<KeyLocatorService> logger,
         }
     }
 
-    public bool TryGetSourceGuid<T>(Expression<Func<T,object>> keySelector, Expression<Func<T,Guid>> guidSelector, object? key, out Guid? guid)
+    public bool TryGetSourceGuid<T>(Expression<Func<T, object>> keySelector, Expression<Func<T, Guid>> guidSelector, object? key, out Guid? guid)
         where T : class
     {
         using var KX12Context = k11ContextFactory.CreateDbContext();

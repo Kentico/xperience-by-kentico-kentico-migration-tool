@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.K11.Mappers;
+namespace Migration.Toolkit.Core.K11.Mappers;
 
 using System.Data;
 using CMS.Membership;
