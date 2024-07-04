@@ -57,6 +57,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
+          dotnet-version: '8.0.0'
 
       - name: Install dependencies
         run: |
