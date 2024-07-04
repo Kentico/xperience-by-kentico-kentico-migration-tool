@@ -8,6 +8,8 @@
 <!-- ABOUT THE PROJECT -->
 # Xperience by Kentico: Kentico Migration Tool
 
+[![CI: Build and Test](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/actions/workflows/build.yml)
+
 The Migration tool transfers content and other data from **Kentico Xperience 13**, **Kentico 12** or **Kentico 11** to **Xperience by Kentico**.
 
 ## Prerequisites & Compatibility
