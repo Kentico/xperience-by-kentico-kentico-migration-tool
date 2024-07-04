@@ -2,7 +2,7 @@ name: "CI: Build and Test"
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - "**.cs"
       - "**.tsx"
@@ -12,8 +12,9 @@ on:
       - "**.targets"
       - "**.sln"
   pull_request:
-    branches: [main]
+    branches: [master]
     paths:
+      - ".github/workflows/build.yml"
       - "**.cs"
       - "**.cshtml"
       - "**.tsx"
