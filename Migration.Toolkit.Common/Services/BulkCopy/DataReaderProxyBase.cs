@@ -2,7 +2,7 @@ namespace Migration.Toolkit.Common.Services.BulkCopy;
 
 using System.Data;
 
-public class DataReaderProxyBase: IDataReader
+public class DataReaderProxyBase : IDataReader
 {
     protected readonly IDataReader _innerReader;
 

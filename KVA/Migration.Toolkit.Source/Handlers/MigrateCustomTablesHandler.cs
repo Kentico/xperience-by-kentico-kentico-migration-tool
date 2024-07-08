@@ -168,7 +168,7 @@ public class MigrateCustomTablesHandler(
 
         try
         {
-            if (mapped is { Success : true } result)
+            if (mapped is { Success: true } result)
             {
                 var (dataClassInfo, newInstance) = result;
 

@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.KX13.Handlers;
+namespace Migration.Toolkit.Core.KX13.Handlers;
 
 using CMS.Membership;
 using MediatR;
@@ -95,7 +95,7 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
 
     private Task SaveUserUsingKenticoApi(IModelMappingResult<UserInfo> mapped, KX13M.CmsUser kx13User)
     {
-        if (mapped is { Success : true } result)
+        if (mapped is { Success: true } result)
         {
             var (userInfo, newInstance) = result;
             ArgumentNullException.ThrowIfNull(userInfo);
@@ -153,7 +153,7 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
             var mapped = _roleMapper.Map(kx13CmsRole, xbkRoleInfo);
             _protocol.MappedTarget(mapped);
 
-            if (mapped is not (var roleInfo, var newInstance) { Success : true })
+            if (mapped is not (var roleInfo, var newInstance) { Success: true })
             {
                 continue;
             }
@@ -223,7 +223,7 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
             var mapped = _userRoleMapper.Map(kx13UserRole, xbkUserRole);
             _protocol.MappedTarget(mapped);
 
-            if (mapped is { Success : true })
+            if (mapped is { Success: true })
             {
                 var (userRoleInfo, newInstance) = mapped;
                 ArgumentNullException.ThrowIfNull(userRoleInfo);

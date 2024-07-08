@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.KX13.Behaviors;
+namespace Migration.Toolkit.Core.KX13.Behaviors;
 
 using System.Diagnostics;
 using MediatR;
@@ -6,9 +6,9 @@ using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 
-public class RequestHandlingBehavior<TRequest, TResponse>: IPipelineBehavior<TRequest, TResponse>
+public class RequestHandlingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
-    where TResponse: CommandResult
+    where TResponse : CommandResult
 {
     private readonly ILogger<RequestHandlingBehavior<TRequest, TResponse>> _logger;
     private readonly IMigrationProtocol _protocol;
@@ -41,7 +41,7 @@ public class RequestHandlingBehavior<TRequest, TResponse>: IPipelineBehavior<TRe
         }
         finally
         {
-            _logger.LogInformation("Handled {CommandName} in elapsed: {Elapsed}", typeof(TRequest).Name, sw.Elapsed);    
+            _logger.LogInformation("Handled {CommandName} in elapsed: {Elapsed}", typeof(TRequest).Name, sw.Elapsed);
         }
     }
 }

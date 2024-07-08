@@ -73,7 +73,7 @@ public class PageTemplateConfigurationMapper : EntityMapperBase<KX13M.CmsPageTem
             if (source.PageTemplateConfigurationWidgets != null)
             {
                 var areas = JsonConvert.DeserializeObject<EditableAreasConfiguration>(source.PageTemplateConfigurationWidgets);
-                if (areas?.EditableAreas is { Count : > 0 })
+                if (areas?.EditableAreas is { Count: > 0 })
                 {
                     WalkAreas(source.PageTemplateConfigurationSiteId, areas.EditableAreas);
                 }
@@ -174,31 +174,31 @@ public class PageTemplateConfigurationMapper : EntityMapperBase<KX13M.CmsPageTem
                     switch (oldFormComponent)
                     {
                         case Kx13FormComponents.Kentico_AttachmentSelector when newFormComponent == FormComponents.AdminAssetSelectorComponent:
-                        {
-                            if (value?.ToObject<List<AttachmentSelectorItem>>() is { Count: > 0 } items)
                             {
-                                properties[key] = JToken.FromObject(items.Select(x => new AssetRelatedItem
+                                if (value?.ToObject<List<AttachmentSelectorItem>>() is { Count: > 0 } items)
                                 {
-                                    Identifier = x.FileGuid
-                                }).ToList());
-                            }
+                                    properties[key] = JToken.FromObject(items.Select(x => new AssetRelatedItem
+                                    {
+                                        Identifier = x.FileGuid
+                                    }).ToList());
+                                }
 
-                            _logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
-                            break;
-                        }
+                                _logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
+                                break;
+                            }
                         case Kx13FormComponents.Kentico_PageSelector when newFormComponent == FormComponents.Kentico_Xperience_Admin_Websites_WebPageSelectorComponent:
-                        {
-                            if (value?.ToObject<List<PageSelectorItem>>() is { Count: > 0 } items)
                             {
-                                properties[key] = JToken.FromObject(items.Select(x => new WebPageRelatedItem
+                                if (value?.ToObject<List<PageSelectorItem>>() is { Count: > 0 } items)
                                 {
-                                    WebPageGuid = x.NodeGuid
-                                }).ToList());
-                            }
+                                    properties[key] = JToken.FromObject(items.Select(x => new WebPageRelatedItem
+                                    {
+                                        WebPageGuid = x.NodeGuid
+                                    }).ToList());
+                                }
 
-                            _logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
-                            break;
-                        }
+                                _logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
+                                break;
+                            }
                     }
                 }
                 else if (FieldMappingInstance.BuiltInModel.SupportedInKxpLegacyMode.Contains(editingFcm.FormComponentIdentifier))

@@ -100,7 +100,7 @@ public class IpcService(ToolkitConfiguration toolkitConfiguration, ILogger<IpcSe
                 response.EnsureSuccessStatusCode();
 
                 var responseBody = await response.Content.ReadAsStringAsync();
-                if (JsonConvert.DeserializeObject<SourceInstanceDiscoveredInfo>(responseBody) is {} deserializedResponse)
+                if (JsonConvert.DeserializeObject<SourceInstanceDiscoveredInfo>(responseBody) is { } deserializedResponse)
                 {
                     discoveredInfoList.Add(deserializedResponse.SiteName, deserializedResponse);
                 }

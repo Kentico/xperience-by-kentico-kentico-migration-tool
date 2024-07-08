@@ -4,10 +4,10 @@ namespace Migration.Toolkit.Source.Model;
 using System.Data;
 using Migration.Toolkit.Common;
 
-public interface ICmsClassSite: ISourceModel<ICmsClassSite>
+public interface ICmsClassSite : ISourceModel<ICmsClassSite>
 {
     int ClassID { get; }
-    int SiteID { get; }    
+    int SiteID { get; }
 
     static string ISourceModel<ICmsClassSite>.GetPrimaryKeyName(SemanticVersion version)
     {
@@ -42,61 +42,60 @@ public interface ICmsClassSite: ISourceModel<ICmsClassSite>
         };
     }
 }
-public partial record CmsClassSiteK11(int ClassID, int SiteID): ICmsClassSite, ISourceModel<CmsClassSiteK11>
+public partial record CmsClassSiteK11(int ClassID, int SiteID) : ICmsClassSite, ISourceModel<CmsClassSiteK11>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "ClassID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "ClassID";
     public static string TableName => "CMS_ClassSite";
     public static string GuidColumnName => "";
     static CmsClassSiteK11 ISourceModel<CmsClassSiteK11>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsClassSiteK11(
-            reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")                
+            reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")
         );
     }
     public static CmsClassSiteK11 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsClassSiteK11(
-            reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")                
+            reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")
         );
     }
 };
-public partial record CmsClassSiteK12(int ClassID, int SiteID): ICmsClassSite, ISourceModel<CmsClassSiteK12>
+public partial record CmsClassSiteK12(int ClassID, int SiteID) : ICmsClassSite, ISourceModel<CmsClassSiteK12>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "ClassID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "ClassID";
     public static string TableName => "CMS_ClassSite";
     public static string GuidColumnName => "";
     static CmsClassSiteK12 ISourceModel<CmsClassSiteK12>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsClassSiteK12(
-            reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")                
+            reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")
         );
     }
     public static CmsClassSiteK12 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsClassSiteK12(
-            reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")                
+            reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")
         );
     }
 };
-public partial record CmsClassSiteK13(int ClassID, int SiteID): ICmsClassSite, ISourceModel<CmsClassSiteK13>
+public partial record CmsClassSiteK13(int ClassID, int SiteID) : ICmsClassSite, ISourceModel<CmsClassSiteK13>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "ClassID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "ClassID";
     public static string TableName => "CMS_ClassSite";
     public static string GuidColumnName => "";
     static CmsClassSiteK13 ISourceModel<CmsClassSiteK13>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsClassSiteK13(
-            reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")                
+            reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")
         );
     }
     public static CmsClassSiteK13 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsClassSiteK13(
-            reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")                
+            reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")
         );
     }
 };
-

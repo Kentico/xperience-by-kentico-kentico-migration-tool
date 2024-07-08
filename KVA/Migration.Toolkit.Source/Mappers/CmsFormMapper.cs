@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Source.Mappers;
+namespace Migration.Toolkit.Source.Mappers;
 
 using CMS.FormEngine;
 using CMS.OnlineForms;
@@ -35,22 +35,22 @@ public class CmsFormMapper(
         switch (source)
         {
             case CmsFormK11 s:
-            {
-                target.FormLogActivity = s.FormLogActivity.UseKenticoDefault();
-                break;
-            }
+                {
+                    target.FormLogActivity = s.FormLogActivity.UseKenticoDefault();
+                    break;
+                }
             case CmsFormK12 s:
-            {
-                target.FormLogActivity = s.FormLogActivity.UseKenticoDefault();
-                target.FormBuilderLayout = s.FormBuilderLayout;
-                break;
-            }
+                {
+                    target.FormLogActivity = s.FormLogActivity.UseKenticoDefault();
+                    target.FormBuilderLayout = s.FormBuilderLayout;
+                    break;
+                }
             case CmsFormK13 s:
-            {
-                target.FormLogActivity = s.FormLogActivity;
-                target.FormBuilderLayout = s.FormBuilderLayout;
-                break;
-            }
+                {
+                    target.FormLogActivity = s.FormLogActivity;
+                    target.FormBuilderLayout = s.FormBuilderLayout;
+                    break;
+                }
         }
         if (mappingHelper.TranslateRequiredId<ICmsClass>(c => c.ClassID, source.FormClassID, out var formClassId))
         {
@@ -92,22 +92,22 @@ public class CmsFormMapperEf : EntityMapperBase<ICmsForm, Migration.Toolkit.KXP.
         switch (source)
         {
             case CmsFormK11 s:
-            {
-                target.FormLogActivity = s.FormLogActivity.UseKenticoDefault();
-                break;
-            }
+                {
+                    target.FormLogActivity = s.FormLogActivity.UseKenticoDefault();
+                    break;
+                }
             case CmsFormK12 s:
-            {
-                target.FormLogActivity = s.FormLogActivity.UseKenticoDefault();
-                target.FormBuilderLayout = s.FormBuilderLayout;
-                break;
-            }
+                {
+                    target.FormLogActivity = s.FormLogActivity.UseKenticoDefault();
+                    target.FormBuilderLayout = s.FormBuilderLayout;
+                    break;
+                }
             case CmsFormK13 s:
-            {
-                target.FormLogActivity = s.FormLogActivity;
-                target.FormBuilderLayout = s.FormBuilderLayout;
-                break;
-            }
+                {
+                    target.FormLogActivity = s.FormLogActivity;
+                    target.FormBuilderLayout = s.FormBuilderLayout;
+                    break;
+                }
         }
 
         // TODO tk: 2022-05-20 new deduce: target.FormAfterSubmitMode = source.FormAfterSubmitMode;

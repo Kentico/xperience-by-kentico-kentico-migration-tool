@@ -176,7 +176,7 @@ public static class ConfigurationValidator
     #region "Helper methods"
 
     [Pure]
-    private static bool StringIsNullOrFitsOneOf<TEnum>(string? s) where TEnum: Enum
+    private static bool StringIsNullOrFitsOneOf<TEnum>(string? s) where TEnum : Enum
     {
         return s is null || Enum.TryParse(ReflectionHelper<TEnum>.CurrentType, s, out var _);
     }

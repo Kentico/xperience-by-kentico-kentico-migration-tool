@@ -7,7 +7,7 @@ public interface IModelMappingResult
     bool Success { get; }
 }
 
-public interface IModelMappingResult<TResult>: IModelMappingResult
+public interface IModelMappingResult<TResult> : IModelMappingResult
 {
     TResult? Item { get; }
     bool NewInstance { get; }
@@ -35,7 +35,7 @@ public record AggregatedResult<TResult>(IEnumerable<IModelMappingResult<TResult>
     public bool Success => this.Results.All(x => x.Success);
 }
 
-public record MapperResult<TResult>(TResult? Item, bool NewInstance, bool Success, HandbookReference? HandbookReference): IModelMappingResult<TResult>;
+public record MapperResult<TResult>(TResult? Item, bool NewInstance, bool Success, HandbookReference? HandbookReference) : IModelMappingResult<TResult>;
 public record MapperResultSuccess<TResult>(TResult? Item, bool NewInstance) : MapperResult<TResult>(Item, NewInstance, true, null);
 public record MapperResultFailure<TResult>(HandbookReference HandbookReference) : MapperResult<TResult>(default, false, false, HandbookReference);
 

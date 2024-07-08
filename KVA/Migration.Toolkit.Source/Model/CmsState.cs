@@ -4,7 +4,7 @@ namespace Migration.Toolkit.Source.Model;
 using System.Data;
 using Migration.Toolkit.Common;
 
-public interface ICmsState: ISourceModel<ICmsState>
+public interface ICmsState : ISourceModel<ICmsState>
 {
     int StateID { get; }
     string StateDisplayName { get; }
@@ -12,7 +12,7 @@ public interface ICmsState: ISourceModel<ICmsState>
     string? StateCode { get; }
     int CountryID { get; }
     Guid StateGUID { get; }
-    DateTime StateLastModified { get; }    
+    DateTime StateLastModified { get; }
 
     static string ISourceModel<ICmsState>.GetPrimaryKeyName(SemanticVersion version)
     {
@@ -47,61 +47,60 @@ public interface ICmsState: ISourceModel<ICmsState>
         };
     }
 }
-public partial record CmsStateK11(int StateID, string StateDisplayName, string StateName, string? StateCode, int CountryID, Guid StateGUID, DateTime StateLastModified): ICmsState, ISourceModel<CmsStateK11>
+public partial record CmsStateK11(int StateID, string StateDisplayName, string StateName, string? StateCode, int CountryID, Guid StateGUID, DateTime StateLastModified) : ICmsState, ISourceModel<CmsStateK11>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "StateID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "StateID";
     public static string TableName => "CMS_State";
     public static string GuidColumnName => "StateGUID";
     static CmsStateK11 ISourceModel<CmsStateK11>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsStateK11(
-            reader.Unbox<int>("StateID"), reader.Unbox<string>("StateDisplayName"), reader.Unbox<string>("StateName"), reader.Unbox<string?>("StateCode"), reader.Unbox<int>("CountryID"), reader.Unbox<Guid>("StateGUID"), reader.Unbox<DateTime>("StateLastModified")                
+            reader.Unbox<int>("StateID"), reader.Unbox<string>("StateDisplayName"), reader.Unbox<string>("StateName"), reader.Unbox<string?>("StateCode"), reader.Unbox<int>("CountryID"), reader.Unbox<Guid>("StateGUID"), reader.Unbox<DateTime>("StateLastModified")
         );
     }
     public static CmsStateK11 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsStateK11(
-            reader.Unbox<int>("StateID"), reader.Unbox<string>("StateDisplayName"), reader.Unbox<string>("StateName"), reader.Unbox<string?>("StateCode"), reader.Unbox<int>("CountryID"), reader.Unbox<Guid>("StateGUID"), reader.Unbox<DateTime>("StateLastModified")                
+            reader.Unbox<int>("StateID"), reader.Unbox<string>("StateDisplayName"), reader.Unbox<string>("StateName"), reader.Unbox<string?>("StateCode"), reader.Unbox<int>("CountryID"), reader.Unbox<Guid>("StateGUID"), reader.Unbox<DateTime>("StateLastModified")
         );
     }
 };
-public partial record CmsStateK12(int StateID, string StateDisplayName, string StateName, string? StateCode, int CountryID, Guid StateGUID, DateTime StateLastModified): ICmsState, ISourceModel<CmsStateK12>
+public partial record CmsStateK12(int StateID, string StateDisplayName, string StateName, string? StateCode, int CountryID, Guid StateGUID, DateTime StateLastModified) : ICmsState, ISourceModel<CmsStateK12>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "StateID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "StateID";
     public static string TableName => "CMS_State";
     public static string GuidColumnName => "StateGUID";
     static CmsStateK12 ISourceModel<CmsStateK12>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsStateK12(
-            reader.Unbox<int>("StateID"), reader.Unbox<string>("StateDisplayName"), reader.Unbox<string>("StateName"), reader.Unbox<string?>("StateCode"), reader.Unbox<int>("CountryID"), reader.Unbox<Guid>("StateGUID"), reader.Unbox<DateTime>("StateLastModified")                
+            reader.Unbox<int>("StateID"), reader.Unbox<string>("StateDisplayName"), reader.Unbox<string>("StateName"), reader.Unbox<string?>("StateCode"), reader.Unbox<int>("CountryID"), reader.Unbox<Guid>("StateGUID"), reader.Unbox<DateTime>("StateLastModified")
         );
     }
     public static CmsStateK12 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsStateK12(
-            reader.Unbox<int>("StateID"), reader.Unbox<string>("StateDisplayName"), reader.Unbox<string>("StateName"), reader.Unbox<string?>("StateCode"), reader.Unbox<int>("CountryID"), reader.Unbox<Guid>("StateGUID"), reader.Unbox<DateTime>("StateLastModified")                
+            reader.Unbox<int>("StateID"), reader.Unbox<string>("StateDisplayName"), reader.Unbox<string>("StateName"), reader.Unbox<string?>("StateCode"), reader.Unbox<int>("CountryID"), reader.Unbox<Guid>("StateGUID"), reader.Unbox<DateTime>("StateLastModified")
         );
     }
 };
-public partial record CmsStateK13(int StateID, string StateDisplayName, string StateName, string? StateCode, int CountryID, Guid StateGUID, DateTime StateLastModified): ICmsState, ISourceModel<CmsStateK13>
+public partial record CmsStateK13(int StateID, string StateDisplayName, string StateName, string? StateCode, int CountryID, Guid StateGUID, DateTime StateLastModified) : ICmsState, ISourceModel<CmsStateK13>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "StateID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "StateID";
     public static string TableName => "CMS_State";
     public static string GuidColumnName => "StateGUID";
     static CmsStateK13 ISourceModel<CmsStateK13>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsStateK13(
-            reader.Unbox<int>("StateID"), reader.Unbox<string>("StateDisplayName"), reader.Unbox<string>("StateName"), reader.Unbox<string?>("StateCode"), reader.Unbox<int>("CountryID"), reader.Unbox<Guid>("StateGUID"), reader.Unbox<DateTime>("StateLastModified")                
+            reader.Unbox<int>("StateID"), reader.Unbox<string>("StateDisplayName"), reader.Unbox<string>("StateName"), reader.Unbox<string?>("StateCode"), reader.Unbox<int>("CountryID"), reader.Unbox<Guid>("StateGUID"), reader.Unbox<DateTime>("StateLastModified")
         );
     }
     public static CmsStateK13 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsStateK13(
-            reader.Unbox<int>("StateID"), reader.Unbox<string>("StateDisplayName"), reader.Unbox<string>("StateName"), reader.Unbox<string?>("StateCode"), reader.Unbox<int>("CountryID"), reader.Unbox<Guid>("StateGUID"), reader.Unbox<DateTime>("StateLastModified")                
+            reader.Unbox<int>("StateID"), reader.Unbox<string>("StateDisplayName"), reader.Unbox<string>("StateName"), reader.Unbox<string?>("StateCode"), reader.Unbox<int>("CountryID"), reader.Unbox<Guid>("StateGUID"), reader.Unbox<DateTime>("StateLastModified")
         );
     }
 };
-

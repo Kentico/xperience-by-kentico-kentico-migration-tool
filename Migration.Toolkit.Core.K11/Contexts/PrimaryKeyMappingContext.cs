@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.K11.Contexts;
+namespace Migration.Toolkit.Core.K11.Contexts;
 
 using System.Diagnostics;
 using System.Linq.Expressions;

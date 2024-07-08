@@ -6,7 +6,7 @@ using static Migration.Toolkit.Common.Helpers.ConsoleHelper;
 
 public class CommandParser : ICommandParser
 {
-        public List<ICommand> Parse(Queue<string> args, ref bool bypassDependencyCheck, bool firstHaveToBeMigrate = true)
+    public List<ICommand> Parse(Queue<string> args, ref bool bypassDependencyCheck, bool firstHaveToBeMigrate = true)
     {
         var commands = new List<ICommand>();
         while (args.TryDequeue(out var arg))

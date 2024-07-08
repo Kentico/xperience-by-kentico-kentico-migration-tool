@@ -4,9 +4,9 @@ namespace Migration.Toolkit.Source.Model;
 using System.Data;
 using Migration.Toolkit.Common;
 
-public interface ICmsPageUrlPath: ISourceModel<ICmsPageUrlPath>
+public interface ICmsPageUrlPath : ISourceModel<ICmsPageUrlPath>
 {
-        
+
 
     static string ISourceModel<ICmsPageUrlPath>.GetPrimaryKeyName(SemanticVersion version)
     {
@@ -41,61 +41,60 @@ public interface ICmsPageUrlPath: ISourceModel<ICmsPageUrlPath>
         };
     }
 }
-public partial record CmsPageUrlPathK11(): ICmsPageUrlPath, ISourceModel<CmsPageUrlPathK11>
+public partial record CmsPageUrlPathK11() : ICmsPageUrlPath, ISourceModel<CmsPageUrlPathK11>
 {
     public static bool IsAvailable(SemanticVersion version) => false;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "";
     public static string TableName => "CMS_PageUrlPath";
     public static string GuidColumnName => "";
     static CmsPageUrlPathK11 ISourceModel<CmsPageUrlPathK11>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsPageUrlPathK11(
-                            
+
         );
     }
     public static CmsPageUrlPathK11 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsPageUrlPathK11(
-                            
+
         );
     }
 };
-public partial record CmsPageUrlPathK12(): ICmsPageUrlPath, ISourceModel<CmsPageUrlPathK12>
+public partial record CmsPageUrlPathK12() : ICmsPageUrlPath, ISourceModel<CmsPageUrlPathK12>
 {
     public static bool IsAvailable(SemanticVersion version) => false;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "";
     public static string TableName => "CMS_PageUrlPath";
     public static string GuidColumnName => "";
     static CmsPageUrlPathK12 ISourceModel<CmsPageUrlPathK12>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsPageUrlPathK12(
-                            
+
         );
     }
     public static CmsPageUrlPathK12 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsPageUrlPathK12(
-                            
+
         );
     }
 };
-public partial record CmsPageUrlPathK13(int PageUrlPathID, Guid PageUrlPathGUID, string PageUrlPathCulture, int PageUrlPathNodeID, string PageUrlPathUrlPath, string PageUrlPathUrlPathHash, int PageUrlPathSiteID, DateTime PageUrlPathLastModified): ICmsPageUrlPath, ISourceModel<CmsPageUrlPathK13>
+public partial record CmsPageUrlPathK13(int PageUrlPathID, Guid PageUrlPathGUID, string PageUrlPathCulture, int PageUrlPathNodeID, string PageUrlPathUrlPath, string PageUrlPathUrlPathHash, int PageUrlPathSiteID, DateTime PageUrlPathLastModified) : ICmsPageUrlPath, ISourceModel<CmsPageUrlPathK13>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "PageUrlPathID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "PageUrlPathID";
     public static string TableName => "CMS_PageUrlPath";
     public static string GuidColumnName => "PageUrlPathGUID";
     static CmsPageUrlPathK13 ISourceModel<CmsPageUrlPathK13>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsPageUrlPathK13(
-            reader.Unbox<int>("PageUrlPathID"), reader.Unbox<Guid>("PageUrlPathGUID"), reader.Unbox<string>("PageUrlPathCulture"), reader.Unbox<int>("PageUrlPathNodeID"), reader.Unbox<string>("PageUrlPathUrlPath"), reader.Unbox<string>("PageUrlPathUrlPathHash"), reader.Unbox<int>("PageUrlPathSiteID"), reader.Unbox<DateTime>("PageUrlPathLastModified")                
+            reader.Unbox<int>("PageUrlPathID"), reader.Unbox<Guid>("PageUrlPathGUID"), reader.Unbox<string>("PageUrlPathCulture"), reader.Unbox<int>("PageUrlPathNodeID"), reader.Unbox<string>("PageUrlPathUrlPath"), reader.Unbox<string>("PageUrlPathUrlPathHash"), reader.Unbox<int>("PageUrlPathSiteID"), reader.Unbox<DateTime>("PageUrlPathLastModified")
         );
     }
     public static CmsPageUrlPathK13 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsPageUrlPathK13(
-            reader.Unbox<int>("PageUrlPathID"), reader.Unbox<Guid>("PageUrlPathGUID"), reader.Unbox<string>("PageUrlPathCulture"), reader.Unbox<int>("PageUrlPathNodeID"), reader.Unbox<string>("PageUrlPathUrlPath"), reader.Unbox<string>("PageUrlPathUrlPathHash"), reader.Unbox<int>("PageUrlPathSiteID"), reader.Unbox<DateTime>("PageUrlPathLastModified")                
+            reader.Unbox<int>("PageUrlPathID"), reader.Unbox<Guid>("PageUrlPathGUID"), reader.Unbox<string>("PageUrlPathCulture"), reader.Unbox<int>("PageUrlPathNodeID"), reader.Unbox<string>("PageUrlPathUrlPath"), reader.Unbox<string>("PageUrlPathUrlPathHash"), reader.Unbox<int>("PageUrlPathSiteID"), reader.Unbox<DateTime>("PageUrlPathLastModified")
         );
     }
 };
-

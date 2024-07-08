@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.KX13.Handlers;
+namespace Migration.Toolkit.Core.KX13.Handlers;
 
 using System.Diagnostics;
 using CMS.Membership;
@@ -65,7 +65,7 @@ public class MigrateMembersCommandHandler(
 
     private void SaveUserUsingKenticoApi(IModelMappingResult<MemberInfo> mapped, KX13M.CmsUser kx13User)
     {
-        if (mapped is { Success : true } result)
+        if (mapped is { Success: true } result)
         {
             var (memberInfo, newInstance) = result;
             ArgumentNullException.ThrowIfNull(memberInfo);

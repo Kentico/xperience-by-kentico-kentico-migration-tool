@@ -32,20 +32,20 @@ public record SemanticVersion(int Major, int? Minor, int? Hotfix) //, string? Bu
             switch (split.Length)
             {
                 case 1 when int.TryParse(split[0], out var major):
-                {
-                    semVer = new(major, null, null);
-                    return true;
-                }
+                    {
+                        semVer = new(major, null, null);
+                        return true;
+                    }
                 case 2 when int.TryParse(split[0], out var major) && int.TryParse(split[1], out var minor):
-                {
-                    semVer = new(major, minor, null);
-                    return true;
-                } 
+                    {
+                        semVer = new(major, minor, null);
+                        return true;
+                    }
                 case 3 when int.TryParse(split[0], out var major) && int.TryParse(split[1], out var minor) && int.TryParse(split[2], out var hotfix):
-                {
-                    semVer = new(major, minor, hotfix);
-                    return true;
-                }
+                    {
+                        semVer = new(major, minor, hotfix);
+                        return true;
+                    }
             }
         }
 
@@ -66,7 +66,7 @@ public record SemanticVersion(int Major, int? Minor, int? Hotfix) //, string? Bu
             {
                 return true;
             }
-            
+
             if (hotfix.HasValue && Hotfix.HasValue && Hotfix - hotfix < 0)
             {
                 return true;
@@ -83,7 +83,7 @@ public record SemanticVersion(int Major, int? Minor, int? Hotfix) //, string? Bu
             {
                 return true;
             }
-            
+
             if (Hotfix.GetValueOrDefault(0) - hotfix.GetValueOrDefault(0) < 0)
             {
                 return true;

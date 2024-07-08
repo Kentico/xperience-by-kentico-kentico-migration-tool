@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -134,10 +134,10 @@ foreach (var properties in allProperties)
     Console.WriteLine("-----------------------");
     var propertiesContainer = properties.Parent;
     Console.WriteLine($"{propertiesContainer}");
-    
+
     var propsOf = propertiesContainer.Parent.Parent.Parent;
     Console.WriteLine($"{propsOf}");
-    
+
     var c = 1;
 }
 // dynamic dynJson = JsonConvert.DeserializeObject(json);

@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.K11.Mappers;
+namespace Migration.Toolkit.Core.K11.Mappers;
 
 using System.Data;
 using CMS.Base;
@@ -27,7 +27,8 @@ public class MediaFileInfoMapper(ILogger<MediaFileInfoMapper> logger,
     private readonly IProtocol _protocol = protocol;
 
 
-    protected override MediaFileInfo? CreateNewInstance(MediaFileInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) {
+    protected override MediaFileInfo? CreateNewInstance(MediaFileInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure)
+    {
         if (source.File != null)
         {
             var mf = new MediaFileInfo(source.File, source.TargetLibraryId, source.LibrarySubFolder ?? "", 0, 0, 0);

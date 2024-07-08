@@ -23,12 +23,12 @@ public class StateInfoMapper : EntityMapperBase<CmsState, StateInfo>
         target.StateLastModified = source.StateLastModified;
         target.StateGUID = source.StateGuid;
         target.StateCode = source.StateCode;
-        
+
         if (mappingHelper.TranslateRequiredId<KX13M.CmsCountry>(k => k.CountryId, source.CountryId, out var countryId))
         {
             target.CountryID = countryId;
         }
-        
+
         return target;
     }
 }

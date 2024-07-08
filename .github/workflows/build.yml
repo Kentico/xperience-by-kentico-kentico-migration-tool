@@ -1,14 +1,77 @@
-# For more information do to https://github.com/Kentico/Home/wiki/CI-and-Automation-Guidelines
+name: "CI: Build and Test"
 
-name: "Build"   # Represents the name of the whole action.
-on:   # Specifies the section where we describe our build triggers.
-  push: # The action runs with push.
-  pull_request: # The action runs with a pull request.
-  schedule: # Specifies the section where we describe the schedule of running the action.
-    - cron: '0 18 * * 1' # The CRON expression describes when to run the action.
-jobs: # Specifies the section where we describe our jobs.
-  Build: # Specific job section.
-    runs-on: ubuntu-latest   # Describes the environment.
-    steps: # Specifies the section where we describe the job's steps.
-    - name: Output some string
-      run: echo "Set some actual CI steps"
+on:
+  push:
+    branches: [master]
+    paths:
+      - "**.cs"
+      - "**.tsx"
+      - "**.js"
+      - "**.csproj"
+      - "**.props"
+      - "**.targets"
+      - "**.sln"
+  pull_request:
+    branches: [master]
+    paths:
+      - ".github/workflows/build.yml"
+      - "**.cs"
+      - "**.cshtml"
+      - "**.tsx"
+      - "**.js"
+      - "**.json"
+      - "**.csproj"
+      - "**.props"
+      - "**.targets"
+      - "**.sln"
+
+jobs:
+  dotnet-format:
+    name: .Net Format Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run dotnet format
+        run: dotnet format --exclude ./examples/** --verify-no-changes
+
+  build_and_test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    needs: dotnet-format
+    defaults:
+      run:
+        shell: pwsh
+
+    env:
+      ASPNETCORE_ENVIRONMENT: CI
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      DOTNET_NOLOGO: 1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Install dependencies
+        run: |
+          dotnet restore `
+            --locked-mode
+
+      - name: Build Solution
+        run: |
+          dotnet build `
+            --configuration Release `
+            --no-restore
+
+      - name: Test Solution
+        run: |
+          dotnet test `
+            --configuration Release `
+            --no-build `
+            --no-restore
