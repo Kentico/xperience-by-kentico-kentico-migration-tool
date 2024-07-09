@@ -7,6 +7,5 @@ public class PageSelectorItem
 {
     /// <summary>Node Guid of a page.</summary>
     [JsonProperty("nodeGuid")]
-#error "NodeGuid may not be unique, use other means of searching for node!"
     public Guid NodeGuid { get; set; }
 }

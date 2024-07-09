@@ -37,7 +37,8 @@ public static class KsCoreDiExtensions
         services.AddTransient<IModuleLoader, ModuleLoader>();
 
         services.AddSingleton<ModelFacade>();
-        services.AddSingleton<SpoiledGuidContext>();
+        services.AddSingleton<ISpoiledGuidContext, SpoiledGuidContext>();
+        services.AddSingleton<SpoiledGuidContext>(s => s.GetRequiredService<ISpoiledGuidContext>() as SpoiledGuidContext ?? throw new InvalidOperationException());
 
         services.AddTransient<BulkDataCopyService>();
         services.AddTransient<CmsRelationshipService>();

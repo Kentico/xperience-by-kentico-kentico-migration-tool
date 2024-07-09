@@ -8,6 +8,7 @@ using CMS.MediaLibrary;
 using CMS.Websites;
 using Kentico.Components.Web.Mvc.FormComponents;
 using Kentico.Xperience.UMT.Model;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
@@ -65,8 +66,7 @@ public class ContentItemMapper(
             throw new InvalidOperationException($"Fatal: node class is missing, class id '{cmsTree.NodeClassID}'");
         }
 
-#error "NodeGuid may not be unique, use other means of searching for node!"
-        var contentItemGuid = cmsTree.NodeGUID;
+        var contentItemGuid = spoiledGuidContext.EnsureNodeGuid(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsTree.NodeID);
         yield return new ContentItemModel
         {
             ContentItemGUID = contentItemGuid,
@@ -317,7 +317,7 @@ public class ContentItemMapper(
                         sourceInstanceContext.GetPageTemplateFormComponents(sourceSiteId, pageTemplateConfigurationObj?.Identifier);
                     if (pageTemplateConfigurationObj.Properties is { Count: > 0 })
                     {
-                        WalkProperties(pageTemplateConfigurationObj.Properties, pageTemplateConfigurationFcs, out var ndp);
+                        WalkProperties(sourceSiteId, pageTemplateConfigurationObj.Properties, pageTemplateConfigurationFcs, out var ndp);
                         needsDeferredPatch = ndp || needsDeferredPatch;
                     }
 
@@ -475,6 +475,8 @@ public class ContentItemMapper(
 
     #region "Page template & page widget walkers"
 
+    private record WalkerContext(int SiteId);
+
     private void WalkAreas(int siteId, List<EditableAreaConfiguration> areas, out bool needsDeferredPatch)
     {
         needsDeferredPatch = false;
@@ -499,7 +501,7 @@ public class ContentItemMapper(
 
             // TODO tk: 2022-09-14 find other acronym for FormComponents
             var sectionFcs = sourceInstanceContext.GetSectionFormComponents(siteId, section.TypeIdentifier);
-            WalkProperties(section.Properties, sectionFcs, out var ndp1);
+            WalkProperties(siteId, section.Properties, sectionFcs, out var ndp1);
             needsDeferredPatch = ndp1 || needsDeferredPatch;
 
             if (section.Zones is { Count: > 0 })
@@ -539,14 +541,14 @@ public class ContentItemMapper(
 
                 if (variant.Properties is { Count: > 0 })
                 {
-                    WalkProperties(variant.Properties, widgetFcs, out var ndp);
+                    WalkProperties(siteId, variant.Properties, widgetFcs, out var ndp);
                     needsDeferredPatch = ndp || needsDeferredPatch;
                 }
             }
         }
     }
 
-    private void WalkProperties(JObject properties, List<EditingFormControlModel>? formControlModels, out bool needsDeferredPatch)
+    private void WalkProperties(int siteId, JObject properties, List<EditingFormControlModel>? formControlModels, out bool needsDeferredPatch)
     {
         needsDeferredPatch = false;
         foreach (var (key, value) in properties)
@@ -583,8 +585,10 @@ public class ContentItemMapper(
                         {
                             if (value?.ToObject<List<Services.Model.PageSelectorItem>>() is { Count: > 0 } items)
                             {
-#error "NodeGuid may not be unique, use other means of searching for node!"
-                                properties[key] = JToken.FromObject(items.Select(x => new WebPageRelatedItem { WebPageGuid = x.NodeGuid }).ToList());
+                                properties[key] = JToken.FromObject(items.Select(x => new WebPageRelatedItem
+                                {
+                                    WebPageGuid = spoiledGuidContext.EnsureNodeGuid(x.NodeGuid, siteId)
+                                }).ToList());
                             }
 
                             logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
@@ -795,10 +799,11 @@ public class ContentItemMapper(
             {
                 if (fieldMigration.Actions?.Contains(TcaDirective.ConvertToPages) ?? false)
                 {
-#error "NodeGuid may not be unique, use other means of searching for node!"
                     // relation to other document
                     var convertedRelation = relationshipService.GetNodeRelationships(cmsTree.NodeID)
-                        .Select(r => new WebPageRelatedItem { WebPageGuid = r.RightNode.NodeGUID });
+                        .Select(r => new WebPageRelatedItem {
+                            WebPageGuid = spoiledGuidContext.EnsureNodeGuid(r.RightNode.NodeGUID, r.RightNode.NodeSiteID, r.RightNode.NodeID)
+                        });
 
                     target.SetValueAsJson(columnName, convertedRelation);
                 }
@@ -812,8 +817,17 @@ public class ContentItemMapper(
                 {
                     if (value is string pageReferenceJson)
                     {
-#error "NodeGuid may not be unique, use other means of searching for node!"
-                        target[columnName] = pageReferenceJson.Replace("\"NodeGuid\"", "\"WebPageGuid\"");
+#warning [PATCHED] - [VERIFY] "NodeGuid may not be unique, use other means of searching for node!"
+                        var parsed = JObject.Parse(pageReferenceJson);
+                        foreach (var jToken in parsed.DescendantsAndSelf())
+                        {
+                            if (jToken.Path.EndsWith("NodeGUID", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                var patchedGuid = spoiledGuidContext.EnsureNodeGuid(jToken.Value<Guid>(), cmsTree.NodeSiteID);
+                                jToken.Replace(JToken.FromObject(patchedGuid));
+                            }
+                        }
+                        target[columnName] = parsed.ToString().Replace("\"NodeGuid\"", "\"WebPageGuid\"");
                     }
                 }
             }

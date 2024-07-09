@@ -1,12 +1,11 @@
-namespace Migration.Toolkit.Core.K11.Services.CmsClass;
-
-using Newtonsoft.Json;
-
-/// <summary>Represents an item for a page selector.</summary>
-public class PageSelectorItem
-{
-    /// <summary>Node Guid of a page.</summary>
-#error "NodeGuid may not be unique, use other means of searching for node!"
-    [JsonProperty("nodeGuid")]
-    public Guid NodeGuid { get; set; }
-}
+// namespace Migration.Toolkit.Core.K11.Services.CmsClass;
+//
+// using Newtonsoft.Json;
+//
+// /// <summary>Represents an item for a page selector.</summary>
+// public class PageSelectorItem
+// {
+//     /// <summary>Node Guid of a page.</summary>
+//     [JsonProperty("nodeGuid")]
+//     public Guid NodeGuid { get; set; }
+// }

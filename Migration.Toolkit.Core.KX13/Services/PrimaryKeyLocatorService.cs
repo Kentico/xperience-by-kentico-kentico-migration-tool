@@ -4,36 +4,17 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
-using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.KXP.Context;
 
-public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
+public class PrimaryKeyLocatorService(
+    ILogger<PrimaryKeyLocatorService> logger,
+    IDbContextFactory<KxpContext> kxpContextFactory,
+    IDbContextFactory<Toolkit.KX13.Context.KX13Context> kx13ContextFactory)
+    : IPrimaryKeyLocatorService
 {
-    private readonly ILogger<PrimaryKeyLocatorService> _logger;
-    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
-    private readonly IDbContextFactory<Toolkit.KX13.Context.KX13Context> _kx13ContextFactory;
-
-    public PrimaryKeyLocatorService(
-        ILogger<PrimaryKeyLocatorService> logger,
-        IDbContextFactory<KxpContext> kxpContextFactory,
-        IDbContextFactory<Toolkit.KX13.Context.KX13Context> kx13ContextFactory
-    )
+    private class KeyEqualityComparerWithLambda<T>(Func<T?, T?, bool> equalityComparer) : IEqualityComparer<T>
     {
-        _logger = logger;
-        _kxpContextFactory = kxpContextFactory;
-        _kx13ContextFactory = kx13ContextFactory;
-    }
-
-    private class KeyEqualityComparerWithLambda<T> : IEqualityComparer<T>
-    {
-        private readonly Func<T?, T?, bool> _equalityComparer;
-
-        public KeyEqualityComparerWithLambda(Func<T?,T?,bool> equalityComparer)
-        {
-            _equalityComparer = equalityComparer;
-        }
-
-        public bool Equals(T? x, T? y) => _equalityComparer.Invoke(x, y);
+        public bool Equals(T? x, T? y) => equalityComparer.Invoke(x, y);
 
         public int GetHashCode(T obj) => obj?.GetHashCode() ?? 0;
     }
@@ -42,13 +23,13 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
 
     public IEnumerable<SourceTargetKeyMapping> SelectAll<T>(Expression<Func<T, object>> keyNameSelector)
     {
-        using var kxpContext = _kxpContextFactory.CreateDbContext();
-        using var kx13Context = _kx13ContextFactory.CreateDbContext();
+        using var kxpContext = kxpContextFactory.CreateDbContext();
+        using var kx13Context = kx13ContextFactory.CreateDbContext();
 
         var sourceType = typeof(T);
         var memberName = keyNameSelector.GetMemberName();
 
-        _logger.LogTrace("Preload of entity {Entity} member {MemberName} mapping requested", sourceType.Name, memberName);
+        logger.LogTrace("Preload of entity {Entity} member {MemberName} mapping requested", sourceType.Name, memberName);
 
         if (sourceType == typeof(Toolkit.KX13.Models.CmsUser) && memberName == nameof(KX13M.CmsUser.UserId))
         {
@@ -83,27 +64,6 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
                 a => a.ContactGuid,
                 b => b.ContactGuid,
                 (a, b) => new SourceTargetKeyMapping(a.ContactId, b.ContactId)
-            );
-
-            foreach (var resultingMapping in result)
-            {
-                yield return resultingMapping;
-            }
-
-            yield break;
-        }
-
-        if (sourceType == typeof(Toolkit.KX13.Models.CmsTree) && memberName == nameof(KX13M.CmsTree.NodeId))
-        {
-#error "NodeGuid may not be unique, use other means of searching for node!"
-            var source = kx13Context.CmsTrees.Select(x => new { x.NodeId, x.NodeGuid }).ToList();
-            var target = kxpContext.CmsChannels.Select(x => new { x.ChannelId, x.ChannelGuid }).ToList();
-
-            var result = source.Join(target,
-#error "NodeGuid may not be unique, use other means of searching for node!"
-                a => a.NodeGuid,
-                b => b.ChannelGuid,
-                (a, b) => new SourceTargetKeyMapping(a.NodeId, b.ChannelId)
             );
 
             foreach (var resultingMapping in result)
@@ -157,8 +117,8 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
 
     public bool TryLocate<T>(Expression<Func<T, object>> keyNameSelector, int sourceId, out int targetId)
     {
-        using var kxpContext = _kxpContextFactory.CreateDbContext();
-        using var kx13Context = _kx13ContextFactory.CreateDbContext();
+        using var kxpContext = kxpContextFactory.CreateDbContext();
+        using var kx13Context = kx13ContextFactory.CreateDbContext();
 
         var sourceType = typeof(T);
         targetId = -1;
@@ -226,25 +186,16 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
                 targetId = kxpContext.OmContacts.Where(x => x.ContactGuid == kx13Guid).Select(x => x.ContactId).Single();
                 return true;
             }
-
-            if (sourceType == typeof(Toolkit.KX13.Models.CmsTree))
-            {
-                // careful - cms.root will have different guid
-#error "NodeGuid may not be unique, use other means of searching for node!"
-                var kx13Guid = kx13Context.CmsTrees.Where(c => c.NodeId == sourceId).Select(x => x.NodeGuid).Single();
-                targetId = kxpContext.CmsWebPageItems.Where(x => x.WebPageItemGuid == kx13Guid).Select(x => x.WebPageItemId).Single();
-                return true;
-            }
         }
         catch (InvalidOperationException ioex)
         {
             if (ioex.Message.StartsWith("Sequence contains no elements"))
             {
-                _logger.LogDebug("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
+                logger.LogDebug("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
             }
             else
             {
-                _logger.LogWarning("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
+                logger.LogWarning("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
             }
             return false;
         }
@@ -252,11 +203,11 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
         {
             if (targetId != -1)
             {
-                _logger.LogTrace("Mapping {SourceFullType} primary key: {SourceId} to {TargetId}", sourceType.FullName, sourceId, targetId);
+                logger.LogTrace("Mapping {SourceFullType} primary key: {SourceId} to {TargetId}", sourceType.FullName, sourceId, targetId);
             }
         }
 
-        _logger.LogError("Mapping {SourceFullType} primary key is not supported", sourceType.FullName);
+        logger.LogError("Mapping {SourceFullType} primary key is not supported", sourceType.FullName);
         targetId = -1;
         return false;
     }

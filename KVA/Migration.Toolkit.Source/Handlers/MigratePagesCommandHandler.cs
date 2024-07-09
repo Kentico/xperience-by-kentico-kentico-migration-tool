@@ -35,7 +35,8 @@ public class MigratePagesCommandHandler(
     IImporter importer,
     IUmtMapper<CmsTreeMapperSource> mapper,
     ModelFacade modelFacade,
-    DeferredPathService deferredPathService
+    DeferredPathService deferredPathService,
+    SpoiledGuidContext spoiledGuidContext
 )
     : IRequestHandler<MigratePagesCommand, CommandResult>
 {
@@ -90,7 +91,6 @@ public class MigratePagesCommandHandler(
                         continue;
                     }
 
-#error "NodeGuid may not be unique, use other means of searching for node!"
                     // materialize linked node & write to protocol
                     var linkedNode = modelFacade.SelectWhere<ICmsTree>("NodeSiteID = @nodeSiteID AND NodeGUID = @nodeGuid",
                         new SqlParameter("nodeSiteID", ksNode.NodeSiteID),
@@ -110,8 +110,8 @@ public class MigratePagesCommandHandler(
                     {
                         var linkedDocument = linkedNodeDocuments[i];
                         var fixedDocumentGuid = GuidHelper.CreateDocumentGuid($"{linkedDocument.DocumentID}|{ksNode.NodeID}|{ksNode.NodeSiteID}"); //Guid.NewGuid();
-#error "NodeGuid may not be unique, use other means of searching for node!"
-                        if (ContentItemInfo.Provider.Get(ksNode.NodeGUID)?.ContentItemID is { } contentItemId)
+                        var patchedNodeGuid = spoiledGuidContext.EnsureNodeGuid(ksNode.NodeGUID, ksNode.NodeSiteID, ksNode.NodeID);
+                        if (ContentItemInfo.Provider.Get(patchedNodeGuid)?.ContentItemID is { } contentItemId)
                         {
                             if (cultureCodeToLanguageGuid.TryGetValue(linkedDocument.DocumentCulture, out var languageGuid) &&
                                 ContentLanguageInfoProvider.ProviderObject.Get(languageGuid) is { } languageInfo)
@@ -179,8 +179,7 @@ public class MigratePagesCommandHandler(
                 var ksNodeParent = modelFacade.SelectById<ICmsTree>(ksNode.NodeParentID);
                 var nodeParentGuid = ksNodeParent?.NodeAliasPath == "/" || ksNodeParent == null
                     ? (Guid?)null
-#error "NodeGuid may not be unique, use other means of searching for node!"
-                    : ksNodeParent?.NodeGUID;
+                    : spoiledGuidContext.EnsureNodeGuid(ksNodeParent);
 
                 var targetClass = DataClassInfoProvider.ProviderObject.Get(ksNodeClass.ClassGUID);
 

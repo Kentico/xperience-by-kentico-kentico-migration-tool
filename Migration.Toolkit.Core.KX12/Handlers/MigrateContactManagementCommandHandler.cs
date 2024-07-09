@@ -3,13 +3,13 @@ namespace Migration.Toolkit.Core.KX12.Handlers;
 using CMS.Activities;
 using CMS.ContactManagement;
 using CMS.ContentEngine;
-using CMS.Websites.Internal;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
+using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.Common.Services.BulkCopy;
 using Migration.Toolkit.Core.KX12.Contexts;
 using Migration.Toolkit.Core.KX12.Helpers;
@@ -27,6 +27,7 @@ public class MigrateContactManagementCommandHandler(
     KeyMappingContext keyMappingContext,
     CountryMigrator countryMigrator,
     KxpClassFacade kxpClassFacade,
+    ISpoiledGuidContext spoiledGuidContext,
     IProtocol protocol
     )
     : IRequestHandler<MigrateContactManagementCommand, CommandResult>, IDisposable
@@ -319,36 +320,31 @@ public class MigrateContactManagementCommandHandler(
             }
         }
 
-        if (columnName.Equals(nameof(KX12M.OmActivity.ActivityNodeId), StringComparison.InvariantCultureIgnoreCase) && value is int activityNodeId)
+        if (columnName.Equals(nameof(OmActivity.ActivityNodeId), StringComparison.InvariantCultureIgnoreCase) && value is int activityNodeId)
         {
-            var result = keyMappingContext.MapSourceKey<KX12M.CmsTree, Toolkit.KXP.Models.CmsWebPageItem, Guid?>(
-                s => s.NodeId,
-#error "NodeGuid may not be unique, use other means of searching for node!"
-                s => s.NodeGuid,
-                activityNodeId.NullIfZero(), t => t.WebPageItemGuid, t => t.WebPageItemGuid);
-            switch(result)
+            if (currentRow.TryGetValue(nameof(OmActivity.ActivitySiteId), out var mSiteId) && mSiteId is int siteId)
             {
-                case (true, var guid):
-                    return ValueInterceptorResult.ReplaceValue(guid);
-                case { Success: false }:
+                if (spoiledGuidContext.GetNodeGuid(siteId, activityNodeId) is { } nodeGuid)
                 {
-                    switch (toolkitConfiguration.UseOmActivityNodeRelationAutofix ?? AutofixEnum.Error)
-                    {
-                        case AutofixEnum.DiscardData:
-                            logger.LogTrace("Autofix (ActivitySiteId={NodeId} not exists) => discard data", activityNodeId);
-                            return ValueInterceptorResult.SkipRow;
-                        case AutofixEnum.AttemptFix:
-                            logger.LogTrace("Autofix (ActivityNodeId={NodeId} not exists) => ActivityNodeId=0", activityNodeId);
-                            return ValueInterceptorResult.ReplaceValue(null);
-                        case AutofixEnum.Error:
-                        default: //error
-                            protocol.Append(HandbookReferences
-                                .MissingRequiredDependency<KXP.Models.CmsWebPageItem>(columnName, value)
-                                .WithData(currentRow)
-                            );
-                            return ValueInterceptorResult.SkipRow;
-                    }
+                    return ValueInterceptorResult.ReplaceValue(nodeGuid);
                 }
+            }
+
+            switch (toolkitConfiguration.UseOmActivityNodeRelationAutofix ?? AutofixEnum.Error)
+            {
+                case AutofixEnum.DiscardData:
+                    logger.LogTrace("Autofix (ActivitySiteId={NodeId} not exists) => discard data", activityNodeId);
+                    return ValueInterceptorResult.SkipRow;
+                case AutofixEnum.AttemptFix:
+                    logger.LogTrace("Autofix (ActivityNodeId={NodeId} not exists) => ActivityNodeId=0", activityNodeId);
+                    return ValueInterceptorResult.ReplaceValue(null);
+                case AutofixEnum.Error:
+                default: //error
+                    protocol.Append(HandbookReferences
+                        .MissingRequiredDependency<KXP.Models.CmsWebPageItem>(columnName, value)
+                        .WithData(currentRow)
+                    );
+                    return ValueInterceptorResult.SkipRow;
             }
         }
 
