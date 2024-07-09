@@ -817,7 +817,6 @@ public class ContentItemMapper(
                 {
                     if (value is string pageReferenceJson)
                     {
-#warning [PATCHED] - [VERIFY] "NodeGuid may not be unique, use other means of searching for node!"
                         var parsed = JObject.Parse(pageReferenceJson);
                         foreach (var jToken in parsed.DescendantsAndSelf())
                         {
