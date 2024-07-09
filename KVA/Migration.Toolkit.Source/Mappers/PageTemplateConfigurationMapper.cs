@@ -15,6 +15,7 @@ using Migration.Toolkit.KXP.Api.Services.CmsClass;
 using Migration.Toolkit.KXP.Models;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Model;
+using Migration.Toolkit.Source.Services;
 using Migration.Toolkit.Source.Services.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -23,7 +24,8 @@ public class PageTemplateConfigurationMapper(
     ILogger<PageTemplateConfigurationMapper> logger,
     PrimaryKeyMappingContext pkContext,
     IProtocol protocol,
-    SourceInstanceContext sourceInstanceContext)
+    SourceInstanceContext sourceInstanceContext,
+    SpoiledGuidContext spoiledGuidContext)
     : EntityMapperBase<ICmsPageTemplateConfiguration, PageTemplateConfigurationInfo>(logger, pkContext, protocol)
 {
     protected override PageTemplateConfigurationInfo? CreateNewInstance(ICmsPageTemplateConfiguration source, MappingHelper mappingHelper, AddFailure addFailure)
@@ -64,7 +66,7 @@ public class PageTemplateConfigurationMapper(
                             sourceInstanceContext.GetPageTemplateFormComponents(source.PageTemplateConfigurationSiteID, pageTemplateConfiguration.Identifier);
                         if (pageTemplateConfiguration.Properties is { Count: > 0 })
                         {
-                            WalkProperties(pageTemplateConfiguration.Properties, pageTemplateConfigurationFcs);
+                            WalkProperties(source.PageTemplateConfigurationSiteID, pageTemplateConfiguration.Properties, pageTemplateConfigurationFcs);
                         }
 
                         target.PageTemplateConfigurationTemplate = JsonConvert.SerializeObject(pageTemplateConfiguration);
@@ -119,7 +121,7 @@ public class PageTemplateConfigurationMapper(
             logger.LogTrace("Walk section {TypeIdentifier}|{Identifier}", section.TypeIdentifier, section.Identifier);
 
             var sectionFcs = sourceInstanceContext.GetSectionFormComponents(siteId, section.TypeIdentifier);
-            WalkProperties(section.Properties, sectionFcs);
+            WalkProperties(siteId, section.Properties, sectionFcs);
 
             if (section.Zones is { Count: > 0 })
             {
@@ -154,13 +156,13 @@ public class PageTemplateConfigurationMapper(
 
                 if (variant.Properties is { Count: > 0 })
                 {
-                    WalkProperties(variant.Properties, widgetFcs);
+                    WalkProperties(siteId, variant.Properties, widgetFcs);
                 }
             }
         }
     }
 
-    private void WalkProperties(JObject properties, List<EditingFormControlModel>? formControlModels)
+    private void WalkProperties(int siteId, JObject properties, List<EditingFormControlModel>? formControlModels)
     {
         foreach (var (key, value) in properties)
         {
@@ -192,8 +194,11 @@ public class PageTemplateConfigurationMapper(
                         {
                             if (value?.ToObject<List<Migration.Toolkit.Source.Services.Model.PageSelectorItem>>() is { Count: > 0 } items)
                             {
-#error "NodeGuid may not be unique, use other means of searching for node!"
-                                properties[key] = JToken.FromObject(items.Select(x => new WebPageRelatedItem { WebPageGuid = x.NodeGuid }).ToList());
+#warning [PATCHED] - [CHECK] "NodeGuid may not be unique, use other means of searching for node!"
+                                properties[key] = JToken.FromObject(items.Select(x => new WebPageRelatedItem
+                                {
+                                    WebPageGuid = spoiledGuidContext.EnsureNodeGuid(x.NodeGuid, siteId)
+                                }).ToList());
                             }
 
                             logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
@@ -208,8 +213,6 @@ public class PageTemplateConfigurationMapper(
                 }
                 else if (FieldMappingInstance.BuiltInModel.SupportedInKxpLegacyMode.Contains(editingFcm.FormComponentIdentifier))
                 {
-                    // TODO tomas.krch 2024-03-27: nothing is supported in legacy mode (no legacy mode)
-
                     // OK
                     logger.LogTrace("Editing form component found {FormComponentName} => supported in legacy mode",
                         editingFcm.FormComponentIdentifier);

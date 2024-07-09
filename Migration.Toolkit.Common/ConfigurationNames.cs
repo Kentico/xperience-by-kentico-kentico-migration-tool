@@ -20,6 +20,7 @@ public class ConfigurationNames
     public const string ExcludeCodeNames = "ExcludeCodeNames";
     public const string ExplicitPrimaryKeyMapping = "ExplicitPrimaryKeyMapping";
 
+    public const string SiteName = "SiteName";
     public const string SourceInstanceUri = "SourceInstanceUri";
     public const string Secret = "Secret";
 

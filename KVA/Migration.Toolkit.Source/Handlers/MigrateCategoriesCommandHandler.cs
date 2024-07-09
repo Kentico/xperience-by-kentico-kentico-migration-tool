@@ -23,7 +23,8 @@ public class MigrateCategoriesCommandHandler(
     ModelFacade modelFacade,
     IImporter importer,
     ReusableSchemaService reusableSchemaService,
-    IUmtMapper<TagModelSource> tagModelMapper
+    IUmtMapper<TagModelSource> tagModelMapper,
+    SpoiledGuidContext spoiledGuidContext
 ) : IRequestHandler<MigrateCategoriesCommand, CommandResult>
 {
     public async Task<CommandResult> Handle(MigrateCategoriesCommand request, CancellationToken cancellationToken)
@@ -105,9 +106,8 @@ public class MigrateCategoriesCommandHandler(
                             .ImportAsync(umtModel)
                             .AssertSuccess<TagInfo>(logger) is {Success:true, Info: {} tag})
                     {
-#error "Migration of taxonimies is broken due to DocumentGUID possible conflicts!!"
                         query = """
-                                SELECT TJ.DocumentGUID, CDC.CategoryID, TJ.DocumentCheckedOutVersionHistoryID, TJ.NodeClassID
+                                SELECT TJ.DocumentGUID, TJ.NodeSiteID, TJ.NodeID, TJ.DocumentID, CDC.CategoryID, TJ.DocumentCheckedOutVersionHistoryID, TJ.NodeClassID
                                 FROM View_CMS_Tree_Joined [TJ]
                                          JOIN dbo.CMS_DocumentCategory [CDC] on [TJ].DocumentID = [CDC].DocumentID
                                          JOIN dbo.CMS_Category CC on CDC.CategoryID = CC.CategoryID AND CC.CategoryUserID IS NULL
@@ -116,10 +116,16 @@ public class MigrateCategoriesCommandHandler(
 
                         var docsWithCategories = modelFacade.Select(query, (reader, _) => new
                         {
-                            DocumentGUID = reader.Unbox<Guid>("DocumentGUID"),
                             CategoryID = reader.Unbox<int?>("CategoryID"),
                             DocumentCheckedOutVersionHistoryID = reader.Unbox<int?>("DocumentCheckedOutVersionHistoryID"),
-                            NodeClassID = reader.Unbox<int>("NodeClassID")
+                            NodeClassID = reader.Unbox<int>("NodeClassID"),
+                            NodeSiteID = reader.Unbox<int>("NodeSiteID"),
+                            DocumentGUID = spoiledGuidContext.EnsureDocumentGuid(
+                                reader.Unbox<Guid>("DocumentGUID"),
+                                reader.Unbox<int>("NodeSiteID"),
+                                reader.Unbox<int>("NodeID"),
+                                reader.Unbox<int>("DocumentID")
+                            )
                         }, new SqlParameter("categoryId", cmsCategory.CategoryID));
 
                         foreach (var dwc in docsWithCategories)

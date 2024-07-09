@@ -45,8 +45,6 @@ public static class K11CoreDiExtensions
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(XbKApiContextBehavior<,>));
 
         services.AddSingleton(s => new TableReflectionService(s.GetRequiredService<ILogger<TableReflectionService>>()));
-        services.AddSingleton<SourceInstanceContext>();
-        services.AddTransient<IpcService>();
 
         services.AddScoped<PrimaryKeyMappingContext>();
         services.AddSingleton<KeyMappingContext>();
