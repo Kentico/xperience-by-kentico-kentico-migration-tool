@@ -1,5 +1,6 @@
 root = true
-[*]
+
+[*.cs]
 # Most of the standard properties are supported
 max_line_length = 200
 charset = utf-8
@@ -33,7 +34,6 @@ dotnet_naming_symbols.private_constants_symbols.applicable_accessibilities = pri
 dotnet_naming_symbols.private_constants_symbols.applicable_kinds = field
 dotnet_naming_symbols.private_constants_symbols.required_modifiers = const
 dotnet_naming_symbols.unity_serialized_field_symbols.applicable_accessibilities = *
-dotnet_naming_symbols.unity_serialized_field_symbols.applicable_kinds = 
 dotnet_naming_symbols.unity_serialized_field_symbols.resharper_applicable_kinds = unity_serialised_field
 dotnet_naming_symbols.unity_serialized_field_symbols.resharper_required_modifiers = instance
 dotnet_style_parentheses_in_arithmetic_binary_operators = never_if_unnecessary:none
@@ -50,7 +50,6 @@ dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggest
 # ReSharper properties
 resharper_autodetect_indent_settings = true
 resharper_csharp_allow_alias = false
-resharper_instance_members_qualify_declared_in = 
 resharper_qualified_using_at_nested_scope = true
 resharper_use_indent_from_vs = false
 resharper_wrap_lines = true
