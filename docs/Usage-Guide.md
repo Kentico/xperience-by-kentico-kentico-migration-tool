@@ -15,11 +15,7 @@ The migration currently supports the Kentico Xperience 13, Kentico 12 or Kentico
 - The source instance's database and file system must be accessible from the environment where you run the Kentico Migration Tool.
 - All features described in this repository are available for migration from Kentico Xperience 13.
 
-<div style="width: 600px; margin: 3rem;">
-
 [![Kentico Xperience 13 upgrade paths](/images/xperience-by-kentico-migration-toolkit-kentico-migration-tool-kentico-xperience-13-embedded.jpg)](/images/xperience-by-kentico-migration-toolkit-kentico-migration-tool-kentico-xperience-13-embedded.jpg)
-
-</div>
 
 ### Kentico 12 MVC
 
@@ -29,11 +25,7 @@ The migration currently supports the Kentico Xperience 13, Kentico 12 or Kentico
 - The source instance's database and file system must be accessible from the environment where you run the this tool.
 - This repository describes the migration of the Kentico Xperience 13 feature set, however only features relevant to Kentico 12 MVC are migrated for this version.
 
-<div style="width: 600px; margin: 3rem;">
-
 [![Kentico Xperience 12 MVC upgrade paths](/images/xperience-by-kentico-migration-toolkit-kentico-migration-tool-kentico-12-mvc-embedded.jpg)](/images/xperience-by-kentico-migration-toolkit-kentico-migration-tool-kentico-12-mvc-embedded.jpg)
-
-</div>
 
 ### Kentico 11 and 12 Portal Engine
 
@@ -44,11 +36,7 @@ The migration currently supports the Kentico Xperience 13, Kentico 12 or Kentico
   - As a result, [source instance API discovery](/Migration.Toolkit.CLI/README.md#source-instance-api-discovery) is also not available.
 - This repository describes the migration of the Kentico Xperience 13 feature set, however only features relevant to Kentico 11 and 12 Portal Engine are migrated for this version.
 
-<div style="width: 600px; margin: 3rem;">
-
 [![Kentico Xperience Portal Engine upgrade paths](/images/xperience-by-kentico-migration-toolkit-kentico-migration-tool-kentico-10-12-portal-engine-embedded.jpg)](/images/xperience-by-kentico-migration-toolkit-kentico-migration-tool-kentico-10-12-portal-engine-embedded.jpg)
-
-</div>
 
 ## Target
 
@@ -61,8 +49,4 @@ The migration currently supports the Kentico Xperience 13, Kentico 12 or Kentico
 
 The full set of upgrade paths to Xperience by Kentico can be seen below.
 
-<div style="width: 600px;">
-
 [![Full Kentico upgrade paths to Xperience by Kentico](/images/xperience-by-kentico-migration-toolkit-kentico-migration-tool-full-embedded.jpg)](/images/xperience-by-kentico-migration-toolkit-kentico-migration-tool-full-embedded.jpg)
-
-</div>
