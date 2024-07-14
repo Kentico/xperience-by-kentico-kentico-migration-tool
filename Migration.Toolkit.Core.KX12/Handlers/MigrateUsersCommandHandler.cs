@@ -10,6 +10,7 @@ using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX12.Contexts;
 using Migration.Toolkit.KX12.Context;
+using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Api.Enums;
 
 public class MigrateUsersCommandHandler(
@@ -24,14 +25,12 @@ public class MigrateUsersCommandHandler(
 {
     private const string USER_PUBLIC = "public";
 
-    private static int[] MigratedAdminUserPrivilegeLevels => [(int)UserPrivilegeLevelEnum.Editor, (int)UserPrivilegeLevelEnum.Admin, (int)UserPrivilegeLevelEnum.GlobalAdmin];
-
     public async Task<CommandResult> Handle(MigrateUsersCommand request, CancellationToken cancellationToken)
     {
         await using var kx12Context = await kx12ContextFactory.CreateDbContextAsync(cancellationToken);
 
         var k12CmsUsers = kx12Context.CmsUsers
-                .Where(u => MigratedAdminUserPrivilegeLevels.Contains(u.UserPrivilegeLevel))
+                .Where(u => UserHelper.PrivilegeLevelsMigratedAsAdminUser.Contains(u.UserPrivilegeLevel))
             ;
 
         foreach (var k12User in k12CmsUsers)
@@ -117,7 +116,7 @@ public class MigrateUsersCommandHandler(
     {
         var k12CmsRoles = kx12Context.CmsRoles
             .Where(r =>
-                r.CmsUserRoles.Any(ur => MigratedAdminUserPrivilegeLevels.Contains(ur.User.UserPrivilegeLevel))
+                r.CmsUserRoles.Any(ur => UserHelper.PrivilegeLevelsMigratedAsAdminUser.Contains(ur.User.UserPrivilegeLevel))
             )
             .AsNoTracking()
             .AsAsyncEnumerable();
@@ -171,7 +170,7 @@ public class MigrateUsersCommandHandler(
         var k12UserRoles = kx12Context.CmsUserRoles
             .Where(ur =>
                 ur.RoleId == k12RoleId &&
-                MigratedAdminUserPrivilegeLevels.Contains(ur.User.UserPrivilegeLevel)
+                UserHelper.PrivilegeLevelsMigratedAsAdminUser.Contains(ur.User.UserPrivilegeLevel)
             )
             .AsNoTracking()
             .AsAsyncEnumerable();

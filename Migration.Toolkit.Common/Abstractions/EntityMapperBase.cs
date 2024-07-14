@@ -53,17 +53,8 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
 
     protected delegate void AddFailure(MapperResultFailure<TTargetEntity> failure);
 
-    protected class MappingHelper
+    protected class MappingHelper(IPrimaryKeyMappingContext primaryKeyMappingContext, Action<IModelMappingResult<TTargetEntity>> addFailure)
     {
-        private readonly IPrimaryKeyMappingContext _primaryKeyMappingContext;
-        private readonly Action<IModelMappingResult<TTargetEntity>> _addFailure;
-
-        public MappingHelper(IPrimaryKeyMappingContext primaryKeyMappingContext, Action<IModelMappingResult<TTargetEntity>> addFailure)
-        {
-            _primaryKeyMappingContext = primaryKeyMappingContext;
-            _addFailure = addFailure;
-        }
-
         public Guid Require(Guid? value, string valueName)
         {
             if (value is { } v && v != Guid.Empty)
@@ -76,7 +67,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
                     .AsFailure<TTargetEntity>()
                 ;
 
-            _addFailure(failure);
+            addFailure(failure);
             return Guid.Empty;
         }
 
@@ -92,7 +83,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
                     .AsFailure<TTargetEntity>()
                 ;
 
-            _addFailure(failure);
+            addFailure(failure);
             return -1;
         }
 
@@ -108,7 +99,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
                     .AsFailure<TTargetEntity>()
                 ;
 
-            _addFailure(failure);
+            addFailure(failure);
             return false;
         }
 
@@ -124,7 +115,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
                     .AsFailure<TTargetEntity>()
                 ;
 
-            _addFailure(failure);
+            addFailure(failure);
             return DateTime.MinValue;
         }
 
@@ -136,7 +127,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
                 return true;
             }
 
-            translatedId = _primaryKeyMappingContext.MapFromSourceOrNull(keyNameSelector, sourceId);
+            translatedId = primaryKeyMappingContext.MapFromSourceOrNull(keyNameSelector, sourceId);
             if (!translatedId.HasValue)
             {
                 var memberName = keyNameSelector.GetMemberName();
@@ -146,7 +137,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
                         .AsFailure<TTargetEntity>()
                     ;
 
-                _addFailure(failure);
+                addFailure(failure);
                 return false;
             }
 
@@ -155,7 +146,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
 
         public bool TryTranslateId<TKeyOwner>(Expression<Func<TKeyOwner, object>> keyNameSelector, int? sourceId, out int? translatedId)
         {
-            translatedId = _primaryKeyMappingContext.MapFromSourceOrNull(keyNameSelector, sourceId);
+            translatedId = primaryKeyMappingContext.MapFromSourceOrNull(keyNameSelector, sourceId);
             if (sourceId.HasValue && !translatedId.HasValue)
             {
                 return false;
@@ -166,7 +157,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
 
         public bool TranslateRequiredId<TKeyOwner>(Expression<Func<TKeyOwner, object>> keyNameSelector, int? sourceId, out int translatedId)
         {
-            if (_primaryKeyMappingContext.TryRequireMapFromSource(keyNameSelector, sourceId, out translatedId))
+            if (primaryKeyMappingContext.TryRequireMapFromSource(keyNameSelector, sourceId, out translatedId))
             {
                 return true;
             }
@@ -177,7 +168,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>: IEntityMap
                     .NeedsManualAction()
                     .AsFailure<TTargetEntity>()
                 ;
-            _addFailure(failure);
+            addFailure(failure);
             return false;
         }
     }

@@ -72,11 +72,9 @@ public static class DependencyInjectionExtensions
         services.AddTransient<IEntityMapper<KX13M.CmsUser, UserInfo>, UserInfoMapper>();
         services.AddTransient<IEntityMapper<MemberInfoMapperSource, MemberInfo>, MemberInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsUserRole, UserRoleInfo>, UserRoleInfoMapper>();
-        services.AddTransient<IEntityMapper<KX13M.MediaLibrary, MediaLibraryInfo>, MediaLibraryInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.OmContact, OmContact>, OmContactMapper>();
         services.AddTransient<IEntityMapper<KX13M.OmContactGroup, OmContactGroup>, OmContactGroupMapper>();
         services.AddTransient<IEntityMapper<KX13M.OmContactStatus, OmContactStatus>, OmContactStatusMapper>();
-        services.AddTransient<IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo>, MediaFileInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsCountry, CountryInfo>, CountryInfoMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsState, StateInfo>, StateInfoMapper>();
 

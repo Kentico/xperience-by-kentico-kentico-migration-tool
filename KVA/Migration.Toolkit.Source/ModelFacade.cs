@@ -24,13 +24,17 @@ public class ModelFacade(ToolkitConfiguration configuration)
         }
     }
 
-    public IEnumerable<T> SelectAll<T>() where T : ISourceModel<T>
+    public IEnumerable<T> SelectAll<T>(string? orderBy = null) where T : ISourceModel<T>
     {
         _version ??= SelectVersion();
         using var conn = GetConnection();
         conn.Open();
         var cmd = conn.CreateCommand();
         cmd.CommandText = $"SELECT * FROM {T.TableName}";
+        if (!string.IsNullOrWhiteSpace(orderBy))
+        {
+            cmd.CommandText += orderBy;
+        }
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
         {

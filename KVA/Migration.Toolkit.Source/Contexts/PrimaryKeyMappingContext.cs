@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
-using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.Source.Services;
 
 public class PrimaryKeyMappingContext(
@@ -23,7 +22,7 @@ public class PrimaryKeyMappingContext(
         var mappings = toolkitConfiguration.EntityConfigurations?.GetEntityConfiguration<T>().ExplicitPrimaryKeyMapping;
         if (mappings?.TryGetValue(memberName, out var memberMappings) ?? false)
         {
-            return memberMappings.TryGetValue($"{sourceId}", out var mappedId) ? mappedId : null;
+            return memberMappings.GetValueOrDefault($"{sourceId}");
         }
 
         return null;

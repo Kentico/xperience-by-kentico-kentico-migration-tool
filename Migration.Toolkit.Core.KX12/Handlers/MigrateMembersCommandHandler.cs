@@ -12,6 +12,7 @@ using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX12.Contexts;
 using Migration.Toolkit.Core.KX12.Mappers;
 using Migration.Toolkit.KX12.Context;
+using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Api.Enums;
 
 public class MigrateMembersCommandHandler(
@@ -24,15 +25,13 @@ public class MigrateMembersCommandHandler(
 {
     private const string USER_PUBLIC = "public";
 
-    private static int[] MigratedAdminUserPrivilegeLevels => new[] { (int)UserPrivilegeLevelEnum.None };
-
     public async Task<CommandResult> Handle(MigrateMembersCommand request, CancellationToken cancellationToken)
     {
         await using var kx12Context = await kx12ContextFactory.CreateDbContextAsync(cancellationToken);
 
         var k12CmsUsers = kx12Context.CmsUsers
                 .Include(u => u.CmsUserSettingUserSettingsUserNavigation)
-                .Where(u => MigratedAdminUserPrivilegeLevels.Contains(u.UserPrivilegeLevel))
+                .Where(u => UserHelper.PrivilegeLevelsMigratedAsMemberUser.Contains(u.UserPrivilegeLevel))
             ;
 
         foreach (var k12User in k12CmsUsers)

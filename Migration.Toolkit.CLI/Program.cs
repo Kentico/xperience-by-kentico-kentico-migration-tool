@@ -158,6 +158,7 @@ services.AddSingleton<ICommandParser, CommandParser>();
 services.UseToolkitCommon();
 
 await using var serviceProvider = services.BuildServiceProvider();
+KsCoreDiExtensions.InitServiceProvider(serviceProvider);
 using var scope = serviceProvider.CreateScope();
 
 var loader = scope.ServiceProvider.GetRequiredService<IModuleLoader>();

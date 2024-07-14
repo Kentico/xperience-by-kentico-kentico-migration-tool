@@ -13,6 +13,7 @@ using Migration.Toolkit.Core.K11.Contexts;
 using Migration.Toolkit.Core.K11.Mappers;
 using Migration.Toolkit.K11;
 using Migration.Toolkit.K11.Models;
+using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Api.Enums;
 
 public class MigrateMembersCommandHandler(ILogger<MigrateMembersCommandHandler> logger,
@@ -24,15 +25,13 @@ public class MigrateMembersCommandHandler(ILogger<MigrateMembersCommandHandler> 
 {
     private const string USER_PUBLIC = "public";
 
-    private static int[] MigratedAdminUserPrivilegeLevels => [(int)UserPrivilegeLevelEnum.None];
-
     public async Task<CommandResult> Handle(MigrateMembersCommand request, CancellationToken cancellationToken)
     {
         await using var k11Context = await k11ContextFactory.CreateDbContextAsync(cancellationToken);
 
         var k11CmsUsers = k11Context.CmsUsers
                 .Include(u => u.CmsUserSettingUserSettingsUserNavigation)
-                .Where(u => MigratedAdminUserPrivilegeLevels.Contains(u.UserPrivilegeLevel))
+                .Where(u => UserHelper.PrivilegeLevelsMigratedAsMemberUser.Contains(u.UserPrivilegeLevel))
             ;
 
         foreach (var k11User in k11CmsUsers)

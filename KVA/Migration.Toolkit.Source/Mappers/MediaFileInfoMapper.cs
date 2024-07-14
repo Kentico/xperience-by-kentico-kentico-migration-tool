@@ -1,32 +1,33 @@
-﻿namespace Migration.Toolkit.Core.K11.Mappers;
+﻿namespace Migration.Toolkit.Source.Mappers;
 
 using System.Data;
 using CMS.Base;
 using CMS.MediaLibrary;
+using CMS.Membership;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
-using Migration.Toolkit.Core.K11.Contexts;
-using Migration.Toolkit.Core.K11.Helpers;
-using Migration.Toolkit.K11.Models;
 using Migration.Toolkit.KXP.Api;
+using Migration.Toolkit.KXP.Api.Auxiliary;
+using Migration.Toolkit.Source.Contexts;
+using Migration.Toolkit.Source.Helpers;
+using Migration.Toolkit.Source.Model;
 
-public record MediaFileInfoMapperSource(MediaFile MediaFile, int TargetLibraryId, IUploadedFile? File, string? LibrarySubFolder,
+public record MediaFileInfoMapperSource(IMediaFile MediaFile, int TargetLibraryId, IUploadedFile? File, string? LibrarySubFolder,
     bool MigrateOnlyMediaFileInfo);
 
-public class MediaFileInfoMapper(ILogger<MediaFileInfoMapper> logger,
-        PrimaryKeyMappingContext primaryKeyMappingContext,
-        KxpClassFacade classFacade,
-        IProtocol protocol,
-        ToolkitConfiguration toolkitConfiguration,
-        KeyMappingContext keyMappingContext)
+public class MediaFileInfoMapper(
+    ILogger<MediaFileInfoMapper> logger,
+    PrimaryKeyMappingContext primaryKeyMappingContext,
+    KxpClassFacade classFacade,
+    IProtocol protocol,
+    ToolkitConfiguration toolkitConfiguration,
+    ModelFacade modelFacade
+)
     : EntityMapperBase<MediaFileInfoMapperSource, MediaFileInfo>(logger, primaryKeyMappingContext, protocol)
 {
-    private readonly IProtocol _protocol = protocol;
-
-
     protected override MediaFileInfo? CreateNewInstance(MediaFileInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) {
         if (source.File != null)
         {
@@ -50,7 +51,7 @@ public class MediaFileInfoMapper(ILogger<MediaFileInfoMapper> logger,
         target.FileSize = mediaFile.FileSize;
         target.FileImageWidth = mediaFile.FileImageWidth ?? 0;
         target.FileImageHeight = mediaFile.FileImageHeight ?? 0;
-        target.FileGUID = mediaFile.FileGuid;
+        target.FileGUID = mediaFile.FileGUID;
         target.FileCreatedWhen = mediaFile.FileCreatedWhen;
         target.FileModifiedWhen = mediaFile.FileModifiedWhen;
         KenticoHelper.CopyCustomData(target.FileCustomData, mediaFile.FileCustomData);
@@ -59,39 +60,27 @@ public class MediaFileInfoMapper(ILogger<MediaFileInfoMapper> logger,
 
         target.FileLibraryID = targetLibraryId;
 
-        var targetCreatedMemberId = keyMappingContext.MapSourceKey<CmsUser, KXP.Models.CmsMember, int?>(
-            s => s.UserId,
-            s => s.UserGuid,
-            mediaFile.FileCreatedByUserId,
-            t => t.MemberId,
-            t => t.MemberGuid
+        var createdByUserId = AdminUserHelper.MapTargetAdminUser(
+            mediaFile.FileCreatedByUserID,
+            CMSActionContext.CurrentUser.UserID,
+            () => addFailure(HandbookReferences
+                .MissingRequiredDependency<ICmsUser>(nameof(mediaFile.FileCreatedByUserID), mediaFile.FileCreatedByUserID)
+                .NeedsManualAction()
+                .AsFailure<MediaFileInfo>()
+            )
         );
-        if (targetCreatedMemberId.Success)
-        {
-            // user was migrated to MEMBER => setting user would break foreign key
-            target.SetValue(nameof(target.FileCreatedByUserID), CMSActionContext.CurrentUser.UserID);
-        }
-        else if (mappingHelper.TranslateIdAllowNulls<CmsUser>(c => c.UserId, mediaFile.FileCreatedByUserId, out var createdByUserId))
-        {
-            target.SetValue(nameof(target.FileCreatedByUserID), createdByUserId);
-        }
+        target.SetValue(nameof(target.FileCreatedByUserID), createdByUserId);
 
-        var targetModifiedMemberId = keyMappingContext.MapSourceKey<CmsUser, KXP.Models.CmsMember, int?>(
-            s => s.UserId,
-            s => s.UserGuid,
-            mediaFile.FileModifiedByUserId,
-            t => t.MemberId,
-            t => t.MemberGuid
+        var modifiedByUserId = AdminUserHelper.MapTargetAdminUser(
+            mediaFile.FileModifiedByUserID,
+            CMSActionContext.CurrentUser.UserID,
+            () => addFailure(HandbookReferences
+                .MissingRequiredDependency<ICmsUser>(nameof(mediaFile.FileModifiedByUserID), mediaFile.FileModifiedByUserID)
+                .NeedsManualAction()
+                .AsFailure<MediaFileInfo>()
+            )
         );
-        if (targetModifiedMemberId.Success)
-        {
-            // user was migrated to MEMBER => setting user would break foreign key
-            target.SetValue(nameof(target.FileModifiedByUserID), CMSActionContext.CurrentUser.UserID);
-        }
-        else if (mappingHelper.TranslateIdAllowNulls<CmsUser>(c => c.UserId, mediaFile.FileModifiedByUserId, out var modifiedByUserId))
-        {
-            target.SetValue(nameof(target.FileModifiedByUserID), modifiedByUserId);
-        }
+        target.SetValue(nameof(target.FileModifiedByUserID), modifiedByUserId);
 
         if (string.IsNullOrWhiteSpace(target.FilePath))
         {
@@ -101,13 +90,13 @@ public class MediaFileInfoMapper(ILogger<MediaFileInfoMapper> logger,
         if (file == null && !migrateOnlyMediaFileInfo)
         {
             addFailure(HandbookReferences.MediaFileIsMissingOnSourceFilesystem
-                .WithId(nameof(mediaFile.FileId), mediaFile.FileId)
+                .WithId(nameof(mediaFile.FileID), mediaFile.FileID)
                 .WithData(new
                 {
                     mediaFile.FilePath,
-                    mediaFile.FileGuid,
-                    mediaFile.FileLibraryId,
-                    mediaFile.FileSiteId
+                    mediaFile.FileGUID,
+                    mediaFile.FileLibraryID,
+                    mediaFile.FileSiteID
                 })
                 .AsFailure<MediaFileInfo>()
             );
@@ -116,7 +105,7 @@ public class MediaFileInfoMapper(ILogger<MediaFileInfoMapper> logger,
         return target;
     }
 
-    private void MigrateCustomizedFields(MediaFileInfo target, MediaFile mediaFile)
+    private void MigrateCustomizedFields(MediaFileInfo target, IMediaFile sourceMediaFile)
     {
         var customizedFields = classFacade.GetCustomizedFieldInfos(MediaFileInfo.TYPEINFO.ObjectClassName).ToList();
         if (customizedFields.Count <= 0) return;
@@ -132,7 +121,7 @@ public class MediaFileInfoMapper(ILogger<MediaFileInfoMapper> logger,
             cmd.CommandText = query;
             cmd.CommandType = CommandType.Text;
             cmd.CommandTimeout = 3;
-            cmd.Parameters.AddWithValue("id", mediaFile.FileId);
+            cmd.Parameters.AddWithValue("id", sourceMediaFile.FileID);
 
             conn.Open();
 

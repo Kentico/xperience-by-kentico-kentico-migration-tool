@@ -72,11 +72,9 @@ public static class Kx12CoreDiExtensions
         services.AddTransient<IEntityMapper<KX12M.CmsUser, UserInfo>, UserInfoMapper>();
         services.AddTransient<IEntityMapper<MemberInfoMapperSource, MemberInfo>, MemberInfoMapper>();
         services.AddTransient<IEntityMapper<KX12M.CmsUserRole, UserRoleInfo>, UserRoleInfoMapper>();
-        services.AddTransient<IEntityMapper<KX12M.MediaLibrary, MediaLibraryInfo>, MediaLibraryInfoMapper>();
         services.AddTransient<IEntityMapper<KX12M.OmContact, OmContact>, OmContactMapper>();
         services.AddTransient<IEntityMapper<KX12M.OmContactGroup, OmContactGroup>, OmContactGroupMapper>();
         services.AddTransient<IEntityMapper<KX12M.OmContactStatus, OmContactStatus>, OmContactStatusMapper>();
-        services.AddTransient<IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo>, MediaFileInfoMapper>();
         services.AddTransient<IEntityMapper<KX12M.CmsCountry, CountryInfo>, CountryInfoMapper>();
         services.AddTransient<IEntityMapper<KX12M.CmsState, StateInfo>, StateInfoMapper>();
 

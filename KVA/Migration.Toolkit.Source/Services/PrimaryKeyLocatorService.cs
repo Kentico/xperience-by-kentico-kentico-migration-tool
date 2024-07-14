@@ -4,7 +4,6 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
-using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.KXP.Context;
 using Migration.Toolkit.Source.Model;
 
@@ -14,16 +13,9 @@ public class PrimaryKeyLocatorService(
     ModelFacade modelFacade
     ) : IPrimaryKeyLocatorService
 {
-    private class KeyEqualityComparerWithLambda<T> : IEqualityComparer<T>
+    private class KeyEqualityComparerWithLambda<T>(Func<T?, T?, bool> equalityComparer) : IEqualityComparer<T>
     {
-        private readonly Func<T?, T?, bool> _equalityComparer;
-
-        public KeyEqualityComparerWithLambda(Func<T?,T?,bool> equalityComparer)
-        {
-            _equalityComparer = equalityComparer;
-        }
-
-        public bool Equals(T? x, T? y) => _equalityComparer.Invoke(x, y);
+        public bool Equals(T? x, T? y) => equalityComparer.Invoke(x, y);
 
         public int GetHashCode(T obj) => obj?.GetHashCode() ?? 0;
     }
