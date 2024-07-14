@@ -81,8 +81,9 @@ if (anyValidationErrors)
 }
 
 var settingsSection = config.GetRequiredSection(ConfigurationNames.Settings);
-var settings = settingsSection.Get<ToolkitConfiguration>();
-settings.EntityConfigurations ??= new EntityConfigurations();
+var settings = settingsSection.Get<ToolkitConfiguration>() ?? new();
+var kxpApiSettings = settingsSection.GetSection(ConfigurationNames.XbKApiSettings);
+settings.SetXbKConnectionStringIfNotEmpty(kxpApiSettings["ConnectionStrings:CMSConnectionString"]);
 
 var services = new ServiceCollection();
 
@@ -150,7 +151,7 @@ catch (Exception ex)
 
 services.UseKxpDbContext(settings);
 
-var kxpApiSettings = settingsSection.GetSection(ConfigurationNames.XbKApiSettings);
+
 services.UseKxpApi(kxpApiSettings, settings.XbKDirPath);
 services.AddSingleton(settings);
 services.AddSingleton<ICommandParser, CommandParser>();
