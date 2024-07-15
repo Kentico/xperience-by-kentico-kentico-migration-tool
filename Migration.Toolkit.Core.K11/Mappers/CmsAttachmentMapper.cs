@@ -14,7 +14,7 @@ public record CmsAttachmentMapperSource(CmsAttachment Attachment, int TargetLibr
 
 public class CmsAttachmentMapper(ILogger<CmsAttachmentMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : EntityMapperBase<CmsAttachmentMapperSource, MediaFileInfo>(logger, pkContext, protocol)
 {
-    private const string LegacyOriginalPath = "__LegacyOriginalPath";
+    private const string LEGACY_ORIGINAL_PATH = "__LegacyOriginalPath";
 
     protected override MediaFileInfo? CreateNewInstance(CmsAttachmentMapperSource source, MappingHelper mappingHelper, AddFailure addFailure)
     {
@@ -47,7 +47,7 @@ public class CmsAttachmentMapper(ILogger<CmsAttachmentMapper> logger, PrimaryKey
 
         if (attachmentDocument != null)
         {
-            target.FileCustomData.SetValue(LegacyOriginalPath, attachmentDocument.DocumentNode.NodeAliasPath);
+            target.FileCustomData.SetValue(LEGACY_ORIGINAL_PATH, attachmentDocument.DocumentNode.NodeAliasPath);
         }
 
         return target;

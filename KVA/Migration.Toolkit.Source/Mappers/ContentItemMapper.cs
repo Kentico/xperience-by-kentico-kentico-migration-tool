@@ -803,7 +803,7 @@ public class ContentItemMapper(
                 if (fieldMigration.Actions?.Contains(TcaDirective.ConvertToPages) ?? false)
                 {
                     // relation to other document
-                    var convertedRelation = relationshipService.GetNodeRelationships(cmsTree.NodeID)
+                    var convertedRelation = relationshipService.GetNodeRelationships(cmsTree.NodeID, nodeClass.ClassName, field.Guid)
                         .Select(r => new WebPageRelatedItem
                         {
                             WebPageGuid = spoiledGuidContext.EnsureNodeGuid(r.RightNode.NodeGUID, r.RightNode.NodeSiteID, r.RightNode.NodeID)

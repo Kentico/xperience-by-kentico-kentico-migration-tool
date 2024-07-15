@@ -324,7 +324,7 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
         });
     }
 
-    private const string RequiredRuleIdentifier = "Kentico.Administration.RequiredValue";
+    private const string REQUIRED_RULE_IDENTIFIER = "Kentico.Administration.RequiredValue";
 
     private string AppendRequiredValidationRule(string rulesXml)
     {
@@ -340,7 +340,7 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
 
         if (mbIdentifierNodes != null)
         {
-            if (mbIdentifierNodes.Cast<XmlElement>().Any(identifierNode => identifierNode is { InnerText: RequiredRuleIdentifier }))
+            if (mbIdentifierNodes.Cast<XmlElement>().Any(identifierNode => identifierNode is { InnerText: REQUIRED_RULE_IDENTIFIER }))
             {
                 return rulesXml;
             }
