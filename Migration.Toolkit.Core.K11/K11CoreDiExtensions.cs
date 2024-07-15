@@ -72,11 +72,9 @@ public static class K11CoreDiExtensions
         services.AddTransient<IEntityMapper<Toolkit.K11.Models.CmsUser, UserInfo>, UserInfoMapper>();
         services.AddTransient<IEntityMapper<MemberInfoMapperSource, MemberInfo>, MemberInfoMapper>();
         services.AddTransient<IEntityMapper<Toolkit.K11.Models.CmsUserRole, UserRoleInfo>, UserRoleInfoMapper>();
-        services.AddTransient<IEntityMapper<Toolkit.K11.Models.MediaLibrary, MediaLibraryInfo>, MediaLibraryInfoMapper>();
         services.AddTransient<IEntityMapper<Toolkit.K11.Models.OmContact, OmContact>, OmContactMapper>();
         services.AddTransient<IEntityMapper<Toolkit.K11.Models.OmContactGroup, OmContactGroup>, OmContactGroupMapper>();
         services.AddTransient<IEntityMapper<Toolkit.K11.Models.OmContactStatus, OmContactStatus>, OmContactStatusMapper>();
-        services.AddTransient<IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo>, MediaFileInfoMapper>();
         services.AddTransient<IEntityMapper<Toolkit.K11.Models.CmsCountry, CountryInfo>, CountryInfoMapper>();
         services.AddTransient<IEntityMapper<Toolkit.K11.Models.CmsState, StateInfo>, StateInfoMapper>();
 

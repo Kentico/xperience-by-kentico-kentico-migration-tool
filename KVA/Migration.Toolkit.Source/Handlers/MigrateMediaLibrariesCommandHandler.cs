@@ -1,30 +1,32 @@
-﻿namespace Migration.Toolkit.Core.K11.Handlers;
+﻿namespace Migration.Toolkit.Source.Handlers;
 
 using CMS.Base;
 using CMS.MediaLibrary;
 using MediatR;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
-using Migration.Toolkit.Core.K11.Contexts;
-using Migration.Toolkit.Core.K11.Mappers;
-using Migration.Toolkit.K11;
-using Migration.Toolkit.K11.Models;
 using Migration.Toolkit.KXP.Api;
 using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Context;
+using Migration.Toolkit.KXP.Models;
+using Migration.Toolkit.Source.Contexts;
+using Migration.Toolkit.Source.Mappers;
+using Migration.Toolkit.Source.Model;
 
-public class MigrateMediaLibrariesCommandHandler(ILogger<MigrateMediaLibrariesCommandHandler> logger,
-        IDbContextFactory<KxpContext> kxpContextFactory,
-        IDbContextFactory<K11Context> k11ContextFactory,
-        IEntityMapper<MediaLibrary, MediaLibraryInfo> mediaLibraryInfoMapper,
-        KxpMediaFileFacade mediaFileFacade,
-        IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo> mediaFileInfoMapper,
-        ToolkitConfiguration toolkitConfiguration,
-        PrimaryKeyMappingContext primaryKeyMappingContext,
-        IProtocol protocol)
+public class MigrateMediaLibrariesCommandHandler(
+    ILogger<MigrateMediaLibrariesCommandHandler> logger,
+    IDbContextFactory<KxpContext> kxpContextFactory,
+    ModelFacade modelFacade,
+    KxpMediaFileFacade mediaFileFacade,
+    IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo> mediaFileInfoMapper,
+    IEntityMapper<MediaLibraryInfoMapperSource, MediaLibraryInfo> mediaLibraryInfoMapper,
+    ToolkitConfiguration toolkitConfiguration,
+    PrimaryKeyMappingContext primaryKeyMappingContext,
+    IProtocol protocol)
     : IRequestHandler<MigrateMediaLibrariesCommand, CommandResult>, IDisposable
 {
     private const string DIR_MEDIA = "media";
@@ -33,56 +35,18 @@ public class MigrateMediaLibrariesCommandHandler(ILogger<MigrateMediaLibrariesCo
 
     public async Task<CommandResult> Handle(MigrateMediaLibrariesCommand request, CancellationToken cancellationToken)
     {
-        await using var k11Context = await k11ContextFactory.CreateDbContextAsync(cancellationToken);
+        var ksMediaLibraries = modelFacade.SelectAll<IMediaLibrary>(" ORDER BY LibraryID");
 
-        var skippedMediaLibraries = new HashSet<Guid>();
-        var unsuitableMediaLibraries = k11Context.MediaLibraries
-            .Include(ml => ml.LibrarySite)
-            .GroupBy(l => l.LibraryName);
-
-        foreach (var mlg in unsuitableMediaLibraries)
+        var migratedMediaLibraries = new List<(IMediaLibrary sourceLibrary, ICmsSite sourceSite, MediaLibraryInfo targetLibrary)>();
+        foreach (var ksMediaLibrary in ksMediaLibraries)
         {
-            if (mlg.Count() <= 1) continue;
+            protocol.FetchedSource(ksMediaLibrary);
 
-            logger.LogError("""
-                            Media libraries with LibraryGuid ({LibraryGuids}) have same LibraryName '{LibraryName}', due to removal of sites and media library globalization it is required to set unique LibraryName and LibraryFolder
-                            """, string.Join(",", mlg.Select(l => l.LibraryGuid)), mlg.Key);
-
-            foreach (var ml in mlg)
-            {
-                if (ml.LibraryGuid is { } libraryGuid)
-                {
-                    skippedMediaLibraries.Add(libraryGuid);
-                }
-
-                protocol.Append(HandbookReferences.NotCurrentlySupportedSkip()
-                    .WithMessage($"Media library '{ml.LibraryName}' with LibraryGuid '{ml.LibraryGuid}' doesn't satisfy unique LibraryName and LibraryFolder condition for migration")
-                    .WithIdentityPrint(ml)
-                    .WithData(new { ml.LibraryGuid, ml.LibraryName, ml.LibrarySiteId, ml.LibraryFolder})
-                );
-            }
-        }
-
-        var k11MediaLibraries = k11Context.MediaLibraries
-                .Include(ml => ml.LibrarySite)
-                .OrderBy(t => t.LibraryId)
-            ;
-
-        var migratedMediaLibraries = new List<(MediaLibrary sourceLibrary, MediaLibraryInfo targetLibrary)>();
-        foreach (var k11MediaLibrary in k11MediaLibraries)
-        {
-            if (k11MediaLibrary.LibraryGuid is {} libraryGuid && skippedMediaLibraries.Contains(libraryGuid))
-            {
-                continue;
-            }
-
-            protocol.FetchedSource(k11MediaLibrary);
-
-            if (k11MediaLibrary.LibraryGuid is not { } mediaLibraryGuid)
+            if (ksMediaLibrary.LibraryGUID is not { } mediaLibraryGuid)
             {
                 protocol.Append(HandbookReferences
                     .InvalidSourceData<MediaLibrary>()
-                    .WithId(nameof(MediaLibrary.LibraryId), k11MediaLibrary.LibraryId)
+                    .WithId(nameof(MediaLibrary.LibraryId), ksMediaLibrary.LibraryID)
                     .WithMessage("Media library has missing MediaLibraryGUID")
                 );
                 continue;
@@ -92,7 +56,18 @@ public class MigrateMediaLibrariesCommandHandler(ILogger<MigrateMediaLibrariesCo
 
             protocol.FetchedTarget(mediaLibraryInfo);
 
-            var mapped = mediaLibraryInfoMapper.Map(k11MediaLibrary, mediaLibraryInfo);
+            if (modelFacade.SelectById<ICmsSite>(ksMediaLibrary.LibrarySiteID) is not { } ksSite)
+            {
+                protocol.Append(HandbookReferences
+                    .InvalidSourceData<MediaLibrary>()
+                    .WithId(nameof(MediaLibrary.LibraryId), ksMediaLibrary.LibraryID)
+                    .WithMessage("Media library has missing site assigned")
+                );
+                logger.LogError("Missing site, SiteID=={SiteId}", ksMediaLibrary.LibrarySiteID);
+                continue;
+            }
+
+            var mapped = mediaLibraryInfoMapper.Map(new (ksMediaLibrary, ksSite), mediaLibraryInfo);
             protocol.MappedTarget(mapped);
 
             if (mapped is { Success : true } result)
@@ -104,7 +79,7 @@ public class MigrateMediaLibrariesCommandHandler(ILogger<MigrateMediaLibrariesCo
                 {
                     mediaFileFacade.SetMediaLibrary(mfi);
 
-                    protocol.Success(k11MediaLibrary, mfi, mapped);
+                    protocol.Success(ksMediaLibrary, mfi, mapped);
                     logger.LogEntitySetAction(newInstance, mfi);
                 }
                 catch (Exception ex)
@@ -123,15 +98,15 @@ public class MigrateMediaLibrariesCommandHandler(ILogger<MigrateMediaLibrariesCo
 
                 primaryKeyMappingContext.SetMapping<MediaLibrary>(
                     r => r.LibraryId,
-                    k11MediaLibrary.LibraryId,
+                    ksMediaLibrary.LibraryID,
                     mfi.LibraryID
                 );
 
-                migratedMediaLibraries.Add((k11MediaLibrary, mfi));
+                migratedMediaLibraries.Add((ksMediaLibrary, ksSite, mfi));
             }
         }
 
-        await RequireMigratedMediaFiles(migratedMediaLibraries, k11Context, cancellationToken);
+        await RequireMigratedMediaFiles(migratedMediaLibraries, cancellationToken);
 
         return new GenericCommandResult();
     }
@@ -155,49 +130,46 @@ public class MigrateMediaLibrariesCommandHandler(ILogger<MigrateMediaLibrariesCo
         return new LoadMediaFileResult(false, null);
     }
 
-    private async Task RequireMigratedMediaFiles(
-        List<(MediaLibrary sourceLibrary, MediaLibraryInfo targetLibrary)> migratedMediaLibraries,
-        K11Context k11Context, CancellationToken cancellationToken)
+    private async Task RequireMigratedMediaFiles(List<(IMediaLibrary sourceLibrary, ICmsSite sourceSite, MediaLibraryInfo targetLibrary)> migratedMediaLibraries, CancellationToken cancellationToken)
     {
         var kxoDbContext = await kxpContextFactory.CreateDbContextAsync(cancellationToken);
         try
         {
-            foreach (var (sourceMediaLibrary, targetMediaLibrary) in migratedMediaLibraries)
+            foreach (var (ksMediaLibrary, ksSite, targetMediaLibrary) in migratedMediaLibraries)
             {
                 string? sourceMediaLibraryPath = null;
                 var loadMediaFileData = false;
                 if (!toolkitConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(true) &&
                     !string.IsNullOrWhiteSpace(toolkitConfiguration.KxCmsDirPath))
                 {
-                    sourceMediaLibraryPath = Path.Combine(toolkitConfiguration.KxCmsDirPath, sourceMediaLibrary.LibrarySite.SiteName, DIR_MEDIA, sourceMediaLibrary.LibraryFolder);
+                    sourceMediaLibraryPath = Path.Combine(toolkitConfiguration.KxCmsDirPath, ksSite.SiteName, DIR_MEDIA, ksMediaLibrary.LibraryFolder);
                     loadMediaFileData = true;
                 }
 
-                var k11MediaFiles = k11Context.MediaFiles
-                    .Where(x => x.FileLibraryId == sourceMediaLibrary.LibraryId);
+                var ksMediaFiles = modelFacade.SelectWhere<IMediaFile>("FileLibraryID = @FileLibraryId", new SqlParameter("FileLibraryId", ksMediaLibrary.LibraryID));
 
-                foreach (var k11MediaFile in k11MediaFiles)
+                foreach (var ksMediaFile in ksMediaFiles)
                 {
-                    protocol.FetchedSource(k11MediaFile);
+                    protocol.FetchedSource(ksMediaFile);
 
                     bool found = false;
                     IUploadedFile? uploadedFile = null;
                     if (loadMediaFileData)
                     {
-                        (found, uploadedFile) = LoadMediaFileBinary(sourceMediaLibraryPath, k11MediaFile.FilePath, k11MediaFile.FileMimeType);
+                        (found, uploadedFile) = LoadMediaFileBinary(sourceMediaLibraryPath, ksMediaFile.FilePath, ksMediaFile.FileMimeType);
                         if (!found)
                         {
                             // TODO tk: 2022-07-07 report missing file (currently reported in mapper)
                         }
                     }
 
-                    var librarySubfolder = Path.GetDirectoryName(k11MediaFile.FilePath);
+                    var librarySubfolder = Path.GetDirectoryName(ksMediaFile.FilePath);
 
-                    var kxoMediaFile = mediaFileFacade.GetMediaFile(k11MediaFile.FileGuid);
+                    var kxoMediaFile = mediaFileFacade.GetMediaFile(ksMediaFile.FileGUID);
 
                     protocol.FetchedTarget(kxoMediaFile);
 
-                    var source = new MediaFileInfoMapperSource(k11MediaFile, targetMediaLibrary.LibraryID, found ? uploadedFile : null,
+                    var source = new MediaFileInfoMapperSource(ksMediaFile, targetMediaLibrary.LibraryID, found ? uploadedFile : null,
                         librarySubfolder, toolkitConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(false));
                     var mapped = mediaFileInfoMapper.Map(source, kxoMediaFile);
                     protocol.MappedTarget(mapped);
@@ -217,10 +189,10 @@ public class MigrateMediaLibrariesCommandHandler(ILogger<MigrateMediaLibrariesCo
                             mediaFileFacade.SetMediaFile(mf, newInstance);
                             await _kxpContext.SaveChangesAsync(cancellationToken);
 
-                            protocol.Success(k11MediaFile, mf, mapped);
+                            protocol.Success(ksMediaFile, mf, mapped);
                             logger.LogEntitySetAction(newInstance, mf);
                         }
-                        catch (Exception ex) // TODO tk: 2022-05-18 handle exceptions
+                        catch (Exception ex)
                         {
                             await kxoDbContext.DisposeAsync(); // reset context errors
                             kxoDbContext = await kxpContextFactory.CreateDbContextAsync(cancellationToken);
@@ -236,7 +208,7 @@ public class MigrateMediaLibrariesCommandHandler(ILogger<MigrateMediaLibrariesCo
 
                         primaryKeyMappingContext.SetMapping<MediaFile>(
                             r => r.FileId,
-                            k11MediaFile.FileId,
+                            ksMediaFile.FileID,
                             mf.FileID
                         );
                     }

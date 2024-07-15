@@ -27,6 +27,12 @@ using Migration.Toolkit.Source.Services;
 
 public static class KsCoreDiExtensions
 {
+    public static IServiceProvider ServiceProvider { get; private set; } = null!;
+    public static void InitServiceProvider(IServiceProvider serviceProvider)
+    {
+        ServiceProvider = serviceProvider;
+    }
+
     public static IServiceCollection UseKsToolkitCore(this IServiceCollection services)
     {
         var printService = new PrintService();
@@ -58,6 +64,7 @@ public static class KsCoreDiExtensions
         services.AddTransient<ReusableSchemaService>();
 
         services.AddScoped<PrimaryKeyMappingContext>();
+        services.AddScoped<IPrimaryKeyMappingContext, PrimaryKeyMappingContext>(s => s.GetRequiredService<PrimaryKeyMappingContext>());
         services.AddScoped<IPrimaryKeyLocatorService, PrimaryKeyLocatorService>();
 
         // commands
@@ -79,6 +86,10 @@ public static class KsCoreDiExtensions
         services.AddTransient<IEntityMapper<AlternativeFormMapperSource, AlternativeFormInfo>, AlternativeFormMapper>();
         services.AddTransient<IEntityMapper<MemberInfoMapperSource, MemberInfo>, MemberInfoMapper>();
         services.AddTransient<IEntityMapper<ICmsPageTemplateConfiguration, PageTemplateConfigurationInfo>, PageTemplateConfigurationMapper>();
+        services.AddTransient<IEntityMapper<MediaLibraryInfoMapperSource, MediaLibraryInfo>, MediaLibraryInfoMapper>();
+        services.AddTransient<IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo>, MediaFileInfoMapper>();
+
+
 
         services.AddUniversalMigrationToolkit();
 
