@@ -789,7 +789,7 @@ public class ContentItemMapper(
                 if (fieldMigration.Actions?.Contains(TcaDirective.ConvertToPages) ?? false)
                 {
                     // relation to other document
-                    var convertedRelation = relationshipService.GetNodeRelationships(cmsTree.NodeID)
+                    var convertedRelation = relationshipService.GetNodeRelationships(cmsTree.NodeID, nodeClass.ClassName, field.Guid)
                         .Select(r => new WebPageRelatedItem { WebPageGuid = r.RightNode.NodeGUID });
 
                     target.SetValueAsJson(columnName, convertedRelation);
