@@ -42,13 +42,26 @@ public class ToolkitConfiguration
     #region Connection string of target instance
 
     [ConfigurationKeyName(ConfigurationNames.XbKConnectionString)]
-    public string? XbKConnectionString { get; set; }
+    public string XbKConnectionString
+    {
+        get => _xbKConnectionString!;
+        set => _xbKConnectionString = value;
+    }
+
+    public void SetXbKConnectionStringIfNotEmpty(string? connectionString)
+    {
+        if (!string.IsNullOrWhiteSpace(connectionString))
+        {
+            _xbKConnectionString = connectionString;
+        }
+    }
 
     #endregion
 
     #region Path to root directory of target instance
 
     private HashSet<string>? _classNamesCreateReusableSchema;
+    private string? _xbKConnectionString;
 
     [ConfigurationKeyName(ConfigurationNames.XbKDirPath)]
     public string? XbKDirPath { get; set; } = null;
@@ -81,59 +94,6 @@ public class ToolkitConfiguration
         (CreateReusableFieldSchemaForClasses?.Split(new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries) ?? []).Select(x => x.Trim()),
         StringComparer.InvariantCultureIgnoreCase
     );
-
-    public Dictionary<int, int> RequireExplicitMapping<TEntityType>(Expression<Func<TEntityType, object>> keyNameSelector)
-    {
-        var memberName = keyNameSelector.GetMemberName();
-        var migratedIds = EntityConfigurations?.GetEntityConfiguration<TEntityType>()?.ExplicitPrimaryKeyMapping[memberName];
-        if (migratedIds == null)
-        {
-            throw new InvalidOperationException(string.Format(Resources.Exception_MappingIsRequired, typeof(TEntityType).Name, memberName));
-        }
-
-        return migratedIds.ToDictionary(kvp =>
-        {
-            if (int.TryParse(kvp.Key, out var id))
-            {
-                return id;
-            }
-
-            throw new InvalidOperationException(string.Format(Resources.Exception_MappingIsRequired, typeof(TEntityType).Name, memberName));
-        }, kvp =>
-        {
-            if (kvp.Value is { } id)
-            {
-                return id;
-            }
-
-            throw new InvalidOperationException(string.Format(Resources.Exception_MappingIsRequired, typeof(TEntityType).Name, memberName));
-        });
-    }
-
-    public void AddExplicitMapping<TEntityType>(Expression<Func<TEntityType, object>> keyNameSelector, int sourceId, int targetId)
-    {
-        var memberName = keyNameSelector.GetMemberName();
-        EntityConfigurations ??= new EntityConfigurations();
-
-        var entityConfiguration = EntityConfigurations.GetEntityConfiguration<TEntityType>();
-        var mapping = entityConfiguration.ExplicitPrimaryKeyMapping;
-        if (!mapping.ContainsKey(memberName))
-        {
-            mapping.Add(memberName, new());
-        }
-
-        if (!mapping[memberName].ContainsKey(sourceId.ToString()))
-        {
-            mapping[memberName].Add(sourceId.ToString(), targetId);
-        }
-        else
-        {
-            mapping[memberName][sourceId.ToString()] = targetId;
-        }
-
-        EntityConfigurations.SetEntityConfiguration<TEntityType>(entityConfiguration);
-    }
-
 
     #region Opt-in features
 

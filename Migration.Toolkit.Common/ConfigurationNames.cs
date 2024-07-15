@@ -5,6 +5,7 @@ public class ConfigurationNames
     public const string KxConnectionString = "KxConnectionString";
     public const string KxCmsDirPath = "KxCmsDirPath";
 
+    [Obsolete("not needed anymore, connection string from Kentico config section is used")]
     public const string XbKConnectionString = "XbKConnectionString";
 
     public const string XbKDirPath = "XbKDirPath";

@@ -37,9 +37,9 @@ public static class ConfigurationValidator
             yield return new ValidationMessage(ValidationMessageType.Warning, Resources.ConfigurationValidator_GetValidationErrors_SourceCmsDirPath_IsRecommended);
         }
 
-        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.XbKConnectionString)))
+        if (settings?.GetValue<string>(ConfigurationNames.XbKConnectionString) is {})
         {
-            yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_TargetConnectionString_IsRequired);
+            yield return new ValidationMessage(ValidationMessageType.Warning, $"Configuration key '{ConfigurationNames.XbKConnectionString}' is deprecated, use 'Settings:ConnectionStrings:CMSConnectionString' instead");
         }
 
         if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.XbKDirPath)))
