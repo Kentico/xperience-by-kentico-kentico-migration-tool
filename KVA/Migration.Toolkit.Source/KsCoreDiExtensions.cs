@@ -67,12 +67,6 @@ public static class KsCoreDiExtensions
         services.AddScoped<IPrimaryKeyMappingContext, PrimaryKeyMappingContext>(s => s.GetRequiredService<PrimaryKeyMappingContext>());
         services.AddScoped<IPrimaryKeyLocatorService, PrimaryKeyLocatorService>();
 
-        // commands
-        services.AddTransient<MigratePagesCommandHandler>();
-        services.AddTransient<MigrateCustomModulesCommandHandler>();
-        services.AddTransient<MigrateCustomTablesHandler>();
-        services.AddTransient<MigratePageTypesCommandHandler>();
-
         // umt mappers
         services.AddTransient<IUmtMapper<CmsTreeMapperSource>, ContentItemMapper>();
         services.AddTransient<IUmtMapper<TagModelSource>, TagMapper>();
@@ -88,8 +82,6 @@ public static class KsCoreDiExtensions
         services.AddTransient<IEntityMapper<ICmsPageTemplateConfiguration, PageTemplateConfigurationInfo>, PageTemplateConfigurationMapper>();
         services.AddTransient<IEntityMapper<MediaLibraryInfoMapperSource, MediaLibraryInfo>, MediaLibraryInfoMapper>();
         services.AddTransient<IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo>, MediaFileInfoMapper>();
-
-
 
         services.AddUniversalMigrationToolkit();
 

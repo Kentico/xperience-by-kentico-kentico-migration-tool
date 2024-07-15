@@ -6,8 +6,6 @@ using CMS.Globalization;
 using CMS.MediaLibrary;
 using CMS.Membership;
 using CMS.Modules;
-using CMS.OnlineForms;
-using CMS.Websites;
 using Kentico.Xperience.UMT;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,7 +15,6 @@ using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.Common.Services.BulkCopy;
-using Migration.Toolkit.Common.Services.Ipc;
 using Migration.Toolkit.Core.KX12.Behaviors;
 using Migration.Toolkit.Core.KX12.Contexts;
 using Migration.Toolkit.Core.KX12.Handlers;
@@ -50,14 +47,6 @@ public static class Kx12CoreDiExtensions
         services.AddSingleton<KeyMappingContext>();
         services.AddScoped<IPrimaryKeyLocatorService, PrimaryKeyLocatorService>();
         services.AddSingleton<KeyLocatorService>();
-
-        // commands
-        services.AddTransient<MigrateDataProtectionCommandHandler>();
-        services.AddTransient<MigratePagesCommand>();
-        services.AddTransient<MigrateSettingKeysCommandHandler>();
-        services.AddTransient<MigrateUsersCommandHandler>();
-        services.AddTransient<MigrateMembersCommandHandler>();
-        services.AddTransient<MigrateContactManagementCommandHandler>();
 
         // mappers
         services.AddTransient<IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo>, CmsAttachmentMapper>();

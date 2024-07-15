@@ -51,14 +51,6 @@ public static class DependencyInjectionExtensions
         services.AddScoped<IPrimaryKeyLocatorService, PrimaryKeyLocatorService>();
         services.AddSingleton<KeyLocatorService>();
 
-        // commands
-        services.AddTransient<MigrateDataProtectionCommandHandler>();
-        services.AddTransient<MigratePagesCommand>();
-        services.AddTransient<MigrateSettingKeysCommandHandler>();
-        services.AddTransient<MigrateUsersCommandHandler>();
-        services.AddTransient<MigrateMembersCommandHandler>();
-        services.AddTransient<MigrateContactManagementCommandHandler>();
-
         // mappers
         services.AddTransient<IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo>, CmsAttachmentMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsConsent, CmsConsent>, CmsConsentMapper>();

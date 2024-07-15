@@ -1,5 +1,6 @@
 ﻿namespace Migration.Toolkit.Source.Handlers;
 
+using System.Collections.Immutable;
 using CMS.Base;
 using CMS.MediaLibrary;
 using MediatR;
@@ -35,11 +36,47 @@ public class MigrateMediaLibrariesCommandHandler(
 
     public async Task<CommandResult> Handle(MigrateMediaLibrariesCommand request, CancellationToken cancellationToken)
     {
+        var skippedMediaLibraries = new HashSet<Guid>();
+        var unsuitableMediaLibraries =
+            modelFacade.Select("""
+                               SELECT LibraryName, STRING_AGG(CAST(LibraryGUID AS NVARCHAR(max)), '|') as [LibraryGUIDs]
+                               FROM Media_Library
+                               GROUP BY LibraryName
+                               HAVING COUNT(*) > 1
+                               """,
+                (reader, _) => new
+                {
+                    LibraryName = reader.Unbox<int>("LibraryName"),
+                    LibraryGuids = reader.Unbox<string?>("LibraryGUIDs")?.Split('|').Select(Guid.Parse).ToImmutableList() ?? []
+                });
+
+        foreach (var mlg in unsuitableMediaLibraries)
+        {
+            logger.LogError(
+                "Media libraries with LibraryGuid ({LibraryGuids}) have same LibraryName '{LibraryName}', due to removal of sites and media library globalization it is required to set unique LibraryName and LibraryFolder",
+                string.Join(",", mlg.LibraryGuids), mlg.LibraryName);
+
+            foreach (var libraryGuid in mlg.LibraryGuids)
+            {
+                skippedMediaLibraries.Add(libraryGuid);
+
+                protocol.Append(HandbookReferences.NotCurrentlySupportedSkip()
+                    .WithMessage($"Media library '{mlg.LibraryName}' with LibraryGuid '{libraryGuid}' doesn't satisfy unique LibraryName and LibraryFolder condition for migration")
+                    .WithData(new { LibraryGuid = libraryGuid, mlg.LibraryName })
+                );
+            }
+        }
+
         var ksMediaLibraries = modelFacade.SelectAll<IMediaLibrary>(" ORDER BY LibraryID");
 
         var migratedMediaLibraries = new List<(IMediaLibrary sourceLibrary, ICmsSite sourceSite, MediaLibraryInfo targetLibrary)>();
         foreach (var ksMediaLibrary in ksMediaLibraries)
         {
+            if (ksMediaLibrary.LibraryGUID is { } libraryGuid && skippedMediaLibraries.Contains(libraryGuid))
+            {
+                continue;
+            }
+
             protocol.FetchedSource(ksMediaLibrary);
 
             if (ksMediaLibrary.LibraryGUID is not { } mediaLibraryGuid)
