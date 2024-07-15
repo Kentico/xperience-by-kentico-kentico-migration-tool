@@ -180,7 +180,7 @@ public class PageTemplateConfigurationMapper(
                     {
                         case Kx13FormComponents.Kentico_AttachmentSelector when newFormComponent == FormComponents.AdminAssetSelectorComponent:
                             {
-                                if (value?.ToObject<List<Migration.Toolkit.Source.Services.Model.AttachmentSelectorItem>>() is { Count: > 0 } items)
+                                if (value?.ToObject<List<AttachmentSelectorItem>>() is { Count: > 0 } items)
                                 {
                                     properties[key] = JToken.FromObject(items.Select(x => new AssetRelatedItem { Identifier = x.FileGuid }).ToList());
                                 }
