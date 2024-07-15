@@ -6,7 +6,7 @@ using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Source.Model;
 
 public record TagModelSource(Guid TaxonomyGuid, ICmsCategory CmsCategory, Dictionary<int, Guid> CategoryId2Guid);
-public class TagMapper(ILogger<TagMapper> logger): UmtMapperBase<TagModelSource>
+public class TagMapper(ILogger<TagMapper> logger) : UmtMapperBase<TagModelSource>
 {
     protected override IEnumerable<IUmtModel> MapInternal(TagModelSource source)
     {

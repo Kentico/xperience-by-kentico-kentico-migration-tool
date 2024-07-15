@@ -6,7 +6,7 @@ using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Services;
 
-public class TextMigrationProtocol: IMigrationProtocol, IDisposable
+public class TextMigrationProtocol : IMigrationProtocol, IDisposable
 {
     private readonly ToolkitConfiguration _configuration;
     private readonly IPrintService _printService;
@@ -18,7 +18,7 @@ public class TextMigrationProtocol: IMigrationProtocol, IDisposable
         _printService = printService;
 
         var nowStartDate = DateTime.Now;
-        if (string.IsNullOrWhiteSpace(configuration.MigrationProtocolPath) && Process.GetCurrentProcess().MainModule?.FileName is {} programPath)
+        if (string.IsNullOrWhiteSpace(configuration.MigrationProtocolPath) && Process.GetCurrentProcess().MainModule?.FileName is { } programPath)
         {
             var processDir = Path.GetDirectoryName(programPath);
             if (processDir != null)

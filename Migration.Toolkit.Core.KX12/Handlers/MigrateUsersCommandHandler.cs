@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.KX12.Handlers;
+namespace Migration.Toolkit.Core.KX12.Handlers;
 
 using CMS.Membership;
 using MediatR;
@@ -75,7 +75,7 @@ public class MigrateUsersCommandHandler(
 
     private void SaveUserUsingKenticoApi(IModelMappingResult<UserInfo> mapped, KX12M.CmsUser k12User)
     {
-        if (mapped is { Success : true } result)
+        if (mapped is { Success: true } result)
         {
             var (userInfo, newInstance) = result;
             ArgumentNullException.ThrowIfNull(userInfo);
@@ -130,7 +130,7 @@ public class MigrateUsersCommandHandler(
             var mapped = roleMapper.Map(k12CmsRole, xbkRoleInfo);
             protocol.MappedTarget(mapped);
 
-            if (mapped is not (var roleInfo, var newInstance) { Success : true })
+            if (mapped is not (var roleInfo, var newInstance) { Success: true })
             {
                 continue;
             }
@@ -200,7 +200,7 @@ public class MigrateUsersCommandHandler(
             var mapped = userRoleMapper.Map(k12UserRole, xbkUserRole);
             protocol.MappedTarget(mapped);
 
-            if (mapped is { Success : true })
+            if (mapped is { Success: true })
             {
                 var (userRoleInfo, newInstance) = mapped;
                 ArgumentNullException.ThrowIfNull(userRoleInfo);

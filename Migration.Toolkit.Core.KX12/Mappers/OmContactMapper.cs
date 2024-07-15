@@ -16,7 +16,7 @@ public class OmContactMapper : EntityMapperBase<KX12M.OmContact, OmContact>
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IEntityMapper<KX12M.OmContactStatus, OmContactStatus> contactStatusMapper,
         IProtocol protocol
-    ): base(logger, primaryKeyMappingContext, protocol)
+    ) : base(logger, primaryKeyMappingContext, protocol)
     {
         _logger = logger;
         _contactStatusMapper = contactStatusMapper;
@@ -68,15 +68,15 @@ public class OmContactMapper : EntityMapperBase<KX12M.OmContact, OmContact>
             switch (_contactStatusMapper.Map(source.ContactStatus, target.ContactStatus))
             {
                 case { Success: true } result:
-                {
-                    target.ContactStatus = result.Item;
-                    break;
-                }
+                    {
+                        target.ContactStatus = result.Item;
+                        break;
+                    }
                 case { Success: false } result:
-                {
-                    addFailure(new MapperResultFailure<OmContact>(result?.HandbookReference));
-                    break;
-                }
+                    {
+                        addFailure(new MapperResultFailure<OmContact>(result?.HandbookReference));
+                        break;
+                    }
             }
         }
         else

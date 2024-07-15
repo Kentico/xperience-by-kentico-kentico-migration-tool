@@ -40,6 +40,6 @@ public class EditingFormControlModel
     /// <summary>Gets or sets the order weight of the form component.</summary>
     /// <seealso cref="T:Kentico.Forms.Web.Mvc.EditingComponentOrder" />
     public int? Order { get; set; }
-    
+
     public string PropertyName { get; set; }
 }

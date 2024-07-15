@@ -2,7 +2,8 @@
 // ReSharper disable IdentifierTypo
 namespace Migration.Toolkit.KX13;
 
-public static class SettingsKeys {
+public static class SettingsKeys
+{
     public const string CMSABTestingEnabled = "CMSABTestingEnabled";
     public const string CMSAdminEmailAddress = "CMSAdminEmailAddress";
     public const string CMSAllowAttachmentTranslation = "CMSAllowAttachmentTranslation";

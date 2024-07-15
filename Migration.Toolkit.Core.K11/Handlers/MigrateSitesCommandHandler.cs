@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.K11.Handlers;
+namespace Migration.Toolkit.Core.K11.Handlers;
 
 using CMS.ContentEngine;
 using CMS.Websites;
@@ -101,36 +101,36 @@ public class MigrateSitesCommandHandler(ILogger<MigrateSitesCommandHandler> logg
             switch (result)
             {
                 case (true, false, var candidate, null):
-                {
-                    webSiteChannelDomain = candidate;
-                    break;
-                }
+                    {
+                        webSiteChannelDomain = candidate;
+                        break;
+                    }
                 case (true, true, var candidate, null):
-                {
-                    webSiteChannelDomain = candidate;
-                    logger.LogWarning("Domain '{Domain}' of site '{SiteName}' is not unique. '{Fallback}' is used instead", k11CmsSite.SiteDomainName, k11CmsSite.SiteName, candidate);
-                    protocol.Warning(HandbookReferences
-                        .InvalidSourceData<CmsSite>()
-                        .WithMessage($"Domain '{k11CmsSite.SiteDomainName}' of site '{k11CmsSite.SiteName}' is not unique. '{candidate}' is used instead"), k11CmsSite);
-                    break;
-                }
+                    {
+                        webSiteChannelDomain = candidate;
+                        logger.LogWarning("Domain '{Domain}' of site '{SiteName}' is not unique. '{Fallback}' is used instead", k11CmsSite.SiteDomainName, k11CmsSite.SiteName, candidate);
+                        protocol.Warning(HandbookReferences
+                            .InvalidSourceData<CmsSite>()
+                            .WithMessage($"Domain '{k11CmsSite.SiteDomainName}' of site '{k11CmsSite.SiteName}' is not unique. '{candidate}' is used instead"), k11CmsSite);
+                        break;
+                    }
                 case { Success: false, Fallback: { } fallback }:
-                {
-                    webSiteChannelDomain = fallback;
-                    logger.LogWarning("Unable to use domain '{Domain}' of site '{SiteName}' as channel domain. Fallback '{Fallback}' is used", k11CmsSite.SiteDomainName, k11CmsSite.SiteName, fallback);
-                    protocol.Warning(HandbookReferences
-                        .InvalidSourceData<CmsSite>()
-                        .WithMessage($"Non-unique domain name '{k11CmsSite.SiteDomainName}', fallback '{fallback}' used"), k11CmsSite);
-                    break;
-                }
+                    {
+                        webSiteChannelDomain = fallback;
+                        logger.LogWarning("Unable to use domain '{Domain}' of site '{SiteName}' as channel domain. Fallback '{Fallback}' is used", k11CmsSite.SiteDomainName, k11CmsSite.SiteName, fallback);
+                        protocol.Warning(HandbookReferences
+                            .InvalidSourceData<CmsSite>()
+                            .WithMessage($"Non-unique domain name '{k11CmsSite.SiteDomainName}', fallback '{fallback}' used"), k11CmsSite);
+                        break;
+                    }
                 default:
-                {
-                    logger.LogError("Unable to use domain '{Domain}' of site '{SiteName}' as channel domain. No fallback available, skipping site", k11CmsSite.SiteDomainName, k11CmsSite.SiteName);
-                    protocol.Warning(HandbookReferences
-                        .InvalidSourceData<CmsSite>()
-                        .WithMessage($"Invalid domain name for migration '{k11CmsSite.SiteDomainName}'"), k11CmsSite);
-                    continue;
-                }
+                    {
+                        logger.LogError("Unable to use domain '{Domain}' of site '{SiteName}' as channel domain. No fallback available, skipping site", k11CmsSite.SiteDomainName, k11CmsSite.SiteName);
+                        protocol.Warning(HandbookReferences
+                            .InvalidSourceData<CmsSite>()
+                            .WithMessage($"Invalid domain name for migration '{k11CmsSite.SiteDomainName}'"), k11CmsSite);
+                        continue;
+                    }
             }
 
             await importer.ImportAsync(new ChannelModel

@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.K11.Handlers;
+namespace Migration.Toolkit.Core.K11.Handlers;
 
 using CMS.DataProtection;
 using MediatR;
@@ -76,7 +76,7 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
             var mapped = _consentMapper.Map(k11Consent, kxoConsent);
             _protocol.MappedTarget(mapped);
 
-            if (mapped is { Success : true } result)
+            if (mapped is { Success: true } result)
             {
                 var (cmsConsent, newInstance) = result;
                 ArgumentNullException.ThrowIfNull(cmsConsent, nameof(cmsConsent));
@@ -131,7 +131,7 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
             var mapped = _consentArchiveMapper.Map(k11ArchiveConsent, kxoConsentArchive);
             _protocol.MappedTarget(mapped);
 
-            if (mapped is { Success : true } result)
+            if (mapped is { Success: true } result)
             {
                 var (cmsConsentArchive, newInstance) = result;
                 ArgumentNullException.ThrowIfNull(cmsConsentArchive, nameof(cmsConsentArchive));
@@ -177,7 +177,7 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
         await using var k11Context = await _k11ContextFactory.CreateDbContextAsync(cancellationToken);
         var index = 0;
         var indexFull = 0;
-        var consentAgreementUpdates= new List<KXP.Models.CmsConsentAgreement>();
+        var consentAgreementUpdates = new List<KXP.Models.CmsConsentAgreement>();
         var consentAgreementNews = new List<KXP.Models.CmsConsentAgreement>();
         var itemsCount = k11Context.CmsConsentAgreements.Count();
 
@@ -192,7 +192,7 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
             var mapped = _consentAgreementMapper.Map(k11ConsentAgreement, kxoConsentAgreement);
             _protocol.MappedTarget(mapped);
 
-            if (mapped is { Success : true } result)
+            if (mapped is { Success: true } result)
             {
                 var (cmsConsentAgreement, newInstance) = result;
                 ArgumentNullException.ThrowIfNull(cmsConsentAgreement, nameof(cmsConsentAgreement));

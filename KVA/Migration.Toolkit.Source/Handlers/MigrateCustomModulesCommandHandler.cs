@@ -116,7 +116,7 @@ public class MigrateCustomModulesCommandHandler(
 
             protocol.FetchedTarget(xbkDataClass);
 
-            if (SaveClassUsingKxoApi(cmsClass, xbkDataClass) is {} savedDataClass)
+            if (SaveClassUsingKxoApi(cmsClass, xbkDataClass) is { } savedDataClass)
             {
                 Debug.Assert(savedDataClass.ClassID != 0, "xbkDataClass.ClassID != 0");
                 xbkDataClass = DataClassInfoProvider.ProviderObject.Get(savedDataClass.ClassID);
@@ -162,7 +162,7 @@ public class MigrateCustomModulesCommandHandler(
                     }
                     catch (Exception ex)
                     {
-                        logger.LogError(ex,"Error while copying data to table");
+                        logger.LogError(ex, "Error while copying data to table");
                     }
                 }
 
@@ -272,7 +272,7 @@ public class MigrateCustomModulesCommandHandler(
 
             try
             {
-                if (mapped is { Success : true })
+                if (mapped is { Success: true })
                 {
                     var (alternativeFormInfo, newInstance) = mapped;
                     ArgumentNullException.ThrowIfNull(alternativeFormInfo, nameof(alternativeFormInfo));
@@ -367,7 +367,7 @@ public class MigrateCustomModulesCommandHandler(
 
             try
             {
-                if (mapped is { Success : true })
+                if (mapped is { Success: true })
                 {
                     var (resourceInfo, newInstance) = mapped;
                     ArgumentNullException.ThrowIfNull(resourceInfo, nameof(resourceInfo));
@@ -398,7 +398,7 @@ public class MigrateCustomModulesCommandHandler(
 
         try
         {
-            if (mapped is { Success : true } result)
+            if (mapped is { Success: true } result)
             {
                 var (dataClassInfo, newInstance) = result;
                 ArgumentNullException.ThrowIfNull(dataClassInfo, nameof(dataClassInfo));

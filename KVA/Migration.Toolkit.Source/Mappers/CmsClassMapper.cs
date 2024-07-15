@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Source.Mappers;
+namespace Migration.Toolkit.Source.Mappers;
 
 using System.Diagnostics;
 using System.Xml;
@@ -105,16 +105,16 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
                 className.Equals("cms.site", StringComparison.InvariantCultureIgnoreCase) ||
                 className.Equals("cms.root", StringComparison.InvariantCultureIgnoreCase)
                 :
-            {
-                throw new Exception("Unable to map obsolete dataclass");
-                return target;
-            }
+                {
+                    throw new Exception("Unable to map obsolete dataclass");
+                    return target;
+                }
             // Target Other,null
             // Target System,null
             case not null when target is { ClassType: ClassType.OTHER or ClassType.SYSTEM_TABLE }:
-            {
-                break;
-            }
+                {
+                    break;
+                }
         }
 
         switch (source)
@@ -126,30 +126,30 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
                 ClassIsDocumentType: false,
                 ClassResourceID: { } classResourceId
             }:
-            {
-                target.ClassType = ClassType.OTHER;
-                target.ClassContentTypeType = null;
+                {
+                    target.ClassType = ClassType.OTHER;
+                    target.ClassContentTypeType = null;
 
-                target = PatchDataClassInfo(target, out var oldPrimaryKeyName, out var documentNameField);
+                    target = PatchDataClassInfo(target, out var oldPrimaryKeyName, out var documentNameField);
 
-                break;
-            }
+                    break;
+                }
 
             // Target Form,null
             case
-                {
-                    ClassIsDocumentType: false,
-                    ClassIsCoupledClass: true,
-                    ClassIsForm: true,
-                    // ClassIsPage: false
-                }
-                :
             {
-                target.ClassType = ClassType.FORM;
-                target.ClassContentTypeType = "";
-
-                break;
+                ClassIsDocumentType: false,
+                ClassIsCoupledClass: true,
+                ClassIsForm: true,
+                // ClassIsPage: false
             }
+                :
+                {
+                    target.ClassType = ClassType.FORM;
+                    target.ClassContentTypeType = "";
+
+                    break;
+                }
 
             // Target Content,Reusable
             case
@@ -160,13 +160,13 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
                 ClassIsCustomTable: false,
                 // ClassIsPage: false
             }:
-            {
-                target.ClassType = ClassType.CONTENT_TYPE;
-                target.ClassContentTypeType = ClassContentTypeType.REUSABLE;
+                {
+                    target.ClassType = ClassType.CONTENT_TYPE;
+                    target.ClassContentTypeType = ClassContentTypeType.REUSABLE;
 
-                target = PatchDataClassInfo(target, out var oldPrimaryKeyName, out var documentNameField);
-                break;
-            }
+                    target = PatchDataClassInfo(target, out var oldPrimaryKeyName, out var documentNameField);
+                    break;
+                }
 
             // Target Content,Website
             case { ClassName: { } className } when className.Equals("cms.folder", StringComparison.InvariantCultureIgnoreCase):
@@ -176,13 +176,13 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
                 ClassIsForm: false or null,
                 // ClassIsPage: true
             }:
-            {
-                target.ClassType = ClassType.CONTENT_TYPE;
-                target.ClassContentTypeType = ClassContentTypeType.WEBSITE;
+                {
+                    target.ClassType = ClassType.CONTENT_TYPE;
+                    target.ClassContentTypeType = ClassContentTypeType.WEBSITE;
 
-                target = PatchDataClassInfo(target, out var oldPrimaryKeyName, out var documentNameField);
-                break;
-            }
+                    target = PatchDataClassInfo(target, out var oldPrimaryKeyName, out var documentNameField);
+                    break;
+                }
         }
 
         return target;
@@ -283,7 +283,7 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
 
     public static string? GetLegacyDocumentName(FormInfo nfi, string className)
     {
-        if (nfi.GetFields(true, true, true).FirstOrDefault(f => GuidHelper.CreateDocumentNameFieldGuid($"documentname|{className}").Equals(f.Guid)) is {} foundField)
+        if (nfi.GetFields(true, true, true).FirstOrDefault(f => GuidHelper.CreateDocumentNameFieldGuid($"documentname|{className}").Equals(f.Guid)) is { } foundField)
         {
             return foundField.Name;
         }
@@ -295,7 +295,7 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
 
     private static void AppendDocumentNameField(FormInfo nfi, string className, out string documentNameField)
     {
-        if (GetLegacyDocumentName(nfi, className) is {} fieldName)
+        if (GetLegacyDocumentName(nfi, className) is { } fieldName)
         {
             documentNameField = fieldName;
             return;

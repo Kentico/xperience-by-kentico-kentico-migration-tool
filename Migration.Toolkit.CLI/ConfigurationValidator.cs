@@ -37,7 +37,7 @@ public static class ConfigurationValidator
             yield return new ValidationMessage(ValidationMessageType.Warning, Resources.ConfigurationValidator_GetValidationErrors_SourceCmsDirPath_IsRecommended);
         }
 
-        if (settings?.GetValue<string>(ConfigurationNames.XbKConnectionString) is {})
+        if (settings?.GetValue<string>(ConfigurationNames.XbKConnectionString) is { })
         {
             yield return new ValidationMessage(ValidationMessageType.Warning, $"Configuration key '{ConfigurationNames.XbKConnectionString}' is deprecated, use 'Settings:ConnectionStrings:CMSConnectionString' instead");
         }
@@ -161,7 +161,7 @@ public static class ConfigurationValidator
     #region "Helper methods"
 
     [Pure]
-    private static bool StringIsNullOrFitsOneOf<TEnum>(string? s) where TEnum: Enum
+    private static bool StringIsNullOrFitsOneOf<TEnum>(string? s) where TEnum : Enum
     {
         return s is null || Enum.TryParse(ReflectionHelper<TEnum>.CurrentType, s, out var _);
     }

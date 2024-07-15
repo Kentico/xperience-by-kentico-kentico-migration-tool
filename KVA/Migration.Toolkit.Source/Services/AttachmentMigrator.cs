@@ -101,7 +101,10 @@ public class AttachmentMigrator(
             logger.LogWarning("Attachment '{AttachmentGuid}' is temporary => skipping", ksAttachment.AttachmentGUID);
             protocol.Append(HandbookReferences.TemporaryAttachmentMigrationIsNotSupported.WithData(new
             {
-                ksAttachment.AttachmentID, ksAttachment.AttachmentGUID, ksAttachment.AttachmentName, ksAttachment.AttachmentSiteID
+                ksAttachment.AttachmentID,
+                ksAttachment.AttachmentGUID,
+                ksAttachment.AttachmentName,
+                ksAttachment.AttachmentSiteID
             }));
             return new(false, true);
         }
@@ -176,7 +179,8 @@ public class AttachmentMigrator(
                     .WithIdentityPrint(mediaFileInfo)
                     .WithData(new
                     {
-                        mediaFileInfo.FileGUID, mediaFileInfo.FileName
+                        mediaFileInfo.FileGUID,
+                        mediaFileInfo.FileName
                     })
                 );
             }

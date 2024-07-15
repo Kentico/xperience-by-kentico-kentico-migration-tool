@@ -76,7 +76,7 @@ public class PageTemplateConfigurationMapper(
                 if (source.PageTemplateConfigurationWidgets != null)
                 {
                     var areas = JsonConvert.DeserializeObject<Migration.Toolkit.Source.Services.Model.EditableAreasConfiguration>(source.PageTemplateConfigurationWidgets);
-                    if (areas?.EditableAreas is { Count : > 0 })
+                    if (areas?.EditableAreas is { Count: > 0 })
                     {
                         WalkAreas(source.PageTemplateConfigurationSiteID, areas.EditableAreas);
                     }
@@ -181,33 +181,33 @@ public class PageTemplateConfigurationMapper(
                     switch (oldFormComponent)
                     {
                         case Kx13FormComponents.Kentico_AttachmentSelector when newFormComponent == FormComponents.AdminAssetSelectorComponent:
-                        {
-                            if (value?.ToObject<List<Migration.Toolkit.Source.Services.Model.AttachmentSelectorItem>>() is { Count: > 0 } items)
                             {
-                                properties[key] = JToken.FromObject(items.Select(x => new AssetRelatedItem { Identifier = x.FileGuid }).ToList());
-                            }
-
-                            logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
-                            break;
-                        }
-                        case Kx13FormComponents.Kentico_PageSelector when newFormComponent == FormComponents.Kentico_Xperience_Admin_Websites_WebPageSelectorComponent:
-                        {
-                            if (value?.ToObject<List<Migration.Toolkit.Source.Services.Model.PageSelectorItem>>() is { Count: > 0 } items)
-                            {
-                                properties[key] = JToken.FromObject(items.Select(x => new WebPageRelatedItem
+                                if (value?.ToObject<List<Migration.Toolkit.Source.Services.Model.AttachmentSelectorItem>>() is { Count: > 0 } items)
                                 {
-                                    WebPageGuid = spoiledGuidContext.EnsureNodeGuid(x.NodeGuid, siteId)
-                                }).ToList());
-                            }
+                                    properties[key] = JToken.FromObject(items.Select(x => new AssetRelatedItem { Identifier = x.FileGuid }).ToList());
+                                }
 
-                            logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
-                            break;
-                        }
+                                logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
+                                break;
+                            }
+                        case Kx13FormComponents.Kentico_PageSelector when newFormComponent == FormComponents.Kentico_Xperience_Admin_Websites_WebPageSelectorComponent:
+                            {
+                                if (value?.ToObject<List<Migration.Toolkit.Source.Services.Model.PageSelectorItem>>() is { Count: > 0 } items)
+                                {
+                                    properties[key] = JToken.FromObject(items.Select(x => new WebPageRelatedItem
+                                    {
+                                        WebPageGuid = spoiledGuidContext.EnsureNodeGuid(x.NodeGuid, siteId)
+                                    }).ToList());
+                                }
+
+                                logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
+                                break;
+                            }
                         case Kx13FormComponents.Kentico_FileUploader:
-                        {
-                            // TODO tomas.krch 2024-03-27: implement!
-                            break;
-                        }
+                            {
+                                // TODO tomas.krch 2024-03-27: implement!
+                                break;
+                            }
                     }
                 }
                 else if (FieldMappingInstance.BuiltInModel.SupportedInKxpLegacyMode.Contains(editingFcm.FormComponentIdentifier))

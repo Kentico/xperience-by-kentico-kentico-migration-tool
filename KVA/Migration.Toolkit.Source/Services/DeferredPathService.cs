@@ -13,6 +13,6 @@ public class DeferredPathService
 
     public void AddPatch(Guid uniqueId, string className, int webSiteChannelId)
     {
-        _deferredWidgetPatch.Add(new (uniqueId, className, webSiteChannelId));
+        _deferredWidgetPatch.Add(new(uniqueId, className, webSiteChannelId));
     }
 }

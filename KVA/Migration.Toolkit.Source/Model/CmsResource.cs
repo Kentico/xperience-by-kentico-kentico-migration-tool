@@ -4,7 +4,7 @@ namespace Migration.Toolkit.Source.Model;
 using System.Data;
 using Migration.Toolkit.Common;
 
-public interface ICmsResource: ISourceModel<ICmsResource>
+public interface ICmsResource : ISourceModel<ICmsResource>
 {
     int ResourceID { get; }
     string ResourceDisplayName { get; }
@@ -19,7 +19,7 @@ public interface ICmsResource: ISourceModel<ICmsResource>
     string? ResourceVersion { get; }
     string? ResourceAuthor { get; }
     string? ResourceInstallationState { get; }
-    string? ResourceInstalledVersion { get; }    
+    string? ResourceInstalledVersion { get; }
 
     static string ISourceModel<ICmsResource>.GetPrimaryKeyName(SemanticVersion version)
     {
@@ -54,61 +54,60 @@ public interface ICmsResource: ISourceModel<ICmsResource>
         };
     }
 }
-public partial record CmsResourceK11(int ResourceID, string ResourceDisplayName, string ResourceName, string? ResourceDescription, bool? ShowInDevelopment, string? ResourceURL, Guid ResourceGUID, DateTime ResourceLastModified, bool? ResourceIsInDevelopment, bool? ResourceHasFiles, string? ResourceVersion, string? ResourceAuthor, string? ResourceInstallationState, string? ResourceInstalledVersion): ICmsResource, ISourceModel<CmsResourceK11>
+public partial record CmsResourceK11(int ResourceID, string ResourceDisplayName, string ResourceName, string? ResourceDescription, bool? ShowInDevelopment, string? ResourceURL, Guid ResourceGUID, DateTime ResourceLastModified, bool? ResourceIsInDevelopment, bool? ResourceHasFiles, string? ResourceVersion, string? ResourceAuthor, string? ResourceInstallationState, string? ResourceInstalledVersion) : ICmsResource, ISourceModel<CmsResourceK11>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "ResourceID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "ResourceID";
     public static string TableName => "CMS_Resource";
     public static string GuidColumnName => "ResourceGUID";
     static CmsResourceK11 ISourceModel<CmsResourceK11>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsResourceK11(
-            reader.Unbox<int>("ResourceID"), reader.Unbox<string>("ResourceDisplayName"), reader.Unbox<string>("ResourceName"), reader.Unbox<string?>("ResourceDescription"), reader.Unbox<bool?>("ShowInDevelopment"), reader.Unbox<string?>("ResourceURL"), reader.Unbox<Guid>("ResourceGUID"), reader.Unbox<DateTime>("ResourceLastModified"), reader.Unbox<bool?>("ResourceIsInDevelopment"), reader.Unbox<bool?>("ResourceHasFiles"), reader.Unbox<string?>("ResourceVersion"), reader.Unbox<string?>("ResourceAuthor"), reader.Unbox<string?>("ResourceInstallationState"), reader.Unbox<string?>("ResourceInstalledVersion")                
+            reader.Unbox<int>("ResourceID"), reader.Unbox<string>("ResourceDisplayName"), reader.Unbox<string>("ResourceName"), reader.Unbox<string?>("ResourceDescription"), reader.Unbox<bool?>("ShowInDevelopment"), reader.Unbox<string?>("ResourceURL"), reader.Unbox<Guid>("ResourceGUID"), reader.Unbox<DateTime>("ResourceLastModified"), reader.Unbox<bool?>("ResourceIsInDevelopment"), reader.Unbox<bool?>("ResourceHasFiles"), reader.Unbox<string?>("ResourceVersion"), reader.Unbox<string?>("ResourceAuthor"), reader.Unbox<string?>("ResourceInstallationState"), reader.Unbox<string?>("ResourceInstalledVersion")
         );
     }
     public static CmsResourceK11 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsResourceK11(
-            reader.Unbox<int>("ResourceID"), reader.Unbox<string>("ResourceDisplayName"), reader.Unbox<string>("ResourceName"), reader.Unbox<string?>("ResourceDescription"), reader.Unbox<bool?>("ShowInDevelopment"), reader.Unbox<string?>("ResourceURL"), reader.Unbox<Guid>("ResourceGUID"), reader.Unbox<DateTime>("ResourceLastModified"), reader.Unbox<bool?>("ResourceIsInDevelopment"), reader.Unbox<bool?>("ResourceHasFiles"), reader.Unbox<string?>("ResourceVersion"), reader.Unbox<string?>("ResourceAuthor"), reader.Unbox<string?>("ResourceInstallationState"), reader.Unbox<string?>("ResourceInstalledVersion")                
+            reader.Unbox<int>("ResourceID"), reader.Unbox<string>("ResourceDisplayName"), reader.Unbox<string>("ResourceName"), reader.Unbox<string?>("ResourceDescription"), reader.Unbox<bool?>("ShowInDevelopment"), reader.Unbox<string?>("ResourceURL"), reader.Unbox<Guid>("ResourceGUID"), reader.Unbox<DateTime>("ResourceLastModified"), reader.Unbox<bool?>("ResourceIsInDevelopment"), reader.Unbox<bool?>("ResourceHasFiles"), reader.Unbox<string?>("ResourceVersion"), reader.Unbox<string?>("ResourceAuthor"), reader.Unbox<string?>("ResourceInstallationState"), reader.Unbox<string?>("ResourceInstalledVersion")
         );
     }
 };
-public partial record CmsResourceK12(int ResourceID, string ResourceDisplayName, string ResourceName, string? ResourceDescription, bool? ShowInDevelopment, string? ResourceURL, Guid ResourceGUID, DateTime ResourceLastModified, bool? ResourceIsInDevelopment, bool? ResourceHasFiles, string? ResourceVersion, string? ResourceAuthor, string? ResourceInstallationState, string? ResourceInstalledVersion): ICmsResource, ISourceModel<CmsResourceK12>
+public partial record CmsResourceK12(int ResourceID, string ResourceDisplayName, string ResourceName, string? ResourceDescription, bool? ShowInDevelopment, string? ResourceURL, Guid ResourceGUID, DateTime ResourceLastModified, bool? ResourceIsInDevelopment, bool? ResourceHasFiles, string? ResourceVersion, string? ResourceAuthor, string? ResourceInstallationState, string? ResourceInstalledVersion) : ICmsResource, ISourceModel<CmsResourceK12>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "ResourceID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "ResourceID";
     public static string TableName => "CMS_Resource";
     public static string GuidColumnName => "ResourceGUID";
     static CmsResourceK12 ISourceModel<CmsResourceK12>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsResourceK12(
-            reader.Unbox<int>("ResourceID"), reader.Unbox<string>("ResourceDisplayName"), reader.Unbox<string>("ResourceName"), reader.Unbox<string?>("ResourceDescription"), reader.Unbox<bool?>("ShowInDevelopment"), reader.Unbox<string?>("ResourceURL"), reader.Unbox<Guid>("ResourceGUID"), reader.Unbox<DateTime>("ResourceLastModified"), reader.Unbox<bool?>("ResourceIsInDevelopment"), reader.Unbox<bool?>("ResourceHasFiles"), reader.Unbox<string?>("ResourceVersion"), reader.Unbox<string?>("ResourceAuthor"), reader.Unbox<string?>("ResourceInstallationState"), reader.Unbox<string?>("ResourceInstalledVersion")                
+            reader.Unbox<int>("ResourceID"), reader.Unbox<string>("ResourceDisplayName"), reader.Unbox<string>("ResourceName"), reader.Unbox<string?>("ResourceDescription"), reader.Unbox<bool?>("ShowInDevelopment"), reader.Unbox<string?>("ResourceURL"), reader.Unbox<Guid>("ResourceGUID"), reader.Unbox<DateTime>("ResourceLastModified"), reader.Unbox<bool?>("ResourceIsInDevelopment"), reader.Unbox<bool?>("ResourceHasFiles"), reader.Unbox<string?>("ResourceVersion"), reader.Unbox<string?>("ResourceAuthor"), reader.Unbox<string?>("ResourceInstallationState"), reader.Unbox<string?>("ResourceInstalledVersion")
         );
     }
     public static CmsResourceK12 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsResourceK12(
-            reader.Unbox<int>("ResourceID"), reader.Unbox<string>("ResourceDisplayName"), reader.Unbox<string>("ResourceName"), reader.Unbox<string?>("ResourceDescription"), reader.Unbox<bool?>("ShowInDevelopment"), reader.Unbox<string?>("ResourceURL"), reader.Unbox<Guid>("ResourceGUID"), reader.Unbox<DateTime>("ResourceLastModified"), reader.Unbox<bool?>("ResourceIsInDevelopment"), reader.Unbox<bool?>("ResourceHasFiles"), reader.Unbox<string?>("ResourceVersion"), reader.Unbox<string?>("ResourceAuthor"), reader.Unbox<string?>("ResourceInstallationState"), reader.Unbox<string?>("ResourceInstalledVersion")                
+            reader.Unbox<int>("ResourceID"), reader.Unbox<string>("ResourceDisplayName"), reader.Unbox<string>("ResourceName"), reader.Unbox<string?>("ResourceDescription"), reader.Unbox<bool?>("ShowInDevelopment"), reader.Unbox<string?>("ResourceURL"), reader.Unbox<Guid>("ResourceGUID"), reader.Unbox<DateTime>("ResourceLastModified"), reader.Unbox<bool?>("ResourceIsInDevelopment"), reader.Unbox<bool?>("ResourceHasFiles"), reader.Unbox<string?>("ResourceVersion"), reader.Unbox<string?>("ResourceAuthor"), reader.Unbox<string?>("ResourceInstallationState"), reader.Unbox<string?>("ResourceInstalledVersion")
         );
     }
 };
-public partial record CmsResourceK13(int ResourceID, string ResourceDisplayName, string ResourceName, string? ResourceDescription, bool? ShowInDevelopment, string? ResourceURL, Guid ResourceGUID, DateTime ResourceLastModified, bool? ResourceIsInDevelopment, bool? ResourceHasFiles, string? ResourceVersion, string? ResourceAuthor, string? ResourceInstallationState, string? ResourceInstalledVersion): ICmsResource, ISourceModel<CmsResourceK13>
+public partial record CmsResourceK13(int ResourceID, string ResourceDisplayName, string ResourceName, string? ResourceDescription, bool? ShowInDevelopment, string? ResourceURL, Guid ResourceGUID, DateTime ResourceLastModified, bool? ResourceIsInDevelopment, bool? ResourceHasFiles, string? ResourceVersion, string? ResourceAuthor, string? ResourceInstallationState, string? ResourceInstalledVersion) : ICmsResource, ISourceModel<CmsResourceK13>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "ResourceID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "ResourceID";
     public static string TableName => "CMS_Resource";
     public static string GuidColumnName => "ResourceGUID";
     static CmsResourceK13 ISourceModel<CmsResourceK13>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsResourceK13(
-            reader.Unbox<int>("ResourceID"), reader.Unbox<string>("ResourceDisplayName"), reader.Unbox<string>("ResourceName"), reader.Unbox<string?>("ResourceDescription"), reader.Unbox<bool?>("ShowInDevelopment"), reader.Unbox<string?>("ResourceURL"), reader.Unbox<Guid>("ResourceGUID"), reader.Unbox<DateTime>("ResourceLastModified"), reader.Unbox<bool?>("ResourceIsInDevelopment"), reader.Unbox<bool?>("ResourceHasFiles"), reader.Unbox<string?>("ResourceVersion"), reader.Unbox<string?>("ResourceAuthor"), reader.Unbox<string?>("ResourceInstallationState"), reader.Unbox<string?>("ResourceInstalledVersion")                
+            reader.Unbox<int>("ResourceID"), reader.Unbox<string>("ResourceDisplayName"), reader.Unbox<string>("ResourceName"), reader.Unbox<string?>("ResourceDescription"), reader.Unbox<bool?>("ShowInDevelopment"), reader.Unbox<string?>("ResourceURL"), reader.Unbox<Guid>("ResourceGUID"), reader.Unbox<DateTime>("ResourceLastModified"), reader.Unbox<bool?>("ResourceIsInDevelopment"), reader.Unbox<bool?>("ResourceHasFiles"), reader.Unbox<string?>("ResourceVersion"), reader.Unbox<string?>("ResourceAuthor"), reader.Unbox<string?>("ResourceInstallationState"), reader.Unbox<string?>("ResourceInstalledVersion")
         );
     }
     public static CmsResourceK13 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsResourceK13(
-            reader.Unbox<int>("ResourceID"), reader.Unbox<string>("ResourceDisplayName"), reader.Unbox<string>("ResourceName"), reader.Unbox<string?>("ResourceDescription"), reader.Unbox<bool?>("ShowInDevelopment"), reader.Unbox<string?>("ResourceURL"), reader.Unbox<Guid>("ResourceGUID"), reader.Unbox<DateTime>("ResourceLastModified"), reader.Unbox<bool?>("ResourceIsInDevelopment"), reader.Unbox<bool?>("ResourceHasFiles"), reader.Unbox<string?>("ResourceVersion"), reader.Unbox<string?>("ResourceAuthor"), reader.Unbox<string?>("ResourceInstallationState"), reader.Unbox<string?>("ResourceInstalledVersion")                
+            reader.Unbox<int>("ResourceID"), reader.Unbox<string>("ResourceDisplayName"), reader.Unbox<string>("ResourceName"), reader.Unbox<string?>("ResourceDescription"), reader.Unbox<bool?>("ShowInDevelopment"), reader.Unbox<string?>("ResourceURL"), reader.Unbox<Guid>("ResourceGUID"), reader.Unbox<DateTime>("ResourceLastModified"), reader.Unbox<bool?>("ResourceIsInDevelopment"), reader.Unbox<bool?>("ResourceHasFiles"), reader.Unbox<string?>("ResourceVersion"), reader.Unbox<string?>("ResourceAuthor"), reader.Unbox<string?>("ResourceInstallationState"), reader.Unbox<string?>("ResourceInstalledVersion")
         );
     }
 };
-

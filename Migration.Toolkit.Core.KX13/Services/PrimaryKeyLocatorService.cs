@@ -77,7 +77,7 @@ public class PrimaryKeyLocatorService(
         if (sourceType == typeof(Toolkit.KX13.Models.CmsState) && memberName == nameof(KX13M.CmsState.StateId))
         {
             var source = kx13Context.CmsStates.Select(x => new { x.StateId, x.StateName }).ToList();
-            var target = kxpContext.CmsStates.Select(x => new {  x.StateId, x.StateName }).ToList();
+            var target = kxpContext.CmsStates.Select(x => new { x.StateId, x.StateName }).ToList();
 
             var result = source.Join(target,
                 a => a.StateName,
@@ -96,7 +96,7 @@ public class PrimaryKeyLocatorService(
         if (sourceType == typeof(Toolkit.KX13.Models.CmsCountry) && memberName == nameof(KX13M.CmsCountry.CountryId))
         {
             var source = kx13Context.CmsCountries.Select(x => new { x.CountryId, x.CountryName }).ToList();
-            var target = kxpContext.CmsCountries.Select(x => new {  x.CountryId, x.CountryName }).ToList();
+            var target = kxpContext.CmsCountries.Select(x => new { x.CountryId, x.CountryName }).ToList();
 
             var result = source.Join(target,
                 a => a.CountryName,

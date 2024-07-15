@@ -4,7 +4,7 @@ namespace Migration.Toolkit.Source.Model;
 using System.Data;
 using Migration.Toolkit.Common;
 
-public interface ICmsUser: ISourceModel<ICmsUser>
+public interface ICmsUser : ISourceModel<ICmsUser>
 {
     int UserID { get; }
     string UserName { get; }
@@ -67,7 +67,7 @@ public interface ICmsUser: ISourceModel<ICmsUser>
         };
     }
 }
-public partial record CmsUserK11(int UserID, string UserName, string? FirstName, string? MiddleName, string? LastName, string? FullName, string? Email, string UserPassword, string? PreferredCultureCode, string? PreferredUICultureCode, bool UserEnabled, bool? UserIsExternal, string? UserPasswordFormat, DateTime? UserCreated, DateTime? LastLogon, string? UserStartingAliasPath, Guid UserGUID, DateTime UserLastModified, string? UserLastLogonInfo, bool? UserIsHidden, string? UserVisibility, bool? UserIsDomain, bool? UserHasAllowedCultures, bool? UserMFRequired, int UserPrivilegeLevel, string? UserSecurityStamp, byte[]? UserMFSecret, long? UserMFTimestep): ICmsUser, ISourceModel<CmsUserK11>
+public partial record CmsUserK11(int UserID, string UserName, string? FirstName, string? MiddleName, string? LastName, string? FullName, string? Email, string UserPassword, string? PreferredCultureCode, string? PreferredUICultureCode, bool UserEnabled, bool? UserIsExternal, string? UserPasswordFormat, DateTime? UserCreated, DateTime? LastLogon, string? UserStartingAliasPath, Guid UserGUID, DateTime UserLastModified, string? UserLastLogonInfo, bool? UserIsHidden, string? UserVisibility, bool? UserIsDomain, bool? UserHasAllowedCultures, bool? UserMFRequired, int UserPrivilegeLevel, string? UserSecurityStamp, byte[]? UserMFSecret, long? UserMFTimestep) : ICmsUser, ISourceModel<CmsUserK11>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
     public static string GetPrimaryKeyName(SemanticVersion version) => "UserID";
@@ -86,7 +86,7 @@ public partial record CmsUserK11(int UserID, string UserName, string? FirstName,
         );
     }
 };
-public partial record CmsUserK12(int UserID, string UserName, string? FirstName, string? MiddleName, string? LastName, string? FullName, string? Email, string UserPassword, string? PreferredCultureCode, string? PreferredUICultureCode, bool UserEnabled, bool? UserIsExternal, string? UserPasswordFormat, DateTime? UserCreated, DateTime? LastLogon, string? UserStartingAliasPath, Guid UserGUID, DateTime UserLastModified, string? UserLastLogonInfo, bool? UserIsHidden, string? UserVisibility, bool? UserIsDomain, bool? UserHasAllowedCultures, bool? UserMFRequired, int UserPrivilegeLevel, string? UserSecurityStamp, byte[]? UserMFSecret, long? UserMFTimestep): ICmsUser, ISourceModel<CmsUserK12>
+public partial record CmsUserK12(int UserID, string UserName, string? FirstName, string? MiddleName, string? LastName, string? FullName, string? Email, string UserPassword, string? PreferredCultureCode, string? PreferredUICultureCode, bool UserEnabled, bool? UserIsExternal, string? UserPasswordFormat, DateTime? UserCreated, DateTime? LastLogon, string? UserStartingAliasPath, Guid UserGUID, DateTime UserLastModified, string? UserLastLogonInfo, bool? UserIsHidden, string? UserVisibility, bool? UserIsDomain, bool? UserHasAllowedCultures, bool? UserMFRequired, int UserPrivilegeLevel, string? UserSecurityStamp, byte[]? UserMFSecret, long? UserMFTimestep) : ICmsUser, ISourceModel<CmsUserK12>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
     public static string GetPrimaryKeyName(SemanticVersion version) => "UserID";
@@ -105,7 +105,7 @@ public partial record CmsUserK12(int UserID, string UserName, string? FirstName,
         );
     }
 };
-public partial record CmsUserK13(int UserID, string UserName, string? FirstName, string? MiddleName, string? LastName, string? FullName, string? Email, string UserPassword, string? PreferredCultureCode, string? PreferredUICultureCode, bool UserEnabled, bool? UserIsExternal, string? UserPasswordFormat, DateTime? UserCreated, DateTime? LastLogon, string? UserStartingAliasPath, Guid UserGUID, DateTime UserLastModified, string? UserLastLogonInfo, bool? UserIsHidden, bool? UserIsDomain, bool? UserHasAllowedCultures, bool? UserMFRequired, int UserPrivilegeLevel, string? UserSecurityStamp, byte[]? UserMFSecret, long? UserMFTimestep): ICmsUser, ISourceModel<CmsUserK13>
+public partial record CmsUserK13(int UserID, string UserName, string? FirstName, string? MiddleName, string? LastName, string? FullName, string? Email, string UserPassword, string? PreferredCultureCode, string? PreferredUICultureCode, bool UserEnabled, bool? UserIsExternal, string? UserPasswordFormat, DateTime? UserCreated, DateTime? LastLogon, string? UserStartingAliasPath, Guid UserGUID, DateTime UserLastModified, string? UserLastLogonInfo, bool? UserIsHidden, bool? UserIsDomain, bool? UserHasAllowedCultures, bool? UserMFRequired, int UserPrivilegeLevel, string? UserSecurityStamp, byte[]? UserMFSecret, long? UserMFTimestep) : ICmsUser, ISourceModel<CmsUserK13>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
     public static string GetPrimaryKeyName(SemanticVersion version) => "UserID";
@@ -124,4 +124,3 @@ public partial record CmsUserK13(int UserID, string UserName, string? FirstName,
         );
     }
 };
-

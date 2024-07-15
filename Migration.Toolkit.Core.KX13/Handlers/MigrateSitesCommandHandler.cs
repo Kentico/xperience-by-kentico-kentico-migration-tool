@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.KX13.Handlers;
+namespace Migration.Toolkit.Core.KX13.Handlers;
 
 using CMS.ContentEngine;
 using CMS.DataEngine;

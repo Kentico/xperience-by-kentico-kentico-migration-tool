@@ -6,7 +6,7 @@ using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX13.Contexts;
 
-public class UserRoleInfoMapper: EntityMapperBase<KX13M.CmsUserRole, UserRoleInfo>
+public class UserRoleInfoMapper : EntityMapperBase<KX13M.CmsUserRole, UserRoleInfo>
 {
     public UserRoleInfoMapper(ILogger<UserRoleInfoMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : base(logger, pkContext, protocol)
     {

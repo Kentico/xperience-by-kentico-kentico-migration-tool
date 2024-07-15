@@ -12,7 +12,7 @@ using Migration.Toolkit.KX13.Models;
 public record CmsAttachmentMapperSource(CmsAttachment Attachment, int TargetLibraryId, IUploadedFile File, string LibrarySubFolder,
     CmsDocument? AttachmentDocument);
 
-public class CmsAttachmentMapper: EntityMapperBase<CmsAttachmentMapperSource, MediaFileInfo>
+public class CmsAttachmentMapper : EntityMapperBase<CmsAttachmentMapperSource, MediaFileInfo>
 {
     private const string LegacyOriginalPath = "__LegacyOriginalPath";
 

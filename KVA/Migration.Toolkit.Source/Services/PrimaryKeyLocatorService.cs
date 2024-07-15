@@ -77,7 +77,7 @@ public class PrimaryKeyLocatorService(
         if (sourceType == typeof(ICmsState) && memberName == nameof(ICmsState.StateID))
         {
             var source = modelFacade.SelectAll<ICmsState>().Select(x => new { x.StateID, x.StateName }).ToList();
-            var target = kxpContext.CmsStates.Select(x => new {  x.StateId, x.StateName }).ToList();
+            var target = kxpContext.CmsStates.Select(x => new { x.StateId, x.StateName }).ToList();
 
             var result = source.Join(target,
                 a => a.StateName,
@@ -96,7 +96,7 @@ public class PrimaryKeyLocatorService(
         if (sourceType == typeof(ICmsCountry) && memberName == nameof(ICmsCountry.CountryID))
         {
             var source = modelFacade.SelectAll<ICmsCountry>().Select(x => new { x.CountryID, x.CountryName }).ToList();
-            var target = kxpContext.CmsCountries.Select(x => new {  x.CountryId, x.CountryName }).ToList();
+            var target = kxpContext.CmsCountries.Select(x => new { x.CountryId, x.CountryName }).ToList();
 
             var result = source.Join(target,
                 a => a.CountryName,

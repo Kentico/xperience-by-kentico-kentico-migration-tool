@@ -48,14 +48,14 @@ public class CmsSettingsKeyMapper : EntityMapperBase<KX12M.CmsSettingsKey, Setti
         switch (source.KeyName)
         {
             case SOURCE_KEY_NAME:
-            {
-                target.KeyValue = int.TryParse(source.KeyValue, out var cmsDefaultUserId)
-                    ? mappingHelper.TranslateRequiredId<KX12M.CmsUser>(u => u.UserId, cmsDefaultUserId, out var targetCmsDefaultUserId)
-                        ? targetCmsDefaultUserId.ToString()
-                        : source.KeyValue
-                    : source.KeyValue;
-                break;
-            }
+                {
+                    target.KeyValue = int.TryParse(source.KeyValue, out var cmsDefaultUserId)
+                        ? mappingHelper.TranslateRequiredId<KX12M.CmsUser>(u => u.UserId, cmsDefaultUserId, out var targetCmsDefaultUserId)
+                            ? targetCmsDefaultUserId.ToString()
+                            : source.KeyValue
+                        : source.KeyValue;
+                    break;
+                }
             default:
                 target.KeyValue = source.KeyValue;
                 break;

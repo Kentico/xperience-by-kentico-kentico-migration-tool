@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Common.MigrationProtocol;
+namespace Migration.Toolkit.Common.MigrationProtocol;
 
 using MediatR;
 using Migration.Toolkit.Common.Abstractions;

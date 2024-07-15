@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.KX13.Mappers;
+namespace Migration.Toolkit.Core.KX13.Mappers;
 
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common.Abstractions;
@@ -8,7 +8,7 @@ using Migration.Toolkit.KXP.Models;
 
 public class CmsConsentAgreementMapper : EntityMapperBase<KX13M.CmsConsentAgreement, CmsConsentAgreement>
 {
-    public CmsConsentAgreementMapper(ILogger<CmsConsentAgreementMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext, IProtocol protocol): base(logger, primaryKeyMappingContext, protocol)
+    public CmsConsentAgreementMapper(ILogger<CmsConsentAgreementMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext, IProtocol protocol) : base(logger, primaryKeyMappingContext, protocol)
     {
     }
 

@@ -1,16 +1,18 @@
-﻿namespace Migration.Toolkit.Core.KX12.Auxiliary;
+namespace Migration.Toolkit.Core.KX12.Auxiliary;
 
 using System;
 using System.Xml.Linq;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Enumerations;
 
-internal class NodeXmlAdapter {
+internal class NodeXmlAdapter
+{
     private readonly XElement _xClass;
 
     public bool ParsingSuccessful { get; }
 
-    public NodeXmlAdapter(string xml) {
+    public NodeXmlAdapter(string xml)
+    {
         var xDoc = XDocument.Parse(xml);
         if (xDoc.Root?.FirstNode is XElement dClass)
         {
@@ -24,7 +26,8 @@ internal class NodeXmlAdapter {
         }
     }
 
-    public string? GetValue(string columnName) {
+    public string? GetValue(string columnName)
+    {
         return _xClass.Element(columnName)?.Value;
     }
 

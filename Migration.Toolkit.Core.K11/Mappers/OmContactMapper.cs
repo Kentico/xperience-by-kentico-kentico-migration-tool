@@ -58,15 +58,15 @@ public class OmContactMapper(ILogger<OmContactMapper> logger,
             switch (contactStatusMapper.Map(source.ContactStatus, target.ContactStatus))
             {
                 case { Success: true } result:
-                {
-                    target.ContactStatus = result.Item;
-                    break;
-                }
+                    {
+                        target.ContactStatus = result.Item;
+                        break;
+                    }
                 case { Success: false } result:
-                {
-                    addFailure(new MapperResultFailure<OmContact>(result?.HandbookReference));
-                    break;
-                }
+                    {
+                        addFailure(new MapperResultFailure<OmContact>(result?.HandbookReference));
+                        break;
+                    }
             }
         }
         else

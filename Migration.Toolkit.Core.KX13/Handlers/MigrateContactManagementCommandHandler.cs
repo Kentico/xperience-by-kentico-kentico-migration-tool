@@ -125,7 +125,7 @@ public class MigrateContactManagementCommandHandler(
         {
             bulkDataCopyService.CopyTableToTable(bulkCopyRequest);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             logger.LogError(ex, "Failed to migrate contacts");
             return new CommandFailureResult();
@@ -158,22 +158,22 @@ public class MigrateContactManagementCommandHandler(
                 case (true, var id):
                     return ValueInterceptorResult.ReplaceValue(id);
                 case { Success: false }:
-                {
-                    // try search member
-                    if (keyMappingContext.MapSourceKey<CmsUser, KXP.Models.CmsMember, int?>(
-                            s => s.UserId,
-                            s => s.UserGuid,
-                            sourceUserId,
-                            t => t.MemberId,
-                            t => t.MemberGuid
-                        ) is { Success:true, Mapped: {} memberId })
                     {
-                        return ValueInterceptorResult.ReplaceValue(memberId);
+                        // try search member
+                        if (keyMappingContext.MapSourceKey<CmsUser, KXP.Models.CmsMember, int?>(
+                                s => s.UserId,
+                                s => s.UserGuid,
+                                sourceUserId,
+                                t => t.MemberId,
+                                t => t.MemberGuid
+                            ) is { Success: true, Mapped: { } memberId })
+                        {
+                            return ValueInterceptorResult.ReplaceValue(memberId);
+                        }
+                        protocol.Append(HandbookReferences.MissingRequiredDependency<KXP.Models.CmsUser>(columnName, value)
+                            .WithData(currentRow));
+                        return ValueInterceptorResult.SkipRow;
                     }
-                    protocol.Append(HandbookReferences.MissingRequiredDependency<KXP.Models.CmsUser>(columnName, value)
-                        .WithData(currentRow));
-                    return ValueInterceptorResult.SkipRow;
-                }
             }
         }
 
@@ -184,11 +184,11 @@ public class MigrateContactManagementCommandHandler(
                 case (true, var id):
                     return ValueInterceptorResult.ReplaceValue(id);
                 case { Success: false }:
-                {
-                    protocol.Append(HandbookReferences.MissingRequiredDependency<KXP.Models.CmsState>(columnName, value)
-                        .WithData(currentRow));
-                    return ValueInterceptorResult.SkipRow;
-                }
+                    {
+                        protocol.Append(HandbookReferences.MissingRequiredDependency<KXP.Models.CmsState>(columnName, value)
+                            .WithData(currentRow));
+                        return ValueInterceptorResult.SkipRow;
+                    }
             }
         }
 
@@ -199,11 +199,11 @@ public class MigrateContactManagementCommandHandler(
                 case (true, var id):
                     return ValueInterceptorResult.ReplaceValue(id);
                 case { Success: false }:
-                {
-                    protocol.Append(HandbookReferences.MissingRequiredDependency<KXP.Models.CmsCountry>(columnName, value)
-                        .WithData(currentRow));
-                    return ValueInterceptorResult.SkipRow;
-                }
+                    {
+                        protocol.Append(HandbookReferences.MissingRequiredDependency<KXP.Models.CmsCountry>(columnName, value)
+                            .WithData(currentRow));
+                        return ValueInterceptorResult.SkipRow;
+                    }
             }
         }
 
@@ -273,7 +273,7 @@ public class MigrateContactManagementCommandHandler(
         {
             bulkDataCopyService.CopyTableToTable(bulkCopyRequest);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             logger.LogError(ex, "Failed to migrate activities");
             return new CommandFailureResult();
@@ -293,29 +293,29 @@ public class MigrateContactManagementCommandHandler(
                 t => t.ChannelId,
                 t => t.ChannelGuid
             );
-            switch(result)
+            switch (result)
             {
                 case (true, var id):
                     return ValueInterceptorResult.ReplaceValue(id ?? 0);
                 case { Success: false }:
-                {
-                    switch (toolkitConfiguration.UseOmActivitySiteRelationAutofix ?? AutofixEnum.Error)
                     {
-                        case AutofixEnum.DiscardData:
-                            logger.LogTrace("Autofix (ActivitySiteId={ActivitySiteId} not exists) => discard data", sourceActivitySiteId);
-                            return ValueInterceptorResult.SkipRow;
-                        case AutofixEnum.AttemptFix:
-                            logger.LogTrace("Autofix (ActivitySiteId={ActivitySiteId} not exists) => ActivityNodeId=0", sourceActivitySiteId);
-                            return ValueInterceptorResult.ReplaceValue(0);
-                        case AutofixEnum.Error:
-                        default: //error
-                            protocol.Append(HandbookReferences
-                                .MissingRequiredDependency<KXP.Models.CmsChannel>(columnName, value)
-                                .WithData(currentRow)
-                            );
-                            return ValueInterceptorResult.SkipRow;
+                        switch (toolkitConfiguration.UseOmActivitySiteRelationAutofix ?? AutofixEnum.Error)
+                        {
+                            case AutofixEnum.DiscardData:
+                                logger.LogTrace("Autofix (ActivitySiteId={ActivitySiteId} not exists) => discard data", sourceActivitySiteId);
+                                return ValueInterceptorResult.SkipRow;
+                            case AutofixEnum.AttemptFix:
+                                logger.LogTrace("Autofix (ActivitySiteId={ActivitySiteId} not exists) => ActivityNodeId=0", sourceActivitySiteId);
+                                return ValueInterceptorResult.ReplaceValue(0);
+                            case AutofixEnum.Error:
+                            default: //error
+                                protocol.Append(HandbookReferences
+                                    .MissingRequiredDependency<KXP.Models.CmsChannel>(columnName, value)
+                                    .WithData(currentRow)
+                                );
+                                return ValueInterceptorResult.SkipRow;
+                        }
                     }
-                }
             }
         }
 
@@ -347,7 +347,7 @@ public class MigrateContactManagementCommandHandler(
             }
         }
 
-        if (columnName.Equals( nameof(KX13M.OmActivity.ActivityCulture), StringComparison.InvariantCultureIgnoreCase) && value is string cultureCode)
+        if (columnName.Equals(nameof(KX13M.OmActivity.ActivityCulture), StringComparison.InvariantCultureIgnoreCase) && value is string cultureCode)
         {
             return ValueInterceptorResult.ReplaceValue(ContentLanguageInfoProvider.ProviderObject.Get(cultureCode)?.ContentLanguageID);
         }

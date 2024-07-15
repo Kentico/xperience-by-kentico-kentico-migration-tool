@@ -4,9 +4,9 @@ namespace Migration.Toolkit.Source.Model;
 using System.Data;
 using Migration.Toolkit.Common;
 
-public interface ICmsAlternativeUrl: ISourceModel<ICmsAlternativeUrl>
+public interface ICmsAlternativeUrl : ISourceModel<ICmsAlternativeUrl>
 {
-        
+
 
     static string ISourceModel<ICmsAlternativeUrl>.GetPrimaryKeyName(SemanticVersion version)
     {
@@ -41,61 +41,60 @@ public interface ICmsAlternativeUrl: ISourceModel<ICmsAlternativeUrl>
         };
     }
 }
-public partial record CmsAlternativeUrlK11(): ICmsAlternativeUrl, ISourceModel<CmsAlternativeUrlK11>
+public partial record CmsAlternativeUrlK11() : ICmsAlternativeUrl, ISourceModel<CmsAlternativeUrlK11>
 {
     public static bool IsAvailable(SemanticVersion version) => false;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "";
     public static string TableName => "CMS_AlternativeUrl";
     public static string GuidColumnName => "";
     static CmsAlternativeUrlK11 ISourceModel<CmsAlternativeUrlK11>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsAlternativeUrlK11(
-                            
+
         );
     }
     public static CmsAlternativeUrlK11 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsAlternativeUrlK11(
-                            
+
         );
     }
 };
-public partial record CmsAlternativeUrlK12(int AlternativeUrlID, Guid AlternativeUrlGUID, int AlternativeUrlDocumentID, int AlternativeUrlSiteID, string AlternativeUrlUrl, DateTime AlternativeUrlLastModified): ICmsAlternativeUrl, ISourceModel<CmsAlternativeUrlK12>
+public partial record CmsAlternativeUrlK12(int AlternativeUrlID, Guid AlternativeUrlGUID, int AlternativeUrlDocumentID, int AlternativeUrlSiteID, string AlternativeUrlUrl, DateTime AlternativeUrlLastModified) : ICmsAlternativeUrl, ISourceModel<CmsAlternativeUrlK12>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "AlternativeUrlID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "AlternativeUrlID";
     public static string TableName => "CMS_AlternativeUrl";
     public static string GuidColumnName => "AlternativeUrlGUID";
     static CmsAlternativeUrlK12 ISourceModel<CmsAlternativeUrlK12>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsAlternativeUrlK12(
-            reader.Unbox<int>("AlternativeUrlID"), reader.Unbox<Guid>("AlternativeUrlGUID"), reader.Unbox<int>("AlternativeUrlDocumentID"), reader.Unbox<int>("AlternativeUrlSiteID"), reader.Unbox<string>("AlternativeUrlUrl"), reader.Unbox<DateTime>("AlternativeUrlLastModified")                
+            reader.Unbox<int>("AlternativeUrlID"), reader.Unbox<Guid>("AlternativeUrlGUID"), reader.Unbox<int>("AlternativeUrlDocumentID"), reader.Unbox<int>("AlternativeUrlSiteID"), reader.Unbox<string>("AlternativeUrlUrl"), reader.Unbox<DateTime>("AlternativeUrlLastModified")
         );
     }
     public static CmsAlternativeUrlK12 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsAlternativeUrlK12(
-            reader.Unbox<int>("AlternativeUrlID"), reader.Unbox<Guid>("AlternativeUrlGUID"), reader.Unbox<int>("AlternativeUrlDocumentID"), reader.Unbox<int>("AlternativeUrlSiteID"), reader.Unbox<string>("AlternativeUrlUrl"), reader.Unbox<DateTime>("AlternativeUrlLastModified")                
+            reader.Unbox<int>("AlternativeUrlID"), reader.Unbox<Guid>("AlternativeUrlGUID"), reader.Unbox<int>("AlternativeUrlDocumentID"), reader.Unbox<int>("AlternativeUrlSiteID"), reader.Unbox<string>("AlternativeUrlUrl"), reader.Unbox<DateTime>("AlternativeUrlLastModified")
         );
     }
 };
-public partial record CmsAlternativeUrlK13(int AlternativeUrlID, Guid AlternativeUrlGUID, int AlternativeUrlDocumentID, int AlternativeUrlSiteID, string AlternativeUrlUrl, DateTime AlternativeUrlLastModified): ICmsAlternativeUrl, ISourceModel<CmsAlternativeUrlK13>
+public partial record CmsAlternativeUrlK13(int AlternativeUrlID, Guid AlternativeUrlGUID, int AlternativeUrlDocumentID, int AlternativeUrlSiteID, string AlternativeUrlUrl, DateTime AlternativeUrlLastModified) : ICmsAlternativeUrl, ISourceModel<CmsAlternativeUrlK13>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "AlternativeUrlID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "AlternativeUrlID";
     public static string TableName => "CMS_AlternativeUrl";
     public static string GuidColumnName => "AlternativeUrlGUID";
     static CmsAlternativeUrlK13 ISourceModel<CmsAlternativeUrlK13>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsAlternativeUrlK13(
-            reader.Unbox<int>("AlternativeUrlID"), reader.Unbox<Guid>("AlternativeUrlGUID"), reader.Unbox<int>("AlternativeUrlDocumentID"), reader.Unbox<int>("AlternativeUrlSiteID"), reader.Unbox<string>("AlternativeUrlUrl"), reader.Unbox<DateTime>("AlternativeUrlLastModified")                
+            reader.Unbox<int>("AlternativeUrlID"), reader.Unbox<Guid>("AlternativeUrlGUID"), reader.Unbox<int>("AlternativeUrlDocumentID"), reader.Unbox<int>("AlternativeUrlSiteID"), reader.Unbox<string>("AlternativeUrlUrl"), reader.Unbox<DateTime>("AlternativeUrlLastModified")
         );
     }
     public static CmsAlternativeUrlK13 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsAlternativeUrlK13(
-            reader.Unbox<int>("AlternativeUrlID"), reader.Unbox<Guid>("AlternativeUrlGUID"), reader.Unbox<int>("AlternativeUrlDocumentID"), reader.Unbox<int>("AlternativeUrlSiteID"), reader.Unbox<string>("AlternativeUrlUrl"), reader.Unbox<DateTime>("AlternativeUrlLastModified")                
+            reader.Unbox<int>("AlternativeUrlID"), reader.Unbox<Guid>("AlternativeUrlGUID"), reader.Unbox<int>("AlternativeUrlDocumentID"), reader.Unbox<int>("AlternativeUrlSiteID"), reader.Unbox<string>("AlternativeUrlUrl"), reader.Unbox<DateTime>("AlternativeUrlLastModified")
         );
     }
 };
-

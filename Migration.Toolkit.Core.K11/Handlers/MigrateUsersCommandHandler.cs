@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.K11.Handlers;
+namespace Migration.Toolkit.Core.K11.Handlers;
 
 using CMS.Membership;
 using MediatR;
@@ -75,7 +75,7 @@ public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logg
 
     private bool SaveUserUsingKenticoApi(IModelMappingResult<UserInfo> mapped, CmsUser k11User)
     {
-        if (mapped is { Success : true } result)
+        if (mapped is { Success: true } result)
         {
             var (userInfo, newInstance) = result;
             ArgumentNullException.ThrowIfNull(userInfo);
@@ -142,7 +142,7 @@ public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logg
                 protocol.Append(HandbookReferences.NotCurrentlySupportedSkip()
                     .WithMessage($"Role '{r.RoleName}' with RoleGUID '{r.RoleGuid}' doesn't satisfy unique RoleName condition for migration")
                     .WithIdentityPrint(r)
-                    .WithData(new { r.RoleGuid, r.RoleName, r.SiteId})
+                    .WithData(new { r.RoleGuid, r.RoleName, r.SiteId })
                 );
             }
         }
@@ -165,7 +165,7 @@ public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logg
             var mapped = roleMapper.Map(k11CmsRole, xbkRoleInfo);
             protocol.MappedTarget(mapped);
 
-            if (mapped is not (var roleInfo, var newInstance) { Success : true })
+            if (mapped is not (var roleInfo, var newInstance) { Success: true })
             {
                 continue;
             }
@@ -235,7 +235,7 @@ public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logg
             var mapped = userRoleMapper.Map(k11UserRole, xbkUserRole);
             protocol.MappedTarget(mapped);
 
-            if (mapped is { Success : true })
+            if (mapped is { Success: true })
             {
                 var (userRoleInfo, newInstance) = mapped;
                 ArgumentNullException.ThrowIfNull(userRoleInfo);

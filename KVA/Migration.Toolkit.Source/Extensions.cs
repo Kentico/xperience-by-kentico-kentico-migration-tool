@@ -17,21 +17,21 @@ public static class Extensions
         switch (await resultTask)
         {
             case { Success: true, Imported: TResult info }:
-            {
-                return new(true, info);
-            }
-            case {} result:
-            {
-                var sb = new StringBuilder();
-                if (result.ModelValidationResults is { } validationResults)
-                    validationResults.ForEach(vr => sb.Append($"[{string.Join(",", vr.MemberNames)}]: {vr.ErrorMessage}"));
-
-                if (result.Exception is { } exception)
                 {
-                    logger.LogError(exception, "Error occured while importing entity {ValidationErrors}", sb);
+                    return new(true, info);
                 }
-                return new(false, default);
-            }
+            case { } result:
+                {
+                    var sb = new StringBuilder();
+                    if (result.ModelValidationResults is { } validationResults)
+                        validationResults.ForEach(vr => sb.Append($"[{string.Join(",", vr.MemberNames)}]: {vr.ErrorMessage}"));
+
+                    if (result.Exception is { } exception)
+                    {
+                        logger.LogError(exception, "Error occured while importing entity {ValidationErrors}", sb);
+                    }
+                    return new(false, default);
+                }
             default: throw new NotImplementedException("Undefined state");
         }
     }

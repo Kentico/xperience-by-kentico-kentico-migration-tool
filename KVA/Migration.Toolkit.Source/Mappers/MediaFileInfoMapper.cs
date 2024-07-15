@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Source.Mappers;
+namespace Migration.Toolkit.Source.Mappers;
 
 using System.Data;
 using CMS.Base;
@@ -28,7 +28,8 @@ public class MediaFileInfoMapper(
 )
     : EntityMapperBase<MediaFileInfoMapperSource, MediaFileInfo>(logger, primaryKeyMappingContext, protocol)
 {
-    protected override MediaFileInfo? CreateNewInstance(MediaFileInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) {
+    protected override MediaFileInfo? CreateNewInstance(MediaFileInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure)
+    {
         if (source.File != null)
         {
             var mf = new MediaFileInfo(source.File, source.TargetLibraryId, source.LibrarySubFolder ?? "", 0, 0, 0);

@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.K11.Mappers;
+namespace Migration.Toolkit.Core.K11.Mappers;
 
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common.Abstractions;
@@ -44,19 +44,19 @@ public class CmsSettingsCategoryMapper(ILogger<CmsSettingsCategoryMapper> logger
                 switch (cmsResourceMapper.Map(source.CategoryResource, target.CategoryResource))
                 {
                     case { Success: true } result:
-                    {
-                        target.CategoryResource = result.Item;
-                        break;
-                    }
+                        {
+                            target.CategoryResource = result.Item;
+                            break;
+                        }
                     case { Success: false } result:
-                    {
-                        addFailure(new MapperResultFailure<KXP.Models.CmsSettingsCategory>(result.HandbookReference));
-                        break;
-                    }
+                        {
+                            addFailure(new MapperResultFailure<KXP.Models.CmsSettingsCategory>(result.HandbookReference));
+                            break;
+                        }
                 }
             }
         }
-        else if(mappingHelper.TranslateIdAllowNulls<Toolkit.K11.Models.CmsResource>(r => r.ResourceId, source.CategoryResourceId, out var categoryResourceId))
+        else if (mappingHelper.TranslateIdAllowNulls<Toolkit.K11.Models.CmsResource>(r => r.ResourceId, source.CategoryResourceId, out var categoryResourceId))
         {
             target.CategoryResourceId = categoryResourceId;
         }
@@ -66,18 +66,18 @@ public class CmsSettingsCategoryMapper(ILogger<CmsSettingsCategoryMapper> logger
             switch (Map(source.CategoryParent, target.CategoryParent))
             {
                 case { Success: true } result:
-                {
-                    target.CategoryParent = result.Item;
-                    break;
-                }
+                    {
+                        target.CategoryParent = result.Item;
+                        break;
+                    }
                 case { Success: false } result:
-                {
-                    addFailure(new MapperResultFailure<KXP.Models.CmsSettingsCategory>(result.HandbookReference));
-                    break;
-                }
+                    {
+                        addFailure(new MapperResultFailure<KXP.Models.CmsSettingsCategory>(result.HandbookReference));
+                        break;
+                    }
             }
         }
-        else if(mappingHelper.TranslateIdAllowNulls<CmsCategory>(c => c.CategoryId, source.CategoryParentId, out var categoryParentId))
+        else if (mappingHelper.TranslateIdAllowNulls<CmsCategory>(c => c.CategoryId, source.CategoryParentId, out var categoryParentId))
         {
             target.CategoryParentId = categoryParentId;
         }

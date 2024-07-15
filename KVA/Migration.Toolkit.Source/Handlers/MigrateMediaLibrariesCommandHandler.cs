@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Source.Handlers;
+namespace Migration.Toolkit.Source.Handlers;
 
 using System.Collections.Immutable;
 using CMS.Base;
@@ -104,10 +104,10 @@ public class MigrateMediaLibrariesCommandHandler(
                 continue;
             }
 
-            var mapped = mediaLibraryInfoMapper.Map(new (ksMediaLibrary, ksSite), mediaLibraryInfo);
+            var mapped = mediaLibraryInfoMapper.Map(new(ksMediaLibrary, ksSite), mediaLibraryInfo);
             protocol.MappedTarget(mapped);
 
-            if (mapped is { Success : true } result)
+            if (mapped is { Success: true } result)
             {
                 var (mfi, newInstance) = result;
                 ArgumentNullException.ThrowIfNull(mfi, nameof(mfi));
@@ -211,7 +211,7 @@ public class MigrateMediaLibrariesCommandHandler(
                     var mapped = mediaFileInfoMapper.Map(source, kxoMediaFile);
                     protocol.MappedTarget(mapped);
 
-                    if (mapped is { Success : true } result)
+                    if (mapped is { Success: true } result)
                     {
                         var (mf, newInstance) = result;
                         ArgumentNullException.ThrowIfNull(mf, nameof(mf));

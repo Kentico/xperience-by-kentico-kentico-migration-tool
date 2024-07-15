@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Core.KX13.Handlers;
+namespace Migration.Toolkit.Core.KX13.Handlers;
 
 using CMS.DataEngine;
 using MediatR;
@@ -10,7 +10,7 @@ using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KX13.Models;
 
-public class MigrateSettingKeysCommandHandler: IRequestHandler<MigrateSettingKeysCommand, CommandResult>
+public class MigrateSettingKeysCommandHandler : IRequestHandler<MigrateSettingKeysCommand, CommandResult>
 {
     private readonly ILogger<MigrateSettingKeysCommandHandler> _logger;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;

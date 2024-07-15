@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Common.Helpers;
+namespace Migration.Toolkit.Common.Helpers;
 
 using System.Security.Cryptography;
 using System.Text;

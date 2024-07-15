@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Common.MigrationProtocol;
+namespace Migration.Toolkit.Common.MigrationProtocol;
 
 using Microsoft.Data.SqlClient;
 using Migration.Toolkit.Common.Helpers;

@@ -15,32 +15,32 @@ public static class LogExtensions
         switch (mappingResult)
         {
             case { Success: false } result:
-            {
-                if (result is AggregatedResult<TResult> aggregatedResult)
                 {
-                    foreach (var r in aggregatedResult.Results)
+                    if (result is AggregatedResult<TResult> aggregatedResult)
                     {
-                        protocol.Append(r.HandbookReference);
-                        logger.LogError(r.HandbookReference?.ToString());
+                        foreach (var r in aggregatedResult.Results)
+                        {
+                            protocol.Append(r.HandbookReference);
+                            logger.LogError(r.HandbookReference?.ToString());
+                        }
                     }
-                }
-                else
-                {
-                    protocol.Append(result.HandbookReference);
-                    logger.LogError(result.HandbookReference?.ToString());
-                }
+                    else
+                    {
+                        protocol.Append(result.HandbookReference);
+                        logger.LogError(result.HandbookReference?.ToString());
+                    }
 
-                break;
-            }
+                    break;
+                }
             case { Success: true } result:
-            {
-                logger.LogTrace("Success - {model}", PrintService.PrintKxpModelInfo(result.Item));
-                break;
-            }
+                {
+                    logger.LogTrace("Success - {model}", PrintService.PrintKxpModelInfo(result.Item));
+                    break;
+                }
             default:
-            {
-                throw new ArgumentOutOfRangeException(nameof(mappingResult));
-            }
+                {
+                    throw new ArgumentOutOfRangeException(nameof(mappingResult));
+                }
         }
 
         return mappingResult;

@@ -29,7 +29,7 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
     {
         private readonly Func<T?, T?, bool> _equalityComparer;
 
-        public KeyEqualityComparerWithLambda(Func<T?,T?,bool> equalityComparer)
+        public KeyEqualityComparerWithLambda(Func<T?, T?, bool> equalityComparer)
         {
             _equalityComparer = equalityComparer;
         }
@@ -97,7 +97,7 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
         if (sourceType == typeof(KX12M.CmsState) && memberName == nameof(KX12M.CmsState.StateId))
         {
             var source = kx12Context.CmsStates.Select(x => new { x.StateId, x.StateName }).ToList();
-            var target = kxpContext.CmsStates.Select(x => new {  x.StateId, x.StateName }).ToList();
+            var target = kxpContext.CmsStates.Select(x => new { x.StateId, x.StateName }).ToList();
 
             var result = source.Join(target,
                 a => a.StateName,
@@ -116,7 +116,7 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
         if (sourceType == typeof(KX12M.CmsCountry) && memberName == nameof(KX12M.CmsCountry.CountryId))
         {
             var source = kx12Context.CmsCountries.Select(x => new { x.CountryId, x.CountryName }).ToList();
-            var target = kxpContext.CmsCountries.Select(x => new {  x.CountryId, x.CountryName }).ToList();
+            var target = kxpContext.CmsCountries.Select(x => new { x.CountryId, x.CountryName }).ToList();
 
             var result = source.Join(target,
                 a => a.CountryName,

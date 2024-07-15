@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Common.Helpers;
+namespace Migration.Toolkit.Common.Helpers;
 
 using CMS.ContentEngine.Internal;
 using CMS.Core;
@@ -38,28 +38,28 @@ public class TreePathConvertor(int webSiteChannel)
         switch (nodeAliasPath)
         {
             case null:
-            {
-                result = new TreePathConversionResult(false, null);
-                break;
-            }
+                {
+                    result = new TreePathConversionResult(false, null);
+                    break;
+                }
             case "/":
             case "#":
-            {
-                result = new TreePathConversionResult(false, nodeAliasPath);
-                _nodeAliasPathToTreePath.Add(nodeAliasPath, nodeAliasPath);
-                break;
-            }
+                {
+                    result = new TreePathConversionResult(false, nodeAliasPath);
+                    _nodeAliasPathToTreePath.Add(nodeAliasPath, nodeAliasPath);
+                    break;
+                }
             default:
-            {
-                var napSpl = nodeAliasPath.Split('/').Select(nodeAlias => TreePathUtils.NormalizePathSegment(nodeAlias));
-                var normalized = string.Join("/", napSpl);
-                var treePathValidator = Service.Resolve<ITreePathValidator>();
-                var uniqueTreePath = await new UniqueTreePathProvider(webSiteChannel, treePathValidator).GetUniqueValue(normalized);
-                var anythingChanged = !TreePathComparer.Equals(nodeAliasPath, uniqueTreePath);
-                result = new TreePathConversionResult(anythingChanged, uniqueTreePath);
-                _nodeAliasPathToTreePath.Add(nodeAliasPath, uniqueTreePath);
-                break;
-            }
+                {
+                    var napSpl = nodeAliasPath.Split('/').Select(nodeAlias => TreePathUtils.NormalizePathSegment(nodeAlias));
+                    var normalized = string.Join("/", napSpl);
+                    var treePathValidator = Service.Resolve<ITreePathValidator>();
+                    var uniqueTreePath = await new UniqueTreePathProvider(webSiteChannel, treePathValidator).GetUniqueValue(normalized);
+                    var anythingChanged = !TreePathComparer.Equals(nodeAliasPath, uniqueTreePath);
+                    result = new TreePathConversionResult(anythingChanged, uniqueTreePath);
+                    _nodeAliasPathToTreePath.Add(nodeAliasPath, uniqueTreePath);
+                    break;
+                }
         }
 
         return result;

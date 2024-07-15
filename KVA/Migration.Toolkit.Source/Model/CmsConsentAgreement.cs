@@ -4,7 +4,7 @@ namespace Migration.Toolkit.Source.Model;
 using System.Data;
 using Migration.Toolkit.Common;
 
-public interface ICmsConsentAgreement: ISourceModel<ICmsConsentAgreement>
+public interface ICmsConsentAgreement : ISourceModel<ICmsConsentAgreement>
 {
     int ConsentAgreementID { get; }
     Guid ConsentAgreementGuid { get; }
@@ -12,7 +12,7 @@ public interface ICmsConsentAgreement: ISourceModel<ICmsConsentAgreement>
     int ConsentAgreementContactID { get; }
     int ConsentAgreementConsentID { get; }
     string? ConsentAgreementConsentHash { get; }
-    DateTime ConsentAgreementTime { get; }    
+    DateTime ConsentAgreementTime { get; }
 
     static string ISourceModel<ICmsConsentAgreement>.GetPrimaryKeyName(SemanticVersion version)
     {
@@ -47,61 +47,60 @@ public interface ICmsConsentAgreement: ISourceModel<ICmsConsentAgreement>
         };
     }
 }
-public partial record CmsConsentAgreementK11(int ConsentAgreementID, Guid ConsentAgreementGuid, bool ConsentAgreementRevoked, int ConsentAgreementContactID, int ConsentAgreementConsentID, string? ConsentAgreementConsentHash, DateTime ConsentAgreementTime): ICmsConsentAgreement, ISourceModel<CmsConsentAgreementK11>
+public partial record CmsConsentAgreementK11(int ConsentAgreementID, Guid ConsentAgreementGuid, bool ConsentAgreementRevoked, int ConsentAgreementContactID, int ConsentAgreementConsentID, string? ConsentAgreementConsentHash, DateTime ConsentAgreementTime) : ICmsConsentAgreement, ISourceModel<CmsConsentAgreementK11>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "ConsentAgreementID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "ConsentAgreementID";
     public static string TableName => "CMS_ConsentAgreement";
     public static string GuidColumnName => "ConsentAgreementGuid";
     static CmsConsentAgreementK11 ISourceModel<CmsConsentAgreementK11>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsConsentAgreementK11(
-            reader.Unbox<int>("ConsentAgreementID"), reader.Unbox<Guid>("ConsentAgreementGuid"), reader.Unbox<bool>("ConsentAgreementRevoked"), reader.Unbox<int>("ConsentAgreementContactID"), reader.Unbox<int>("ConsentAgreementConsentID"), reader.Unbox<string?>("ConsentAgreementConsentHash"), reader.Unbox<DateTime>("ConsentAgreementTime")                
+            reader.Unbox<int>("ConsentAgreementID"), reader.Unbox<Guid>("ConsentAgreementGuid"), reader.Unbox<bool>("ConsentAgreementRevoked"), reader.Unbox<int>("ConsentAgreementContactID"), reader.Unbox<int>("ConsentAgreementConsentID"), reader.Unbox<string?>("ConsentAgreementConsentHash"), reader.Unbox<DateTime>("ConsentAgreementTime")
         );
     }
     public static CmsConsentAgreementK11 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsConsentAgreementK11(
-            reader.Unbox<int>("ConsentAgreementID"), reader.Unbox<Guid>("ConsentAgreementGuid"), reader.Unbox<bool>("ConsentAgreementRevoked"), reader.Unbox<int>("ConsentAgreementContactID"), reader.Unbox<int>("ConsentAgreementConsentID"), reader.Unbox<string?>("ConsentAgreementConsentHash"), reader.Unbox<DateTime>("ConsentAgreementTime")                
+            reader.Unbox<int>("ConsentAgreementID"), reader.Unbox<Guid>("ConsentAgreementGuid"), reader.Unbox<bool>("ConsentAgreementRevoked"), reader.Unbox<int>("ConsentAgreementContactID"), reader.Unbox<int>("ConsentAgreementConsentID"), reader.Unbox<string?>("ConsentAgreementConsentHash"), reader.Unbox<DateTime>("ConsentAgreementTime")
         );
     }
 };
-public partial record CmsConsentAgreementK12(int ConsentAgreementID, Guid ConsentAgreementGuid, bool ConsentAgreementRevoked, int ConsentAgreementContactID, int ConsentAgreementConsentID, string? ConsentAgreementConsentHash, DateTime ConsentAgreementTime): ICmsConsentAgreement, ISourceModel<CmsConsentAgreementK12>
+public partial record CmsConsentAgreementK12(int ConsentAgreementID, Guid ConsentAgreementGuid, bool ConsentAgreementRevoked, int ConsentAgreementContactID, int ConsentAgreementConsentID, string? ConsentAgreementConsentHash, DateTime ConsentAgreementTime) : ICmsConsentAgreement, ISourceModel<CmsConsentAgreementK12>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "ConsentAgreementID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "ConsentAgreementID";
     public static string TableName => "CMS_ConsentAgreement";
     public static string GuidColumnName => "ConsentAgreementGuid";
     static CmsConsentAgreementK12 ISourceModel<CmsConsentAgreementK12>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsConsentAgreementK12(
-            reader.Unbox<int>("ConsentAgreementID"), reader.Unbox<Guid>("ConsentAgreementGuid"), reader.Unbox<bool>("ConsentAgreementRevoked"), reader.Unbox<int>("ConsentAgreementContactID"), reader.Unbox<int>("ConsentAgreementConsentID"), reader.Unbox<string?>("ConsentAgreementConsentHash"), reader.Unbox<DateTime>("ConsentAgreementTime")                
+            reader.Unbox<int>("ConsentAgreementID"), reader.Unbox<Guid>("ConsentAgreementGuid"), reader.Unbox<bool>("ConsentAgreementRevoked"), reader.Unbox<int>("ConsentAgreementContactID"), reader.Unbox<int>("ConsentAgreementConsentID"), reader.Unbox<string?>("ConsentAgreementConsentHash"), reader.Unbox<DateTime>("ConsentAgreementTime")
         );
     }
     public static CmsConsentAgreementK12 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsConsentAgreementK12(
-            reader.Unbox<int>("ConsentAgreementID"), reader.Unbox<Guid>("ConsentAgreementGuid"), reader.Unbox<bool>("ConsentAgreementRevoked"), reader.Unbox<int>("ConsentAgreementContactID"), reader.Unbox<int>("ConsentAgreementConsentID"), reader.Unbox<string?>("ConsentAgreementConsentHash"), reader.Unbox<DateTime>("ConsentAgreementTime")                
+            reader.Unbox<int>("ConsentAgreementID"), reader.Unbox<Guid>("ConsentAgreementGuid"), reader.Unbox<bool>("ConsentAgreementRevoked"), reader.Unbox<int>("ConsentAgreementContactID"), reader.Unbox<int>("ConsentAgreementConsentID"), reader.Unbox<string?>("ConsentAgreementConsentHash"), reader.Unbox<DateTime>("ConsentAgreementTime")
         );
     }
 };
-public partial record CmsConsentAgreementK13(int ConsentAgreementID, Guid ConsentAgreementGuid, bool ConsentAgreementRevoked, int ConsentAgreementContactID, int ConsentAgreementConsentID, string? ConsentAgreementConsentHash, DateTime ConsentAgreementTime): ICmsConsentAgreement, ISourceModel<CmsConsentAgreementK13>
+public partial record CmsConsentAgreementK13(int ConsentAgreementID, Guid ConsentAgreementGuid, bool ConsentAgreementRevoked, int ConsentAgreementContactID, int ConsentAgreementConsentID, string? ConsentAgreementConsentHash, DateTime ConsentAgreementTime) : ICmsConsentAgreement, ISourceModel<CmsConsentAgreementK13>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "ConsentAgreementID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "ConsentAgreementID";
     public static string TableName => "CMS_ConsentAgreement";
     public static string GuidColumnName => "ConsentAgreementGuid";
     static CmsConsentAgreementK13 ISourceModel<CmsConsentAgreementK13>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsConsentAgreementK13(
-            reader.Unbox<int>("ConsentAgreementID"), reader.Unbox<Guid>("ConsentAgreementGuid"), reader.Unbox<bool>("ConsentAgreementRevoked"), reader.Unbox<int>("ConsentAgreementContactID"), reader.Unbox<int>("ConsentAgreementConsentID"), reader.Unbox<string?>("ConsentAgreementConsentHash"), reader.Unbox<DateTime>("ConsentAgreementTime")                
+            reader.Unbox<int>("ConsentAgreementID"), reader.Unbox<Guid>("ConsentAgreementGuid"), reader.Unbox<bool>("ConsentAgreementRevoked"), reader.Unbox<int>("ConsentAgreementContactID"), reader.Unbox<int>("ConsentAgreementConsentID"), reader.Unbox<string?>("ConsentAgreementConsentHash"), reader.Unbox<DateTime>("ConsentAgreementTime")
         );
     }
     public static CmsConsentAgreementK13 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new CmsConsentAgreementK13(
-            reader.Unbox<int>("ConsentAgreementID"), reader.Unbox<Guid>("ConsentAgreementGuid"), reader.Unbox<bool>("ConsentAgreementRevoked"), reader.Unbox<int>("ConsentAgreementContactID"), reader.Unbox<int>("ConsentAgreementConsentID"), reader.Unbox<string?>("ConsentAgreementConsentHash"), reader.Unbox<DateTime>("ConsentAgreementTime")                
+            reader.Unbox<int>("ConsentAgreementID"), reader.Unbox<Guid>("ConsentAgreementGuid"), reader.Unbox<bool>("ConsentAgreementRevoked"), reader.Unbox<int>("ConsentAgreementContactID"), reader.Unbox<int>("ConsentAgreementConsentID"), reader.Unbox<string?>("ConsentAgreementConsentHash"), reader.Unbox<DateTime>("ConsentAgreementTime")
         );
     }
 };
-

@@ -18,7 +18,7 @@ public class SerializationHelper
             return property;
         }
     }
-    
+
     public static string SerializeOnlyNonComplexProperties<T>(T obj)
     {
         return JsonConvert.SerializeObject(obj, Formatting.Indented,

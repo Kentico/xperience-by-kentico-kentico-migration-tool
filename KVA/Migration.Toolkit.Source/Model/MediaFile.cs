@@ -4,7 +4,7 @@ namespace Migration.Toolkit.Source.Model;
 using System.Data;
 using Migration.Toolkit.Common;
 
-public interface IMediaFile: ISourceModel<IMediaFile>
+public interface IMediaFile : ISourceModel<IMediaFile>
 {
     int FileID { get; }
     string FileName { get; }
@@ -23,7 +23,7 @@ public interface IMediaFile: ISourceModel<IMediaFile>
     DateTime FileCreatedWhen { get; }
     int? FileModifiedByUserID { get; }
     DateTime FileModifiedWhen { get; }
-    string? FileCustomData { get; }    
+    string? FileCustomData { get; }
 
     static string ISourceModel<IMediaFile>.GetPrimaryKeyName(SemanticVersion version)
     {
@@ -58,61 +58,60 @@ public interface IMediaFile: ISourceModel<IMediaFile>
         };
     }
 }
-public partial record MediaFileK11(int FileID, string FileName, string FileTitle, string FileDescription, string FileExtension, string FileMimeType, string FilePath, long FileSize, int? FileImageWidth, int? FileImageHeight, Guid FileGUID, int FileLibraryID, int FileSiteID, int? FileCreatedByUserID, DateTime FileCreatedWhen, int? FileModifiedByUserID, DateTime FileModifiedWhen, string? FileCustomData): IMediaFile, ISourceModel<MediaFileK11>
+public partial record MediaFileK11(int FileID, string FileName, string FileTitle, string FileDescription, string FileExtension, string FileMimeType, string FilePath, long FileSize, int? FileImageWidth, int? FileImageHeight, Guid FileGUID, int FileLibraryID, int FileSiteID, int? FileCreatedByUserID, DateTime FileCreatedWhen, int? FileModifiedByUserID, DateTime FileModifiedWhen, string? FileCustomData) : IMediaFile, ISourceModel<MediaFileK11>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "FileID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "FileID";
     public static string TableName => "Media_File";
     public static string GuidColumnName => "FileGUID";
     static MediaFileK11 ISourceModel<MediaFileK11>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new MediaFileK11(
-            reader.Unbox<int>("FileID"), reader.Unbox<string>("FileName"), reader.Unbox<string>("FileTitle"), reader.Unbox<string>("FileDescription"), reader.Unbox<string>("FileExtension"), reader.Unbox<string>("FileMimeType"), reader.Unbox<string>("FilePath"), reader.Unbox<long>("FileSize"), reader.Unbox<int?>("FileImageWidth"), reader.Unbox<int?>("FileImageHeight"), reader.Unbox<Guid>("FileGUID"), reader.Unbox<int>("FileLibraryID"), reader.Unbox<int>("FileSiteID"), reader.Unbox<int?>("FileCreatedByUserID"), reader.Unbox<DateTime>("FileCreatedWhen"), reader.Unbox<int?>("FileModifiedByUserID"), reader.Unbox<DateTime>("FileModifiedWhen"), reader.Unbox<string?>("FileCustomData")                
+            reader.Unbox<int>("FileID"), reader.Unbox<string>("FileName"), reader.Unbox<string>("FileTitle"), reader.Unbox<string>("FileDescription"), reader.Unbox<string>("FileExtension"), reader.Unbox<string>("FileMimeType"), reader.Unbox<string>("FilePath"), reader.Unbox<long>("FileSize"), reader.Unbox<int?>("FileImageWidth"), reader.Unbox<int?>("FileImageHeight"), reader.Unbox<Guid>("FileGUID"), reader.Unbox<int>("FileLibraryID"), reader.Unbox<int>("FileSiteID"), reader.Unbox<int?>("FileCreatedByUserID"), reader.Unbox<DateTime>("FileCreatedWhen"), reader.Unbox<int?>("FileModifiedByUserID"), reader.Unbox<DateTime>("FileModifiedWhen"), reader.Unbox<string?>("FileCustomData")
         );
     }
     public static MediaFileK11 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new MediaFileK11(
-            reader.Unbox<int>("FileID"), reader.Unbox<string>("FileName"), reader.Unbox<string>("FileTitle"), reader.Unbox<string>("FileDescription"), reader.Unbox<string>("FileExtension"), reader.Unbox<string>("FileMimeType"), reader.Unbox<string>("FilePath"), reader.Unbox<long>("FileSize"), reader.Unbox<int?>("FileImageWidth"), reader.Unbox<int?>("FileImageHeight"), reader.Unbox<Guid>("FileGUID"), reader.Unbox<int>("FileLibraryID"), reader.Unbox<int>("FileSiteID"), reader.Unbox<int?>("FileCreatedByUserID"), reader.Unbox<DateTime>("FileCreatedWhen"), reader.Unbox<int?>("FileModifiedByUserID"), reader.Unbox<DateTime>("FileModifiedWhen"), reader.Unbox<string?>("FileCustomData")                
+            reader.Unbox<int>("FileID"), reader.Unbox<string>("FileName"), reader.Unbox<string>("FileTitle"), reader.Unbox<string>("FileDescription"), reader.Unbox<string>("FileExtension"), reader.Unbox<string>("FileMimeType"), reader.Unbox<string>("FilePath"), reader.Unbox<long>("FileSize"), reader.Unbox<int?>("FileImageWidth"), reader.Unbox<int?>("FileImageHeight"), reader.Unbox<Guid>("FileGUID"), reader.Unbox<int>("FileLibraryID"), reader.Unbox<int>("FileSiteID"), reader.Unbox<int?>("FileCreatedByUserID"), reader.Unbox<DateTime>("FileCreatedWhen"), reader.Unbox<int?>("FileModifiedByUserID"), reader.Unbox<DateTime>("FileModifiedWhen"), reader.Unbox<string?>("FileCustomData")
         );
     }
 };
-public partial record MediaFileK12(int FileID, string FileName, string FileTitle, string FileDescription, string FileExtension, string FileMimeType, string FilePath, long FileSize, int? FileImageWidth, int? FileImageHeight, Guid FileGUID, int FileLibraryID, int FileSiteID, int? FileCreatedByUserID, DateTime FileCreatedWhen, int? FileModifiedByUserID, DateTime FileModifiedWhen, string? FileCustomData): IMediaFile, ISourceModel<MediaFileK12>
+public partial record MediaFileK12(int FileID, string FileName, string FileTitle, string FileDescription, string FileExtension, string FileMimeType, string FilePath, long FileSize, int? FileImageWidth, int? FileImageHeight, Guid FileGUID, int FileLibraryID, int FileSiteID, int? FileCreatedByUserID, DateTime FileCreatedWhen, int? FileModifiedByUserID, DateTime FileModifiedWhen, string? FileCustomData) : IMediaFile, ISourceModel<MediaFileK12>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "FileID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "FileID";
     public static string TableName => "Media_File";
     public static string GuidColumnName => "FileGUID";
     static MediaFileK12 ISourceModel<MediaFileK12>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new MediaFileK12(
-            reader.Unbox<int>("FileID"), reader.Unbox<string>("FileName"), reader.Unbox<string>("FileTitle"), reader.Unbox<string>("FileDescription"), reader.Unbox<string>("FileExtension"), reader.Unbox<string>("FileMimeType"), reader.Unbox<string>("FilePath"), reader.Unbox<long>("FileSize"), reader.Unbox<int?>("FileImageWidth"), reader.Unbox<int?>("FileImageHeight"), reader.Unbox<Guid>("FileGUID"), reader.Unbox<int>("FileLibraryID"), reader.Unbox<int>("FileSiteID"), reader.Unbox<int?>("FileCreatedByUserID"), reader.Unbox<DateTime>("FileCreatedWhen"), reader.Unbox<int?>("FileModifiedByUserID"), reader.Unbox<DateTime>("FileModifiedWhen"), reader.Unbox<string?>("FileCustomData")                
+            reader.Unbox<int>("FileID"), reader.Unbox<string>("FileName"), reader.Unbox<string>("FileTitle"), reader.Unbox<string>("FileDescription"), reader.Unbox<string>("FileExtension"), reader.Unbox<string>("FileMimeType"), reader.Unbox<string>("FilePath"), reader.Unbox<long>("FileSize"), reader.Unbox<int?>("FileImageWidth"), reader.Unbox<int?>("FileImageHeight"), reader.Unbox<Guid>("FileGUID"), reader.Unbox<int>("FileLibraryID"), reader.Unbox<int>("FileSiteID"), reader.Unbox<int?>("FileCreatedByUserID"), reader.Unbox<DateTime>("FileCreatedWhen"), reader.Unbox<int?>("FileModifiedByUserID"), reader.Unbox<DateTime>("FileModifiedWhen"), reader.Unbox<string?>("FileCustomData")
         );
     }
     public static MediaFileK12 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new MediaFileK12(
-            reader.Unbox<int>("FileID"), reader.Unbox<string>("FileName"), reader.Unbox<string>("FileTitle"), reader.Unbox<string>("FileDescription"), reader.Unbox<string>("FileExtension"), reader.Unbox<string>("FileMimeType"), reader.Unbox<string>("FilePath"), reader.Unbox<long>("FileSize"), reader.Unbox<int?>("FileImageWidth"), reader.Unbox<int?>("FileImageHeight"), reader.Unbox<Guid>("FileGUID"), reader.Unbox<int>("FileLibraryID"), reader.Unbox<int>("FileSiteID"), reader.Unbox<int?>("FileCreatedByUserID"), reader.Unbox<DateTime>("FileCreatedWhen"), reader.Unbox<int?>("FileModifiedByUserID"), reader.Unbox<DateTime>("FileModifiedWhen"), reader.Unbox<string?>("FileCustomData")                
+            reader.Unbox<int>("FileID"), reader.Unbox<string>("FileName"), reader.Unbox<string>("FileTitle"), reader.Unbox<string>("FileDescription"), reader.Unbox<string>("FileExtension"), reader.Unbox<string>("FileMimeType"), reader.Unbox<string>("FilePath"), reader.Unbox<long>("FileSize"), reader.Unbox<int?>("FileImageWidth"), reader.Unbox<int?>("FileImageHeight"), reader.Unbox<Guid>("FileGUID"), reader.Unbox<int>("FileLibraryID"), reader.Unbox<int>("FileSiteID"), reader.Unbox<int?>("FileCreatedByUserID"), reader.Unbox<DateTime>("FileCreatedWhen"), reader.Unbox<int?>("FileModifiedByUserID"), reader.Unbox<DateTime>("FileModifiedWhen"), reader.Unbox<string?>("FileCustomData")
         );
     }
 };
-public partial record MediaFileK13(int FileID, string FileName, string FileTitle, string FileDescription, string FileExtension, string FileMimeType, string FilePath, long FileSize, int? FileImageWidth, int? FileImageHeight, Guid FileGUID, int FileLibraryID, int FileSiteID, int? FileCreatedByUserID, DateTime FileCreatedWhen, int? FileModifiedByUserID, DateTime FileModifiedWhen, string? FileCustomData): IMediaFile, ISourceModel<MediaFileK13>
+public partial record MediaFileK13(int FileID, string FileName, string FileTitle, string FileDescription, string FileExtension, string FileMimeType, string FilePath, long FileSize, int? FileImageWidth, int? FileImageHeight, Guid FileGUID, int FileLibraryID, int FileSiteID, int? FileCreatedByUserID, DateTime FileCreatedWhen, int? FileModifiedByUserID, DateTime FileModifiedWhen, string? FileCustomData) : IMediaFile, ISourceModel<MediaFileK13>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
-    public static string GetPrimaryKeyName(SemanticVersion version) => "FileID";   
+    public static string GetPrimaryKeyName(SemanticVersion version) => "FileID";
     public static string TableName => "Media_File";
     public static string GuidColumnName => "FileGUID";
     static MediaFileK13 ISourceModel<MediaFileK13>.FromReader(IDataReader reader, SemanticVersion version)
     {
         return new MediaFileK13(
-            reader.Unbox<int>("FileID"), reader.Unbox<string>("FileName"), reader.Unbox<string>("FileTitle"), reader.Unbox<string>("FileDescription"), reader.Unbox<string>("FileExtension"), reader.Unbox<string>("FileMimeType"), reader.Unbox<string>("FilePath"), reader.Unbox<long>("FileSize"), reader.Unbox<int?>("FileImageWidth"), reader.Unbox<int?>("FileImageHeight"), reader.Unbox<Guid>("FileGUID"), reader.Unbox<int>("FileLibraryID"), reader.Unbox<int>("FileSiteID"), reader.Unbox<int?>("FileCreatedByUserID"), reader.Unbox<DateTime>("FileCreatedWhen"), reader.Unbox<int?>("FileModifiedByUserID"), reader.Unbox<DateTime>("FileModifiedWhen"), reader.Unbox<string?>("FileCustomData")                
+            reader.Unbox<int>("FileID"), reader.Unbox<string>("FileName"), reader.Unbox<string>("FileTitle"), reader.Unbox<string>("FileDescription"), reader.Unbox<string>("FileExtension"), reader.Unbox<string>("FileMimeType"), reader.Unbox<string>("FilePath"), reader.Unbox<long>("FileSize"), reader.Unbox<int?>("FileImageWidth"), reader.Unbox<int?>("FileImageHeight"), reader.Unbox<Guid>("FileGUID"), reader.Unbox<int>("FileLibraryID"), reader.Unbox<int>("FileSiteID"), reader.Unbox<int?>("FileCreatedByUserID"), reader.Unbox<DateTime>("FileCreatedWhen"), reader.Unbox<int?>("FileModifiedByUserID"), reader.Unbox<DateTime>("FileModifiedWhen"), reader.Unbox<string?>("FileCustomData")
         );
     }
     public static MediaFileK13 FromReader(IDataReader reader, SemanticVersion version)
     {
         return new MediaFileK13(
-            reader.Unbox<int>("FileID"), reader.Unbox<string>("FileName"), reader.Unbox<string>("FileTitle"), reader.Unbox<string>("FileDescription"), reader.Unbox<string>("FileExtension"), reader.Unbox<string>("FileMimeType"), reader.Unbox<string>("FilePath"), reader.Unbox<long>("FileSize"), reader.Unbox<int?>("FileImageWidth"), reader.Unbox<int?>("FileImageHeight"), reader.Unbox<Guid>("FileGUID"), reader.Unbox<int>("FileLibraryID"), reader.Unbox<int>("FileSiteID"), reader.Unbox<int?>("FileCreatedByUserID"), reader.Unbox<DateTime>("FileCreatedWhen"), reader.Unbox<int?>("FileModifiedByUserID"), reader.Unbox<DateTime>("FileModifiedWhen"), reader.Unbox<string?>("FileCustomData")                
+            reader.Unbox<int>("FileID"), reader.Unbox<string>("FileName"), reader.Unbox<string>("FileTitle"), reader.Unbox<string>("FileDescription"), reader.Unbox<string>("FileExtension"), reader.Unbox<string>("FileMimeType"), reader.Unbox<string>("FilePath"), reader.Unbox<long>("FileSize"), reader.Unbox<int?>("FileImageWidth"), reader.Unbox<int?>("FileImageHeight"), reader.Unbox<Guid>("FileGUID"), reader.Unbox<int>("FileLibraryID"), reader.Unbox<int>("FileSiteID"), reader.Unbox<int?>("FileCreatedByUserID"), reader.Unbox<DateTime>("FileCreatedWhen"), reader.Unbox<int?>("FileModifiedByUserID"), reader.Unbox<DateTime>("FileModifiedWhen"), reader.Unbox<string?>("FileCustomData")
         );
     }
 };
-

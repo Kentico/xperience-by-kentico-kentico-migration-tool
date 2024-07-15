@@ -30,10 +30,10 @@ public class AdminUserHelper
                     case { Success: true, MappedId: { } targetUserId }:
                         return targetUserId;
                     default:
-                    {
-                        onAdminNotFound?.Invoke();
-                        return null;
-                    }
+                        {
+                            onAdminNotFound?.Invoke();
+                            return null;
+                        }
                 }
             }
             return CMSActionContext.CurrentUser.UserID;

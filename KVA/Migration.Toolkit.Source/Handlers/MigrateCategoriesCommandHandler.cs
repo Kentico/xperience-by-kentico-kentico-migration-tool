@@ -104,7 +104,7 @@ public class MigrateCategoriesCommandHandler(
                 {
                     if (await importer
                             .ImportAsync(umtModel)
-                            .AssertSuccess<TagInfo>(logger) is {Success:true, Info: {} tag})
+                            .AssertSuccess<TagInfo>(logger) is { Success: true, Info: { } tag })
                     {
                         query = """
                                 SELECT TJ.DocumentGUID, TJ.NodeSiteID, TJ.NodeID, TJ.DocumentID, CDC.CategoryID, TJ.DocumentCheckedOutVersionHistoryID, TJ.NodeClassID

@@ -26,10 +26,10 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
     {
         var anyFailedColumnCheck = false;
         var sourceTableColumns = GetSqlTableColumns(tableName, configuration.KxConnectionString)
-            .Where(c => checkedColumns?.Keys.Any(k=> k.Equals(c.ColumnName, StringComparison.InvariantCultureIgnoreCase)) ?? true)
+            .Where(c => checkedColumns?.Keys.Any(k => k.Equals(c.ColumnName, StringComparison.InvariantCultureIgnoreCase)) ?? true)
             .Select(x => x.ColumnName).OrderBy(x => x);
         var targetTableColumns = GetSqlTableColumns(tableName, configuration.XbKConnectionString)
-            .Where(c => checkedColumns?.Values.Any(k=> k.Equals(c.ColumnName, StringComparison.InvariantCultureIgnoreCase)) ?? true)
+            .Where(c => checkedColumns?.Values.Any(k => k.Equals(c.ColumnName, StringComparison.InvariantCultureIgnoreCase)) ?? true)
             .Select(x => x.ColumnName).OrderBy(x => x);
 
         var aligner = EnumerableHelper.CreateAligner(
@@ -148,7 +148,7 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
         {
             sqlBulkCopy.WriteToServer(readerPipeline);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             throw;
         }
@@ -210,9 +210,9 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
         var ordinal = 0;
 
         var allowedColumnsList = allowedColumns?.ToList();
-        var columnFiler =allowedColumnsList != null && allowedColumnsList.Count != 0
-            ?  new Func<string, bool>(s => allowedColumnsList.Contains(s, StringComparer.InvariantCultureIgnoreCase))
-            :  _ => true;
+        var columnFiler = allowedColumnsList != null && allowedColumnsList.Count != 0
+            ? new Func<string, bool>(s => allowedColumnsList.Contains(s, StringComparer.InvariantCultureIgnoreCase))
+            : _ => true;
 
         while (reader.Read())
         {

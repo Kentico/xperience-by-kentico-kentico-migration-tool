@@ -97,7 +97,7 @@ public class SpoiledGuidContext(ModelFacade modelFacade, ILogger<SpoiledGuidCont
             new SqlParameter("siteId", siteId), new SqlParameter("nodeId", nodeId)
         ).FirstOrDefault();
 
-        if(nodeGuid is not {} sNodeGuid) return null;
+        if (nodeGuid is not { } sNodeGuid) return null;
         if (!SpoiledNodeGuids.TryGetValue(sNodeGuid, out _)) return sNodeGuid;
 
         var newGuid = GuidHelper.CreateNodeGuid($"{nodeId}|{siteId}");

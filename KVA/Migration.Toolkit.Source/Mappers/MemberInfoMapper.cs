@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Source.Mappers;
+namespace Migration.Toolkit.Source.Mappers;
 
 using System.Data;
 using CMS.FormEngine;

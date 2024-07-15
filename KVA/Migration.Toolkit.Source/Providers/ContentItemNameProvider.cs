@@ -1,4 +1,4 @@
-﻿namespace Migration.Toolkit.Source.Providers;
+namespace Migration.Toolkit.Source.Providers;
 
 using System;
 using System.Threading.Tasks;

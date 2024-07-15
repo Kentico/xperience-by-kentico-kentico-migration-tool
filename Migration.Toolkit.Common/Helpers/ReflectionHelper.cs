@@ -17,7 +17,7 @@ public static class ReflectionHelper<T>
             {
                 Debugger.Break();
             }
-            
+
             PropertyGetterMaps.Add(propertyInfo.Name, new ObjectPropertyGetterMap
             {
                 PropertyName = propertyInfo.Name,
@@ -25,7 +25,7 @@ public static class ReflectionHelper<T>
                 PropertyIndex = i++,
             });
         }
-        
+
         StaticPropertyGetterMaps = new Dictionary<string, ObjectPropertyGetterMap>();
         foreach (var propertyInfo in CurrentType.GetProperties(BindingFlags.Public | BindingFlags.Static))
         {
@@ -33,7 +33,7 @@ public static class ReflectionHelper<T>
             {
                 Debugger.Break();
             }
-            
+
             StaticPropertyGetterMaps.Add(propertyInfo.Name, new ObjectPropertyGetterMap
             {
                 PropertyName = propertyInfo.Name,
@@ -46,7 +46,7 @@ public static class ReflectionHelper<T>
     public static Dictionary<string, ObjectPropertyGetterMap> StaticPropertyGetterMaps { get; private set; }
     public static Dictionary<string, ObjectPropertyGetterMap> PropertyGetterMaps { get; private set; }
 
-    public static List<TAttribute> GetAttributes<TAttribute>() where TAttribute: Attribute => Attribute
+    public static List<TAttribute> GetAttributes<TAttribute>() where TAttribute : Attribute => Attribute
         .GetCustomAttributes(typeof(T)).Aggregate(new List<TAttribute>(), (list, attribute) =>
         {
             if (attribute is TAttribute targetAttribute)
@@ -72,10 +72,10 @@ public static class ReflectionHelper<T>
         {
             throw new NullReferenceException($"Null reference, ReflectionHelper.GetPropertyValue needs obj argument reference");
         }
-        
+
         return PropertyGetterMaps[propertyName].PropertyGetMethod!.Invoke(obj, Array.Empty<object>());
     }
-    
+
     public static bool TryGetPropertyValue(T obj, string propertyName, StringComparison propNameComparison, out object? value)
     {
         var propName = PropertyGetterMaps.Keys.FirstOrDefault(x => x.Equals(propertyName, propNameComparison));
@@ -115,13 +115,13 @@ public class ObjectPropertyGetterMap
 public class ReflectionHelper
 {
     public Type CurrentType { get; }
-    
+
     public ReflectionHelper(Type type)
     {
         CurrentType = type;
     }
 
-    public List<TAttribute> GetAttributes<TAttribute>() where TAttribute: Attribute => Attribute
+    public List<TAttribute> GetAttributes<TAttribute>() where TAttribute : Attribute => Attribute
         .GetCustomAttributes(CurrentType).Aggregate(new List<TAttribute>(), (list, attribute) =>
         {
             if (attribute is TAttribute targetAttribute)
