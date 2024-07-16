@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_DocumentTypeScope")]
 [Index("ScopeSiteId", Name = "IX_CMS_DocumentTypeScope_ScopeSiteID")]
-public partial class CmsDocumentTypeScope
+public class CmsDocumentTypeScope
 {
     [Key]
     [Column("ScopeID")]

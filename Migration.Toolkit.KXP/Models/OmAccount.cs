@@ -13,7 +13,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Index("AccountStateId", Name = "IX_OM_Account_AccountStateID")]
 [Index("AccountStatusId", Name = "IX_OM_Account_AccountStatusID")]
 [Index("AccountSubsidiaryOfId", Name = "IX_OM_Account_AccountSubsidiaryOfID")]
-public partial class OmAccount
+public class OmAccount
 {
     [Key]
     [Column("AccountID")]

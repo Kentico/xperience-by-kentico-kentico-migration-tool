@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("CMS_UserRole")]
 [Index("RoleId", Name = "IX_CMS_UserRole_RoleID")]
 [Index("UserId", "RoleId", Name = "IX_CMS_UserRole_UserID_RoleID", IsUnique = true)]
-public partial class CmsUserRole
+public class CmsUserRole
 {
     [Column("UserID")]
     public int UserId { get; set; }

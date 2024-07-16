@@ -10,7 +10,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("LastModifiedByUserId", Name = "IX_CMS_ACLItem_LastModifiedByUserID")]
 [Index("RoleId", Name = "IX_CMS_ACLItem_RoleID")]
 [Index("UserId", Name = "IX_CMS_ACLItem_UserID")]
-public partial class CmsAclitem
+public class CmsAclitem
 {
     [Key]
     [Column("ACLItemID")]

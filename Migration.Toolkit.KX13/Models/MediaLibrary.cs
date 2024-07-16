@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("Media_Library")]
 [Index("LibrarySiteId", "LibraryName", "LibraryGuid", Name = "IX_Media_Library_LibrarySiteID_LibraryName_LibraryGUID", IsUnique = true)]
-public partial class MediaLibrary
+public class MediaLibrary
 {
     [Key]
     [Column("LibraryID")]

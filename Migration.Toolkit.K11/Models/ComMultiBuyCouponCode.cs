@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("COM_MultiBuyCouponCode")]
 [Index("MultiBuyCouponCodeMultiBuyDiscountId", Name = "IX_COM_MultiBuyCouponCode_MultiBuyCouponCodeMultiBuyDiscountID")]
-public partial class ComMultiBuyCouponCode
+public class ComMultiBuyCouponCode
 {
     [Key]
     [Column("MultiBuyCouponCodeID")]

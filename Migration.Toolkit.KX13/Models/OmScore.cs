@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("OM_Score")]
-public partial class OmScore
+public class OmScore
 {
     [Key]
     [Column("ScoreID")]

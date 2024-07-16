@@ -8,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("SharePoint_SharePointLibrary")]
 [Index("SharePointLibrarySharePointConnectionId", Name = "IX_SharePoint_SharePointLibrary_SharePointLibrarySharepointConnectionID")]
 [Index("SharePointLibrarySiteId", Name = "IX_SharePoint_SharePointLibrary_SharePointlibrarySiteID")]
-public partial class SharePointSharePointLibrary
+public class SharePointSharePointLibrary
 {
     [Key]
     [Column("SharePointLibraryID")]

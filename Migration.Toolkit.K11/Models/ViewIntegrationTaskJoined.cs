@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.K11.Models;
 
 [Keyless]
-public partial class ViewIntegrationTaskJoined
+public class ViewIntegrationTaskJoined
 {
     [Column("SynchronizationID")]
     public int? SynchronizationId { get; set; }

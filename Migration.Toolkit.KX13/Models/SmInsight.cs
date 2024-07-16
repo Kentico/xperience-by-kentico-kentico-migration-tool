@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("SM_Insight")]
 [Index("InsightCodeName", "InsightPeriodType", Name = "IX_SM_Insight_InsightCodeName_InsightPeriodType")]
-public partial class SmInsight
+public class SmInsight
 {
     [Key]
     [Column("InsightID")]

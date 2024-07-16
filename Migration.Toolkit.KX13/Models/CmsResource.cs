@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("CMS_Resource")]
 [Index("ResourceName", Name = "IX_CMS_Resource_ResourceName")]
-public partial class CmsResource
+public class CmsResource
 {
     [Key]
     [Column("ResourceID")]

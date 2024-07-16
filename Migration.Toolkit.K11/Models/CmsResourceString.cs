@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_ResourceString")]
 [Index("StringKey", Name = "IX_CMS_ResourceString_StringKey")]
-public partial class CmsResourceString
+public class CmsResourceString
 {
     [Key]
     [Column("StringID")]

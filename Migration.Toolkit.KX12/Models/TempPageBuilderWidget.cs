@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("Temp_PageBuilderWidgets")]
-public partial class TempPageBuilderWidget
+public class TempPageBuilderWidget
 {
     [Key]
     [Column("PageBuilderWidgetsID")]

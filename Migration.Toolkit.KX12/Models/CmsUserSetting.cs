@@ -19,7 +19,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("UserTimeZoneId", Name = "IX_CMS_UserSettings_UserTimeZoneID")]
 [Index("UserWaitingForApproval", Name = "IX_CMS_UserSettings_UserWaitingForApproval")]
 [Index("WindowsLiveId", Name = "IX_CMS_UserSettings_WindowsLiveID")]
-public partial class CmsUserSetting
+public class CmsUserSetting
 {
     [Key]
     [Column("UserSettingsID")]

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.K11.Models;
 
 [Keyless]
-public partial class ViewMembershipMembershipUserJoined
+public class ViewMembershipMembershipUserJoined
 {
     [StringLength(200)]
     public string MembershipDisplayName { get; set; } = null!;

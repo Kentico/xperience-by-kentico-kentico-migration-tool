@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("Analytics_ExitPages")]
 [Index("ExitPageLastModified", Name = "IX_Analytics_ExitPages_ExitPageLastModified")]
-public partial class AnalyticsExitPage
+public class AnalyticsExitPage
 {
     [Key]
     [StringLength(200)]

@@ -4,11 +4,10 @@ namespace Migration.Toolkit.Common.Helpers;
 
 public class DeferrableItemEnumerableWrapper<T>(IEnumerable<T> innerEnumerable, int maxRecurrenceLimit = 5) : IDisposable
 {
+    private readonly Queue<DeferrableItem> _deferredItems = new();
     private readonly IEnumerator<T> _innerEnumerator = innerEnumerable.GetEnumerator();
 
-    public record DeferrableItem(int Recurrence, T Item);
-
-    private readonly Queue<DeferrableItem> _deferredItems = new();
+    public void Dispose() => _innerEnumerator.Dispose();
 
     public bool GetNext(out DeferrableItem item)
     {
@@ -20,10 +19,7 @@ public class DeferrableItemEnumerableWrapper<T>(IEnumerable<T> innerEnumerable, 
 
         if (_deferredItems.TryDequeue(out var deferred))
         {
-            item = deferred with
-            {
-                Recurrence = deferred.Recurrence + 1
-            };
+            item = deferred with { Recurrence = deferred.Recurrence + 1 };
             return true;
         }
 
@@ -38,11 +34,9 @@ public class DeferrableItemEnumerableWrapper<T>(IEnumerable<T> innerEnumerable, 
             _deferredItems.Enqueue(item);
             return true;
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 
-    public void Dispose() => _innerEnumerator.Dispose();
+    public record DeferrableItem(int Recurrence, T Item);
 }

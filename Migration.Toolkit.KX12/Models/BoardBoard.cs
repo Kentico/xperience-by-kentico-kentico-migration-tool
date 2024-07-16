@@ -10,7 +10,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("BoardGroupId", "BoardName", Name = "IX_Board_Board_BoardGroupID_BoardName")]
 [Index("BoardSiteId", Name = "IX_Board_Board_BoardSiteID")]
 [Index("BoardUserId", "BoardName", Name = "IX_Board_Board_BoardUserID_BoardName")]
-public partial class BoardBoard
+public class BoardBoard
 {
     [Key]
     [Column("BoardID")]

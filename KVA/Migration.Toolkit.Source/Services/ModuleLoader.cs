@@ -1,4 +1,3 @@
-
 using Microsoft.Extensions.Logging;
 
 using Migration.Toolkit.Common.Abstractions;
@@ -6,6 +5,7 @@ using Migration.Toolkit.Common.Services.Ipc;
 using Migration.Toolkit.Source.Contexts;
 
 namespace Migration.Toolkit.Source.Services;
+
 public class ModuleLoader(
     IpcService ipc,
     SourceInstanceContext sourceInstanceContext,

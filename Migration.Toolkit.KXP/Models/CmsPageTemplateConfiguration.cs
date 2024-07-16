@@ -1,10 +1,10 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_PageTemplateConfiguration")]
-public partial class CmsPageTemplateConfiguration
+public class CmsPageTemplateConfiguration
 {
     [Key]
     [Column("PageTemplateConfigurationID")]

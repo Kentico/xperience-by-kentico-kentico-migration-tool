@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("CMS_Permission")]
 [Index("ClassId", "PermissionName", Name = "IX_CMS_Permission_ClassID_PermissionName")]
 [Index("ResourceId", "PermissionName", Name = "IX_CMS_Permission_ResourceID_PermissionName")]
-public partial class CmsPermission
+public class CmsPermission
 {
     [Key]
     [Column("PermissionID")]

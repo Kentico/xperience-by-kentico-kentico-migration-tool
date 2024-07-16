@@ -1,9 +1,9 @@
-
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 
 using Migration.Toolkit.Common.Helpers;
 
 namespace Migration.Toolkit.Common.MigrationProtocol;
+
 public static class HandbookReferences
 {
     #region "Warnings - nothing needs to be done"
@@ -49,11 +49,11 @@ public static class HandbookReferences
 
     public static HandbookReference MissingRequiredDependency<TSourceDependency>() =>
         new HandbookReference("MissingRequiredDependency")
-            .WithData(new { DependencyType = typeof(TSourceDependency).Name, });
+            .WithData(new { DependencyType = typeof(TSourceDependency).Name });
 
     public static HandbookReference SourceEntityIsNull<TSource>() =>
         new HandbookReference("SourceEntityIsNull")
-            .WithData(new { SourceEntityType = typeof(TSource).FullName, });
+            .WithData(new { SourceEntityType = typeof(TSource).FullName });
 
     public static HandbookReference SourceValueIsRequired<TSource>(string valueName) =>
         new HandbookReference("SourceValueIsRequired")
@@ -63,22 +63,22 @@ public static class HandbookReferences
     public static HandbookReference FailedToCreateTargetInstance<TTarget>() =>
         new HandbookReference("FailedToCreateTargetInstance")
             .NeedsManualAction()
-            .WithData(new { TargetEntityType = typeof(TTarget).FullName, });
+            .WithData(new { TargetEntityType = typeof(TTarget).FullName });
 
     public static HandbookReference ErrorCreatingTargetInstance<TTarget>(Exception exception) =>
         new HandbookReference("FailedToCreateTargetInstance")
             .NeedsManualAction()
-            .WithData(new { TargetEntityType = typeof(TTarget).FullName, Exception = exception.ToString(), });
+            .WithData(new { TargetEntityType = typeof(TTarget).FullName, Exception = exception.ToString() });
 
     public static HandbookReference ErrorUpdatingTargetInstance<TTarget>(Exception exception) =>
         new HandbookReference("FailedToUpdateTargetInstance")
             .NeedsManualAction()
-            .WithData(new { TargetEntityType = typeof(TTarget).FullName, Exception = exception.ToString(), });
+            .WithData(new { TargetEntityType = typeof(TTarget).FullName, Exception = exception.ToString() });
 
     public static HandbookReference ErrorSavingTargetInstance<TTarget>(Exception exception) =>
         new HandbookReference("ErrorSavingTargetInstance")
             .NeedsManualAction()
-            .WithData(new { TargetEntityType = typeof(TTarget).FullName, Exception = exception.ToString(), });
+            .WithData(new { TargetEntityType = typeof(TTarget).FullName, Exception = exception.ToString() });
 
     public static HandbookReference MissingConfiguration<TCommand>(string configurationName) =>
         new HandbookReference("MissingConfiguration")
@@ -111,7 +111,7 @@ public static class HandbookReferences
 
     public static HandbookReference InvalidSourceData<TSource>() => new HandbookReference("InvalidSourceData")
         .NeedsManualAction()
-        .WithData(new { SourceEntityType = typeof(TSource).Name, });
+        .WithData(new { SourceEntityType = typeof(TSource).Name });
 
     #endregion
 
@@ -120,13 +120,13 @@ public static class HandbookReferences
     public static HandbookReference FormComponentNotSupportedInLegacyMode(string componentIdentifier, string recommendedNewFormComponent) =>
         new HandbookReference("FormComponentNotSupportedInLegacyMode")
             .NeedsManualAction()
-            .WithMessage($"Component is no longer supported in target instance, use NewRecommendedComponentIdentifier - data will be migrated to fit")
-            .WithData(new { ComponentIdentifier = componentIdentifier, NewRecommendedComponentIdentifier = recommendedNewFormComponent, });
+            .WithMessage("Component is no longer supported in target instance, use NewRecommendedComponentIdentifier - data will be migrated to fit")
+            .WithData(new { ComponentIdentifier = componentIdentifier, NewRecommendedComponentIdentifier = recommendedNewFormComponent });
 
     public static HandbookReference FormComponentCustom(string componentIdentifier) => new HandbookReference("CustomFormComponent")
         .NeedsManualAction()
-        .WithMessage($"Custom form component used - don't forget to migrate code")
-        .WithData(new { ComponentIdentifier = componentIdentifier, });
+        .WithMessage("Custom form component used - don't forget to migrate code")
+        .WithData(new { ComponentIdentifier = componentIdentifier });
 
     #endregion
 }

@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("CMS_PageTemplateConfiguration")]
 [Index("PageTemplateConfigurationSiteId", Name = "IX_CMS_PageTemplateConfiguration_PageTemplateConfigurationSiteID")]
-public partial class CmsPageTemplateConfiguration
+public class CmsPageTemplateConfiguration
 {
     [Key]
     [Column("PageTemplateConfigurationID")]

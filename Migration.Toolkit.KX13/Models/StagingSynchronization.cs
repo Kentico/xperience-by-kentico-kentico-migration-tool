@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("Staging_Synchronization")]
 [Index("SynchronizationServerId", Name = "IX_Staging_Synchronization_SynchronizationServerID")]
 [Index("SynchronizationTaskId", Name = "IX_Staging_Synchronization_SynchronizationTaskID")]
-public partial class StagingSynchronization
+public class StagingSynchronization
 {
     [Key]
     [Column("SynchronizationID")]

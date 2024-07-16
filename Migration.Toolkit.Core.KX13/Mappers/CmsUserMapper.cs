@@ -1,5 +1,4 @@
-
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
@@ -7,6 +6,7 @@ using Migration.Toolkit.Core.KX13.Contexts;
 using Migration.Toolkit.KXP.Models;
 
 namespace Migration.Toolkit.Core.KX13.Mappers;
+
 public class CmsUserMapper : EntityMapperBase<KX13M.CmsUser, CmsUser>
 {
     private readonly ILogger<CmsUserMapper> _logger;
@@ -50,11 +50,7 @@ public class CmsUserMapper : EntityMapperBase<KX13M.CmsUser, CmsUser>
             {
                 if (target.CmsUserRoles.All(x => x.RoleId != targetRoleId))
                 {
-                    target.CmsUserRoles.Add(new CmsUserRole
-                    {
-                        RoleId = targetRoleId,
-                        User = target,
-                    });
+                    target.CmsUserRoles.Add(new CmsUserRole { RoleId = targetRoleId, User = target });
                 }
             }
         }

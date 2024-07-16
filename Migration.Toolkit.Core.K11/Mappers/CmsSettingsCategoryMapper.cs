@@ -1,4 +1,3 @@
-
 using Microsoft.Extensions.Logging;
 
 using Migration.Toolkit.Common.Abstractions;
@@ -7,10 +6,14 @@ using Migration.Toolkit.Core.K11.Contexts;
 using Migration.Toolkit.K11.Models;
 
 namespace Migration.Toolkit.Core.K11.Mappers;
-public class CmsSettingsCategoryMapper(ILogger<CmsSettingsCategoryMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol,
-        IEntityMapper<CmsResource, KXP.Models.CmsResource> cmsResourceMapper)
+
+public class CmsSettingsCategoryMapper(
+    ILogger<CmsSettingsCategoryMapper> logger,
+    PrimaryKeyMappingContext pkContext,
+    IProtocol protocol,
+    IEntityMapper<CmsResource, KXP.Models.CmsResource> cmsResourceMapper)
     : EntityMapperBase<CmsSettingsCategory,
-    KXP.Models.CmsSettingsCategory>(logger, pkContext, protocol)
+        KXP.Models.CmsSettingsCategory>(logger, pkContext, protocol)
 {
     protected override KXP.Models.CmsSettingsCategory? CreateNewInstance(CmsSettingsCategory source, MappingHelper mappingHelper,
         AddFailure addFailure) => new();
@@ -54,9 +57,6 @@ public class CmsSettingsCategoryMapper(ILogger<CmsSettingsCategoryMapper> logger
                         addFailure(new MapperResultFailure<KXP.Models.CmsSettingsCategory>(result.HandbookReference));
                         break;
                     }
-
-                    default:
-                        break;
                 }
             }
         }
@@ -79,9 +79,6 @@ public class CmsSettingsCategoryMapper(ILogger<CmsSettingsCategoryMapper> logger
                     addFailure(new MapperResultFailure<KXP.Models.CmsSettingsCategory>(result.HandbookReference));
                     break;
                 }
-
-                default:
-                    break;
             }
         }
         else if (mappingHelper.TranslateIdAllowNulls<CmsCategory>(c => c.CategoryId, source.CategoryParentId, out int? categoryParentId))

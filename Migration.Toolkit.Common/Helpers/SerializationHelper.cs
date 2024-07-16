@@ -1,4 +1,3 @@
-
 using System.Collections;
 using System.Reflection;
 
@@ -6,8 +5,12 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 namespace Migration.Toolkit.Common.Helpers;
+
 public class SerializationHelper
 {
+    public static string SerializeOnlyNonComplexProperties<T>(T obj) => JsonConvert.SerializeObject(obj, Formatting.Indented,
+        new JsonSerializerSettings { ContractResolver = new ShouldSerializeContractResolver(), ReferenceLoopHandling = ReferenceLoopHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore, MaxDepth = 1 });
+
     public class ShouldSerializeContractResolver : DefaultContractResolver
     {
         public static readonly ShouldSerializeContractResolver Instance = new();
@@ -19,13 +22,4 @@ public class SerializationHelper
             return property;
         }
     }
-
-    public static string SerializeOnlyNonComplexProperties<T>(T obj) => JsonConvert.SerializeObject(obj, Formatting.Indented,
-            new JsonSerializerSettings
-            {
-                ContractResolver = new ShouldSerializeContractResolver(),
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                DefaultValueHandling = DefaultValueHandling.Ignore,
-                MaxDepth = 1
-            });
 }

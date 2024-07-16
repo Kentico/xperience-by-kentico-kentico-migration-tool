@@ -1,4 +1,3 @@
-
 using MediatR;
 
 using Microsoft.Extensions.Logging;
@@ -6,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common.Abstractions;
 
 namespace Migration.Toolkit.Common.MigrationProtocol;
+
 public class DebugMigrationProtocol : IMigrationProtocol
 {
     private readonly ILogger<DebugMigrationProtocol> _logger;
@@ -14,7 +14,6 @@ public class DebugMigrationProtocol : IMigrationProtocol
 
     public void MappedTarget<TTarget>(IModelMappingResult<TTarget> mapped)
     {
-
     }
 
     public void FetchedTarget<TTarget>(TTarget? target) => _logger.LogDebug("FetchedTarget: {Type}: {Source}", typeof(TTarget).FullName, target);
@@ -23,12 +22,10 @@ public class DebugMigrationProtocol : IMigrationProtocol
 
     public void Success<TSource, TTarget>(TSource source, TTarget target, IModelMappingResult<TTarget>? mapped)
     {
-
     }
 
     public void Warning<T>(HandbookReference handbookRef, T? entity)
     {
-
     }
 
     public void CommandRequest<TRequest, TResponse>(TRequest request) where TRequest : IRequest<TResponse> => _logger.LogDebug("CommandRequest {Request}", request);

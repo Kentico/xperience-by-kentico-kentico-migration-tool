@@ -10,7 +10,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("SessionSiteId", Name = "IX_CMS_Session_SessionSiteID")]
 [Index("SessionUserId", Name = "IX_CMS_Session_SessionUserID")]
 [Index("SessionUserIsHidden", Name = "IX_CMS_Session_SessionUserIsHidden")]
-public partial class CmsSession
+public class CmsSession
 {
     [StringLength(50)]
     public string SessionIdentificator { get; set; } = null!;

@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("CMS_ContentWorkflowContentType")]
 [Index("ContentWorkflowContentTypeContentTypeId", Name = "IX_CMS_ContentWorkflowContentType_ContentWorkflowContentTypeContentTypeID")]
 [Index("ContentWorkflowContentTypeContentWorkflowId", Name = "IX_CMS_ContentWorkflowContentType_ContentWorkflowContentTypeContentWorkflowID")]
-public partial class CmsContentWorkflowContentType
+public class CmsContentWorkflowContentType
 {
     [Key]
     [Column("ContentWorkflowContentTypeID")]

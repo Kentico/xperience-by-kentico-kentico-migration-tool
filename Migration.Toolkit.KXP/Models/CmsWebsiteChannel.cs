@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("CMS_WebsiteChannel")]
 [Index("WebsiteChannelChannelId", Name = "IX_CMS_WebsiteChannel_WebsiteChannelChannelID")]
 [Index("WebsiteChannelPrimaryContentLanguageId", Name = "IX_CMS_WebsiteChannel_WebsiteChannelPrimaryContentLanguageID")]
-public partial class CmsWebsiteChannel
+public class CmsWebsiteChannel
 {
     [Key]
     [Column("WebsiteChannelID")]

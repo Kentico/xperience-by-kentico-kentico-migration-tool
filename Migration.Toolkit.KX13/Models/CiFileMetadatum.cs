@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("CI_FileMetadata")]
 [Index("FileLocation", Name = "UQ_CI_FileMetadata_FileLocation", IsUnique = true)]
-public partial class CiFileMetadatum
+public class CiFileMetadatum
 {
     [Key]
     [Column("FileMetadataID")]

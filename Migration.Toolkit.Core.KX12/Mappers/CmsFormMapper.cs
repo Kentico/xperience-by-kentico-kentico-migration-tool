@@ -1,4 +1,3 @@
-
 using CMS.FormEngine;
 using CMS.OnlineForms;
 
@@ -11,6 +10,7 @@ using Migration.Toolkit.Core.KX12.Contexts;
 using Migration.Toolkit.KXP.Models;
 
 namespace Migration.Toolkit.Core.KX12.Mappers;
+
 public class CmsFormMapper : EntityMapperBase<KX12M.CmsForm, BizFormInfo>
 {
     public CmsFormMapper(

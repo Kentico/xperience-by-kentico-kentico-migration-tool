@@ -8,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("Notification_TemplateText")]
 [Index("GatewayId", Name = "IX_Notification_TemplateText_GatewayID")]
 [Index("TemplateId", Name = "IX_Notification_TemplateText_TemplateID")]
-public partial class NotificationTemplateText
+public class NotificationTemplateText
 {
     [Key]
     [Column("TemplateTextID")]

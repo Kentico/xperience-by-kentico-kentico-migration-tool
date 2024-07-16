@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +10,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("SiteDefaultStylesheetId", Name = "IX_CMS_Site_SiteDefaultStylesheetID")]
 [Index("SiteDomainName", "SiteStatus", Name = "IX_CMS_Site_SiteDomainName_SiteStatus")]
 [Index("SiteName", Name = "IX_CMS_Site_SiteName")]
-public partial class CmsSite
+public class CmsSite
 {
     [Key]
     [Column("SiteID")]

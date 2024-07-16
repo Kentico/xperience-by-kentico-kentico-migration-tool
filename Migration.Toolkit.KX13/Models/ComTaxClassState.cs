@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("COM_TaxClassState")]
 [Index("StateId", Name = "IX_COM_TaxClassState_StateID")]
 [Index("TaxClassId", "StateId", Name = "IX_COM_TaxClassState_TaxClassID_StateID", IsUnique = true)]
-public partial class ComTaxClassState
+public class ComTaxClassState
 {
     [Key]
     [Column("TaxClassStateID")]

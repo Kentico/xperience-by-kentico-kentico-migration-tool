@@ -1,4 +1,3 @@
-
 using CMS.Globalization;
 
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +12,9 @@ using Migration.Toolkit.K11.Models;
 using Migration.Toolkit.KXP.Api;
 
 namespace Migration.Toolkit.Core.K11.Services;
-public class CountryMigrator(ILogger<CountryMigrator> logger,
+
+public class CountryMigrator(
+    ILogger<CountryMigrator> logger,
     IDbContextFactory<K11Context> k11ContextFactory,
     PrimaryKeyMappingContext primaryKeyMappingContext,
     IProtocol protocol,
@@ -25,7 +26,7 @@ public class CountryMigrator(ILogger<CountryMigrator> logger,
     {
         if (!kxpApiInitializer.EnsureApiIsInitialized())
         {
-            throw new InvalidOperationException($"Falied to initialize kentico API. Please check configuration.");
+            throw new InvalidOperationException("Falied to initialize kentico API. Please check configuration.");
         }
 
         var k11Context = k11ContextFactory.CreateDbContext();

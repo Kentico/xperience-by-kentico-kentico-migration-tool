@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_EmailAttachment")]
-public partial class CmsEmailAttachment
+public class CmsEmailAttachment
 {
     [Key]
     [Column("AttachmentID")]

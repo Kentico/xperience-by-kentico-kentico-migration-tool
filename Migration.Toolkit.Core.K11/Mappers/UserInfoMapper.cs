@@ -1,5 +1,4 @@
-
-using System.Data;
+﻿using System.Data;
 
 using CMS.Membership;
 
@@ -14,11 +13,13 @@ using Migration.Toolkit.K11.Models;
 using Migration.Toolkit.KXP.Api;
 
 namespace Migration.Toolkit.Core.K11.Mappers;
-public class UserInfoMapper(ILogger<UserInfoMapper> logger,
-        PrimaryKeyMappingContext primaryKeyMappingContext,
-        IProtocol protocol,
-        KxpClassFacade kxpClassFacade,
-        ToolkitConfiguration toolkitConfiguration)
+
+public class UserInfoMapper(
+    ILogger<UserInfoMapper> logger,
+    PrimaryKeyMappingContext primaryKeyMappingContext,
+    IProtocol protocol,
+    KxpClassFacade kxpClassFacade,
+    ToolkitConfiguration toolkitConfiguration)
     : EntityMapperBase<CmsUser, UserInfo>(logger, primaryKeyMappingContext, protocol)
 {
     protected override UserInfo CreateNewInstance(CmsUser source, MappingHelper mappingHelper, AddFailure addFailure) => new();

@@ -1,13 +1,31 @@
-
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text;
 
 using Migration.Toolkit.Common.Services;
 
 namespace Migration.Toolkit.Common.MigrationProtocol;
+
 public class HandbookReference
 {
     public static IPrintService PrintService = default;
+
+    /// <summary>
+    ///     Use <see cref="HandbookReferences" /> class to store factory methods, don't create instances directly in code.
+    /// </summary>
+    /// <param name="referenceName">
+    ///     Use common identifier characters to describe handbook reference (consider usage in HTML,
+    ///     JSON, DB, C#, href attribute in HTML)
+    /// </param>
+    public HandbookReference(string referenceName, string? additionalInfo = null)
+    {
+        ReferenceName = referenceName;
+        AdditionalInfo = additionalInfo;
+    }
+
+    public bool NeedManualAction { get; private set; }
+    public string ReferenceName { get; }
+    public string? AdditionalInfo { get; }
+    public Dictionary<string, object?>? Data { get; private set; }
 
     public override string ToString()
     {
@@ -21,7 +39,7 @@ public class HandbookReference
         var arr = Data.ToArray();
         for (int i = 0; i < arr.Length; i++)
         {
-            var (key, value) = arr[i];
+            (string key, object? value) = arr[i];
             sb.Append($"{key}: {value}");
 
             if (i < arr.Length - 1)
@@ -33,23 +51,8 @@ public class HandbookReference
         return sb.ToString();
     }
 
-    public bool NeedManualAction { get; private set; } = false;
-    public string ReferenceName { get; }
-    public string? AdditionalInfo { get; }
-    public Dictionary<string, object?>? Data { get; private set; } = null;
-
     /// <summary>
-    /// Use <see cref="HandbookReferences"/> class to store factory methods, don't create instances directly in code.
-    /// </summary>
-    /// <param name="referenceName">Use common identifier characters to describe handbook reference (consider usage in HTML, JSON, DB, C#, href attribute in HTML)</param>
-    public HandbookReference(string referenceName, string? additionalInfo = null)
-    {
-        ReferenceName = referenceName;
-        AdditionalInfo = additionalInfo;
-    }
-
-    /// <summary>
-    /// Related ID of data, specify if possible
+    ///     Related ID of data, specify if possible
     /// </summary>
     public HandbookReference WithId(string idName, object idValue)
     {
@@ -58,7 +61,7 @@ public class HandbookReference
     }
 
     /// <summary>
-    /// Appends message for user to see, use it for describing issue and propose fix if possible
+    ///     Appends message for user to see, use it for describing issue and propose fix if possible
     /// </summary>
     public HandbookReference WithMessage(string message)
     {
@@ -77,7 +80,7 @@ public class HandbookReference
     }
 
     /// <summary>
-    /// Appends data to dictionary for user to see
+    ///     Appends data to dictionary for user to see
     /// </summary>
     public HandbookReference WithData(string key, object value)
     {
@@ -88,12 +91,12 @@ public class HandbookReference
     }
 
     /// <summary>
-    /// Appends data to dictionary for user to see
+    ///     Appends data to dictionary for user to see
     /// </summary>
     public HandbookReference WithData<TValue>(Dictionary<string, TValue> data)
     {
         Data ??= [];
-        foreach (var (key, value) in data)
+        foreach ((string key, var value) in data)
         {
             Data.Add(key, value);
         }
@@ -102,9 +105,12 @@ public class HandbookReference
     }
 
     /// <summary>
-    /// Appends data to dictionary for user to see
+    ///     Appends data to dictionary for user to see
     /// </summary>
-    /// <param name="data">All public instance properties of object are written to dictionary for user to see. Anonymous object can be used</param>
+    /// <param name="data">
+    ///     All public instance properties of object are written to dictionary for user to see. Anonymous object
+    ///     can be used
+    /// </param>
     public HandbookReference WithData(object data)
     {
         Data ??= [];
@@ -112,7 +118,7 @@ public class HandbookReference
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .ToDictionary(p => p.Name, p => p.GetMethod.Invoke(data, Array.Empty<object>())
             );
-        foreach (var (key, value) in dataUpdate)
+        foreach ((string key, object? value) in dataUpdate)
         {
             Data.Add(key, value);
         }
@@ -121,10 +127,14 @@ public class HandbookReference
     }
 
     /// <summary>
-    /// Prints entity information. Type must be supported for print in method 'GetEntityIdentityPrint' in class <see cref="Printer"/>
+    ///     Prints entity information. Type must be supported for print in method 'GetEntityIdentityPrint' in class
+    ///     <see cref="Printer" />
     /// </summary>
     /// <param name="model">Models to print</param>
-    /// <typeparam name="T">Type of model to print - type must be supported for print in method 'GetEntityIdentityPrint' in class <see cref="Printer"/></typeparam>
+    /// <typeparam name="T">
+    ///     Type of model to print - type must be supported for print in method 'GetEntityIdentityPrint' in
+    ///     class <see cref="Printer" />
+    /// </typeparam>
     public HandbookReference WithIdentityPrint<T>(T model)
     {
         Data ??= [];
@@ -133,10 +143,14 @@ public class HandbookReference
     }
 
     /// <summary>
-    /// Prints entity information. Type must be supported for print in method 'GetEntityIdentityPrint' in class <see cref="Printer"/>
+    ///     Prints entity information. Type must be supported for print in method 'GetEntityIdentityPrint' in class
+    ///     <see cref="Printer" />
     /// </summary>
     /// <param name="models">Models to print</param>
-    /// <typeparam name="T">Type of model to print - type must be supported for print in method 'GetEntityIdentityPrint' in class <see cref="Printer"/></typeparam>
+    /// <typeparam name="T">
+    ///     Type of model to print - type must be supported for print in method 'GetEntityIdentityPrint' in
+    ///     class <see cref="Printer" />
+    /// </typeparam>
     public HandbookReference WithIdentityPrints<T>(IEnumerable<T> models)
     {
         Data ??= [];
@@ -145,7 +159,7 @@ public class HandbookReference
     }
 
     /// <summary>
-    /// Marks reference as higher priority with serious consequences to migration of data to target instance
+    ///     Marks reference as higher priority with serious consequences to migration of data to target instance
     /// </summary>
     public HandbookReference NeedsManualAction()
     {

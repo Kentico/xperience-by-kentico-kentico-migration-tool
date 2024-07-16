@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("CMS_SearchIndex")]
-public partial class CmsSearchIndex
+public class CmsSearchIndex
 {
     [Key]
     [Column("IndexID")]

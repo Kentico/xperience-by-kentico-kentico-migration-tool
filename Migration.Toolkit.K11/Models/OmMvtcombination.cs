@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("OM_MVTCombination")]
 [Index("MvtcombinationPageTemplateId", Name = "IX_OM_MVTCombination_MVTCombinationPageTemplateID")]
-public partial class OmMvtcombination
+public class OmMvtcombination
 {
     [Key]
     [Column("MVTCombinationID")]

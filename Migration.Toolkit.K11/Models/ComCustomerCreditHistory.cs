@@ -8,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("COM_CustomerCreditHistory")]
 [Index("EventCustomerId", "EventDate", Name = "IX_COM_CustomerCreditHistory_EventCustomerID_EventDate", IsDescending = new[] { false, true })]
 [Index("EventSiteId", Name = "IX_COM_CustomerCreditHistory_EventSiteID")]
-public partial class ComCustomerCreditHistory
+public class ComCustomerCreditHistory
 {
     [Key]
     [Column("EventID")]

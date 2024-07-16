@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("Temp_File")]
-public partial class TempFile
+public class TempFile
 {
     [Key]
     [Column("FileID")]

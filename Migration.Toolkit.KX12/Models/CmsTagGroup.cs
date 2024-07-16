@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX12.Models;
 
 [Table("CMS_TagGroup")]
 [Index("TagGroupSiteId", Name = "IX_CMS_TagGroup_TagGroupSiteID")]
-public partial class CmsTagGroup
+public class CmsTagGroup
 {
     [Key]
     [Column("TagGroupID")]

@@ -9,7 +9,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("ForumCommunityGroupId", Name = "IX_Forums_Forum_ForumCommunityGroupID")]
 [Index("ForumDocumentId", Name = "IX_Forums_Forum_ForumDocumentID")]
 [Index("ForumSiteId", "ForumName", Name = "IX_Forums_Forum_ForumSiteID_ForumName")]
-public partial class ForumsForum
+public class ForumsForum
 {
     [Key]
     [Column("ForumID")]

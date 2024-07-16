@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("COM_OrderItemSKUFile")]
 [Index("FileId", Name = "IX_COM_OrderItemSKUFile_FileID")]
 [Index("OrderItemId", Name = "IX_COM_OrderItemSKUFile_OrderItemID")]
-public partial class ComOrderItemSkufile
+public class ComOrderItemSkufile
 {
     [Key]
     [Column("OrderItemSKUFileID")]

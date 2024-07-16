@@ -1,4 +1,3 @@
-
 using System.Diagnostics;
 
 using CMS.Membership;
@@ -19,6 +18,7 @@ using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Api.Enums;
 
 namespace Migration.Toolkit.Core.KX12.Handlers;
+
 public class MigrateMembersCommandHandler(
     ILogger<MigrateMembersCommandHandler> logger,
     IDbContextFactory<KX12Context> kx12ContextFactory,
@@ -28,6 +28,10 @@ public class MigrateMembersCommandHandler(
     : IRequestHandler<MigrateMembersCommand, CommandResult>, IDisposable
 {
     private const string USER_PUBLIC = "public";
+
+    public void Dispose()
+    {
+    }
 
     public async Task<CommandResult> Handle(MigrateMembersCommand request, CancellationToken cancellationToken)
     {
@@ -70,7 +74,7 @@ public class MigrateMembersCommandHandler(
     {
         if (mapped is { Success: true } result)
         {
-            var (memberInfo, newInstance) = result;
+            (var memberInfo, bool newInstance) = result;
             ArgumentNullException.ThrowIfNull(memberInfo);
 
             try
@@ -85,7 +89,7 @@ public class MigrateMembersCommandHandler(
             {
                 logger.LogEntitySetError(sqlException, newInstance, memberInfo);
                 protocol.Append(HandbookReferences.DbConstraintBroken(sqlException, k12User)
-                    .WithData(new { k12User.UserName, k12User.UserGuid, k12User.UserId, })
+                    .WithData(new { k12User.UserName, k12User.UserGuid, k12User.UserId })
                     .WithMessage("Failed to migrate user, target database broken.")
                 );
                 return;
@@ -104,10 +108,5 @@ public class MigrateMembersCommandHandler(
             // left for OM_Activity
             primaryKeyMappingContext.SetMapping<KX12M.CmsUser>(r => r.UserId, k12User.UserId, memberInfo.MemberID);
         }
-    }
-
-    public void Dispose()
-    {
-
     }
 }

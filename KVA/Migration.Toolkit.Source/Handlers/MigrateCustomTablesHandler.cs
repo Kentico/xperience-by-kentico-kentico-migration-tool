@@ -1,4 +1,3 @@
-
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Xml.Linq;
@@ -21,6 +20,7 @@ using Migration.Toolkit.Source.Helpers;
 using Migration.Toolkit.Source.Model;
 
 namespace Migration.Toolkit.Source.Handlers;
+
 public class MigrateCustomTablesHandler(
     ILogger<MigrateCustomTablesHandler> logger,
     ModelFacade modelFacade,
@@ -30,18 +30,18 @@ public class MigrateCustomTablesHandler(
     IEntityMapper<ICmsClass, DataClassInfo> dataClassMapper,
     PrimaryKeyMappingContext primaryKeyMappingContext
     // ReusableSchemaService reusableSchemaService
-    )
+)
     : IRequestHandler<MigrateCustomTablesCommand, CommandResult>
 {
+    private readonly Guid _resourceGuidNamespace = new("C4E3F5FD-9220-4300-91CE-8EB565D3235E");
+    private ResourceInfo? _customTableResource;
+
     public async Task<CommandResult> Handle(MigrateCustomTablesCommand request, CancellationToken cancellationToken)
     {
         await MigrateCustomTables();
 
         return new GenericCommandResult();
     }
-
-    private readonly Guid _resourceGuidNamespace = new("C4E3F5FD-9220-4300-91CE-8EB565D3235E");
-    private ResourceInfo? _customTableResource;
 
     private async Task<ResourceInfo> EnsureCustomTablesResource()
     {
@@ -59,7 +59,7 @@ public class MigrateCustomTablesHandler(
             {
                 ResourceDisplayName = "Custom tables",
                 ResourceName = resourceName,
-                ResourceDescription = $"Container resource for migrated custom tables",
+                ResourceDescription = "Container resource for migrated custom tables",
                 ResourceGUID = resourceGuid,
                 ResourceLastModified = default,
                 ResourceIsInDevelopment = false
@@ -177,7 +177,7 @@ public class MigrateCustomTablesHandler(
         {
             if (mapped is { Success: true } result)
             {
-                var (dataClassInfo, newInstance) = result;
+                (var dataClassInfo, bool newInstance) = result;
 
                 ArgumentNullException.ThrowIfNull(dataClassInfo, nameof(dataClassInfo));
 

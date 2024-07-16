@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_ObjectWorkflowTrigger")]
 [Index("TriggerWorkflowId", Name = "IX_CMS_ObjectWorkflowTrigger_TriggerWorkflowID")]
-public partial class CmsObjectWorkflowTrigger
+public class CmsObjectWorkflowTrigger
 {
     [Key]
     [Column("TriggerID")]

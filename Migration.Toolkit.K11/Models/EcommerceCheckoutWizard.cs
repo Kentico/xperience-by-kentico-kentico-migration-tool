@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("Ecommerce_CheckoutWizard")]
-public partial class EcommerceCheckoutWizard
+public class EcommerceCheckoutWizard
 {
     [Key]
     [Column("CheckoutWizardID")]

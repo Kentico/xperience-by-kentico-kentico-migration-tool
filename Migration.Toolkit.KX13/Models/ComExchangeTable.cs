@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("COM_ExchangeTable")]
 [Index("ExchangeTableSiteId", Name = "IX_COM_ExchangeTable_ExchangeTableSiteID")]
-public partial class ComExchangeTable
+public class ComExchangeTable
 {
     [Key]
     [Column("ExchangeTableID")]

@@ -1,4 +1,3 @@
-
 using System.Collections.Frozen;
 using System.Collections.Immutable;
 
@@ -11,16 +10,19 @@ using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.Source.Model;
 
 namespace Migration.Toolkit.Source.Services;
+
 /// <summary>
-/// in cases where consumer exported site with documents and created new site with that particular export, GUID conflicts will probably happen. This class aims to query and solve those conflicts
+///     in cases where consumer exported site with documents and created new site with that particular export, GUID
+///     conflicts will probably happen. This class aims to query and solve those conflicts
 /// </summary>
 /// <param name="modelFacade"></param>
 /// <param name="logger"></param>
 public class SpoiledGuidContext(ModelFacade modelFacade, ILogger<SpoiledGuidContext> logger) : ISpoiledGuidContext
 {
-    internal record SpoiledDocumentGuidInfo(int SiteId, int NodeId);
-
     private IDictionary<Guid, ImmutableList<SpoiledDocumentGuidInfo>>? _spoiledDocumentGuids;
+
+    private IDictionary<Guid, ImmutableList<SpoiledNodeGuidInfo>>? _spoiledNodeGuids;
+
     internal IDictionary<Guid, ImmutableList<SpoiledDocumentGuidInfo>> SpoiledDocumentGuids =>
         _spoiledDocumentGuids ??= modelFacade.Select("""
                                                      SELECT DocumentGUID, STRING_AGG(CONCAT(NodeSiteID, '-', NodeID), '|') [SiteID-NodeID]
@@ -39,9 +41,6 @@ public class SpoiledGuidContext(ModelFacade modelFacade, ILogger<SpoiledGuidCont
                 }).ToImmutableList()
             );
 
-    internal record SpoiledNodeGuidInfo(int SiteId);
-
-    private IDictionary<Guid, ImmutableList<SpoiledNodeGuidInfo>>? _spoiledNodeGuids;
     internal IDictionary<Guid, ImmutableList<SpoiledNodeGuidInfo>> SpoiledNodeGuids =>
         _spoiledNodeGuids ??= modelFacade.Select("""
                                                  SELECT NodeGUID, STRING_AGG(NodeSiteID, '|') [SiteID]
@@ -105,8 +104,8 @@ public class SpoiledGuidContext(ModelFacade modelFacade, ILogger<SpoiledGuidCont
     public Guid? GetNodeGuid(int nodeId, int siteId)
     {
         var nodeGuid = modelFacade.Select("""
-                                        SELECT NodeGUID FROM CMS_Tree WHERE NodeSiteID = @siteId AND NodeId = @nodeId
-                                        """, (reader, version) => reader.Unbox<Guid?>("NodeGUID"),
+                                          SELECT NodeGUID FROM CMS_Tree WHERE NodeSiteID = @siteId AND NodeId = @nodeId
+                                          """, (reader, version) => reader.Unbox<Guid?>("NodeGUID"),
             new SqlParameter("siteId", siteId), new SqlParameter("nodeId", nodeId)
         ).FirstOrDefault();
 
@@ -126,4 +125,8 @@ public class SpoiledGuidContext(ModelFacade modelFacade, ILogger<SpoiledGuidCont
     }
 
     public Guid EnsureNodeGuid(ICmsTree node) => EnsureNodeGuid(node.NodeGUID, node.NodeSiteID, node.NodeID);
+
+    internal record SpoiledDocumentGuidInfo(int SiteId, int NodeId);
+
+    internal record SpoiledNodeGuidInfo(int SiteId);
 }

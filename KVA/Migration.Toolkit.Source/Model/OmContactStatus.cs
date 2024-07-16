@@ -5,6 +5,7 @@ using System.Data;
 using Migration.Toolkit.Common;
 
 namespace Migration.Toolkit.Source.Model;
+
 public interface IOmContactStatus : ISourceModel<IOmContactStatus>
 {
     int ContactStatusID { get; }
@@ -19,6 +20,7 @@ public interface IOmContactStatus : ISourceModel<IOmContactStatus>
         { Major: 13 } => OmContactStatusK13.GetPrimaryKeyName(version),
         _ => throw new InvalidCastException($"Invalid version {version}")
     };
+
     static bool ISourceModel<IOmContactStatus>.IsAvailable(SemanticVersion version) => version switch
     {
         { Major: 11 } => OmContactStatusK11.IsAvailable(version),
@@ -26,8 +28,10 @@ public interface IOmContactStatus : ISourceModel<IOmContactStatus>
         { Major: 13 } => OmContactStatusK13.IsAvailable(version),
         _ => throw new InvalidCastException($"Invalid version {version}")
     };
+
     static string ISourceModel<IOmContactStatus>.TableName => "OM_ContactStatus";
     static string ISourceModel<IOmContactStatus>.GuidColumnName => ""; //assumtion, class Guid column doesn't change between versions
+
     static IOmContactStatus ISourceModel<IOmContactStatus>.FromReader(IDataReader reader, SemanticVersion version) => version switch
     {
         { Major: 11 } => OmContactStatusK11.FromReader(reader, version),
@@ -36,42 +40,51 @@ public interface IOmContactStatus : ISourceModel<IOmContactStatus>
         _ => throw new InvalidCastException($"Invalid version {version}")
     };
 }
-public partial record OmContactStatusK11(int ContactStatusID, string ContactStatusName, string ContactStatusDisplayName, string? ContactStatusDescription) : IOmContactStatus, ISourceModel<OmContactStatusK11>
+
+public record OmContactStatusK11(int ContactStatusID, string ContactStatusName, string ContactStatusDisplayName, string? ContactStatusDescription) : IOmContactStatus, ISourceModel<OmContactStatusK11>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
     public static string GetPrimaryKeyName(SemanticVersion version) => "ContactStatusID";
     public static string TableName => "OM_ContactStatus";
     public static string GuidColumnName => "";
-    static OmContactStatusK11 ISourceModel<OmContactStatusK11>.FromReader(IDataReader reader, SemanticVersion version) => new OmContactStatusK11(
-            reader.Unbox<int>("ContactStatusID"), reader.Unbox<string>("ContactStatusName"), reader.Unbox<string>("ContactStatusDisplayName"), reader.Unbox<string?>("ContactStatusDescription")
-        );
-    public static OmContactStatusK11 FromReader(IDataReader reader, SemanticVersion version) => new OmContactStatusK11(
-            reader.Unbox<int>("ContactStatusID"), reader.Unbox<string>("ContactStatusName"), reader.Unbox<string>("ContactStatusDisplayName"), reader.Unbox<string?>("ContactStatusDescription")
-        );
-};
-public partial record OmContactStatusK12(int ContactStatusID, string ContactStatusName, string ContactStatusDisplayName, string? ContactStatusDescription) : IOmContactStatus, ISourceModel<OmContactStatusK12>
+
+    static OmContactStatusK11 ISourceModel<OmContactStatusK11>.FromReader(IDataReader reader, SemanticVersion version) => new(
+        reader.Unbox<int>("ContactStatusID"), reader.Unbox<string>("ContactStatusName"), reader.Unbox<string>("ContactStatusDisplayName"), reader.Unbox<string?>("ContactStatusDescription")
+    );
+
+    public static OmContactStatusK11 FromReader(IDataReader reader, SemanticVersion version) => new(
+        reader.Unbox<int>("ContactStatusID"), reader.Unbox<string>("ContactStatusName"), reader.Unbox<string>("ContactStatusDisplayName"), reader.Unbox<string?>("ContactStatusDescription")
+    );
+}
+
+public record OmContactStatusK12(int ContactStatusID, string ContactStatusName, string ContactStatusDisplayName, string? ContactStatusDescription) : IOmContactStatus, ISourceModel<OmContactStatusK12>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
     public static string GetPrimaryKeyName(SemanticVersion version) => "ContactStatusID";
     public static string TableName => "OM_ContactStatus";
     public static string GuidColumnName => "";
-    static OmContactStatusK12 ISourceModel<OmContactStatusK12>.FromReader(IDataReader reader, SemanticVersion version) => new OmContactStatusK12(
-            reader.Unbox<int>("ContactStatusID"), reader.Unbox<string>("ContactStatusName"), reader.Unbox<string>("ContactStatusDisplayName"), reader.Unbox<string?>("ContactStatusDescription")
-        );
-    public static OmContactStatusK12 FromReader(IDataReader reader, SemanticVersion version) => new OmContactStatusK12(
-            reader.Unbox<int>("ContactStatusID"), reader.Unbox<string>("ContactStatusName"), reader.Unbox<string>("ContactStatusDisplayName"), reader.Unbox<string?>("ContactStatusDescription")
-        );
-};
-public partial record OmContactStatusK13(int ContactStatusID, string ContactStatusName, string ContactStatusDisplayName, string? ContactStatusDescription) : IOmContactStatus, ISourceModel<OmContactStatusK13>
+
+    static OmContactStatusK12 ISourceModel<OmContactStatusK12>.FromReader(IDataReader reader, SemanticVersion version) => new(
+        reader.Unbox<int>("ContactStatusID"), reader.Unbox<string>("ContactStatusName"), reader.Unbox<string>("ContactStatusDisplayName"), reader.Unbox<string?>("ContactStatusDescription")
+    );
+
+    public static OmContactStatusK12 FromReader(IDataReader reader, SemanticVersion version) => new(
+        reader.Unbox<int>("ContactStatusID"), reader.Unbox<string>("ContactStatusName"), reader.Unbox<string>("ContactStatusDisplayName"), reader.Unbox<string?>("ContactStatusDescription")
+    );
+}
+
+public record OmContactStatusK13(int ContactStatusID, string ContactStatusName, string ContactStatusDisplayName, string? ContactStatusDescription) : IOmContactStatus, ISourceModel<OmContactStatusK13>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
     public static string GetPrimaryKeyName(SemanticVersion version) => "ContactStatusID";
     public static string TableName => "OM_ContactStatus";
     public static string GuidColumnName => "";
-    static OmContactStatusK13 ISourceModel<OmContactStatusK13>.FromReader(IDataReader reader, SemanticVersion version) => new OmContactStatusK13(
-            reader.Unbox<int>("ContactStatusID"), reader.Unbox<string>("ContactStatusName"), reader.Unbox<string>("ContactStatusDisplayName"), reader.Unbox<string?>("ContactStatusDescription")
-        );
-    public static OmContactStatusK13 FromReader(IDataReader reader, SemanticVersion version) => new OmContactStatusK13(
-            reader.Unbox<int>("ContactStatusID"), reader.Unbox<string>("ContactStatusName"), reader.Unbox<string>("ContactStatusDisplayName"), reader.Unbox<string?>("ContactStatusDescription")
-        );
-};
+
+    static OmContactStatusK13 ISourceModel<OmContactStatusK13>.FromReader(IDataReader reader, SemanticVersion version) => new(
+        reader.Unbox<int>("ContactStatusID"), reader.Unbox<string>("ContactStatusName"), reader.Unbox<string>("ContactStatusDisplayName"), reader.Unbox<string?>("ContactStatusDescription")
+    );
+
+    public static OmContactStatusK13 FromReader(IDataReader reader, SemanticVersion version) => new(
+        reader.Unbox<int>("ContactStatusID"), reader.Unbox<string>("ContactStatusName"), reader.Unbox<string>("ContactStatusDisplayName"), reader.Unbox<string?>("ContactStatusDescription")
+    );
+}

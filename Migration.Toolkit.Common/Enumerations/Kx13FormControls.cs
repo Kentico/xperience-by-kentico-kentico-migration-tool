@@ -1,4 +1,5 @@
 // ReSharper disable InconsistentNaming
+
 namespace Migration.Toolkit.Common.Enumerations;
 
 public class Kx13FormControls

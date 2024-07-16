@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("CMS_HeadlessChannel")]
 [Index("HeadlessChannelChannelId", Name = "IX_CMS_HeadlessChannel_HeadlessChannelChannelID")]
 [Index("HeadlessChannelPrimaryContentLanguageId", Name = "IX_CMS_HeadlessChannel_HeadlessChannelPrimaryContentLanguageID")]
-public partial class CmsHeadlessChannel
+public class CmsHeadlessChannel
 {
     [Key]
     [Column("HeadlessChannelID")]

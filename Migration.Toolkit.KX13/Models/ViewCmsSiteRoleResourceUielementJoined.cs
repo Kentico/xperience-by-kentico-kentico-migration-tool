@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.KX13.Models;
 
 [Keyless]
-public partial class ViewCmsSiteRoleResourceUielementJoined
+public class ViewCmsSiteRoleResourceUielementJoined
 {
     [StringLength(100)]
     public string RoleName { get; set; } = null!;

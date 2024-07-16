@@ -10,7 +10,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("TaskResourceId", Name = "IX_CMS_ScheduledTask_TaskResourceID")]
 [Index("TaskSiteId", "TaskDisplayName", Name = "IX_CMS_ScheduledTask_TaskSiteID_TaskDisplayName")]
 [Index("TaskUserId", Name = "IX_CMS_ScheduledTask_TaskUserID")]
-public partial class CmsScheduledTask
+public class CmsScheduledTask
 {
     [Key]
     [Column("TaskID")]

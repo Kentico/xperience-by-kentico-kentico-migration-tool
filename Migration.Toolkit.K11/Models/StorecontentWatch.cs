@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("STORECONTENT_Watch")]
-public partial class StorecontentWatch
+public class StorecontentWatch
 {
     [Key]
     [Column("WatchID")]

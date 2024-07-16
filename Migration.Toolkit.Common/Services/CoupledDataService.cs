@@ -1,7 +1,7 @@
-
 using Microsoft.Data.SqlClient;
 
 namespace Migration.Toolkit.Common.Services;
+
 public class CoupledDataService
 {
     private readonly ToolkitConfiguration _configuration;

@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("Analytics_CampaignAssetUrl")]
 [Index("CampaignAssetUrlCampaignAssetId", Name = "IX_Analytics_CampaignAssetUrl_CampaignAssetUrlCampaignAssetID")]
-public partial class AnalyticsCampaignAssetUrl
+public class AnalyticsCampaignAssetUrl
 {
     [Key]
     [Column("CampaignAssetUrlID")]

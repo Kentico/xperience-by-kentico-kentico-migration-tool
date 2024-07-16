@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("Chat_User")]
 [Index("ChatUserUserId", Name = "IX_Chat_User_UserID")]
-public partial class ChatUser
+public class ChatUser
 {
     [Key]
     [Column("ChatUserID")]

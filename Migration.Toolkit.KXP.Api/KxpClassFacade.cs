@@ -1,10 +1,10 @@
-
 using System.Diagnostics;
 
 using CMS.DataEngine;
 using CMS.FormEngine;
 
 namespace Migration.Toolkit.KXP.Api;
+
 public record CustomizedFieldInfo(string FieldName);
 
 public class KxpClassFacade

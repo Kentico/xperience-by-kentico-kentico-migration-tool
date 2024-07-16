@@ -9,7 +9,6 @@ public class EntityConfigurations : Dictionary<string, EntityConfiguration>
 {
     public EntityConfigurations() : base(StringComparer.OrdinalIgnoreCase)
     {
-
     }
 
     public EntityConfiguration GetEntityConfiguration(string? tableName)

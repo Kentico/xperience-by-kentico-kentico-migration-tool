@@ -1,4 +1,3 @@
-
 using System.Diagnostics;
 
 using CMS.DataEngine;
@@ -11,6 +10,7 @@ using Migration.Toolkit.Core.K11.Contexts;
 using Migration.Toolkit.K11.Models;
 
 namespace Migration.Toolkit.Core.K11.Mappers;
+
 public class CmsSettingsKeyMapper(ILogger<CmsSettingsKeyMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : EntityMapperBase<CmsSettingsKey, SettingsKeyInfo>(logger, pkContext, protocol)
 {
     private const string SOURCE_KEY_NAME = "CMSDefaultUserID";

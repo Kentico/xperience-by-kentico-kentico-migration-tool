@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("CMS_MemberExternalLogin")]
 [Index("MemberExternalLoginLoginProvider", "MemberExternalLoginIdentityKey", Name = "IX_CMS_MemberExternalLogin_MemberExternalLoginLoginProvider_MemberExternalLoginIdentityKey", IsUnique = true)]
 [Index("MemberExternalLoginMemberId", Name = "IX_CMS_MemberExternalLogin_MemberExternalLoginMemberID")]
-public partial class CmsMemberExternalLogin
+public class CmsMemberExternalLogin
 {
     [Key]
     [Column("MemberExternalLoginID")]

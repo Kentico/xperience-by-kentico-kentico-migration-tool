@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("OM_TrackedWebsite")]
-public partial class OmTrackedWebsite
+public class OmTrackedWebsite
 {
     [Key]
     [Column("TrackedWebsiteID")]

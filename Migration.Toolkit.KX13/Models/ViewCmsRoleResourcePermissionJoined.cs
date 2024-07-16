@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.KX13.Models;
 
 [Keyless]
-public partial class ViewCmsRoleResourcePermissionJoined
+public class ViewCmsRoleResourcePermissionJoined
 {
     [Column("RoleID")]
     public int RoleId { get; set; }

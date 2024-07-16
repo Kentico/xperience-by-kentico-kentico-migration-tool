@@ -1,13 +1,12 @@
-
 using Microsoft.Data.SqlClient;
 
 using Migration.Toolkit.Source.Model;
 
 namespace Migration.Toolkit.Source.Services;
+
 public class CmsRelationshipService(
     ModelFacade modelFacade)
 {
-    public record NodeRelationShipResult(ICmsRelationship Relationship, ICmsTree? RightNode);
     public IEnumerable<NodeRelationShipResult> GetNodeRelationships(int nodeId, string className, Guid fieldGuid)
     {
         string relationshipName = $"{className}_{fieldGuid}";
@@ -25,7 +24,9 @@ public class CmsRelationshipService(
 
         foreach (var cmsRelationship in relationships)
         {
-            yield return new(cmsRelationship, modelFacade.SelectById<ICmsTree>(cmsRelationship.RightNodeID));
+            yield return new NodeRelationShipResult(cmsRelationship, modelFacade.SelectById<ICmsTree>(cmsRelationship.RightNodeID));
         }
     }
+
+    public record NodeRelationShipResult(ICmsRelationship Relationship, ICmsTree? RightNode);
 }

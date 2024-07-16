@@ -1,4 +1,3 @@
-
 using System.Linq.Expressions;
 
 using Microsoft.EntityFrameworkCore;
@@ -9,11 +8,12 @@ using Migration.Toolkit.KX12.Context;
 using Migration.Toolkit.KXP.Context;
 
 namespace Migration.Toolkit.Core.KX12.Services;
+
 public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
 {
-    private readonly ILogger<PrimaryKeyLocatorService> _logger;
-    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
     private readonly IDbContextFactory<KX12Context> _kx12ContextFactory;
+    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
+    private readonly ILogger<PrimaryKeyLocatorService> _logger;
 
     public PrimaryKeyLocatorService(
         ILogger<PrimaryKeyLocatorService> logger,
@@ -25,19 +25,6 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
         _kxpContextFactory = kxpContextFactory;
         _kx12ContextFactory = kx12ContextFactory;
     }
-
-    private class KeyEqualityComparerWithLambda<T> : IEqualityComparer<T>
-    {
-        private readonly Func<T?, T?, bool> _equalityComparer;
-
-        public KeyEqualityComparerWithLambda(Func<T?, T?, bool> equalityComparer) => _equalityComparer = equalityComparer;
-
-        public bool Equals(T? x, T? y) => _equalityComparer.Invoke(x, y);
-
-        public int GetHashCode(T obj) => obj?.GetHashCode() ?? 0;
-    }
-
-    private record CmsUserKey(Guid UserGuid, string UserName);
 
     public IEnumerable<SourceTargetKeyMapping> SelectAll<T>(Expression<Func<T, object>> keyNameSelector)
     {
@@ -131,7 +118,6 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
         }
 
 
-
         throw new NotImplementedException();
     }
 
@@ -217,6 +203,7 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
             {
                 _logger.LogWarning("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
             }
+
             return false;
         }
         finally
@@ -231,4 +218,17 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
         targetId = -1;
         return false;
     }
+
+    private class KeyEqualityComparerWithLambda<T> : IEqualityComparer<T>
+    {
+        private readonly Func<T?, T?, bool> _equalityComparer;
+
+        public KeyEqualityComparerWithLambda(Func<T?, T?, bool> equalityComparer) => _equalityComparer = equalityComparer;
+
+        public bool Equals(T? x, T? y) => _equalityComparer.Invoke(x, y);
+
+        public int GetHashCode(T obj) => obj?.GetHashCode() ?? 0;
+    }
+
+    private record CmsUserKey(Guid UserGuid, string UserName);
 }

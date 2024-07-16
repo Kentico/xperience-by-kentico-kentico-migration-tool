@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_WebsiteCaptchaSettings")]
-public partial class CmsWebsiteCaptchaSetting
+public class CmsWebsiteCaptchaSetting
 {
     [Key]
     [Column("WebsiteCaptchaSettingsID")]

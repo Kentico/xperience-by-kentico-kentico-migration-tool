@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("Forums_ForumGroup")]
 [Index("GroupGroupId", Name = "IX_Forums_ForumGroup_GroupGroupID")]
 [Index("GroupSiteId", "GroupName", Name = "IX_Forums_ForumGroup_GroupSiteID_GroupName")]
-public partial class ForumsForumGroup
+public class ForumsForumGroup
 {
     [Key]
     [Column("GroupID")]

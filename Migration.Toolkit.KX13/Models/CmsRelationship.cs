@@ -9,7 +9,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("LeftNodeId", Name = "IX_CMS_Relationship_LeftNodeID")]
 [Index("RelationshipNameId", Name = "IX_CMS_Relationship_RelationshipNameID")]
 [Index("RightNodeId", Name = "IX_CMS_Relationship_RightNodeID")]
-public partial class CmsRelationship
+public class CmsRelationship
 {
     [Key]
     [Column("RelationshipID")]

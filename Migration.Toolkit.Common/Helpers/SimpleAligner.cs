@@ -1,19 +1,24 @@
-
 using System.Collections;
 
 namespace Migration.Toolkit.Common.Helpers;
+
 public class SimpleAligner<TLeft, TRight, TKey> : IEnumerator<SimpleAlignResult<TLeft?, TRight?, TKey>> where TLeft : class where TRight : class
 {
     public delegate TKey? SelectKey<in T>(T? current);
 
-    private readonly SelectKey<TLeft> _selectKeyA;
-    private readonly SelectKey<TRight> _selectKeyB;
     private readonly bool _disposeEnumerators;
     private readonly IEnumerator<TLeft> _eA;
     private readonly IEnumerator<TRight> _eB;
     private readonly IEnumerator<TKey> _eK;
 
-    public int Ordinal { get; private set; }
+    private readonly SelectKey<TLeft> _selectKeyA;
+    private readonly SelectKey<TRight> _selectKeyB;
+
+    private bool _firstMove = true;
+
+    private bool _hasA;
+    private bool _hasB;
+    private bool _hasK = true;
 
     private SimpleAligner(
         IEnumerator<TLeft> eA,
@@ -33,20 +38,7 @@ public class SimpleAligner<TLeft, TRight, TKey> : IEnumerator<SimpleAlignResult<
         Current = new AlignDefault<TLeft?, TRight?, TKey>();
     }
 
-    public static SimpleAligner<TLeft, TRight, TKey> Create(
-        IEnumerator<TLeft> eA,
-        IEnumerator<TRight> eB,
-        IEnumerator<TKey> eK,
-        SelectKey<TLeft> selectKeyA,
-        SelectKey<TRight> selectKeyB,
-        bool disposeEnumerators
-        ) => new(eA, eB, eK, selectKeyA, selectKeyB, disposeEnumerators);
-
-    private bool _hasA;
-    private bool _hasB;
-    private bool _hasK = true;
-
-    private bool _firstMove = true;
+    public int Ordinal { get; private set; }
 
     public bool MoveNext()
     {
@@ -132,4 +124,13 @@ public class SimpleAligner<TLeft, TRight, TKey> : IEnumerator<SimpleAlignResult<
         _eB.Dispose();
         _eK.Dispose();
     }
+
+    public static SimpleAligner<TLeft, TRight, TKey> Create(
+        IEnumerator<TLeft> eA,
+        IEnumerator<TRight> eB,
+        IEnumerator<TKey> eK,
+        SelectKey<TLeft> selectKeyA,
+        SelectKey<TRight> selectKeyB,
+        bool disposeEnumerators
+    ) => new(eA, eB, eK, selectKeyA, selectKeyB, disposeEnumerators);
 }

@@ -4,7 +4,7 @@ public enum MediaKind
 {
     None,
     Attachment,
-    MediaFile,
+    MediaFile
 }
 
 public enum MediaLinkKind
@@ -17,11 +17,6 @@ public enum MediaLinkKind
 
 public class MediaHelper
 {
-    public record MatchMediaLinkResult(bool Success, MediaLinkKind LinkKind, MediaKind MediaKind, string? Path, Guid? MediaGuid)
-    {
-        public static readonly MatchMediaLinkResult None = new(false, MediaLinkKind.None, MediaKind.None, null, null);
-    };
-
     public static MatchMediaLinkResult MatchMediaLink(string? linkStr)
     {
         if (linkStr == null)
@@ -111,5 +106,10 @@ public class MediaHelper
         }
 
         return new MatchMediaLinkResult(true, mediaLinkKind, mediaKind, copyPath ? $"/{string.Join("/", mediaPathResult)}" : null, mediaId);
+    }
+
+    public record MatchMediaLinkResult(bool Success, MediaLinkKind LinkKind, MediaKind MediaKind, string? Path, Guid? MediaGuid)
+    {
+        public static readonly MatchMediaLinkResult None = new(false, MediaLinkKind.None, MediaKind.None, null, null);
     }
 }

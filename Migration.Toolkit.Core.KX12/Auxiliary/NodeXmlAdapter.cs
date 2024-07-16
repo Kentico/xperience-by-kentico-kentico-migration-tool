@@ -1,14 +1,13 @@
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Enumerations;
 
 namespace Migration.Toolkit.Core.KX12.Auxiliary;
+
 internal class NodeXmlAdapter
 {
     private readonly XElement _xClass;
-
-    public bool ParsingSuccessful { get; }
 
     public NodeXmlAdapter(string xml)
     {
@@ -25,9 +24,7 @@ internal class NodeXmlAdapter
         }
     }
 
-    public string? GetValue(string columnName) => _xClass.Element(columnName)?.Value;
-
-    public bool HasValueSet(string columnName) => _xClass.Element(columnName) != null;
+    public bool ParsingSuccessful { get; }
 
     public int? NodeID => _xClass.Element(NodeXmlColumns.NODE_ID)?.Value<int>();
     public string? NodeAliasPath => _xClass.Element(NodeXmlColumns.NODE_ALIAS_PATH)?.Value;
@@ -37,8 +34,10 @@ internal class NodeXmlAdapter
     public int? NodeParentID => _xClass.Element(NodeXmlColumns.NODE_PARENT_ID)?.Value<int>();
     public int? NodeLevel => _xClass.Element(NodeXmlColumns.NODE_LEVEL)?.Value<int>();
     public int? NodeSiteID => _xClass.Element(NodeXmlColumns.NODE_SITE_ID)?.Value<int>();
+
     [Obsolete("NodeGUID is not unique, use other means of node identification", true)]
     public Guid? NodeGUID => _xClass.Element(NodeXmlColumns.NODE_GUID)?.Value<Guid>();
+
     public int? NodeOrder => _xClass.Element(NodeXmlColumns.NODE_ORDER)?.Value<int>();
     public int? NodeOwner => _xClass.Element(NodeXmlColumns.NODE_OWNER)?.Value<int>();
     public bool? NodeHasChildren => _xClass.Element(NodeXmlColumns.NODE_HAS_CHILDREN)?.ValueAsBool();
@@ -60,12 +59,18 @@ internal class NodeXmlAdapter
     public string? DocumentContent => _xClass.Element(NodeXmlColumns.DOCUMENT_CONTENT)?.Value;
     public string? DocumentLastVersionNumber => _xClass.Element(NodeXmlColumns.DOCUMENT_LAST_VERSION_NUMBER)?.Value;
     public bool? DocumentIsArchived => _xClass.Element(NodeXmlColumns.DOCUMENT_IS_ARCHIVED)?.ValueAsBool();
+
     [Obsolete("DocumentGUID is not unique, use other means of document identification", true)]
     public Guid? DocumentGUID => _xClass.Element(NodeXmlColumns.DOCUMENT_GUID)?.Value<Guid>();
+
     public Guid? DocumentWorkflowCycleGUID => _xClass.Element(NodeXmlColumns.DOCUMENT_WORKFLOW_CYCLE_GUID)?.Value<Guid>();
     public bool? DocumentCanBePublished => _xClass.Element(NodeXmlColumns.DOCUMENT_CAN_BE_PUBLISHED)?.ValueAsBool();
     public string? DocumentPageBuilderWidgets => _xClass.Element(NodeXmlColumns.DOCUMENT_PAGE_BUILDER_WIDGETS)?.Value;
     public string? ClassName => _xClass.Element(NodeXmlColumns.CLASS_NAME)?.Value;
 
     public string? DocumentPageTemplateConfiguration => _xClass.Element(NodeXmlColumns.DOCUMENT_PAGE_TEMPLATE_CONFIGURATION)?.Value;
+
+    public string? GetValue(string columnName) => _xClass.Element(columnName)?.Value;
+
+    public bool HasValueSet(string columnName) => _xClass.Element(columnName) != null;
 }

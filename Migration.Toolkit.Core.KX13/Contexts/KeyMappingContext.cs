@@ -1,15 +1,15 @@
-
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
 using Migration.Toolkit.Core.KX13.Services;
 
 namespace Migration.Toolkit.Core.KX13.Contexts;
+
 public record MapSourceKeyResult<TMapped>(bool Success, TMapped? Mapped);
 
 public class KeyMappingContext
 {
-    private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly KeyLocatorService _keyLocatorService;
+    private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
 
     public KeyMappingContext(PrimaryKeyMappingContext primaryKeyMappingContext, KeyLocatorService keyLocatorService)
     {

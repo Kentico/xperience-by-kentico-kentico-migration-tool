@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX12.Models;
 
 [Table("CMS_EventLog")]
 [Index("SiteId", Name = "IX_CMS_EventLog_SiteID")]
-public partial class CmsEventLog
+public class CmsEventLog
 {
     [Key]
     [Column("EventID")]

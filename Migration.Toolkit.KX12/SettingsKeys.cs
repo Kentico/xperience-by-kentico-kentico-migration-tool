@@ -2,8 +2,7 @@
 // ReSharper disable IdentifierTypo
 namespace Migration.Toolkit.KX12;
 
-public static class SettingsKeys
-{
+public static class SettingsKeys {
     public const string CMSABTestingEnabled = "CMSABTestingEnabled";
     public const string CMSAccessDeniedPageURL = "CMSAccessDeniedPageURL";
     public const string CMSActivityPointsForBlogCommentPost = "CMSActivityPointsForBlogCommentPost";

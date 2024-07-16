@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("Form_DancingGoat_TryFreeSample")]
-public partial class FormDancingGoatTryFreeSample
+public class FormDancingGoatTryFreeSample
 {
     [Key]
     [Column("TryAFreeSampleID")]

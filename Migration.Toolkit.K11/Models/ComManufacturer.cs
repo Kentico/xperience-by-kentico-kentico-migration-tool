@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("COM_Manufacturer")]
 [Index("ManufacturerSiteId", Name = "IX_COM_Manufacturer_ManufacturerSiteID")]
-public partial class ComManufacturer
+public class ComManufacturer
 {
     [Key]
     [Column("ManufacturerID")]

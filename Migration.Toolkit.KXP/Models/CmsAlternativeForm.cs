@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("CMS_AlternativeForm")]
 [Index("FormClassId", "FormName", Name = "IX_CMS_AlternativeForm_FormClassID_FormName")]
 [Index("FormCoupledClassId", Name = "IX_CMS_AlternativeForm_FormCoupledClassID")]
-public partial class CmsAlternativeForm
+public class CmsAlternativeForm
 {
     [Key]
     [Column("FormID")]

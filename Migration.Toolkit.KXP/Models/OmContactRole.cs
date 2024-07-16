@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("OM_ContactRole")]
-public partial class OmContactRole
+public class OmContactRole
 {
     [Key]
     [Column("ContactRoleID")]

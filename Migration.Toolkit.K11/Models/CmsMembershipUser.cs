@@ -8,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("CMS_MembershipUser")]
 [Index("MembershipId", "UserId", Name = "IX_CMS_MembershipUser_MembershipID_UserID", IsUnique = true)]
 [Index("UserId", Name = "IX_CMS_MembershipUser_UserID")]
-public partial class CmsMembershipUser
+public class CmsMembershipUser
 {
     [Key]
     [Column("MembershipUserID")]

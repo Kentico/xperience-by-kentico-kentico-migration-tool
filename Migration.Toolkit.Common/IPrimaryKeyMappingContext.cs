@@ -1,7 +1,7 @@
-
 using System.Linq.Expressions;
 
 namespace Migration.Toolkit.Common;
+
 public record MapSourceIdResult(bool Success, int? MappedId);
 
 public interface IPrimaryKeyMappingContext

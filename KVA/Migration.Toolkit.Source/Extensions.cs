@@ -6,19 +6,16 @@ using Kentico.Xperience.UMT.Services;
 using Microsoft.Extensions.Logging;
 
 namespace Migration.Toolkit.Source;
+
 public static class Extensions
 {
-    public record AssertSuccessResult<TResult>(
-        [property: MemberNotNullWhen(returnValue: true, member: "Info")] bool Success,
-        TResult? Info
-    );
     public static async Task<AssertSuccessResult<TResult>> AssertSuccess<TResult>(this Task<IImportResult> resultTask, ILogger logger)
     {
         switch (await resultTask)
         {
             case { Success: true, Imported: TResult info }:
             {
-                return new(true, info);
+                return new AssertSuccessResult<TResult>(true, info);
             }
             case { } result:
             {
@@ -32,10 +29,16 @@ public static class Extensions
                 {
                     logger.LogError(exception, "Error occured while importing entity {ValidationErrors}", sb);
                 }
-                return new(false, default);
+
+                return new AssertSuccessResult<TResult>(false, default);
             }
             default:
                 throw new NotImplementedException("Undefined state");
         }
     }
+
+    public record AssertSuccessResult<TResult>(
+        [property: MemberNotNullWhen(true, "Info")] bool Success,
+        TResult? Info
+    );
 }

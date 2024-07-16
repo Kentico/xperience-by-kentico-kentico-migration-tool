@@ -1,4 +1,3 @@
-
 using CMS.DataEngine;
 
 using MediatR;
@@ -10,24 +9,24 @@ using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KX13.Context;
-using Migration.Toolkit.KX13.Models;
 
 namespace Migration.Toolkit.Core.KX13.Handlers;
+
 public class MigrateSettingKeysCommandHandler : IRequestHandler<MigrateSettingKeysCommand, CommandResult>
 {
-    private readonly ILogger<MigrateSettingKeysCommandHandler> _logger;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
-    private readonly ToolkitConfiguration _toolkitConfiguration;
+    private readonly ILogger<MigrateSettingKeysCommandHandler> _logger;
+    private readonly IEntityMapper<KX13M.CmsSettingsKey, SettingsKeyInfo> _mapper;
     private readonly IProtocol _protocol;
-    private readonly IEntityMapper<CmsSettingsKey, SettingsKeyInfo> _mapper;
+    private readonly ToolkitConfiguration _toolkitConfiguration;
 
     public MigrateSettingKeysCommandHandler(
         ILogger<MigrateSettingKeysCommandHandler> logger,
-        IEntityMapper<CmsSettingsKey, SettingsKeyInfo> mapper,
+        IEntityMapper<KX13M.CmsSettingsKey, SettingsKeyInfo> mapper,
         IDbContextFactory<KX13Context> kx13ContextFactory,
         ToolkitConfiguration toolkitConfiguration,
         IProtocol protocol
-        )
+    )
     {
         _logger = logger;
         _mapper = mapper;
@@ -38,7 +37,7 @@ public class MigrateSettingKeysCommandHandler : IRequestHandler<MigrateSettingKe
 
     public async Task<CommandResult> Handle(MigrateSettingKeysCommand request, CancellationToken cancellationToken)
     {
-        var entityConfiguration = _toolkitConfiguration.EntityConfigurations.GetEntityConfiguration<CmsSettingsKey>();
+        var entityConfiguration = _toolkitConfiguration.EntityConfigurations.GetEntityConfiguration<KX13M.CmsSettingsKey>();
 
         await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
@@ -65,12 +64,7 @@ public class MigrateSettingKeysCommandHandler : IRequestHandler<MigrateSettingKe
                         .NotCurrentlySupportedSkip<SettingsKeyInfo>()
                         .WithId(nameof(kx13CmsSettingsKey.KeyId), kx13CmsSettingsKey.KeyId)
                         .WithMessage("Settings key is not supported in target instance")
-                        .WithData(new
-                        {
-                            kx13CmsSettingsKey.KeyName,
-                            kx13CmsSettingsKey.SiteId,
-                            kx13CmsSettingsKey.KeyGuid
-                        })
+                        .WithData(new { kx13CmsSettingsKey.KeyName, kx13CmsSettingsKey.SiteId, kx13CmsSettingsKey.KeyGuid })
                 );
                 continue;
             }
@@ -101,5 +95,5 @@ public class MigrateSettingKeysCommandHandler : IRequestHandler<MigrateSettingKe
         return new GenericCommandResult();
     }
 
-    private SettingsKeyInfo? GetKxoSettingsKey(CmsSettingsKey kx13CmsSettingsKey) => SettingsKeyInfoProvider.ProviderObject.Get(kx13CmsSettingsKey.KeyName);
+    private SettingsKeyInfo? GetKxoSettingsKey(KX13M.CmsSettingsKey kx13CmsSettingsKey) => SettingsKeyInfoProvider.ProviderObject.Get(kx13CmsSettingsKey.KeyName);
 }

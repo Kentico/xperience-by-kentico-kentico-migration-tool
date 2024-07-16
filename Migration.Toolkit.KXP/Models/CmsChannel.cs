@@ -1,10 +1,10 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_Channel")]
-public partial class CmsChannel
+public class CmsChannel
 {
     [Key]
     [Column("ChannelID")]

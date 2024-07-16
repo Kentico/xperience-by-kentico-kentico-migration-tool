@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("Analytics_Campaign")]
 [Index("CampaignScheduledTaskId", Name = "IX_Analytics_Campaign_CampaignScheduledTaskID")]
 [Index("CampaignSiteId", Name = "IX_Analytics_Campaign_CampaignSiteID")]
-public partial class AnalyticsCampaign
+public class AnalyticsCampaign
 {
     [Key]
     [Column("CampaignID")]

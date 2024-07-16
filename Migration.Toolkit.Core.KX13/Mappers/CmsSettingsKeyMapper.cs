@@ -1,4 +1,3 @@
-
 using System.Diagnostics;
 
 using CMS.DataEngine;
@@ -10,13 +9,13 @@ using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX13.Contexts;
 
 namespace Migration.Toolkit.Core.KX13.Mappers;
+
 public class CmsSettingsKeyMapper : EntityMapperBase<KX13M.CmsSettingsKey, SettingsKeyInfo>
 {
     private const string SOURCE_KEY_NAME = "CMSDefaultUserID";
 
     public CmsSettingsKeyMapper(ILogger<CmsSettingsKeyMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : base(logger, pkContext, protocol)
     {
-
     }
 
     protected override SettingsKeyInfo CreateNewInstance(KX13M.CmsSettingsKey source, MappingHelper mappingHelper, AddFailure addFailure) => new();

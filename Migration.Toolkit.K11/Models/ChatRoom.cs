@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +10,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("ChatRoomEnabled", Name = "IX_Chat_Room_Enabled")]
 [Index("ChatRoomIsSupport", Name = "IX_Chat_Room_IsSupport")]
 [Index("ChatRoomSiteId", Name = "IX_Chat_Room_SiteID")]
-public partial class ChatRoom
+public class ChatRoom
 {
     [Key]
     [Column("ChatRoomID")]

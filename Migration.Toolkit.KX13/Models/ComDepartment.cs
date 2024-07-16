@@ -10,7 +10,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("DepartmentDisplayName", Name = "IX_COM_Department_DepartmentDisplayName")]
 [Index("DepartmentName", "DepartmentSiteId", Name = "IX_COM_Department_DepartmentName_DepartmentSiteID", IsUnique = true)]
 [Index("DepartmentSiteId", Name = "IX_COM_Department_DepartmentSiteID")]
-public partial class ComDepartment
+public class ComDepartment
 {
     [Key]
     [Column("DepartmentID")]

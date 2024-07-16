@@ -11,7 +11,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("SiteId", Name = "IX_Forums_UserFavorites_SiteID")]
 [Index("UserId", Name = "IX_Forums_UserFavorites_UserID")]
 [Index("UserId", "PostId", "ForumId", Name = "IX_Forums_UserFavorites_UserID_PostID_ForumID", IsUnique = true)]
-public partial class ForumsUserFavorite
+public class ForumsUserFavorite
 {
     [Key]
     [Column("FavoriteID")]

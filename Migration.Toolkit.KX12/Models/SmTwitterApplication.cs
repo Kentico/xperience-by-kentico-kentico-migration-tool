@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX12.Models;
 
 [Table("SM_TwitterApplication")]
 [Index("TwitterApplicationSiteId", Name = "IX_SM_TwitterApplication_TwitterApplicationSiteID")]
-public partial class SmTwitterApplication
+public class SmTwitterApplication
 {
     [Key]
     [Column("TwitterApplicationID")]

@@ -8,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("CMS_Banner")]
 [Index("BannerCategoryId", Name = "IX_CMS_Banner_BannerCategoryID")]
 [Index("BannerSiteId", Name = "IX_CMS_Banner_BannerSiteID")]
-public partial class CmsBanner
+public class CmsBanner
 {
     [Key]
     [Column("BannerID")]

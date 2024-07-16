@@ -8,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("Chat_SupportCannedResponse")]
 [Index("ChatSupportCannedResponseChatUserId", Name = "IX_Chat_SupportCannedResponse_ChatSupportCannedResponseChatUserID")]
 [Index("ChatSupportCannedResponseSiteId", Name = "IX_Chat_SupportCannedResponse_ChatSupportCannedResponseSiteID")]
-public partial class ChatSupportCannedResponse
+public class ChatSupportCannedResponse
 {
     [Key]
     [Column("ChatSupportCannedResponseID")]

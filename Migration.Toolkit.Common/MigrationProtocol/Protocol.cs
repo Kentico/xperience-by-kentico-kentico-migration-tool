@@ -1,9 +1,9 @@
-
 using MediatR;
 
 using Migration.Toolkit.Common.Abstractions;
 
 namespace Migration.Toolkit.Common.MigrationProtocol;
+
 public class Protocol : IProtocol
 {
     private readonly IEnumerable<IMigrationProtocol> _protocols;

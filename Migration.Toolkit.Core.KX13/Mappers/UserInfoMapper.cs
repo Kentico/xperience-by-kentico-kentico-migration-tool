@@ -1,4 +1,3 @@
-
 using System.Data;
 
 using CMS.Membership;
@@ -13,10 +12,11 @@ using Migration.Toolkit.Core.KX13.Contexts;
 using Migration.Toolkit.KXP.Api;
 
 namespace Migration.Toolkit.Core.KX13.Mappers;
+
 public class UserInfoMapper : EntityMapperBase<KX13M.CmsUser, UserInfo>
 {
-    private readonly ILogger<UserInfoMapper> _logger;
     private readonly KxpClassFacade _kxpClassFacade;
+    private readonly ILogger<UserInfoMapper> _logger;
     private readonly ToolkitConfiguration _toolkitConfiguration;
 
     public UserInfoMapper(

@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX12.Models;
 
 [Table("Chat_User")]
 [Index("ChatUserUserId", Name = "IX_Chat_User_UserID")]
-public partial class ChatUser
+public class ChatUser
 {
     [Key]
     [Column("ChatUserID")]

@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 using Migration.Toolkit.KXP.Models;
 
@@ -415,11 +415,14 @@ public partial class KxpContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CMS_ContentItemLanguageMetadata_ContentItemLanguageMetadataContentLanguageID_CMS_ContentLanguage");
 
-            entity.HasOne(d => d.ContentItemLanguageMetadataContentWorkflowStep).WithMany(p => p.CmsContentItemLanguageMetadata).HasConstraintName("FK_CMS_ContentItemLanguageMetadata_ContentItemLanguageMetadataContentWorkflowStepID_CMS_ContentWorkflowStep");
+            entity.HasOne(d => d.ContentItemLanguageMetadataContentWorkflowStep).WithMany(p => p.CmsContentItemLanguageMetadata)
+                .HasConstraintName("FK_CMS_ContentItemLanguageMetadata_ContentItemLanguageMetadataContentWorkflowStepID_CMS_ContentWorkflowStep");
 
-            entity.HasOne(d => d.ContentItemLanguageMetadataCreatedByUser).WithMany(p => p.CmsContentItemLanguageMetadatumContentItemLanguageMetadataCreatedByUsers).HasConstraintName("FK_CMS_ContentItemLanguageMetadata_CMS_ContentItemLanguageMetadataCreatedByUserID_CMS_User");
+            entity.HasOne(d => d.ContentItemLanguageMetadataCreatedByUser).WithMany(p => p.CmsContentItemLanguageMetadatumContentItemLanguageMetadataCreatedByUsers)
+                .HasConstraintName("FK_CMS_ContentItemLanguageMetadata_CMS_ContentItemLanguageMetadataCreatedByUserID_CMS_User");
 
-            entity.HasOne(d => d.ContentItemLanguageMetadataModifiedByUser).WithMany(p => p.CmsContentItemLanguageMetadatumContentItemLanguageMetadataModifiedByUsers).HasConstraintName("FK_CMS_ContentItemLanguageMetadata_CMS_ContentItemLanguageMetadataModifiedByUserID_CMS_User");
+            entity.HasOne(d => d.ContentItemLanguageMetadataModifiedByUser).WithMany(p => p.CmsContentItemLanguageMetadatumContentItemLanguageMetadataModifiedByUsers)
+                .HasConstraintName("FK_CMS_ContentItemLanguageMetadata_CMS_ContentItemLanguageMetadataModifiedByUserID_CMS_User");
         });
 
         modelBuilder.Entity<CmsContentItemReference>(entity =>
@@ -434,8 +437,8 @@ public partial class KxpContext : DbContext
         });
 
         modelBuilder.Entity<CmsContentItemTag>(entity => entity.HasOne(d => d.ContentItemTagContentItemLanguageMetadata).WithMany(p => p.CmsContentItemTags)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_CMS_ContentItemTag_ContentItemTagContentItemLanguageMetadataID_CMS_ContentItemLanguageMetadata"));
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_CMS_ContentItemTag_ContentItemTagContentItemLanguageMetadataID_CMS_ContentItemLanguageMetadata"));
 
         modelBuilder.Entity<CmsContentLanguage>(entity =>
         {
@@ -1054,8 +1057,8 @@ public partial class KxpContext : DbContext
         });
 
         modelBuilder.Entity<EmailLibraryEmailStatistic>(entity => entity.HasOne(d => d.EmailStatisticsEmailConfiguration).WithMany(p => p.EmailLibraryEmailStatistics)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_EmailLibrary_EmailStatistics_EmailStatisticsEmailConfigurationID_EmailLibrary_EmailConfiguration"));
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_EmailLibrary_EmailStatistics_EmailStatisticsEmailConfigurationID_EmailLibrary_EmailConfiguration"));
 
         modelBuilder.Entity<EmailLibraryEmailStatisticsHit>(entity =>
         {
@@ -1096,8 +1099,8 @@ public partial class KxpContext : DbContext
         });
 
         modelBuilder.Entity<EmailLibraryRecipientListSetting>(entity => entity.HasOne(d => d.RecipientListSettingsRecipientList).WithMany(p => p.EmailLibraryRecipientListSettings)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_EmailLibrary_RecipientListSettings_RecipientListSettingsRecipientListID_OM_ContactGroup"));
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_EmailLibrary_RecipientListSettings_RecipientListSettingsRecipientListID_OM_ContactGroup"));
 
         modelBuilder.Entity<EmailLibrarySendConfiguration>(entity =>
         {
@@ -1236,8 +1239,8 @@ public partial class KxpContext : DbContext
         });
 
         modelBuilder.Entity<OmVisitorToContact>(entity => entity.HasOne(d => d.VisitorToContactContact).WithMany(p => p.OmVisitorToContacts)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_OM_VisitorToContact_OM_Contact_Cascade"));
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_OM_VisitorToContact_OM_Contact_Cascade"));
 
         modelBuilder.Entity<TempFile>(entity =>
         {

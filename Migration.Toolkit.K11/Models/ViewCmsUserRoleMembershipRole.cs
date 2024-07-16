@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.K11.Models;
 
 [Keyless]
-public partial class ViewCmsUserRoleMembershipRole
+public class ViewCmsUserRoleMembershipRole
 {
     [Column("RoleID")]
     public int RoleId { get; set; }

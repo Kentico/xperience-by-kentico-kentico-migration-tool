@@ -11,7 +11,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("NewsletterSiteId", "NewsletterName", Name = "IX_Newsletter_Newsletter_NewsletterSiteID_NewsletterName", IsUnique = true)]
 [Index("NewsletterSubscriptionTemplateId", Name = "IX_Newsletter_Newsletter_NewsletterSubscriptionTemplateID")]
 [Index("NewsletterUnsubscriptionTemplateId", Name = "IX_Newsletter_Newsletter_NewsletterUnsubscriptionTemplateID")]
-public partial class NewsletterNewsletter
+public class NewsletterNewsletter
 {
     [Key]
     [Column("NewsletterID")]

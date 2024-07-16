@@ -1,4 +1,3 @@
-
 using CMS.Membership;
 
 using MediatR;
@@ -17,16 +16,22 @@ using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Api.Enums;
 
 namespace Migration.Toolkit.Core.K11.Handlers;
-public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logger,
-        IDbContextFactory<K11Context> k11ContextFactory,
-        IEntityMapper<CmsUser, UserInfo> userInfoMapper,
-        IEntityMapper<CmsRole, RoleInfo> roleMapper,
-        IEntityMapper<CmsUserRole, UserRoleInfo> userRoleMapper,
-        PrimaryKeyMappingContext primaryKeyMappingContext,
-        IProtocol protocol)
+
+public class MigrateUsersCommandHandler(
+    ILogger<MigrateUsersCommandHandler> logger,
+    IDbContextFactory<K11Context> k11ContextFactory,
+    IEntityMapper<CmsUser, UserInfo> userInfoMapper,
+    IEntityMapper<CmsRole, RoleInfo> roleMapper,
+    IEntityMapper<CmsUserRole, UserRoleInfo> userRoleMapper,
+    PrimaryKeyMappingContext primaryKeyMappingContext,
+    IProtocol protocol)
     : IRequestHandler<MigrateUsersCommand, CommandResult>, IDisposable
 {
     private const string USER_PUBLIC = "public";
+
+    public void Dispose()
+    {
+    }
 
     public async Task<CommandResult> Handle(MigrateUsersCommand request, CancellationToken cancellationToken)
     {
@@ -80,7 +85,7 @@ public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logg
     {
         if (mapped is { Success: true } result)
         {
-            var (userInfo, newInstance) = result;
+            (var userInfo, bool newInstance) = result;
             ArgumentNullException.ThrowIfNull(userInfo);
 
             try
@@ -95,7 +100,7 @@ public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logg
             {
                 logger.LogEntitySetError(sqlException, newInstance, userInfo);
                 protocol.Append(HandbookReferences.DbConstraintBroken(sqlException, k11User)
-                    .WithData(new { k11User.UserName, k11User.UserGuid, k11User.UserId, })
+                    .WithData(new { k11User.UserName, k11User.UserGuid, k11User.UserId })
                     .WithMessage("Failed to migrate user, target database broken.")
                 );
                 return false;
@@ -243,7 +248,7 @@ public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logg
 
             if (mapped is { Success: true })
             {
-                var (userRoleInfo, newInstance) = mapped;
+                (var userRoleInfo, bool newInstance) = mapped;
                 ArgumentNullException.ThrowIfNull(userRoleInfo);
 
                 try
@@ -257,16 +262,11 @@ public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logg
                 {
                     logger.LogEntitySetError(ex, newInstance, userRoleInfo);
                     protocol.Append(HandbookReferences.ErrorSavingTargetInstance<UserRoleInfo>(ex)
-                        .WithData(new { k11UserRole.UserRoleId, k11UserRole.UserId, k11UserRole.RoleId, })
+                        .WithData(new { k11UserRole.UserRoleId, k11UserRole.UserId, k11UserRole.RoleId })
                         .WithMessage("Failed to migrate user role")
                     );
                 }
             }
         }
-    }
-
-    public void Dispose()
-    {
-
     }
 }

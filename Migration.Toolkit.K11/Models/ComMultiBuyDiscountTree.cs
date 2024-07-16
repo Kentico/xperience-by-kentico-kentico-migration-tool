@@ -8,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [PrimaryKey("MultiBuyDiscountId", "NodeId")]
 [Table("COM_MultiBuyDiscountTree")]
 [Index("NodeId", Name = "IX_COM_MultiBuyDiscountTree_NodeID")]
-public partial class ComMultiBuyDiscountTree
+public class ComMultiBuyDiscountTree
 {
     [Key]
     [Column("MultiBuyDiscountID")]

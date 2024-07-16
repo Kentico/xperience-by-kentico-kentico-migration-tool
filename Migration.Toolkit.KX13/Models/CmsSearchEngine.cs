@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("CMS_SearchEngine")]
-public partial class CmsSearchEngine
+public class CmsSearchEngine
 {
     [Key]
     [Column("SearchEngineID")]

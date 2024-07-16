@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("IntranetPortal_WorkingEnvironment")]
-public partial class IntranetPortalWorkingEnvironment
+public class IntranetPortalWorkingEnvironment
 {
     [Key]
     [Column("workingenvironmentID")]

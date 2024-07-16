@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("CMS_TranslationSubmission")]
 [Index("SubmissionServiceId", Name = "IX_CMS_TranslationSubmission_SubmissionServiceID")]
 [Index("SubmissionSubmittedByUserId", Name = "IX_CMS_TranslationSubmission_SubmissionSubmittedByUserID")]
-public partial class CmsTranslationSubmission
+public class CmsTranslationSubmission
 {
     [Key]
     [Column("SubmissionID")]

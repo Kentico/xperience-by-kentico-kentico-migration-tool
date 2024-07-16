@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("Personas_Persona")]
-public partial class PersonasPersona
+public class PersonasPersona
 {
     [Key]
     [Column("PersonaID")]

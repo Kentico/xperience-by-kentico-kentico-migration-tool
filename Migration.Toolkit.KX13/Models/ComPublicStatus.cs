@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("COM_PublicStatus")]
 [Index("PublicStatusSiteId", Name = "IX_COM_PublicStatus_PublicStatusSiteID")]
-public partial class ComPublicStatus
+public class ComPublicStatus
 {
     [Key]
     [Column("PublicStatusID")]

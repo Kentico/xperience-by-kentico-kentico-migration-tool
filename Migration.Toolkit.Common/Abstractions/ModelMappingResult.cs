@@ -1,7 +1,7 @@
-
 using Migration.Toolkit.Common.MigrationProtocol;
 
 namespace Migration.Toolkit.Common.Abstractions;
+
 public interface IModelMappingResult
 {
     bool Success { get; }
@@ -18,6 +18,7 @@ public interface IModelMappingResult<TResult> : IModelMappingResult
         item = Item;
         newInstance = NewInstance;
     }
+
     void Deconstruct(out HandbookReference? handbookReference) => handbookReference = HandbookReference;
 }
 
@@ -33,7 +34,9 @@ public record AggregatedResult<TResult>(IEnumerable<IModelMappingResult<TResult>
 }
 
 public record MapperResult<TResult>(TResult? Item, bool NewInstance, bool Success, HandbookReference? HandbookReference) : IModelMappingResult<TResult>;
+
 public record MapperResultSuccess<TResult>(TResult? Item, bool NewInstance) : MapperResult<TResult>(Item, NewInstance, true, null);
+
 public record MapperResultFailure<TResult>(HandbookReference HandbookReference) : MapperResult<TResult>(default, false, false, HandbookReference);
 
 public static class Extensions

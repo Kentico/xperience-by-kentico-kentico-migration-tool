@@ -10,7 +10,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("VersionModifiedByUserId", Name = "IX_CMS_ObjectVersionHistory_VersionModifiedByUserID")]
 [Index("VersionObjectSiteId", "VersionDeletedWhen", Name = "IX_CMS_ObjectVersionHistory_VersionObjectSiteID_VersionDeletedWhen", IsDescending = new[] { false, true })]
 [Index("VersionObjectType", "VersionObjectId", "VersionModifiedWhen", Name = "IX_CMS_ObjectVersionHistory_VersionObjectType_VersionObjectID_VersionModifiedWhen", IsDescending = new[] { false, false, true })]
-public partial class CmsObjectVersionHistory
+public class CmsObjectVersionHistory
 {
     [Key]
     [Column("VersionID")]

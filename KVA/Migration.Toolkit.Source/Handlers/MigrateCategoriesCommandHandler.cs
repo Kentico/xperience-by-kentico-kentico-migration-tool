@@ -1,4 +1,3 @@
-
 using System.Collections;
 
 using CMS.ContentEngine;
@@ -24,6 +23,7 @@ using Migration.Toolkit.Source.Services;
 using Newtonsoft.Json;
 
 namespace Migration.Toolkit.Source.Handlers;
+
 public class MigrateCategoriesCommandHandler(
     ILogger<MigrateCategoriesCommandHandler> logger,
     ModelFacade modelFacade,
@@ -48,20 +48,15 @@ public class MigrateCategoriesCommandHandler(
         if (result.Imported is TaxonomyInfo taxonomy)
         {
             string query = """
-                        SELECT C.ClassName, C.ClassGuid, C.ClassID
-                        FROM View_CMS_Tree_Joined [TJ]
-                                 JOIN dbo.CMS_DocumentCategory [CDC] on [TJ].DocumentID = [CDC].DocumentID
-                                 JOIN CMS_Class [C] ON TJ.NodeClassID = [C].ClassID
-                                 JOIN dbo.CMS_Category CC on CDC.CategoryID = CC.CategoryID AND CC.CategoryUserID IS NULL
-                        GROUP BY C.ClassName, C.ClassGuid, C.ClassID
-                        """;
+                           SELECT C.ClassName, C.ClassGuid, C.ClassID
+                           FROM View_CMS_Tree_Joined [TJ]
+                                    JOIN dbo.CMS_DocumentCategory [CDC] on [TJ].DocumentID = [CDC].DocumentID
+                                    JOIN CMS_Class [C] ON TJ.NodeClassID = [C].ClassID
+                                    JOIN dbo.CMS_Category CC on CDC.CategoryID = CC.CategoryID AND CC.CategoryUserID IS NULL
+                           GROUP BY C.ClassName, C.ClassGuid, C.ClassID
+                           """;
 
-            var classesWithCategories = modelFacade.Select(query, (reader, version) => new
-            {
-                ClassName = reader.Unbox<string>("ClassName"),
-                ClassGuid = reader.Unbox<Guid>("ClassGuid"),
-                ClassID = reader.Unbox<int>("ClassID"),
-            });
+            var classesWithCategories = modelFacade.Select(query, (reader, version) => new { ClassName = reader.Unbox<string>("ClassName"), ClassGuid = reader.Unbox<Guid>("ClassGuid"), ClassID = reader.Unbox<int>("ClassID") });
 
             var skippedClasses = new List<int>();
             var schemaGuid = Guid.Empty;
@@ -180,22 +175,18 @@ public class MigrateCategoriesCommandHandler(
     }
 
     private Guid EnsureReusableFieldSchema(TaxonomyInfo taxonomy, string categoryFieldName, string categoryFieldDisplayName) => reusableSchemaService.EnsureReusableFieldSchema(
-            "categories_container",
-            "Categories container",
-            "Container for legacy categories",
-            new FormFieldInfo
-            {
-                Enabled = true,
-                Visible = true,
-                AllowEmpty = true,
-                DataType = "taxonomy",
-                Name = categoryFieldName,
-                Caption = categoryFieldDisplayName,
-                Guid = new Guid("F65FE16C-53B0-47F7-B865-E8E300EC5F91"),
-                Settings = new Hashtable
-                {
-                    { "controlname", "Kentico.Administration.TagSelector" },
-                    { "TaxonomyGroup", $"[\"{taxonomy.TaxonomyGUID}\"]" }
-                }
-            });
+        "categories_container",
+        "Categories container",
+        "Container for legacy categories",
+        new FormFieldInfo
+        {
+            Enabled = true,
+            Visible = true,
+            AllowEmpty = true,
+            DataType = "taxonomy",
+            Name = categoryFieldName,
+            Caption = categoryFieldDisplayName,
+            Guid = new Guid("F65FE16C-53B0-47F7-B865-E8E300EC5F91"),
+            Settings = new Hashtable { { "controlname", "Kentico.Administration.TagSelector" }, { "TaxonomyGroup", $"[\"{taxonomy.TaxonomyGUID}\"]" } }
+        });
 }

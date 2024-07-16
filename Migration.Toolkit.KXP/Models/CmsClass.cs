@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +9,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Index("ClassName", Name = "IX_CMS_Class_ClassName", IsUnique = true)]
 [Index("ClassName", "ClassGuid", Name = "IX_CMS_Class_ClassName_ClassGUID")]
 [Index("ClassResourceId", Name = "IX_CMS_Class_ClassResourceID")]
-public partial class CmsClass
+public class CmsClass
 {
     [Key]
     [Column("ClassID")]

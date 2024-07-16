@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("CMS_ApplicationPermission")]
 [Index("RoleId", Name = "IX_CMS_ApplicationPermission_RoleID")]
 [Index("RoleId", "PermissionName", "ApplicationName", Name = "IX_CMS_ApplicationPermission_RoleID_PermissionName_ApplicationName", IsUnique = true)]
-public partial class CmsApplicationPermission
+public class CmsApplicationPermission
 {
     [Key]
     [Column("ApplicationPermissionID")]

@@ -1,6 +1,4 @@
 <#@ template language="C#" #>
-<#@ import namespace="System.Text" #>
-<#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.Data.SqlClient" #>
 // ReSharper disable InconsistentNaming
 // ReSharper disable IdentifierTypo

@@ -1,4 +1,3 @@
-
 using System.Data;
 
 using CMS.Base;
@@ -16,7 +15,12 @@ using Migration.Toolkit.Source.Helpers;
 using Migration.Toolkit.Source.Model;
 
 namespace Migration.Toolkit.Source.Mappers;
-public record MediaFileInfoMapperSource(IMediaFile MediaFile, int TargetLibraryId, IUploadedFile? File, string? LibrarySubFolder,
+
+public record MediaFileInfoMapperSource(
+    IMediaFile MediaFile,
+    int TargetLibraryId,
+    IUploadedFile? File,
+    string? LibrarySubFolder,
     bool MigrateOnlyMediaFileInfo);
 
 public class MediaFileInfoMapper(
@@ -43,7 +47,7 @@ public class MediaFileInfoMapper(
 
     protected override MediaFileInfo MapInternal(MediaFileInfoMapperSource args, MediaFileInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
-        var (mediaFile, targetLibraryId, file, _, migrateOnlyMediaFileInfo) = args;
+        (var mediaFile, int targetLibraryId, var file, _, bool migrateOnlyMediaFileInfo) = args;
 
         target.FileName = mediaFile.FileName;
         target.FileTitle = mediaFile.FileTitle;
@@ -93,13 +97,7 @@ public class MediaFileInfoMapper(
         {
             addFailure(HandbookReferences.MediaFileIsMissingOnSourceFilesystem
                 .WithId(nameof(mediaFile.FileID), mediaFile.FileID)
-                .WithData(new
-                {
-                    mediaFile.FilePath,
-                    mediaFile.FileGUID,
-                    mediaFile.FileLibraryID,
-                    mediaFile.FileSiteID
-                })
+                .WithData(new { mediaFile.FilePath, mediaFile.FileGUID, mediaFile.FileLibraryID, mediaFile.FileSiteID })
                 .AsFailure<MediaFileInfo>()
             );
         }

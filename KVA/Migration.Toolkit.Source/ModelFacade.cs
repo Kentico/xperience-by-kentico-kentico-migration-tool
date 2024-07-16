@@ -1,4 +1,3 @@
-
 using System.Runtime.CompilerServices;
 
 using Microsoft.Data.SqlClient;
@@ -6,6 +5,7 @@ using Microsoft.Data.SqlClient;
 using Migration.Toolkit.Common;
 
 namespace Migration.Toolkit.Source;
+
 public class ModelFacade(ToolkitConfiguration configuration)
 {
     private SemanticVersion? _version;
@@ -36,6 +36,7 @@ public class ModelFacade(ToolkitConfiguration configuration)
         {
             cmd.CommandText += orderBy;
         }
+
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
         {
@@ -136,15 +137,14 @@ public class ModelFacade(ToolkitConfiguration configuration)
             objectGuid = guid;
             return true;
         }
-        else if (ret is DBNull)
+
+        if (ret is DBNull)
         {
             objectGuid = null;
             return true;
         }
-        else
-        {
-            throw new InvalidOperationException($"Unexpected return value: '{ret}'");
-        }
+
+        throw new InvalidOperationException($"Unexpected return value: '{ret}'");
     }
 
     public SemanticVersion SelectVersion()
@@ -181,7 +181,7 @@ public class ModelFacade(ToolkitConfiguration configuration)
             : throw new InvalidOperationException("Unable to determine source instance version");
     }
 
-    private SqlConnection GetConnection() => new SqlConnection(configuration.KxConnectionString);
+    private SqlConnection GetConnection() => new(configuration.KxConnectionString);
 
     public string HashPath(string path)
     {
@@ -189,7 +189,7 @@ public class ModelFacade(ToolkitConfiguration configuration)
         using var conn = GetConnection();
         conn.Open();
         var cmd = conn.CreateCommand();
-        cmd.CommandText = $"SELECT CONVERT(VARCHAR(64), HASHBYTES('SHA2_256', LOWER(@path)), 2)";
+        cmd.CommandText = "SELECT CONVERT(VARCHAR(64), HASHBYTES('SHA2_256', LOWER(@path)), 2)";
         cmd.Parameters.AddWithValue("path", path);
         if (cmd.ExecuteScalar() is string s)
         {

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.KX12.Models;
 
 [Keyless]
-public partial class ViewCmsUserRoleMembershipRoleValidOnlyJoined
+public class ViewCmsUserRoleMembershipRoleValidOnlyJoined
 {
     [Column("UserID")]
     public int UserId { get; set; }

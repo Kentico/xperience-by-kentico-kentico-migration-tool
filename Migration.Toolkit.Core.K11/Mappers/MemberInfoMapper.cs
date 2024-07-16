@@ -1,5 +1,4 @@
-
-using System.Data;
+﻿using System.Data;
 
 using CMS.FormEngine;
 using CMS.Membership;
@@ -19,18 +18,18 @@ using Migration.Toolkit.K11.Models;
 using Migration.Toolkit.KXP.Api;
 
 namespace Migration.Toolkit.Core.K11.Mappers;
+
 public record MemberInfoMapperSource(CmsUser User, CmsUserSetting UserSetting);
 
-public class MemberInfoMapper(ILogger<MemberInfoMapper> logger,
-        PrimaryKeyMappingContext primaryKeyMappingContext,
-        IProtocol protocol,
-        KxpClassFacade kxpClassFacade,
-        ToolkitConfiguration toolkitConfiguration,
-        IDbContextFactory<K11Context> k11DbContextFactory)
+public class MemberInfoMapper(
+    ILogger<MemberInfoMapper> logger,
+    PrimaryKeyMappingContext primaryKeyMappingContext,
+    IProtocol protocol,
+    KxpClassFacade kxpClassFacade,
+    ToolkitConfiguration toolkitConfiguration,
+    IDbContextFactory<K11Context> k11DbContextFactory)
     : EntityMapperBase<MemberInfoMapperSource, MemberInfo>(logger, primaryKeyMappingContext, protocol)
 {
-    protected override MemberInfo CreateNewInstance(MemberInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) => new();
-
     public static IReadOnlyList<string> MigratedUserFields = new List<string>
     {
         nameof(CmsUser.UserGuid),
@@ -39,8 +38,10 @@ public class MemberInfoMapper(ILogger<MemberInfoMapper> logger,
         // nameof(KX12M.CmsUser.UserPassword),
         nameof(CmsUser.UserEnabled),
         nameof(CmsUser.UserCreated),
-        nameof(CmsUser.UserSecurityStamp),
+        nameof(CmsUser.UserSecurityStamp)
     };
+
+    protected override MemberInfo CreateNewInstance(MemberInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
     protected override MemberInfo MapInternal(MemberInfoMapperSource source, MemberInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {

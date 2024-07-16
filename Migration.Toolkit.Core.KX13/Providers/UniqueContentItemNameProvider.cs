@@ -2,13 +2,14 @@ using CMS.Base;
 using CMS.ContentEngine.Internal;
 
 namespace Migration.Toolkit.Core.KX13.Providers;
+
 internal class UniqueContentItemNameProvider : UniqueStringValueProviderBase
 {
     private readonly IContentItemNameValidator codeNameValidator;
 
 
     /// <summary>
-    /// Creates a new instance of <see cref="UniqueContentItemNameProvider"/>.
+    ///     Creates a new instance of <see cref="UniqueContentItemNameProvider" />.
     /// </summary>
     public UniqueContentItemNameProvider(IContentItemNameValidator codeNameValidator)
         : base(TypeHelper.GetMaxCodeNameLength(ContentItemInfo.TYPEINFO.MaxCodeNameLength)) => this.codeNameValidator = codeNameValidator;
@@ -32,6 +33,6 @@ internal class UniqueContentItemNameProvider : UniqueStringValueProviderBase
     }
 
 
-    ///<inheritdoc/>
+    /// <inheritdoc />
     protected override Task<bool> IsValueUnique(string value) => Task.FromResult(codeNameValidator.IsUnique(value));
 }

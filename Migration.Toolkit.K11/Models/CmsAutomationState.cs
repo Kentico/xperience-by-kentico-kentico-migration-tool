@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +11,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("StateStepId", Name = "IX_CMS_AutomationState_StateStepID")]
 [Index("StateUserId", Name = "IX_CMS_AutomationState_StateUserID")]
 [Index("StateWorkflowId", Name = "IX_CMS_AutomationState_StateWorkflowID")]
-public partial class CmsAutomationState
+public class CmsAutomationState
 {
     [Key]
     [Column("StateID")]

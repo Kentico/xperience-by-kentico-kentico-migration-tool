@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("Chat_PopupWindowSettings")]
-public partial class ChatPopupWindowSetting
+public class ChatPopupWindowSetting
 {
     [Key]
     [Column("ChatPopupWindowSettingsID")]

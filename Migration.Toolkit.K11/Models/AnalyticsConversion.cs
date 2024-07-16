@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("Analytics_Conversion")]
 [Index("ConversionSiteId", Name = "IX_Analytics_Conversion_ConversionSiteID")]
-public partial class AnalyticsConversion
+public class AnalyticsConversion
 {
     [Key]
     [Column("ConversionID")]

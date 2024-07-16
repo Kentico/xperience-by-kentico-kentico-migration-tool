@@ -12,7 +12,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("ReportSubscriptionTableId", Name = "IX_Reporting_ReportSubscription_ReportSubscriptionTableID")]
 [Index("ReportSubscriptionUserId", Name = "IX_Reporting_ReportSubscription_ReportSubscriptionUserID")]
 [Index("ReportSubscriptionValueId", Name = "IX_Reporting_ReportSubscription_ReportSubscriptionValueID")]
-public partial class ReportingReportSubscription
+public class ReportingReportSubscription
 {
     [Key]
     [Column("ReportSubscriptionID")]

@@ -9,7 +9,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("TestIssueId", Name = "IX_Newsletter_ABTest_TestIssueID", IsUnique = true)]
 [Index("TestWinnerIssueId", Name = "IX_Newsletter_ABTest_TestWinnerIssueID")]
 [Index("TestWinnerScheduledTaskId", Name = "IX_Newsletter_ABTest_TestWinnerScheduledTaskID")]
-public partial class NewsletterAbtest
+public class NewsletterAbtest
 {
     [Key]
     [Column("TestID")]

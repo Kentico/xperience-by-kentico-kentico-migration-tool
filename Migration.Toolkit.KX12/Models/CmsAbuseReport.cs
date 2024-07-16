@@ -9,7 +9,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("ReportSiteId", Name = "IX_CMS_AbuseReport_ReportSiteID")]
 [Index("ReportStatus", Name = "IX_CMS_AbuseReport_ReportStatus")]
 [Index("ReportUserId", Name = "IX_CMS_AbuseReport_ReportUserID")]
-public partial class CmsAbuseReport
+public class CmsAbuseReport
 {
     [Key]
     [Column("ReportID")]

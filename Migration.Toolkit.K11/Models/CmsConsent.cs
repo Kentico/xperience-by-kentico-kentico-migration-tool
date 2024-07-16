@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_Consent")]
-public partial class CmsConsent
+public class CmsConsent
 {
     [Key]
     [Column("ConsentID")]

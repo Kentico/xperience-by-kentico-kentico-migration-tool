@@ -1,4 +1,3 @@
-
 using CMS.DataProtection;
 
 using MediatR;
@@ -12,32 +11,32 @@ using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX12.Contexts;
 using Migration.Toolkit.KX12.Context;
-using Migration.Toolkit.KX12.Models;
 using Migration.Toolkit.KXP.Context;
+using Migration.Toolkit.KXP.Models;
 
 namespace Migration.Toolkit.Core.KX12.Handlers;
+
 public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataProtectionCommand, CommandResult>, IDisposable
 {
-    private readonly ILogger<MigrateDataProtectionCommandHandler> _logger;
-    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
+    private static readonly int _batchSize = 1000;
+    private readonly IEntityMapper<KX12M.CmsConsentAgreement, CmsConsentAgreement> _consentAgreementMapper;
+    private readonly IEntityMapper<KX12M.CmsConsentArchive, CmsConsentArchive> _consentArchiveMapper;
+    private readonly IEntityMapper<KX12M.CmsConsent, CmsConsent> _consentMapper;
     private readonly IDbContextFactory<KX12Context> _kx12ContextFactory;
-    private readonly IEntityMapper<CmsConsent, KXP.Models.CmsConsent> _consentMapper;
-    private readonly IEntityMapper<CmsConsentArchive, KXP.Models.CmsConsentArchive> _consentArchiveMapper;
-    private readonly IEntityMapper<CmsConsentAgreement, KXP.Models.CmsConsentAgreement> _consentAgreementMapper;
+    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
+    private readonly ILogger<MigrateDataProtectionCommandHandler> _logger;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IProtocol _protocol;
 
     private KxpContext _kxpContext;
 
-    private static readonly int _batchSize = 1000;
-
     public MigrateDataProtectionCommandHandler(
         ILogger<MigrateDataProtectionCommandHandler> logger,
         IDbContextFactory<KxpContext> kxpContextFactory,
         IDbContextFactory<KX12Context> kx12ContextFactory,
-        IEntityMapper<CmsConsent, KXP.Models.CmsConsent> consentMapper,
-        IEntityMapper<CmsConsentArchive, KXP.Models.CmsConsentArchive> consentArchiveMapper,
-        IEntityMapper<CmsConsentAgreement, KXP.Models.CmsConsentAgreement> consentAgreementMapper,
+        IEntityMapper<KX12M.CmsConsent, CmsConsent> consentMapper,
+        IEntityMapper<KX12M.CmsConsentArchive, CmsConsentArchive> consentArchiveMapper,
+        IEntityMapper<KX12M.CmsConsentAgreement, CmsConsentAgreement> consentAgreementMapper,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol
     )
@@ -52,6 +51,8 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
         _protocol = protocol;
         _kxpContext = _kxpContextFactory.CreateDbContext();
     }
+
+    public void Dispose() => _kxpContext.Dispose();
 
     public async Task<CommandResult> Handle(MigrateDataProtectionCommand request, CancellationToken cancellationToken)
     {
@@ -81,7 +82,7 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
 
             if (mapped is { Success: true } result)
             {
-                var (cmsConsent, newInstance) = result;
+                (var cmsConsent, bool newInstance) = result;
                 ArgumentNullException.ThrowIfNull(cmsConsent, nameof(cmsConsent));
 
                 if (newInstance)
@@ -99,7 +100,7 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
 
                     _protocol.Success(k12Consent, cmsConsent, mapped);
                     _logger.LogEntitySetAction(newInstance, cmsConsent);
-                    _primaryKeyMappingContext.SetMapping<CmsConsent>(r => r.ConsentId, k12Consent.ConsentId, cmsConsent.ConsentId);
+                    _primaryKeyMappingContext.SetMapping<KX12M.CmsConsent>(r => r.ConsentId, k12Consent.ConsentId, cmsConsent.ConsentId);
                 }
                 /*Violation in unique index or Violation in unique constraint */
                 catch (DbUpdateException dbUpdateException) when (dbUpdateException.InnerException is SqlException { Number: 2601 or 2627 } sqlException)
@@ -136,7 +137,7 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
 
             if (mapped is { Success: true } result)
             {
-                var (cmsConsentArchive, newInstance) = result;
+                (var cmsConsentArchive, bool newInstance) = result;
                 ArgumentNullException.ThrowIfNull(cmsConsentArchive, nameof(cmsConsentArchive));
 
                 if (newInstance)
@@ -154,7 +155,7 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
 
                     _protocol.Success(k12ArchiveConsent, cmsConsentArchive, mapped);
                     _logger.LogEntitySetAction(newInstance, cmsConsentArchive);
-                    _primaryKeyMappingContext.SetMapping<CmsConsentArchive>(r => r.ConsentArchiveGuid,
+                    _primaryKeyMappingContext.SetMapping<KX12M.CmsConsentArchive>(r => r.ConsentArchiveGuid,
                         k12ArchiveConsent.ConsentArchiveId, cmsConsentArchive.ConsentArchiveId);
                 }
                 /*Violation in unique index or Violation in unique constraint */
@@ -180,8 +181,8 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
         await using var kx12Context = await _kx12ContextFactory.CreateDbContextAsync(cancellationToken);
         int index = 0;
         int indexFull = 0;
-        var consentAgreementUpdates = new List<KXP.Models.CmsConsentAgreement>();
-        var consentAgreementNews = new List<KXP.Models.CmsConsentAgreement>();
+        var consentAgreementUpdates = new List<CmsConsentAgreement>();
+        var consentAgreementNews = new List<CmsConsentAgreement>();
         int itemsCount = kx12Context.CmsConsentAgreements.Count();
 
         foreach (var k12ConsentAgreement in kx12Context.CmsConsentAgreements)
@@ -197,7 +198,7 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
 
             if (mapped is { Success: true } result)
             {
-                var (cmsConsentAgreement, newInstance) = result;
+                (var cmsConsentAgreement, bool newInstance) = result;
                 ArgumentNullException.ThrowIfNull(cmsConsentAgreement, nameof(cmsConsentAgreement));
 
                 if (newInstance)
@@ -244,7 +245,7 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
                     await _kxpContext.DisposeAsync();
 
                     _protocol.Append(HandbookReferences
-                        .ErrorCreatingTargetInstance<KXP.Models.CmsConsentAgreement>(dbUpdateException)
+                        .ErrorCreatingTargetInstance<CmsConsentAgreement>(dbUpdateException)
                         .NeedsManualAction()
                         .WithIdentityPrints(consentAgreementNews)
                     );
@@ -252,14 +253,14 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
 
 
                     _protocol.Append(HandbookReferences
-                        .ErrorUpdatingTargetInstance<KXP.Models.CmsConsentAgreement>(dbUpdateException)
+                        .ErrorUpdatingTargetInstance<CmsConsentAgreement>(dbUpdateException)
                         .NeedsManualAction()
                         .WithIdentityPrints(consentAgreementUpdates)
                     );
 
                     var cai = ConsentAgreementInfo.New();
                     _protocol.Append(HandbookReferences
-                        .ErrorUpdatingTargetInstance<KXP.Models.CmsConsentAgreement>(dbUpdateException)
+                        .ErrorUpdatingTargetInstance<CmsConsentAgreement>(dbUpdateException)
                         .NeedsManualAction()
                         .WithIdentityPrint(cai)
                     );
@@ -279,6 +280,4 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
 
         return new GenericCommandResult();
     }
-
-    public void Dispose() => _kxpContext.Dispose();
 }

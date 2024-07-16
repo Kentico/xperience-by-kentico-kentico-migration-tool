@@ -1,4 +1,3 @@
-
 using System.Globalization;
 
 using CMS.Helpers;
@@ -8,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Migration.Toolkit.K11;
 
 namespace Migration.Toolkit.Core.K11.Helpers;
+
 public static class KenticoHelper
 {
     public static void CopyCustomData(ContainerCustomData target, string? sourceXml)
@@ -26,7 +26,7 @@ public static class KenticoHelper
         var keys = k11Context.CmsSettingsKeys.Where(x => x.KeyName == keyName);
 
         return (keys.FirstOrDefault(x => x.SiteId == siteId)
-                 ?? keys.FirstOrDefault(x => x.SiteId == null))?.KeyValue;
+                ?? keys.FirstOrDefault(x => x.SiteId == null))?.KeyValue;
     }
 
     public static T? GetSettingsKey<T>(IDbContextFactory<K11Context> ctxf, int? siteId, string keyName) where T : struct, IParsable<T>
@@ -34,7 +34,7 @@ public static class KenticoHelper
         using var k11Context = ctxf.CreateDbContext();
         var keys = k11Context.CmsSettingsKeys.Where(x => x.KeyName == keyName);
         string? value = (keys.FirstOrDefault(x => x.SiteId == siteId)
-                     ?? keys.FirstOrDefault(x => x.SiteId == null))?.KeyValue;
+                         ?? keys.FirstOrDefault(x => x.SiteId == null))?.KeyValue;
 
 
         return T.TryParse(value, CultureInfo.InvariantCulture, out var result)

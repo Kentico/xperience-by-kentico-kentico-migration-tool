@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("CMS_WebTemplate")]
-public partial class CmsWebTemplate
+public class CmsWebTemplate
 {
     [Key]
     [Column("WebTemplateID")]

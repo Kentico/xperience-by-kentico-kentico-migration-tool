@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("Integration_Connector")]
 [Index("ConnectorEnabled", Name = "IX_Integration_Connector_ConnectorEnabled")]
-public partial class IntegrationConnector
+public class IntegrationConnector
 {
     [Key]
     [Column("ConnectorID")]

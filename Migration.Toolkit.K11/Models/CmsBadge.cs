@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_Badge")]
-public partial class CmsBadge
+public class CmsBadge
 {
     [Key]
     [Column("BadgeID")]

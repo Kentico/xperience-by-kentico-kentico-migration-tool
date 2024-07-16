@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [PrimaryKey("ServerId", "TaskId")]
 [Table("CMS_WebFarmServerTask")]
 [Index("TaskId", Name = "IX_CMS_WebFarmServerTask_TaskID")]
-public partial class CmsWebFarmServerTask
+public class CmsWebFarmServerTask
 {
     [Key]
     [Column("ServerID")]

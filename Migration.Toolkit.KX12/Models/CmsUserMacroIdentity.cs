@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("CMS_UserMacroIdentity")]
 [Index("UserMacroIdentityMacroIdentityId", Name = "IX_CMS_UserMacroIdentity_UserMacroIdentityMacroIdentityID")]
 [Index("UserMacroIdentityUserId", Name = "UQ_CMS_UserMacroIdentity_UserMacroIdentityUserID", IsUnique = true)]
-public partial class CmsUserMacroIdentity
+public class CmsUserMacroIdentity
 {
     [Key]
     [Column("UserMacroIdentityID")]

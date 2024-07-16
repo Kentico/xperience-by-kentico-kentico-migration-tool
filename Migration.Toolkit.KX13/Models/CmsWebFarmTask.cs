@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("CMS_WebFarmTask")]
 [Index("TaskIsMemory", "TaskCreated", Name = "IX_CMS_WebFarmTask_TaskIsMemory_TaskCreated")]
-public partial class CmsWebFarmTask
+public class CmsWebFarmTask
 {
     [Key]
     [Column("TaskID")]

@@ -1,9 +1,9 @@
-
 using MediatR;
 
 using Migration.Toolkit.Common.Abstractions;
 
 namespace Migration.Toolkit.Common.MigrationProtocol;
+
 public interface IMigrationProtocol
 {
     void MappedTarget<TTarget>(IModelMappingResult<TTarget> mapped);

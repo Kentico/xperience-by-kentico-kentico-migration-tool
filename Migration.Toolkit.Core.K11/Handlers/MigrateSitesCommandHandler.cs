@@ -1,4 +1,3 @@
-
 using CMS.ContentEngine;
 using CMS.Websites;
 
@@ -19,11 +18,13 @@ using Migration.Toolkit.K11;
 using Migration.Toolkit.K11.Models;
 
 namespace Migration.Toolkit.Core.K11.Handlers;
+
 // ReSharper disable once UnusedType.Global
-public class MigrateSitesCommandHandler(ILogger<MigrateSitesCommandHandler> logger,
-        IDbContextFactory<K11Context> k11ContextFactory,
-        IProtocol protocol,
-        IImporter importer)
+public class MigrateSitesCommandHandler(
+    ILogger<MigrateSitesCommandHandler> logger,
+    IDbContextFactory<K11Context> k11ContextFactory,
+    IProtocol protocol,
+    IImporter importer)
     : IRequestHandler<MigrateSitesCommand, CommandResult>
 {
     public async Task<CommandResult> Handle(MigrateSitesCommand request, CancellationToken cancellationToken)
@@ -92,10 +93,10 @@ public class MigrateSitesCommandHandler(ILogger<MigrateSitesCommandHandler> logg
                 "editor" => CookieLevelConstants.EDITOR,
                 "system" => CookieLevelConstants.SYSTEM,
                 "essential" => CookieLevelConstants.ESSENTIAL,
-                _ => (int?)null
+                _ => null
             };
             bool? storeFormerUrls = KenticoHelper.GetSettingsKey(k11ContextFactory, k11CmsSite.SiteId, "CMSStoreFormerUrls") is { } storeFormerUrlsStr
-                ? bool.TryParse(storeFormerUrlsStr, out bool sfu) ? (bool?)sfu : null
+                ? bool.TryParse(storeFormerUrlsStr, out bool sfu) ? sfu : null
                 : true;
 
             var result = UriHelperXbyk.GetUniqueDomainCandidate(
@@ -140,13 +141,7 @@ public class MigrateSitesCommandHandler(ILogger<MigrateSitesCommandHandler> logg
                 }
             }
 
-            await importer.ImportAsync(new ChannelModel
-            {
-                ChannelDisplayName = k11CmsSite.SiteDisplayName,
-                ChannelName = k11CmsSite.SiteName,
-                ChannelGUID = k11CmsSite.SiteGuid,
-                ChannelType = ChannelType.Website
-            });
+            await importer.ImportAsync(new ChannelModel { ChannelDisplayName = k11CmsSite.SiteDisplayName, ChannelName = k11CmsSite.SiteName, ChannelGUID = k11CmsSite.SiteGuid, ChannelType = ChannelType.Website });
 
             var webSiteChannelResult = await importer.ImportAsync(new WebsiteChannelModel
             {
@@ -172,6 +167,7 @@ public class MigrateSitesCommandHandler(ILogger<MigrateSitesCommandHandler> logg
                 {
                     logger.LogError(webSiteChannelResult.Exception, "Failed to migrate site");
                 }
+
                 return new CommandFailureResult();
             }
 
@@ -195,7 +191,7 @@ public class MigrateSitesCommandHandler(ILogger<MigrateSitesCommandHandler> logg
                         WebsiteCaptchaSettingsReCaptchaSiteKey = cmsRecaptchaV3PublicKey,
                         WebsiteCaptchaSettingsReCaptchaSecretKey = cmsReCaptchaV3PrivateKey,
                         WebsiteCaptchaSettingsReCaptchaThreshold = cmsRecaptchaV3Threshold ?? 0.5d,
-                        WebsiteCaptchaSettingsReCaptchaVersion = ReCaptchaVersion.ReCaptchaV3,
+                        WebsiteCaptchaSettingsReCaptchaVersion = ReCaptchaVersion.ReCaptchaV3
                     };
                 }
 
@@ -204,10 +200,10 @@ public class MigrateSitesCommandHandler(ILogger<MigrateSitesCommandHandler> logg
                     if (reCaptchaSettings is not null)
                     {
                         logger.LogError("""
-                                         Conflicting settings found, ReCaptchaV2 and ReCaptchaV3 is set simultaneously.
-                                         Remove setting keys 'CMSReCaptchaPublicKey', 'CMSReCaptchaPrivateKey'
-                                         or remove setting keys 'CMSReCaptchaV3PrivateKey', 'CMSRecaptchaV3PublicKey', 'CMSRecaptchaV3Threshold'.
-                                         """);
+                                        Conflicting settings found, ReCaptchaV2 and ReCaptchaV3 is set simultaneously.
+                                        Remove setting keys 'CMSReCaptchaPublicKey', 'CMSReCaptchaPrivateKey'
+                                        or remove setting keys 'CMSReCaptchaV3PrivateKey', 'CMSRecaptchaV3PublicKey', 'CMSRecaptchaV3Threshold'.
+                                        """);
                         throw new InvalidOperationException("Invalid ReCaptcha settings");
                     }
 
@@ -216,7 +212,7 @@ public class MigrateSitesCommandHandler(ILogger<MigrateSitesCommandHandler> logg
                         WebsiteCaptchaSettingsWebsiteChannelID = webSiteChannel.WebsiteChannelID,
                         WebsiteCaptchaSettingsReCaptchaSiteKey = cmsReCaptchaPublicKey,
                         WebsiteCaptchaSettingsReCaptchaSecretKey = cmsReCaptchaPrivateKey,
-                        WebsiteCaptchaSettingsReCaptchaVersion = ReCaptchaVersion.ReCaptchaV2,
+                        WebsiteCaptchaSettingsReCaptchaVersion = ReCaptchaVersion.ReCaptchaV2
                     };
                 }
 
@@ -235,7 +231,7 @@ public class MigrateSitesCommandHandler(ILogger<MigrateSitesCommandHandler> logg
         // simplified logic from CMS.DocumentEngine.DefaultPreferredCultureEvaluator.Evaluate()
         // domain alias skipped, HttpContext logic skipped
         string? siteCulture = site.SiteDefaultVisitorCulture.NullIf(string.Empty)
-                          ?? KenticoHelper.GetSettingsKey(k11ContextFactory, site.SiteId, SettingsKeys.CMSDefaultCultureCode);
+                              ?? KenticoHelper.GetSettingsKey(k11ContextFactory, site.SiteId, SettingsKeys.CMSDefaultCultureCode);
 
         return siteCulture
                ?? throw new InvalidOperationException("Unknown site culture");

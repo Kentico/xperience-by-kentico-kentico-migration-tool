@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("Form_EcommerceSite_ProductQuestion")]
-public partial class FormEcommerceSiteProductQuestion
+public class FormEcommerceSiteProductQuestion
 {
     [Key]
     [Column("ProductQuestionID")]

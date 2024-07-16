@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("CMS_State")]
 [Index("CountryId", Name = "IX_CMS_State_CountryID")]
 [Index("StateCode", Name = "IX_CMS_State_StateCode")]
-public partial class CmsState
+public class CmsState
 {
     [Key]
     [Column("StateID")]

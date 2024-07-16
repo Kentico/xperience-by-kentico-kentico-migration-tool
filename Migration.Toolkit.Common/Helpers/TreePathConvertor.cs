@@ -1,12 +1,16 @@
-
 using CMS.ContentEngine.Internal;
 using CMS.Core;
 using CMS.Websites.Internal;
 
 namespace Migration.Toolkit.Common.Helpers;
+
 public class TreePathConvertor(int webSiteChannel)
 {
     private static readonly IDictionary<int, TreePathConvertor> SiteToConverter = new Dictionary<int, TreePathConvertor>();
+
+    public static readonly StringComparer TreePathComparer = StringComparer.InvariantCultureIgnoreCase;
+
+    private readonly IDictionary<string, string> _nodeAliasPathToTreePath = new Dictionary<string, string>(TreePathComparer);
 
     public static TreePathConvertor GetSiteConverter(int webSiteId)
     {
@@ -20,15 +24,10 @@ public class TreePathConvertor(int webSiteChannel)
         return converter;
     }
 
-    public static readonly StringComparer TreePathComparer = StringComparer.InvariantCultureIgnoreCase;
-
-    private readonly IDictionary<string, string> _nodeAliasPathToTreePath = new Dictionary<string, string>(TreePathComparer);
-
     public string GetConvertedOrUnchangedAssumingChannel(string nodeAliasPath) => _nodeAliasPathToTreePath.TryGetValue(nodeAliasPath, out string? converted)
-            ? converted
-            : nodeAliasPath;
+        ? converted
+        : nodeAliasPath;
 
-    public record TreePathConversionResult(bool AnythingChanged, string Result);
     public async Task<TreePathConversionResult> ConvertAndEnsureUniqueness(string nodeAliasPath)
     {
         TreePathConversionResult result;
@@ -61,4 +60,6 @@ public class TreePathConvertor(int webSiteChannel)
 
         return result;
     }
+
+    public record TreePathConversionResult(bool AnythingChanged, string Result);
 }

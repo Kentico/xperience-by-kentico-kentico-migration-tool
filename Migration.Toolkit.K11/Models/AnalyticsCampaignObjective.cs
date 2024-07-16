@@ -8,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("Analytics_CampaignObjective")]
 [Index("CampaignObjectiveCampaignId", Name = "CK_Analytics_CampaignObjective_CampaignObjectiveCampaignID", IsUnique = true)]
 [Index("CampaignObjectiveCampaignConversionId", Name = "IX_Analytics_CampaignObjective_CampaignObjectiveCampaignConversionID")]
-public partial class AnalyticsCampaignObjective
+public class AnalyticsCampaignObjective
 {
     [Key]
     [Column("CampaignObjectiveID")]

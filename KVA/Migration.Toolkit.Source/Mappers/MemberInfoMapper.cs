@@ -1,4 +1,3 @@
-
 using System.Data;
 
 using CMS.FormEngine;
@@ -17,6 +16,7 @@ using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Model;
 
 namespace Migration.Toolkit.Source.Mappers;
+
 public record MemberInfoMapperSource(ICmsUser User, ICmsUserSetting UserSetting);
 
 public class MemberInfoMapper(
@@ -26,11 +26,9 @@ public class MemberInfoMapper(
     KxpClassFacade kxpClassFacade,
     ToolkitConfiguration toolkitConfiguration,
     ModelFacade modelFacade
-    )
+)
     : EntityMapperBase<MemberInfoMapperSource, MemberInfo>(logger, primaryKeyMappingContext, protocol)
 {
-    protected override MemberInfo CreateNewInstance(MemberInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) => new();
-
     public static IReadOnlyList<string> MigratedUserFields = new List<string>
     {
         nameof(ICmsUser.UserGUID),
@@ -39,8 +37,10 @@ public class MemberInfoMapper(
         // nameof(ICmsUser.UserPassword),
         nameof(ICmsUser.UserEnabled),
         nameof(ICmsUser.UserCreated),
-        nameof(ICmsUser.UserSecurityStamp),
+        nameof(ICmsUser.UserSecurityStamp)
     };
+
+    protected override MemberInfo CreateNewInstance(MemberInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
     protected override MemberInfo MapInternal(MemberInfoMapperSource source, MemberInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {

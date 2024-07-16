@@ -1,4 +1,3 @@
-
 using CMS.Modules;
 
 using Microsoft.Extensions.Logging;
@@ -10,6 +9,7 @@ using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Model;
 
 namespace Migration.Toolkit.Source.Mappers;
+
 public class ResourceMapper(ILogger<ResourceMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol)
     : EntityMapperBase<ICmsResource, ResourceInfo>(logger, pkContext, protocol)
 {

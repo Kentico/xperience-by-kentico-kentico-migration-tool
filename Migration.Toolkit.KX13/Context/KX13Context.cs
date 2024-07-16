@@ -548,9 +548,6 @@ public partial class KX13Context : DbContext
     public virtual DbSet<ViewReportingCategoryReportJoined> ViewReportingCategoryReportJoineds { get; set; }
 
 
-
-
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<AnalyticsCampaign>(entity =>
@@ -1144,8 +1141,8 @@ public partial class KX13Context : DbContext
         });
 
         modelBuilder.Entity<CmsExternalLogin>(entity => entity.HasOne(d => d.User).WithMany(p => p.CmsExternalLogins)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_CMS_ExternalLogin_UserID_CMS_User"));
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_CMS_ExternalLogin_UserID_CMS_User"));
 
         modelBuilder.Entity<CmsForm>(entity =>
         {
@@ -1768,8 +1765,8 @@ public partial class KX13Context : DbContext
         });
 
         modelBuilder.Entity<CmsSiteDomainAlias>(entity => entity.HasOne(d => d.Site).WithMany(p => p.CmsSiteDomainAliases)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_CMS_SiteDomainAlias_SiteID_CMS_Site"));
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_CMS_SiteDomainAlias_SiteID_CMS_Site"));
 
         modelBuilder.Entity<CmsSmtpserver>(entity =>
         {
@@ -1878,8 +1875,8 @@ public partial class KX13Context : DbContext
         });
 
         modelBuilder.Entity<CmsTranslationSubmissionItem>(entity => entity.HasOne(d => d.SubmissionItemSubmission).WithMany(p => p.CmsTranslationSubmissionItems)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_CMS_TranslationSubmissionItem_CMS_TranslationSubmission"));
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_CMS_TranslationSubmissionItem_CMS_TranslationSubmission"));
 
         modelBuilder.Entity<CmsTree>(entity =>
         {
@@ -1913,7 +1910,14 @@ public partial class KX13Context : DbContext
         {
             entity.HasKey(e => e.ElementId).IsClustered(false);
 
-            entity.HasIndex(e => new { e.ElementResourceId, e.ElementLevel, e.ElementParentId, e.ElementOrder, e.ElementCaption }, "IX_CMS_UIElement_ElementResourceID_ElementLevel_ElementParentID_ElementOrder_ElementCaption").IsClustered();
+            entity.HasIndex(e => new
+            {
+                e.ElementResourceId,
+                e.ElementLevel,
+                e.ElementParentId,
+                e.ElementOrder,
+                e.ElementCaption
+            }, "IX_CMS_UIElement_ElementResourceID_ElementLevel_ElementParentID_ElementOrder_ElementCaption").IsClustered();
 
             entity.Property(e => e.ElementCheckModuleReadPermission).HasDefaultValueSql("((1))");
             entity.Property(e => e.ElementIsCustom).HasDefaultValueSql("((0))");
@@ -3005,8 +3009,8 @@ public partial class KX13Context : DbContext
         });
 
         modelBuilder.Entity<ComSkufile>(entity => entity.HasOne(d => d.FileSku).WithMany(p => p.ComSkufiles)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_COM_SKUFile_COM_SKU"));
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_COM_SKUFile_COM_SKU"));
 
         modelBuilder.Entity<ComSkuoptionCategory>(entity =>
         {
@@ -3069,8 +3073,8 @@ public partial class KX13Context : DbContext
         });
 
         modelBuilder.Entity<ComVolumeDiscount>(entity => entity.HasOne(d => d.VolumeDiscountSku).WithMany(p => p.ComVolumeDiscounts)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_COM_VolumeDiscount_VolumeDiscountSKUID_COM_SKU"));
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_COM_VolumeDiscount_VolumeDiscountSKUID_COM_SKU"));
 
         modelBuilder.Entity<ComWishlist>(entity =>
         {
@@ -3114,8 +3118,8 @@ public partial class KX13Context : DbContext
         });
 
         modelBuilder.Entity<IntegrationSyncLog>(entity => entity.HasOne(d => d.SyncLogSynchronization).WithMany(p => p.IntegrationSyncLogs)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Integration_SyncLog_SyncLogSynchronizationID_Integration_Synchronization"));
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_Integration_SyncLog_SyncLogSynchronizationID_Integration_Synchronization"));
 
         modelBuilder.Entity<IntegrationSynchronization>(entity =>
         {
@@ -3283,12 +3287,12 @@ public partial class KX13Context : DbContext
         });
 
         modelBuilder.Entity<NewsletterIssueContactGroup>(entity => entity.HasOne(d => d.ContactGroup).WithMany(p => p.NewsletterIssueContactGroups)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Newsletter_IssueContactGroup_ContactGroupID"));
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_Newsletter_IssueContactGroup_ContactGroupID"));
 
         modelBuilder.Entity<NewsletterLink>(entity => entity.HasOne(d => d.LinkIssue).WithMany(p => p.NewsletterLinks)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Newsletter_Link_Newsletter_NewsletterIssue"));
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_Newsletter_Link_Newsletter_NewsletterIssue"));
 
         modelBuilder.Entity<NewsletterNewsletter>(entity =>
         {
@@ -3435,8 +3439,8 @@ public partial class KX13Context : DbContext
         });
 
         modelBuilder.Entity<OmActivity>(entity => entity.HasIndex(e => e.ActivityCampaign, "IX_OM_Activity_ActivityCampaign")
-                .HasFilter("([ActivityCampaign] IS NOT NULL)")
-                .HasFillFactor(90));
+            .HasFilter("([ActivityCampaign] IS NOT NULL)")
+            .HasFillFactor(90));
 
         modelBuilder.Entity<OmActivityType>(entity =>
         {
@@ -3490,8 +3494,8 @@ public partial class KX13Context : DbContext
         });
 
         modelBuilder.Entity<OmMembership>(entity => entity.HasOne(d => d.Contact).WithMany(p => p.OmMemberships)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_OM_Membership_OM_Contact"));
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_OM_Membership_OM_Contact"));
 
         modelBuilder.Entity<OmRule>(entity =>
         {
@@ -3529,8 +3533,8 @@ public partial class KX13Context : DbContext
         });
 
         modelBuilder.Entity<OmVisitorToContact>(entity => entity.HasOne(d => d.VisitorToContactContact).WithMany(p => p.OmVisitorToContacts)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_OM_VisitorToContact_OM_Contact_Cascade"));
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_OM_VisitorToContact_OM_Contact_Cascade"));
 
         modelBuilder.Entity<PersonasPersona>(entity =>
         {
@@ -3579,8 +3583,8 @@ public partial class KX13Context : DbContext
         });
 
         modelBuilder.Entity<ReportingReportGraph>(entity => entity.HasOne(d => d.GraphReport).WithMany(p => p.ReportingReportGraphs)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Reporting_ReportGraph_GraphReportID_Reporting_Report"));
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_Reporting_ReportGraph_GraphReportID_Reporting_Report"));
 
         modelBuilder.Entity<ReportingReportSubscription>(entity =>
         {
@@ -3609,16 +3613,16 @@ public partial class KX13Context : DbContext
         });
 
         modelBuilder.Entity<ReportingReportTable>(entity => entity.HasOne(d => d.TableReport).WithMany(p => p.ReportingReportTables)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Reporting_ReportTable_TableReportID_Reporting_Report"));
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_Reporting_ReportTable_TableReportID_Reporting_Report"));
 
         modelBuilder.Entity<ReportingReportValue>(entity => entity.HasOne(d => d.ValueReport).WithMany(p => p.ReportingReportValues)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Reporting_ReportValue_ValueReportID_Reporting_Report"));
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_Reporting_ReportValue_ValueReportID_Reporting_Report"));
 
         modelBuilder.Entity<ReportingSavedGraph>(entity => entity.HasOne(d => d.SavedGraphSavedReport).WithMany(p => p.ReportingSavedGraphs)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Reporting_SavedGraph_SavedGraphSavedReportID_Reporting_SavedReport"));
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_Reporting_SavedGraph_SavedGraphSavedReportID_Reporting_SavedReport"));
 
         modelBuilder.Entity<ReportingSavedReport>(entity =>
         {
@@ -3636,8 +3640,8 @@ public partial class KX13Context : DbContext
         });
 
         modelBuilder.Entity<SharePointSharePointConnection>(entity => entity.HasOne(d => d.SharePointConnectionSite).WithMany(p => p.SharePointSharePointConnections)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_SharePoint_SharePointConnection_CMS_Site"));
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_SharePoint_SharePointConnection_CMS_Site"));
 
         modelBuilder.Entity<SharePointSharePointFile>(entity =>
         {

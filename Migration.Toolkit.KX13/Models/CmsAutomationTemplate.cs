@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("CMS_AutomationTemplate")]
 [Index("TemplateDisplayName", Name = "IX_CMS_AutomationTemplate_TemplateDisplayName")]
-public partial class CmsAutomationTemplate
+public class CmsAutomationTemplate
 {
     [Key]
     [Column("TemplateID")]

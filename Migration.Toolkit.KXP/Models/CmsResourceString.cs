@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_ResourceString")]
 [Index("StringKey", Name = "IX_CMS_ResourceString_StringKey")]
-public partial class CmsResourceString
+public class CmsResourceString
 {
     [Key]
     [Column("StringID")]

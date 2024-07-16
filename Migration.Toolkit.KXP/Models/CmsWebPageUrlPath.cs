@@ -7,10 +7,11 @@ namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_WebPageUrlPath")]
 [Index("WebPageUrlPathContentLanguageId", Name = "IX_CMS_WebPageUrlPath_WebPageUrlPathContentLanguageID")]
-[Index("WebPageUrlPathHash", "WebPageUrlPathWebsiteChannelId", "WebPageUrlPathContentLanguageId", "WebPageUrlPathIsDraft", Name = "IX_CMS_WebPageUrlPath_WebPageUrlPathHash_WebPageUrlPathWebsiteChannelID_WebPageUrlPathContentLanguageID_WebPageUrlPathIsDraft", IsUnique = true)]
+[Index("WebPageUrlPathHash", "WebPageUrlPathWebsiteChannelId", "WebPageUrlPathContentLanguageId", "WebPageUrlPathIsDraft",
+    Name = "IX_CMS_WebPageUrlPath_WebPageUrlPathHash_WebPageUrlPathWebsiteChannelID_WebPageUrlPathContentLanguageID_WebPageUrlPathIsDraft", IsUnique = true)]
 [Index("WebPageUrlPathWebPageItemId", Name = "IX_CMS_WebPageUrlPath_WebPageUrlPathWebPageItemID")]
 [Index("WebPageUrlPathWebsiteChannelId", Name = "IX_CMS_WebPageUrlPath_WebPageUrlPathWebsiteChannelID")]
-public partial class CmsWebPageUrlPath
+public class CmsWebPageUrlPath
 {
     [Key]
     [Column("WebPageUrlPathID")]

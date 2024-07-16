@@ -9,7 +9,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Index("SmartFolderCreatedByUserId", Name = "IX_CMS_SmartFolder_SmartFolderCreatedByUserID")]
 [Index("SmartFolderGuid", Name = "IX_CMS_SmartFolder_SmartFolderGUID_Unique", IsUnique = true)]
 [Index("SmartFolderModifiedByUserId", Name = "IX_CMS_SmartFolder_SmartFolderModifiedByUserID")]
-public partial class CmsSmartFolder
+public class CmsSmartFolder
 {
     [Key]
     [Column("SmartFolderID")]

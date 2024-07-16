@@ -8,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("Newsletter_SubscriberNewsletter")]
 [Index("NewsletterId", "SubscriptionApproved", Name = "IX_Newsletter_SubscriberNewsletter_NewsletterID_SubscriptionApproved")]
 [Index("SubscriberId", "NewsletterId", Name = "UQ_Newsletter_SubscriberNewsletter", IsUnique = true)]
-public partial class NewsletterSubscriberNewsletter
+public class NewsletterSubscriberNewsletter
 {
     [Column("SubscriberID")]
     public int SubscriberId { get; set; }

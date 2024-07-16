@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_WebPartCategory")]
 [Index("CategoryParentId", Name = "IX_CMS_WebPartCategory_CategoryParentID")]
-public partial class CmsWebPartCategory
+public class CmsWebPartCategory
 {
     [Key]
     [Column("CategoryID")]

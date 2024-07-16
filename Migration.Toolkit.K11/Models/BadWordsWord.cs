@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("BadWords_Word")]
 [Index("WordIsGlobal", Name = "IX_BadWords_Word_WordIsGlobal")]
-public partial class BadWordsWord
+public class BadWordsWord
 {
     [Key]
     [Column("WordID")]

@@ -11,7 +11,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("MemberInvitedByUserId", Name = "IX_Community_GroupMember_MemberInvitedByUserID")]
 [Index("MemberStatus", Name = "IX_Community_GroupMember_MemberStatus")]
 [Index("MemberUserId", Name = "IX_Community_GroupMember_MemberUserID")]
-public partial class CommunityGroupMember
+public class CommunityGroupMember
 {
     [Key]
     [Column("MemberID")]

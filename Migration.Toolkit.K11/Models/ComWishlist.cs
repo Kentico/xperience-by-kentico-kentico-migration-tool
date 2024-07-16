@@ -9,7 +9,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("COM_Wishlist")]
 [Index("Skuid", Name = "IX_COM_Wishlist_SKUID")]
 [Index("SiteId", "UserId", Name = "IX_COM_Wishlist_SiteID_UserID")]
-public partial class ComWishlist
+public class ComWishlist
 {
     [Key]
     [Column("UserID")]

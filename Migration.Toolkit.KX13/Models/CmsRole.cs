@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("CMS_Role")]
 [Index("SiteId", "RoleId", Name = "IX_CMS_Role_SiteID_RoleID")]
-public partial class CmsRole
+public class CmsRole
 {
     [Key]
     [Column("RoleID")]

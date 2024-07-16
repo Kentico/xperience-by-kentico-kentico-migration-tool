@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("Notification_Template")]
 [Index("TemplateSiteId", Name = "IX_Notification_Template_TemplateSiteID")]
-public partial class NotificationTemplate
+public class NotificationTemplate
 {
     [Key]
     [Column("TemplateID")]

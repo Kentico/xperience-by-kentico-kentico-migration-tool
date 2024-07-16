@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("Notification_Gateway")]
-public partial class NotificationGateway
+public class NotificationGateway
 {
     [Key]
     [Column("GatewayID")]

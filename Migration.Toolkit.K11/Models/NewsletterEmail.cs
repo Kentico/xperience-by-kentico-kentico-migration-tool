@@ -11,7 +11,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("EmailSending", Name = "IX_Newsletter_Emails_EmailSending")]
 [Index("EmailSiteId", Name = "IX_Newsletter_Emails_EmailSiteID")]
 [Index("EmailSubscriberId", Name = "IX_Newsletter_Emails_EmailSubscriberID")]
-public partial class NewsletterEmail
+public class NewsletterEmail
 {
     [Key]
     [Column("EmailID")]

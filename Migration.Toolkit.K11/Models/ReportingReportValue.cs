@@ -8,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("Reporting_ReportValue")]
 [Index("ValueName", "ValueReportId", Name = "IX_Reporting_ReportValue_ValueName_ValueReportID")]
 [Index("ValueReportId", Name = "IX_Reporting_ReportValue_ValueReportID")]
-public partial class ReportingReportValue
+public class ReportingReportValue
 {
     [Key]
     [Column("ValueID")]

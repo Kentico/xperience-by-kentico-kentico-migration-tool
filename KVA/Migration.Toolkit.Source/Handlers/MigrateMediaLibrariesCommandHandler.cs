@@ -1,4 +1,3 @@
-
 using System.Collections.Immutable;
 
 using CMS.Base;
@@ -22,6 +21,7 @@ using Migration.Toolkit.Source.Mappers;
 using Migration.Toolkit.Source.Model;
 
 namespace Migration.Toolkit.Source.Handlers;
+
 public class MigrateMediaLibrariesCommandHandler(
     ILogger<MigrateMediaLibrariesCommandHandler> logger,
     IDbContextFactory<KxpContext> kxpContextFactory,
@@ -38,6 +38,8 @@ public class MigrateMediaLibrariesCommandHandler(
 
     private KxpContext _kxpContext = kxpContextFactory.CreateDbContext();
 
+    public void Dispose() => _kxpContext.Dispose();
+
     public async Task<CommandResult> Handle(MigrateMediaLibrariesCommand request, CancellationToken cancellationToken)
     {
         var skippedMediaLibraries = new HashSet<Guid>();
@@ -48,11 +50,7 @@ public class MigrateMediaLibrariesCommandHandler(
                                GROUP BY LibraryName
                                HAVING COUNT(*) > 1
                                """,
-                (reader, _) => new
-                {
-                    LibraryName = reader.Unbox<int>("LibraryName"),
-                    LibraryGuids = reader.Unbox<string?>("LibraryGUIDs")?.Split('|').Select(Guid.Parse).ToImmutableList() ?? []
-                });
+                (reader, _) => new { LibraryName = reader.Unbox<int>("LibraryName"), LibraryGuids = reader.Unbox<string?>("LibraryGUIDs")?.Split('|').Select(Guid.Parse).ToImmutableList() ?? [] });
 
         foreach (var mlg in unsuitableMediaLibraries)
         {
@@ -108,12 +106,12 @@ public class MigrateMediaLibrariesCommandHandler(
                 continue;
             }
 
-            var mapped = mediaLibraryInfoMapper.Map(new(ksMediaLibrary, ksSite), mediaLibraryInfo);
+            var mapped = mediaLibraryInfoMapper.Map(new MediaLibraryInfoMapperSource(ksMediaLibrary, ksSite), mediaLibraryInfo);
             protocol.MappedTarget(mapped);
 
             if (mapped is { Success: true } result)
             {
-                var (mfi, newInstance) = result;
+                (var mfi, bool newInstance) = result;
                 ArgumentNullException.ThrowIfNull(mfi, nameof(mfi));
 
                 try
@@ -152,7 +150,6 @@ public class MigrateMediaLibrariesCommandHandler(
         return new GenericCommandResult();
     }
 
-    private record LoadMediaFileResult(bool Found, IUploadedFile? File);
     private LoadMediaFileResult LoadMediaFileBinary(string? sourceMediaLibraryPath, string relativeFilePath, string contentType)
     {
         if (sourceMediaLibraryPath == null)
@@ -217,7 +214,7 @@ public class MigrateMediaLibrariesCommandHandler(
 
                     if (mapped is { Success: true } result)
                     {
-                        var (mf, newInstance) = result;
+                        (var mf, bool newInstance) = result;
                         ArgumentNullException.ThrowIfNull(mf, nameof(mf));
 
                         try
@@ -262,5 +259,5 @@ public class MigrateMediaLibrariesCommandHandler(
         }
     }
 
-    public void Dispose() => _kxpContext.Dispose();
+    private record LoadMediaFileResult(bool Found, IUploadedFile? File);
 }

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("SM_LinkedInAccount")]
-public partial class SmLinkedInAccount
+public class SmLinkedInAccount
 {
     [Key]
     [Column("LinkedInAccountID")]

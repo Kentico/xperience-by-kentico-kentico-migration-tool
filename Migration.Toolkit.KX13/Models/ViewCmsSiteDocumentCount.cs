@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.KX13.Models;
 
 [Keyless]
-public partial class ViewCmsSiteDocumentCount
+public class ViewCmsSiteDocumentCount
 {
     [Column("SiteID")]
     public int SiteId { get; set; }

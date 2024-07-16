@@ -1,10 +1,10 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("CMS_TranslationService")]
-public partial class CmsTranslationService
+public class CmsTranslationService
 {
     [Key]
     [Column("TranslationServiceID")]

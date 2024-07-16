@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX12.Models;
 
 [Table("CMS_Query")]
 [Index("ClassId", "QueryName", Name = "IX_CMS_Query_QueryClassID_QueryName")]
-public partial class CmsQuery
+public class CmsQuery
 {
     [Key]
     [Column("QueryID")]

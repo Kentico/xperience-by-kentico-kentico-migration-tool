@@ -10,7 +10,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("ScopeCultureId", Name = "IX_CMS_WorkflowScope_ScopeCultureID")]
 [Index("ScopeSiteId", Name = "IX_CMS_WorkflowScope_ScopeSiteID")]
 [Index("ScopeWorkflowId", Name = "IX_CMS_WorkflowScope_ScopeWorkflowID")]
-public partial class CmsWorkflowScope
+public class CmsWorkflowScope
 {
     [Key]
     [Column("ScopeID")]

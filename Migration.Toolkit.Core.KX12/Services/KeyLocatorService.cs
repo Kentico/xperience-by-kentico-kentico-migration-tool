@@ -1,4 +1,3 @@
-
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 
@@ -9,11 +8,12 @@ using Migration.Toolkit.KX12.Context;
 using Migration.Toolkit.KXP.Context;
 
 namespace Migration.Toolkit.Core.KX12.Services;
+
 public class KeyLocatorService
 {
-    private readonly ILogger<KeyLocatorService> _logger;
-    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
     private readonly IDbContextFactory<KX12Context> _kx12ContextFactory;
+    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
+    private readonly ILogger<KeyLocatorService> _logger;
 
     public KeyLocatorService(
         ILogger<KeyLocatorService> logger,

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("CONTENT_File")]
-public partial class ContentFile
+public class ContentFile
 {
     [Key]
     [Column("FileID")]

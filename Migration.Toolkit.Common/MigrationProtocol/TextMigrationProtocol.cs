@@ -1,4 +1,3 @@
-
 using System.Diagnostics;
 
 using MediatR;
@@ -7,6 +6,7 @@ using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Services;
 
 namespace Migration.Toolkit.Common.MigrationProtocol;
+
 public class TextMigrationProtocol : IMigrationProtocol, IDisposable
 {
     private readonly ToolkitConfiguration _configuration;
@@ -47,28 +47,23 @@ public class TextMigrationProtocol : IMigrationProtocol, IDisposable
         _streamWriter.AutoFlush = true;
     }
 
-    private void WriteLine(string line) => _streamWriter.WriteLine($"{DateTime.Now:yyyyMMdd_hhmmss}: {line}");
+    public void Dispose() => _streamWriter.Dispose();
 
     public void MappedTarget<TTarget>(IModelMappingResult<TTarget> mapped)
     {
-
     }
 
     public void FetchedTarget<TTarget>(TTarget? target)
     {
-
     }
 
     public void FetchedSource<TSource>(TSource? source)
     {
-
     }
 
     public void Success<TSource, TTarget>(TSource source, TTarget target, IModelMappingResult<TTarget>? mapped) => WriteLine($"Success: {_printService.GetEntityIdentityPrint(target)}");
 
     public void Warning<T>(HandbookReference handbookRef, T? entity) => WriteLine($"{handbookRef}");
-
-    public void Warning<TSource, TTarget>(HandbookReference handbookRef, TSource? source, TTarget? target) => WriteLine($"{handbookRef}");
 
     public void CommandRequest<TRequest, TResponse>(TRequest request) where TRequest : IRequest<TResponse> => WriteLine($"Command {request} requested");
 
@@ -78,5 +73,7 @@ public class TextMigrationProtocol : IMigrationProtocol, IDisposable
 
     public void Append(HandbookReference? handbookReference) => WriteLine($"{handbookReference}");
 
-    public void Dispose() => _streamWriter.Dispose();
+    private void WriteLine(string line) => _streamWriter.WriteLine($"{DateTime.Now:yyyyMMdd_hhmmss}: {line}");
+
+    public void Warning<TSource, TTarget>(HandbookReference handbookRef, TSource? source, TTarget? target) => WriteLine($"{handbookRef}");
 }

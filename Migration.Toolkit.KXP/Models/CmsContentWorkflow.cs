@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_ContentWorkflow")]
-public partial class CmsContentWorkflow
+public class CmsContentWorkflow
 {
     [Key]
     [Column("ContentWorkflowID")]

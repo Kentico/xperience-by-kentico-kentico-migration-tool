@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.KX13.Models;
 
 [Keyless]
-public partial class ViewCmsResourceTranslatedJoined
+public class ViewCmsResourceTranslatedJoined
 {
     [Column("StringID")]
     public int StringId { get; set; }

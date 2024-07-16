@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_MacroRule")]
-public partial class CmsMacroRule
+public class CmsMacroRule
 {
     [Key]
     [Column("MacroRuleID")]

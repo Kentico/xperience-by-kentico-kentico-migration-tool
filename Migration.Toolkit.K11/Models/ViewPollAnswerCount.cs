@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.K11.Models;
 
 [Keyless]
-public partial class ViewPollAnswerCount
+public class ViewPollAnswerCount
 {
     [Column("PollID")]
     public int PollId { get; set; }

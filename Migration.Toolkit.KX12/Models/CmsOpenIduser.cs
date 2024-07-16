@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("CMS_OpenIDUser")]
 [Index("OpenId", Name = "IX_CMS_OpenIDUser_OpenID")]
 [Index("UserId", Name = "IX_CMS_OpenIDUser_UserID")]
-public partial class CmsOpenIduser
+public class CmsOpenIduser
 {
     [Key]
     [Column("OpenIDUserID")]

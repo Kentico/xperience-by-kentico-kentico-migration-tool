@@ -8,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("COM_ShoppingCartSKU")]
 [Index("Skuid", Name = "IX_COM_ShoppingCartSKU_SKUID")]
 [Index("ShoppingCartId", Name = "IX_COM_ShoppingCartSKU_ShoppingCartID")]
-public partial class ComShoppingCartSku
+public class ComShoppingCartSku
 {
     [Key]
     [Column("CartItemID")]

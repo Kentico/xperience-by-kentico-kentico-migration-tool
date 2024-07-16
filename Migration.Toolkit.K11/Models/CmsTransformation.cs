@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_Transformation")]
 [Index("TransformationClassId", Name = "IX_CMS_Transformation_TransformationClassID")]
-public partial class CmsTransformation
+public class CmsTransformation
 {
     [Key]
     [Column("TransformationID")]

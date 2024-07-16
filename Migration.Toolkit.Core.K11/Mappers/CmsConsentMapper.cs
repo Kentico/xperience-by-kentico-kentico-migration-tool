@@ -1,5 +1,4 @@
-
-using System.Text;
+﻿using System.Text;
 using System.Xml.Linq;
 using System.Xml.XPath;
 
@@ -10,14 +9,15 @@ using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.K11.Contexts;
-using Migration.Toolkit.KXP.Models;
+using Migration.Toolkit.K11.Models;
 
 namespace Migration.Toolkit.Core.K11.Mappers;
-public class CmsConsentMapper(ILogger<CmsConsentMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : EntityMapperBase<Toolkit.K11.Models.CmsConsent, CmsConsent>(logger, pkContext, protocol)
-{
-    protected override CmsConsent? CreateNewInstance(Toolkit.K11.Models.CmsConsent source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
-    protected override CmsConsent MapInternal(Toolkit.K11.Models.CmsConsent source, CmsConsent target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+public class CmsConsentMapper(ILogger<CmsConsentMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : EntityMapperBase<CmsConsent, KXP.Models.CmsConsent>(logger, pkContext, protocol)
+{
+    protected override KXP.Models.CmsConsent? CreateNewInstance(CmsConsent source, MappingHelper mappingHelper, AddFailure addFailure) => new();
+
+    protected override KXP.Models.CmsConsent MapInternal(CmsConsent source, KXP.Models.CmsConsent target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         target.ConsentDisplayName = source.ConsentDisplayName;
         var defaultContentLanguageInfo = ContentLanguageInfo.Provider.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageIsDefault), true).FirstOrDefault() ?? throw new InvalidCastException("Missing default content language");

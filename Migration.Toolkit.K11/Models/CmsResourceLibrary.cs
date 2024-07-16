@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_ResourceLibrary")]
 [Index("ResourceLibraryResourceId", Name = "IX_CMS_ResourceLibrary")]
-public partial class CmsResourceLibrary
+public class CmsResourceLibrary
 {
     [Key]
     [Column("ResourceLibraryID")]

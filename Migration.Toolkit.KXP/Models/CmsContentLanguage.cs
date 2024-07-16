@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_ContentLanguage")]
-public partial class CmsContentLanguage
+public class CmsContentLanguage
 {
     [Key]
     [Column("ContentLanguageID")]

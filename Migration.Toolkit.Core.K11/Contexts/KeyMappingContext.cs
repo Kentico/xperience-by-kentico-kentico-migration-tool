@@ -1,9 +1,9 @@
-
 using System.Linq.Expressions;
 
 using Migration.Toolkit.Core.K11.Services;
 
 namespace Migration.Toolkit.Core.K11.Contexts;
+
 public record MapSourceKeyResult<TMapped>(bool Success, TMapped? Mapped);
 
 public class KeyMappingContext(PrimaryKeyMappingContext primaryKeyMappingContext, KeyLocatorService keyLocatorService)

@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX12.Models;
 
 [Table("OM_Rule")]
 [Index("RuleScoreId", Name = "IX_OM_Rule_RuleScoreID")]
-public partial class OmRule
+public class OmRule
 {
     [Key]
     [Column("RuleID")]

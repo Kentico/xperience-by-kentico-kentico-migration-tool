@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX12.Models;
 
 [Table("Analytics_WeekHits")]
 [Index("HitsStatisticsId", Name = "IX_Analytics_WeekHits_HitsStatisticsID")]
-public partial class AnalyticsWeekHit
+public class AnalyticsWeekHit
 {
     [Key]
     [Column("HitsID")]

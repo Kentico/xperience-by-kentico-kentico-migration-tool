@@ -10,7 +10,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("RuleId", Name = "IX_OM_ScoreContactRule_RuleID")]
 [Index("ScoreId", Name = "IX_OM_ScoreContactRule_ScoreID_ContactID_Value_Expiration")]
 [Index("ScoreId", "ContactId", "RuleId", Name = "UQ_OM_ScoreContactRule", IsUnique = true)]
-public partial class OmScoreContactRule
+public class OmScoreContactRule
 {
     [Column("ScoreID")]
     public int ScoreId { get; set; }

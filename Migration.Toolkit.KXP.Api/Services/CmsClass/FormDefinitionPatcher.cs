@@ -1,4 +1,3 @@
-
 using System.Xml.Linq;
 using System.Xml.XPath;
 
@@ -7,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
 
 namespace Migration.Toolkit.KXP.Api.Services.CmsClass;
+
 public class FormDefinitionPatcher
 {
     private const string CATEGORY_ELEM = "category";
@@ -33,16 +33,6 @@ public class FormDefinitionPatcher
     private const string SETTINGS_ROOTPATH = "RootPath";
     private const string SETTINGS_ROOTPATH_FALLBACK = "/";
 
-    private readonly ILogger _logger;
-    private readonly string _formDefinitionXml;
-    private readonly FieldMigrationService _fieldMigrationService;
-    private readonly bool _classIsForm;
-    private readonly bool _classIsDocumentType;
-    private readonly bool _discardSysFields;
-    private readonly bool _classIsCustom;
-    private readonly bool _altForm;
-    private readonly XDocument _xDoc;
-
     private readonly IReadOnlySet<string> _allowedFieldAttributes = new HashSet<string>([
         // taken from FormFieldInfo.GetAttributes() method
         "column",
@@ -62,8 +52,19 @@ public class FormDefinitionPatcher
         "isunique",
         "refobjtype",
         "reftype",
-        "resolvedefaultvalue",
+        "resolvedefaultvalue"
     ], StringComparer.InvariantCultureIgnoreCase);
+
+    private readonly bool _altForm;
+    private readonly bool _classIsCustom;
+    private readonly bool _classIsDocumentType;
+    private readonly bool _classIsForm;
+    private readonly bool _discardSysFields;
+    private readonly FieldMigrationService _fieldMigrationService;
+    private readonly string _formDefinitionXml;
+
+    private readonly ILogger _logger;
+    private readonly XDocument _xDoc;
 
     public FormDefinitionPatcher(ILogger logger,
         string formDefinitionXml,
@@ -293,6 +294,7 @@ public class FormDefinitionPatcher
                             // XbK Resource / Module class no longer supports visual representation
                             ClearSettings(fieldChildNode);
                         }
+
                         break;
                     }
                     default:
@@ -414,9 +416,6 @@ public class FormDefinitionPatcher
 
                     break;
                 }
-
-                default:
-                    break;
             }
         }
     }

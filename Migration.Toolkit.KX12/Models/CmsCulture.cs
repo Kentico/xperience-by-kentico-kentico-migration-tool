@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("CMS_Culture")]
 [Index("CultureAlias", Name = "IX_CMS_CulturAlias")]
 [Index("CultureCode", Name = "IX_CMS_Culture_CultureCode")]
-public partial class CmsCulture
+public class CmsCulture
 {
     [Key]
     [Column("CultureID")]

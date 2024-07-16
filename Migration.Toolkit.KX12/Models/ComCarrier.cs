@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX12.Models;
 
 [Table("COM_Carrier")]
 [Index("CarrierSiteId", Name = "IX_COM_Carrier_CarrierSiteID")]
-public partial class ComCarrier
+public class ComCarrier
 {
     [Key]
     [Column("CarrierID")]

@@ -4,11 +4,11 @@
         <ProjectReference Include="..\Migration.Toolkit.Common\Migration.Toolkit.Common.csproj"/>
         <ProjectReference Include="..\Migration.Toolkit.KX12\Migration.Toolkit.KX12.csproj"/>
         <ProjectReference Include="..\Migration.Toolkit.KXP.Api\Migration.Toolkit.KXP.Api.csproj"/>
-        <ProjectReference Include="..\Migration.Toolkit.KXP\Migration.Toolkit.KXP.csproj" />
+        <ProjectReference Include="..\Migration.Toolkit.KXP\Migration.Toolkit.KXP.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="MediatR" Version="12.3.0" />
+        <PackageReference Include="MediatR" Version="12.3.0"/>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
     </ItemGroup>
 

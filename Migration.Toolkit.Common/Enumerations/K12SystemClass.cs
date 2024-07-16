@@ -1,4 +1,5 @@
 // ReSharper disable InconsistentNaming
+
 namespace Migration.Toolkit.Common.Enumerations;
 
 public class K12SystemClass
@@ -333,7 +334,8 @@ public class K12SystemClass
     public const string Ecommerce_GiftCard = "Ecommerce.GiftCard";
     public const string Ecommerce_ShoppingCartCouponCode = "Ecommerce.ShoppingCartCouponCode";
 
-    public static readonly HashSet<string> All = [
+    public static readonly HashSet<string> All =
+    [
         CMS_AbuseReport,
         cms_acl,
         cms_aclitem,

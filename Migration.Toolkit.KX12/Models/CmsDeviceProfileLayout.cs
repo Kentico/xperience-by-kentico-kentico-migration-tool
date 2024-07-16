@@ -9,7 +9,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("DeviceProfileId", Name = "IX_CMS_DeviceProfileLayout_DeviceProfileID")]
 [Index("SourceLayoutId", Name = "IX_CMS_DeviceProfileLayout_SourceLayoutID")]
 [Index("TargetLayoutId", Name = "IX_CMS_DeviceProfileLayout_TargetLayoutID")]
-public partial class CmsDeviceProfileLayout
+public class CmsDeviceProfileLayout
 {
     [Key]
     [Column("DeviceProfileLayoutID")]

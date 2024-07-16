@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("CMS_WidgetCategory")]
 [Index("WidgetCategoryParentId", Name = "IX_CMS_WidgetCategory_WidgetCategoryParentID")]
-public partial class CmsWidgetCategory
+public class CmsWidgetCategory
 {
     [Key]
     [Column("WidgetCategoryID")]

@@ -9,7 +9,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("ChatOnlineSupportChatUserId", Name = "IX_Chat_OnlineSupport_ChatOnlineSupportChatUserID")]
 [Index("ChatOnlineSupportSiteId", Name = "IX_Chat_OnlineSupport_SiteID")]
 [Index("ChatOnlineSupportChatUserId", "ChatOnlineSupportSiteId", Name = "UQ_Chat_OnlineSupport_ChatUserID-SiteID", IsUnique = true)]
-public partial class ChatOnlineSupport
+public class ChatOnlineSupport
 {
     [Key]
     [Column("ChatOnlineSupportID")]

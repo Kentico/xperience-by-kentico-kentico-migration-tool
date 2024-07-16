@@ -5,6 +5,7 @@ using System.Data;
 using Migration.Toolkit.Common;
 
 namespace Migration.Toolkit.Source.Model;
+
 public interface IMediaLibrary : ISourceModel<IMediaLibrary>
 {
     int LibraryID { get; }
@@ -26,6 +27,7 @@ public interface IMediaLibrary : ISourceModel<IMediaLibrary>
         { Major: 13 } => MediaLibraryK13.GetPrimaryKeyName(version),
         _ => throw new InvalidCastException($"Invalid version {version}")
     };
+
     static bool ISourceModel<IMediaLibrary>.IsAvailable(SemanticVersion version) => version switch
     {
         { Major: 11 } => MediaLibraryK11.IsAvailable(version),
@@ -33,8 +35,10 @@ public interface IMediaLibrary : ISourceModel<IMediaLibrary>
         { Major: 13 } => MediaLibraryK13.IsAvailable(version),
         _ => throw new InvalidCastException($"Invalid version {version}")
     };
+
     static string ISourceModel<IMediaLibrary>.TableName => "Media_Library";
     static string ISourceModel<IMediaLibrary>.GuidColumnName => "LibraryGUID"; //assumtion, class Guid column doesn't change between versions
+
     static IMediaLibrary ISourceModel<IMediaLibrary>.FromReader(IDataReader reader, SemanticVersion version) => version switch
     {
         { Major: 11 } => MediaLibraryK11.FromReader(reader, version),
@@ -43,42 +47,95 @@ public interface IMediaLibrary : ISourceModel<IMediaLibrary>
         _ => throw new InvalidCastException($"Invalid version {version}")
     };
 }
-public partial record MediaLibraryK11(int LibraryID, string LibraryName, string LibraryDisplayName, string? LibraryDescription, string LibraryFolder, int? LibraryAccess, int? LibraryGroupID, int LibrarySiteID, Guid? LibraryGUID, DateTime? LibraryLastModified, string? LibraryTeaserPath, Guid? LibraryTeaserGUID) : IMediaLibrary, ISourceModel<MediaLibraryK11>
+
+public record MediaLibraryK11(
+    int LibraryID,
+    string LibraryName,
+    string LibraryDisplayName,
+    string? LibraryDescription,
+    string LibraryFolder,
+    int? LibraryAccess,
+    int? LibraryGroupID,
+    int LibrarySiteID,
+    Guid? LibraryGUID,
+    DateTime? LibraryLastModified,
+    string? LibraryTeaserPath,
+    Guid? LibraryTeaserGUID) : IMediaLibrary, ISourceModel<MediaLibraryK11>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
     public static string GetPrimaryKeyName(SemanticVersion version) => "LibraryID";
     public static string TableName => "Media_Library";
     public static string GuidColumnName => "LibraryTeaserGUID";
-    static MediaLibraryK11 ISourceModel<MediaLibraryK11>.FromReader(IDataReader reader, SemanticVersion version) => new MediaLibraryK11(
-            reader.Unbox<int>("LibraryID"), reader.Unbox<string>("LibraryName"), reader.Unbox<string>("LibraryDisplayName"), reader.Unbox<string?>("LibraryDescription"), reader.Unbox<string>("LibraryFolder"), reader.Unbox<int?>("LibraryAccess"), reader.Unbox<int?>("LibraryGroupID"), reader.Unbox<int>("LibrarySiteID"), reader.Unbox<Guid?>("LibraryGUID"), reader.Unbox<DateTime?>("LibraryLastModified"), reader.Unbox<string?>("LibraryTeaserPath"), reader.Unbox<Guid?>("LibraryTeaserGUID")
-        );
-    public static MediaLibraryK11 FromReader(IDataReader reader, SemanticVersion version) => new MediaLibraryK11(
-            reader.Unbox<int>("LibraryID"), reader.Unbox<string>("LibraryName"), reader.Unbox<string>("LibraryDisplayName"), reader.Unbox<string?>("LibraryDescription"), reader.Unbox<string>("LibraryFolder"), reader.Unbox<int?>("LibraryAccess"), reader.Unbox<int?>("LibraryGroupID"), reader.Unbox<int>("LibrarySiteID"), reader.Unbox<Guid?>("LibraryGUID"), reader.Unbox<DateTime?>("LibraryLastModified"), reader.Unbox<string?>("LibraryTeaserPath"), reader.Unbox<Guid?>("LibraryTeaserGUID")
-        );
-};
-public partial record MediaLibraryK12(int LibraryID, string LibraryName, string LibraryDisplayName, string? LibraryDescription, string LibraryFolder, int? LibraryAccess, int? LibraryGroupID, int LibrarySiteID, Guid? LibraryGUID, DateTime? LibraryLastModified, string? LibraryTeaserPath, Guid? LibraryTeaserGUID) : IMediaLibrary, ISourceModel<MediaLibraryK12>
+
+    static MediaLibraryK11 ISourceModel<MediaLibraryK11>.FromReader(IDataReader reader, SemanticVersion version) => new(
+        reader.Unbox<int>("LibraryID"), reader.Unbox<string>("LibraryName"), reader.Unbox<string>("LibraryDisplayName"), reader.Unbox<string?>("LibraryDescription"), reader.Unbox<string>("LibraryFolder"), reader.Unbox<int?>("LibraryAccess"),
+        reader.Unbox<int?>("LibraryGroupID"), reader.Unbox<int>("LibrarySiteID"), reader.Unbox<Guid?>("LibraryGUID"), reader.Unbox<DateTime?>("LibraryLastModified"), reader.Unbox<string?>("LibraryTeaserPath"), reader.Unbox<Guid?>("LibraryTeaserGUID")
+    );
+
+    public static MediaLibraryK11 FromReader(IDataReader reader, SemanticVersion version) => new(
+        reader.Unbox<int>("LibraryID"), reader.Unbox<string>("LibraryName"), reader.Unbox<string>("LibraryDisplayName"), reader.Unbox<string?>("LibraryDescription"), reader.Unbox<string>("LibraryFolder"), reader.Unbox<int?>("LibraryAccess"),
+        reader.Unbox<int?>("LibraryGroupID"), reader.Unbox<int>("LibrarySiteID"), reader.Unbox<Guid?>("LibraryGUID"), reader.Unbox<DateTime?>("LibraryLastModified"), reader.Unbox<string?>("LibraryTeaserPath"), reader.Unbox<Guid?>("LibraryTeaserGUID")
+    );
+}
+
+public record MediaLibraryK12(
+    int LibraryID,
+    string LibraryName,
+    string LibraryDisplayName,
+    string? LibraryDescription,
+    string LibraryFolder,
+    int? LibraryAccess,
+    int? LibraryGroupID,
+    int LibrarySiteID,
+    Guid? LibraryGUID,
+    DateTime? LibraryLastModified,
+    string? LibraryTeaserPath,
+    Guid? LibraryTeaserGUID) : IMediaLibrary, ISourceModel<MediaLibraryK12>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
     public static string GetPrimaryKeyName(SemanticVersion version) => "LibraryID";
     public static string TableName => "Media_Library";
     public static string GuidColumnName => "LibraryTeaserGUID";
-    static MediaLibraryK12 ISourceModel<MediaLibraryK12>.FromReader(IDataReader reader, SemanticVersion version) => new MediaLibraryK12(
-            reader.Unbox<int>("LibraryID"), reader.Unbox<string>("LibraryName"), reader.Unbox<string>("LibraryDisplayName"), reader.Unbox<string?>("LibraryDescription"), reader.Unbox<string>("LibraryFolder"), reader.Unbox<int?>("LibraryAccess"), reader.Unbox<int?>("LibraryGroupID"), reader.Unbox<int>("LibrarySiteID"), reader.Unbox<Guid?>("LibraryGUID"), reader.Unbox<DateTime?>("LibraryLastModified"), reader.Unbox<string?>("LibraryTeaserPath"), reader.Unbox<Guid?>("LibraryTeaserGUID")
-        );
-    public static MediaLibraryK12 FromReader(IDataReader reader, SemanticVersion version) => new MediaLibraryK12(
-            reader.Unbox<int>("LibraryID"), reader.Unbox<string>("LibraryName"), reader.Unbox<string>("LibraryDisplayName"), reader.Unbox<string?>("LibraryDescription"), reader.Unbox<string>("LibraryFolder"), reader.Unbox<int?>("LibraryAccess"), reader.Unbox<int?>("LibraryGroupID"), reader.Unbox<int>("LibrarySiteID"), reader.Unbox<Guid?>("LibraryGUID"), reader.Unbox<DateTime?>("LibraryLastModified"), reader.Unbox<string?>("LibraryTeaserPath"), reader.Unbox<Guid?>("LibraryTeaserGUID")
-        );
-};
-public partial record MediaLibraryK13(int LibraryID, string LibraryName, string LibraryDisplayName, string? LibraryDescription, string LibraryFolder, int? LibraryAccess, int LibrarySiteID, Guid? LibraryGUID, DateTime? LibraryLastModified, string? LibraryTeaserPath, Guid? LibraryTeaserGUID, bool? LibraryUseDirectPathForContent) : IMediaLibrary, ISourceModel<MediaLibraryK13>
+
+    static MediaLibraryK12 ISourceModel<MediaLibraryK12>.FromReader(IDataReader reader, SemanticVersion version) => new(
+        reader.Unbox<int>("LibraryID"), reader.Unbox<string>("LibraryName"), reader.Unbox<string>("LibraryDisplayName"), reader.Unbox<string?>("LibraryDescription"), reader.Unbox<string>("LibraryFolder"), reader.Unbox<int?>("LibraryAccess"),
+        reader.Unbox<int?>("LibraryGroupID"), reader.Unbox<int>("LibrarySiteID"), reader.Unbox<Guid?>("LibraryGUID"), reader.Unbox<DateTime?>("LibraryLastModified"), reader.Unbox<string?>("LibraryTeaserPath"), reader.Unbox<Guid?>("LibraryTeaserGUID")
+    );
+
+    public static MediaLibraryK12 FromReader(IDataReader reader, SemanticVersion version) => new(
+        reader.Unbox<int>("LibraryID"), reader.Unbox<string>("LibraryName"), reader.Unbox<string>("LibraryDisplayName"), reader.Unbox<string?>("LibraryDescription"), reader.Unbox<string>("LibraryFolder"), reader.Unbox<int?>("LibraryAccess"),
+        reader.Unbox<int?>("LibraryGroupID"), reader.Unbox<int>("LibrarySiteID"), reader.Unbox<Guid?>("LibraryGUID"), reader.Unbox<DateTime?>("LibraryLastModified"), reader.Unbox<string?>("LibraryTeaserPath"), reader.Unbox<Guid?>("LibraryTeaserGUID")
+    );
+}
+
+public record MediaLibraryK13(
+    int LibraryID,
+    string LibraryName,
+    string LibraryDisplayName,
+    string? LibraryDescription,
+    string LibraryFolder,
+    int? LibraryAccess,
+    int LibrarySiteID,
+    Guid? LibraryGUID,
+    DateTime? LibraryLastModified,
+    string? LibraryTeaserPath,
+    Guid? LibraryTeaserGUID,
+    bool? LibraryUseDirectPathForContent) : IMediaLibrary, ISourceModel<MediaLibraryK13>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
     public static string GetPrimaryKeyName(SemanticVersion version) => "LibraryID";
     public static string TableName => "Media_Library";
     public static string GuidColumnName => "LibraryTeaserGUID";
-    static MediaLibraryK13 ISourceModel<MediaLibraryK13>.FromReader(IDataReader reader, SemanticVersion version) => new MediaLibraryK13(
-            reader.Unbox<int>("LibraryID"), reader.Unbox<string>("LibraryName"), reader.Unbox<string>("LibraryDisplayName"), reader.Unbox<string?>("LibraryDescription"), reader.Unbox<string>("LibraryFolder"), reader.Unbox<int?>("LibraryAccess"), reader.Unbox<int>("LibrarySiteID"), reader.Unbox<Guid?>("LibraryGUID"), reader.Unbox<DateTime?>("LibraryLastModified"), reader.Unbox<string?>("LibraryTeaserPath"), reader.Unbox<Guid?>("LibraryTeaserGUID"), reader.Unbox<bool?>("LibraryUseDirectPathForContent")
-        );
-    public static MediaLibraryK13 FromReader(IDataReader reader, SemanticVersion version) => new MediaLibraryK13(
-            reader.Unbox<int>("LibraryID"), reader.Unbox<string>("LibraryName"), reader.Unbox<string>("LibraryDisplayName"), reader.Unbox<string?>("LibraryDescription"), reader.Unbox<string>("LibraryFolder"), reader.Unbox<int?>("LibraryAccess"), reader.Unbox<int>("LibrarySiteID"), reader.Unbox<Guid?>("LibraryGUID"), reader.Unbox<DateTime?>("LibraryLastModified"), reader.Unbox<string?>("LibraryTeaserPath"), reader.Unbox<Guid?>("LibraryTeaserGUID"), reader.Unbox<bool?>("LibraryUseDirectPathForContent")
-        );
-};
+
+    static MediaLibraryK13 ISourceModel<MediaLibraryK13>.FromReader(IDataReader reader, SemanticVersion version) => new(
+        reader.Unbox<int>("LibraryID"), reader.Unbox<string>("LibraryName"), reader.Unbox<string>("LibraryDisplayName"), reader.Unbox<string?>("LibraryDescription"), reader.Unbox<string>("LibraryFolder"), reader.Unbox<int?>("LibraryAccess"),
+        reader.Unbox<int>("LibrarySiteID"), reader.Unbox<Guid?>("LibraryGUID"), reader.Unbox<DateTime?>("LibraryLastModified"), reader.Unbox<string?>("LibraryTeaserPath"), reader.Unbox<Guid?>("LibraryTeaserGUID"),
+        reader.Unbox<bool?>("LibraryUseDirectPathForContent")
+    );
+
+    public static MediaLibraryK13 FromReader(IDataReader reader, SemanticVersion version) => new(
+        reader.Unbox<int>("LibraryID"), reader.Unbox<string>("LibraryName"), reader.Unbox<string>("LibraryDisplayName"), reader.Unbox<string?>("LibraryDescription"), reader.Unbox<string>("LibraryFolder"), reader.Unbox<int?>("LibraryAccess"),
+        reader.Unbox<int>("LibrarySiteID"), reader.Unbox<Guid?>("LibraryGUID"), reader.Unbox<DateTime?>("LibraryLastModified"), reader.Unbox<string?>("LibraryTeaserPath"), reader.Unbox<Guid?>("LibraryTeaserGUID"),
+        reader.Unbox<bool?>("LibraryUseDirectPathForContent")
+    );
+}

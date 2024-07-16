@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX12.Models;
 
 [Table("Events_Attendee")]
 [Index("AttendeeEventNodeId", Name = "IX_Events_Attendee_AttendeeEventNodeID")]
-public partial class EventsAttendee
+public class EventsAttendee
 {
     [Key]
     [Column("AttendeeID")]

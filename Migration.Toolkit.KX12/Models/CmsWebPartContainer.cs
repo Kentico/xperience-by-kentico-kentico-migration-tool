@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX12.Models;
 
 [Table("CMS_WebPartContainer")]
 [Index("ContainerName", Name = "IX_CMS_WebPartContainer_ContainerName")]
-public partial class CmsWebPartContainer
+public class CmsWebPartContainer
 {
     [Key]
     [Column("ContainerID")]

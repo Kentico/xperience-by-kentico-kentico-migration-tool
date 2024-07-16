@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("EmailLibrary_EmailStatisticsHits")]
 [Index("EmailStatisticsHitsEmailConfigurationId", Name = "IX_EmailLibrary_EmailStatisticsHits_EmailStatisticsHitsEmailConfigurationID")]
 [Index("EmailStatisticsHitsEmailLinkId", Name = "IX_EmailLibrary_EmailStatisticsHits_EmailStatisticsHitsEmailLinkID")]
-public partial class EmailLibraryEmailStatisticsHit
+public class EmailLibraryEmailStatisticsHit
 {
     [Key]
     [Column("EmailStatisticsHitsID")]

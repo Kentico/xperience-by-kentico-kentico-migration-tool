@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("Analytics_CampaignConversionHits")]
 [Index("CampaignConversionHitsConversionId", Name = "IX_Analytics_CampaignConversionHits_CampaignConversionHitsConversionID")]
-public partial class AnalyticsCampaignConversionHit
+public class AnalyticsCampaignConversionHit
 {
     [Key]
     [Column("CampaignConversionHitsID")]

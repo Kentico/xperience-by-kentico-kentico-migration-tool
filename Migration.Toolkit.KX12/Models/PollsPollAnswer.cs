@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX12.Models;
 
 [Table("Polls_PollAnswer")]
 [Index("AnswerPollId", Name = "IX_Polls_PollAnswer_AnswerPollID")]
-public partial class PollsPollAnswer
+public class PollsPollAnswer
 {
     [Key]
     [Column("AnswerID")]

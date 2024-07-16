@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("COM_ShippingCost")]
 [Index("ShippingCostShippingOptionId", Name = "IX_COM_ShippingCost_ShippingCostShippingOptionID")]
-public partial class ComShippingCost
+public class ComShippingCost
 {
     [Key]
     [Column("ShippingCostID")]

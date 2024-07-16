@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("CONTENT_MenuItem")]
-public partial class ContentMenuItem
+public class ContentMenuItem
 {
     [Key]
     [Column("MenuItemID")]

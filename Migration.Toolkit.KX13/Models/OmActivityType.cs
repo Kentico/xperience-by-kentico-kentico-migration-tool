@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("OM_ActivityType")]
-public partial class OmActivityType
+public class OmActivityType
 {
     [Key]
     [Column("ActivityTypeID")]

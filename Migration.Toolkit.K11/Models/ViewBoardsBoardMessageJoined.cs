@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.K11.Models;
 
 [Keyless]
-public partial class ViewBoardsBoardMessageJoined
+public class ViewBoardsBoardMessageJoined
 {
     [Column("BoardID")]
     public int BoardId { get; set; }

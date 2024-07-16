@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_WebFarmServerLog")]
-public partial class CmsWebFarmServerLog
+public class CmsWebFarmServerLog
 {
     [Key]
     [Column("WebFarmServerLogID")]

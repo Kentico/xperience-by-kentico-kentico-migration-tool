@@ -8,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("Staging_TaskUser")]
 [Index("TaskId", Name = "IX_Staging_TaskUser_TaskID")]
 [Index("UserId", Name = "IX_Staging_TaskUser_UserID")]
-public partial class StagingTaskUser
+public class StagingTaskUser
 {
     [Key]
     [Column("TaskUserID")]

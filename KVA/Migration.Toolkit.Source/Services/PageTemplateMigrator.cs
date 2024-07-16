@@ -1,4 +1,3 @@
-
 using CMS.DataEngine;
 using CMS.Websites;
 
@@ -9,6 +8,7 @@ using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Source.Model;
 
 namespace Migration.Toolkit.Source.Services;
+
 public class PageTemplateMigrator(
     ILogger<PageTemplateMigrator> logger,
     IEntityMapper<ICmsPageTemplateConfiguration, PageTemplateConfigurationInfo> pageTemplateConfigurationMapper,
@@ -37,20 +37,14 @@ public class PageTemplateMigrator(
                     protocol.Append(HandbookReferences
                         .ErrorCreatingTargetInstance<PageTemplateConfigurationInfo>(exception)
                         .NeedsManualAction()
-                        .WithData(new
-                        {
-                            exception,
-                            SourcePageTemplateConfigurationGuid = pageTemplateConfiguration.PageTemplateConfigurationGUID,
-                            SourcePageTemplateConfigurationName = pageTemplateConfiguration.PageTemplateConfigurationName
-                        })
+                        .WithData(new { exception, SourcePageTemplateConfigurationGuid = pageTemplateConfiguration.PageTemplateConfigurationGUID, SourcePageTemplateConfigurationName = pageTemplateConfiguration.PageTemplateConfigurationName })
                     );
                 }
             }
+
             return Task.CompletedTask;
         }
-        else
-        {
-            return Task.CompletedTask;
-        }
+
+        return Task.CompletedTask;
     }
 }

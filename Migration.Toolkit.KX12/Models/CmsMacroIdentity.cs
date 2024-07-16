@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX12.Models;
 
 [Table("CMS_MacroIdentity")]
 [Index("MacroIdentityEffectiveUserId", Name = "IX_CMS_MacroIdentity_MacroIdentityEffectiveUserID")]
-public partial class CmsMacroIdentity
+public class CmsMacroIdentity
 {
     [Key]
     [Column("MacroIdentityID")]

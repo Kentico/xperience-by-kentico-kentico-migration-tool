@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.K11.Models;
 
 [Keyless]
-public partial class ViewCommunityFriendFriend
+public class ViewCommunityFriendFriend
 {
     [Column("FriendID")]
     public int FriendId { get; set; }

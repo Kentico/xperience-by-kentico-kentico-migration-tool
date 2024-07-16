@@ -1,7 +1,7 @@
-
 using CMS.Helpers;
 
 namespace Migration.Toolkit.Source.Helpers;
+
 public static class KenticoHelper
 {
     public static void CopyCustomData(ContainerCustomData target, string? sourceXml)

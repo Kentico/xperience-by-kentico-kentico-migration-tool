@@ -1,7 +1,7 @@
-
 using System.Data;
 
 namespace Migration.Toolkit.Common.Services.BulkCopy;
+
 public class DataReaderProxyBase : IDataReader
 {
     protected readonly IDataReader _innerReader;

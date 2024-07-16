@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +11,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Index("ContentFolderGuid", Name = "IX_CMS_ContentFolder_ContentFolderGUID_Unique", IsUnique = true)]
 [Index("ContentFolderModifiedByUserId", Name = "IX_CMS_ContentFolder_ContentFolderModifiedByUserID")]
 [Index("ContentFolderParentFolderId", Name = "IX_CMS_ContentFolder_ContentFolderParentFolderID")]
-public partial class CmsContentFolder
+public class CmsContentFolder
 {
     [Key]
     [Column("ContentFolderID")]

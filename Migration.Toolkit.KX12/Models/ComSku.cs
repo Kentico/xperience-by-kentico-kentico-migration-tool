@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +19,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("SkusiteId", Name = "IX_COM_SKU_SKUSiteID")]
 [Index("SkusupplierId", Name = "IX_COM_SKU_SKUSupplierID")]
 [Index("SkutaxClassId", Name = "IX_COM_SKU_SKUTaxClassID")]
-public partial class ComSku
+public class ComSku
 {
     [Key]
     [Column("SKUID")]

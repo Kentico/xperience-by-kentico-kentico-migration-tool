@@ -9,7 +9,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("AddressCountryId", Name = "IX_COM_Address_AddressCountryID")]
 [Index("AddressCustomerId", Name = "IX_COM_Address_AddressCustomerID")]
 [Index("AddressStateId", Name = "IX_COM_Address_AddressStateID")]
-public partial class ComAddress
+public class ComAddress
 {
     [Key]
     [Column("AddressID")]

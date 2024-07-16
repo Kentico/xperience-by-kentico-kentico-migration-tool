@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_SearchTaskAzure")]
 [Index("SearchTaskAzurePriority", Name = "IX_CMS_SearchTaskAzure_SearchTaskAzurePriority", AllDescending = true)]
-public partial class CmsSearchTaskAzure
+public class CmsSearchTaskAzure
 {
     [Key]
     [Column("SearchTaskAzureID")]

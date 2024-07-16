@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("Reporting_ReportGraph")]
 [Index("GraphGuid", Name = "IX_Reporting_ReportGraph_GraphGUID", IsUnique = true)]
 [Index("GraphReportId", "GraphName", Name = "IX_Reporting_ReportGraph_GraphReportID_GraphName", IsUnique = true)]
-public partial class ReportingReportGraph
+public class ReportingReportGraph
 {
     [Key]
     [Column("GraphID")]

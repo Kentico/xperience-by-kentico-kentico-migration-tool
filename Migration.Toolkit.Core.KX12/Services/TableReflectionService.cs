@@ -1,4 +1,3 @@
-
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Microsoft.Extensions.Logging;
@@ -7,6 +6,7 @@ using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.KX12.Context;
 
 namespace Migration.Toolkit.Core.KX12.Services;
+
 public class TableReflectionService
 {
     private readonly ILogger<TableReflectionService> _logger;
@@ -42,6 +42,7 @@ public class TableReflectionService
             _logger.LogError("Invalid table name, use one of following: {TableNames}", joinedKeys);
             throw new KeyNotFoundException($"Invalid table name, use one of following: {joinedKeys}");
         }
+
         return _tableNameLookup[tableName];
     }
 }

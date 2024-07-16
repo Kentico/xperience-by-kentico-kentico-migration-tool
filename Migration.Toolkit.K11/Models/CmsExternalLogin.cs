@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_ExternalLogin")]
 [Index("UserId", Name = "IX_CMS_ExternalLogin_UserID")]
-public partial class CmsExternalLogin
+public class CmsExternalLogin
 {
     [Key]
     [Column("ExternalLoginID")]

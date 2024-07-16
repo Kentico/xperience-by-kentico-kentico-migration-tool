@@ -19,7 +19,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("SkusiteId", Name = "IX_COM_SKU_SKUSiteID")]
 [Index("SkusupplierId", Name = "IX_COM_SKU_SKUSupplierID")]
 [Index("SkutaxClassId", Name = "IX_COM_SKU_SKUTaxClassID")]
-public partial class ComSku
+public class ComSku
 {
     [Key]
     [Column("SKUID")]

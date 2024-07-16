@@ -1,4 +1,3 @@
-
 using CMS.DataProtection;
 
 using MediatR;
@@ -16,20 +15,20 @@ using Migration.Toolkit.K11.Models;
 using Migration.Toolkit.KXP.Context;
 
 namespace Migration.Toolkit.Core.K11.Handlers;
+
 public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataProtectionCommand, CommandResult>, IDisposable
 {
-    private readonly ILogger<MigrateDataProtectionCommandHandler> _logger;
-    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
-    private readonly IDbContextFactory<K11Context> _k11ContextFactory;
-    private readonly IEntityMapper<CmsConsent, KXP.Models.CmsConsent> _consentMapper;
-    private readonly IEntityMapper<CmsConsentArchive, KXP.Models.CmsConsentArchive> _consentArchiveMapper;
+    private static readonly int _batchSize = 1000;
     private readonly IEntityMapper<CmsConsentAgreement, KXP.Models.CmsConsentAgreement> _consentAgreementMapper;
+    private readonly IEntityMapper<CmsConsentArchive, KXP.Models.CmsConsentArchive> _consentArchiveMapper;
+    private readonly IEntityMapper<CmsConsent, KXP.Models.CmsConsent> _consentMapper;
+    private readonly IDbContextFactory<K11Context> _k11ContextFactory;
+    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
+    private readonly ILogger<MigrateDataProtectionCommandHandler> _logger;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IProtocol _protocol;
 
     private KxpContext _kxpContext;
-
-    private static readonly int _batchSize = 1000;
 
     public MigrateDataProtectionCommandHandler(
         ILogger<MigrateDataProtectionCommandHandler> logger,
@@ -52,6 +51,8 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
         _protocol = protocol;
         _kxpContext = _kxpContextFactory.CreateDbContext();
     }
+
+    public void Dispose() => _kxpContext.Dispose();
 
     public async Task<CommandResult> Handle(MigrateDataProtectionCommand request, CancellationToken cancellationToken)
     {
@@ -81,7 +82,7 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
 
             if (mapped is { Success: true } result)
             {
-                var (cmsConsent, newInstance) = result;
+                (var cmsConsent, bool newInstance) = result;
                 ArgumentNullException.ThrowIfNull(cmsConsent, nameof(cmsConsent));
 
                 if (newInstance)
@@ -136,7 +137,7 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
 
             if (mapped is { Success: true } result)
             {
-                var (cmsConsentArchive, newInstance) = result;
+                (var cmsConsentArchive, bool newInstance) = result;
                 ArgumentNullException.ThrowIfNull(cmsConsentArchive, nameof(cmsConsentArchive));
 
                 if (newInstance)
@@ -197,7 +198,7 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
 
             if (mapped is { Success: true } result)
             {
-                var (cmsConsentAgreement, newInstance) = result;
+                (var cmsConsentAgreement, bool newInstance) = result;
                 ArgumentNullException.ThrowIfNull(cmsConsentAgreement, nameof(cmsConsentAgreement));
 
                 if (newInstance)
@@ -279,6 +280,4 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
 
         return new GenericCommandResult();
     }
-
-    public void Dispose() => _kxpContext.Dispose();
 }

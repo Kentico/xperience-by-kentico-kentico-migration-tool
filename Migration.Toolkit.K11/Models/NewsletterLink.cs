@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("Newsletter_Link")]
 [Index("LinkIssueId", Name = "IX_Newsletter_Link_LinkIssueID")]
-public partial class NewsletterLink
+public class NewsletterLink
 {
     [Key]
     [Column("LinkID")]

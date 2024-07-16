@@ -1,7 +1,7 @@
-
 using Microsoft.Data.SqlClient;
 
 namespace Migration.Toolkit.Common.Helpers;
+
 public static class VersionHelper
 {
     public static SemanticVersion? GetInstanceVersion(SqlConnection connection)

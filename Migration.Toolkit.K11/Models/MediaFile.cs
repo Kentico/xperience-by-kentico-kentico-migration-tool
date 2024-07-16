@@ -10,7 +10,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("FileLibraryId", Name = "IX_Media_File_FileLibraryID")]
 [Index("FileModifiedByUserId", Name = "IX_Media_File_FileModifiedByUserID")]
 [Index("FileSiteId", "FileGuid", Name = "IX_Media_File_FileSiteID_FileGUID")]
-public partial class MediaFile
+public class MediaFile
 {
     [Key]
     [Column("FileID")]

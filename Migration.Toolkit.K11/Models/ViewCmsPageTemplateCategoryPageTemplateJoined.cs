@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.K11.Models;
 
 [Keyless]
-public partial class ViewCmsPageTemplateCategoryPageTemplateJoined
+public class ViewCmsPageTemplateCategoryPageTemplateJoined
 {
     [Column("ObjectID")]
     public int ObjectId { get; set; }

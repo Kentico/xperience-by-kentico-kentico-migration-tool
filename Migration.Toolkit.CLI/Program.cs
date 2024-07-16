@@ -32,14 +32,14 @@ EnableVirtualTerminalProcessing();
 
 var config = new ConfigurationBuilder()
         .SetBasePath(Environment.CurrentDirectory)
-        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
-        .AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: false)
+        .AddJsonFile("appsettings.json", false, false)
+        .AddJsonFile("appsettings.local.json", true, false)
         .Build()
     ;
 
 var validationErrors = ConfigurationValidator.GetValidationErrors(config);
 bool anyValidationErrors = false;
-foreach (var (validationMessageType, message, recommendedFix) in validationErrors)
+foreach ((var validationMessageType, string message, string? recommendedFix) in validationErrors)
 {
     switch (validationMessageType)
     {
@@ -70,8 +70,6 @@ foreach (var (validationMessageType, message, recommendedFix) in validationError
             }
 
             break;
-        default:
-            break;
     }
 }
 
@@ -82,11 +80,12 @@ if (anyValidationErrors)
     {
         Console.ReadKey();
     }
+
     return;
 }
 
 var settingsSection = config.GetRequiredSection(ConfigurationNames.Settings);
-var settings = settingsSection.Get<ToolkitConfiguration>() ?? new();
+var settings = settingsSection.Get<ToolkitConfiguration>() ?? new ToolkitConfiguration();
 var kxpApiSettings = settingsSection.GetSection(ConfigurationNames.XbKApiSettings);
 settings.SetXbKConnectionStringIfNotEmpty(kxpApiSettings["ConnectionStrings:CMSConnectionString"]);
 
@@ -117,14 +116,14 @@ try
         {
             services.UseK11DbContext(settings);
             services.UseK11ToolkitCore();
-            Console.WriteLine($@"Source instance {Green($"version 11")} detected.");
+            Console.WriteLine($@"Source instance {Green("version 11")} detected.");
             break;
         }
         case { Major: 12 }:
         {
             services.UseKx12DbContext(settings);
             services.UseKx12ToolkitCore();
-            Console.WriteLine($@"Source instance {Green($"version 12")} detected");
+            Console.WriteLine($@"Source instance {Green("version 12")} detected");
             break;
         }
         case { Major: 13 }:

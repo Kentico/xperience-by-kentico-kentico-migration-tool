@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_SearchTask")]
-public partial class CmsSearchTask
+public class CmsSearchTask
 {
     [Key]
     [Column("SearchTaskID")]

@@ -1,10 +1,10 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("CONTENT_Blog")]
-public partial class ContentBlog
+public class ContentBlog
 {
     [Key]
     [Column("BlogID")]

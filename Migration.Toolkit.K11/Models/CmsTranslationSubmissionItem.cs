@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_TranslationSubmissionItem")]
 [Index("SubmissionItemSubmissionId", Name = "IX_CMS_TranslationSubmissionItem_SubmissionItemSubmissionID")]
-public partial class CmsTranslationSubmissionItem
+public class CmsTranslationSubmissionItem
 {
     [Key]
     [Column("SubmissionItemID")]

@@ -9,7 +9,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("CMS_WidgetRole")]
 [Index("PermissionId", Name = "IX_CMS_WidgetRole_PermissionID")]
 [Index("RoleId", Name = "IX_CMS_WidgetRole_RoleID")]
-public partial class CmsWidgetRole
+public class CmsWidgetRole
 {
     [Key]
     [Column("WidgetID")]

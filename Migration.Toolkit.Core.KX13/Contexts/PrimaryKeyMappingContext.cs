@@ -1,5 +1,4 @@
-
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -9,6 +8,7 @@ using Migration.Toolkit.Common;
 using Migration.Toolkit.Core.KX13.Services;
 
 namespace Migration.Toolkit.Core.KX13.Contexts;
+
 public class PrimaryKeyMappingContext(
     ILogger<PrimaryKeyMappingContext> logger,
     IPrimaryKeyLocatorService primaryKeyLocatorService,
@@ -16,24 +16,6 @@ public class PrimaryKeyMappingContext(
     : IPrimaryKeyMappingContext
 {
     private readonly Dictionary<string, int> _mappings = new(StringComparer.OrdinalIgnoreCase);
-
-    private int? GetExplicitMappingOrNull<T>(string memberName, int? sourceId)
-    {
-        if (sourceId == null)
-        {
-            return null;
-        }
-
-        var mappings = toolkitConfiguration.EntityConfigurations?.GetEntityConfiguration<T>().ExplicitPrimaryKeyMapping;
-        if (mappings?.TryGetValue(memberName, out var memberMappings) ?? false)
-        {
-            return memberMappings.TryGetValue($"{sourceId}", out int? mappedId) ? mappedId : null;
-        }
-
-        return null;
-    }
-
-    private static string CreateKey<T>(Expression<Func<T, object>> keyNameSelector, int sourceId) => $"{typeof(T).FullName}.{keyNameSelector.GetMemberName()}.{sourceId}";
 
     public void SetMapping(Type type, string keyName, int sourceId, int targetId)
     {
@@ -166,7 +148,7 @@ public class PrimaryKeyMappingContext(
             return targetId;
         }
 
-        throw new MappingFailureException(fullKeyName, $"Target entity is missing");
+        throw new MappingFailureException(fullKeyName, "Target entity is missing");
     }
 
     public int? MapFromSourceOrNull<T>(Expression<Func<T, object>> keyNameSelector, int? sourceId)
@@ -247,7 +229,7 @@ public class PrimaryKeyMappingContext(
 
     public void PreloadDependencies<T>(Expression<Func<T, object>> keyNameSelector)
     {
-        foreach (var (sourceId, targetId) in primaryKeyLocatorService.SelectAll(keyNameSelector))
+        foreach ((int sourceId, int targetId) in primaryKeyLocatorService.SelectAll(keyNameSelector))
         {
             SetMapping(keyNameSelector, sourceId, targetId);
         }
@@ -267,7 +249,7 @@ public class PrimaryKeyMappingContext(
             return true;
         }
 
-        if (GetExplicitMappingOrNull<T>(memberName, sid) is { })
+        if (GetExplicitMappingOrNull<T>(memberName, sid) is not null)
         {
             return true;
         }
@@ -284,4 +266,22 @@ public class PrimaryKeyMappingContext(
 
         return false;
     }
+
+    private int? GetExplicitMappingOrNull<T>(string memberName, int? sourceId)
+    {
+        if (sourceId == null)
+        {
+            return null;
+        }
+
+        var mappings = toolkitConfiguration.EntityConfigurations?.GetEntityConfiguration<T>().ExplicitPrimaryKeyMapping;
+        if (mappings?.TryGetValue(memberName, out var memberMappings) ?? false)
+        {
+            return memberMappings.TryGetValue($"{sourceId}", out int? mappedId) ? mappedId : null;
+        }
+
+        return null;
+    }
+
+    private static string CreateKey<T>(Expression<Func<T, object>> keyNameSelector, int sourceId) => $"{typeof(T).FullName}.{keyNameSelector.GetMemberName()}.{sourceId}";
 }

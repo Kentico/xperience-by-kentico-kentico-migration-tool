@@ -1,4 +1,3 @@
-
 using CMS.Globalization;
 
 using Microsoft.Extensions.Logging;
@@ -9,6 +8,7 @@ using Migration.Toolkit.Core.K11.Contexts;
 using Migration.Toolkit.K11.Models;
 
 namespace Migration.Toolkit.Core.K11.Mappers;
+
 public class CountryInfoMapper(ILogger<CountryInfoMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : EntityMapperBase<CmsCountry, CountryInfo>(logger, pkContext, protocol)
 {
     protected override CountryInfo? CreateNewInstance(CmsCountry source, MappingHelper mappingHelper, AddFailure addFailure)

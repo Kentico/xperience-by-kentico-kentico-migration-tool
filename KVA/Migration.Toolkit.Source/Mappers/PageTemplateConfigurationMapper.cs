@@ -1,4 +1,3 @@
-
 using AngleSharp.Text;
 
 using CMS.MediaLibrary;
@@ -21,6 +20,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Migration.Toolkit.Source.Mappers;
+
 public class PageTemplateConfigurationMapper(
     ILogger<PageTemplateConfigurationMapper> logger,
     PrimaryKeyMappingContext pkContext,
@@ -94,10 +94,8 @@ public class PageTemplateConfigurationMapper(
 
             return target;
         }
-        else
-        {
-            return null;
-        }
+
+        return null;
     }
 
     #region "Page template & page widget walkers"
@@ -165,7 +163,7 @@ public class PageTemplateConfigurationMapper(
 
     private void WalkProperties(int siteId, JObject properties, List<EditingFormControlModel>? formControlModels)
     {
-        foreach (var (key, value) in properties)
+        foreach ((string key, var value) in properties)
         {
             logger.LogTrace("Walk property {Name}|{Identifier}", key, value?.ToString());
 
@@ -195,10 +193,7 @@ public class PageTemplateConfigurationMapper(
                         {
                             if (value?.ToObject<List<PageSelectorItem>>() is { Count: > 0 } items)
                             {
-                                properties[key] = JToken.FromObject(items.Select(x => new WebPageRelatedItem
-                                {
-                                    WebPageGuid = spoiledGuidContext.EnsureNodeGuid(x.NodeGuid, siteId)
-                                }).ToList());
+                                properties[key] = JToken.FromObject(items.Select(x => new WebPageRelatedItem { WebPageGuid = spoiledGuidContext.EnsureNodeGuid(x.NodeGuid, siteId) }).ToList());
                             }
 
                             logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
@@ -209,9 +204,6 @@ public class PageTemplateConfigurationMapper(
                             // TODO tomas.krch 2024-03-27: implement!
                             break;
                         }
-
-                        default:
-                            break;
                     }
                 }
                 else if (FieldMappingInstance.BuiltInModel.SupportedInKxpLegacyMode.Contains(editingFcm.FormComponentIdentifier))

@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("COM_OptionCategory")]
 [Index("CategorySiteId", Name = "IX_COM_OptionCategory_CategorySiteID")]
-public partial class ComOptionCategory
+public class ComOptionCategory
 {
     [Key]
     [Column("CategoryID")]

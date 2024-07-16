@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 
 namespace Migration.Toolkit.Common;
+
 // ReSharper disable once ClassNeverInstantiated.Global
 public class OptInFeatures
 {
@@ -36,14 +37,19 @@ public class FieldMigrationSerializable
 {
     [ConfigurationKeyName(ConfigurationNames.SourceDataType)]
     public string? SourceDataType { get; set; }
+
     [ConfigurationKeyName(ConfigurationNames.TargetDataType)]
     public string? TargetDataType { get; set; }
+
     [ConfigurationKeyName(ConfigurationNames.SourceFormControl)]
     public string? SourceFormControl { get; set; }
+
     [ConfigurationKeyName(ConfigurationNames.TargetFormComponent)]
     public string? TargetFormComponent { get; set; }
+
     [ConfigurationKeyName(ConfigurationNames.Actions)]
     public string[]? Actions { get; set; }
+
     [ConfigurationKeyName(ConfigurationNames.FieldNameRegex)]
     public string? FieldNameRegex { get; set; }
 }

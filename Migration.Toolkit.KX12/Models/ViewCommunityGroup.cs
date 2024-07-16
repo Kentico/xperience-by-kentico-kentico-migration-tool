@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.KX12.Models;
 
 [Keyless]
-public partial class ViewCommunityGroup
+public class ViewCommunityGroup
 {
     [Column("GroupID")]
     public int GroupId { get; set; }

@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX12.Models;
 
 [Table("CMS_HelpTopic")]
 [Index("HelpTopicUielementId", Name = "IX_CMS_HelpTopic_HelpTopicUIElementID")]
-public partial class CmsHelpTopic
+public class CmsHelpTopic
 {
     [Key]
     [Column("HelpTopicID")]

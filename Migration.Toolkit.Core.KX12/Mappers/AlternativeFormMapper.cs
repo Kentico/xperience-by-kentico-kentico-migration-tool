@@ -1,4 +1,3 @@
-
 using CMS.DataEngine;
 using CMS.FormEngine;
 
@@ -11,12 +10,13 @@ using Migration.Toolkit.Core.KX12.Contexts;
 using Migration.Toolkit.KXP.Api.Services.CmsClass;
 
 namespace Migration.Toolkit.Core.KX12.Mappers;
+
 public record AlternativeFormMapperSource(KX12M.CmsAlternativeForm AlternativeForm, DataClassInfo XbkFormClass);
 
 public class AlternativeFormMapper : EntityMapperBase<AlternativeFormMapperSource, AlternativeFormInfo>
 {
-    private readonly ILogger<AlternativeFormMapper> _logger;
     private readonly FieldMigrationService _fieldMigrationService;
+    private readonly ILogger<AlternativeFormMapper> _logger;
 
     public AlternativeFormMapper(ILogger<AlternativeFormMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol, FieldMigrationService fieldMigrationService) : base(logger, pkContext, protocol)
     {
@@ -50,6 +50,7 @@ public class AlternativeFormMapper : EntityMapperBase<AlternativeFormMapperSourc
             _logger.LogDebug("Merging coupled class ('{FormCoupledClassName}') form definition with form definition ('{FormClassName}')", source.FormCoupledClass.ClassName, source.FormClass.ClassName);
             mergedDefinition = FormHelper.MergeFormDefinitions(mergedDefinition, source.FormCoupledClass.ClassFormDefinition);
         }
+
         mergedDefinition = FormHelper.MergeFormDefinitions(mergedDefinition, source.FormDefinition);
 
         var patcher = new FormDefinitionPatcher(

@@ -1,4 +1,3 @@
-
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Xml.Linq;
@@ -26,6 +25,7 @@ using Migration.Toolkit.Source.Mappers;
 using Migration.Toolkit.Source.Model;
 
 namespace Migration.Toolkit.Source.Handlers;
+
 public class MigrateCustomModulesCommandHandler(
     ILogger<MigrateCustomModulesCommandHandler> logger,
     KxpClassFacade kxpClassFacade,
@@ -38,7 +38,7 @@ public class MigrateCustomModulesCommandHandler(
     BulkDataCopyService bulkDataCopyService,
     FieldMigrationService fieldMigrationService,
     ModelFacade modelFacade
-    )
+)
     : IRequestHandler<MigrateCustomModulesCommand, CommandResult>
 {
     public async Task<CommandResult> Handle(MigrateCustomModulesCommand request, CancellationToken cancellationToken)
@@ -277,7 +277,7 @@ public class MigrateCustomModulesCommandHandler(
             {
                 if (mapped is { Success: true })
                 {
-                    var (alternativeFormInfo, newInstance) = mapped;
+                    (var alternativeFormInfo, bool newInstance) = mapped;
                     ArgumentNullException.ThrowIfNull(alternativeFormInfo, nameof(alternativeFormInfo));
 
                     AlternativeFormInfoProvider.ProviderObject.Set(alternativeFormInfo);
@@ -300,8 +300,8 @@ public class MigrateCustomModulesCommandHandler(
     }
 
     private Task<List<ICmsClass>> GetResourceClasses(int k12ResourceId) => Task.FromResult(modelFacade
-            .SelectWhere<ICmsClass>("ClassResourceID = @classResourceId", new SqlParameter("classResourceId", k12ResourceId))
-            .ToList());
+        .SelectWhere<ICmsClass>("ClassResourceID = @classResourceId", new SqlParameter("classResourceId", k12ResourceId))
+        .ToList());
 
     private async Task MigrateResources(CancellationToken cancellationToken)
     {
@@ -369,7 +369,7 @@ public class MigrateCustomModulesCommandHandler(
             {
                 if (mapped is { Success: true })
                 {
-                    var (resourceInfo, newInstance) = mapped;
+                    (var resourceInfo, bool newInstance) = mapped;
                     ArgumentNullException.ThrowIfNull(resourceInfo, nameof(resourceInfo));
 
                     ResourceInfoProvider.ProviderObject.Set(resourceInfo);
@@ -400,7 +400,7 @@ public class MigrateCustomModulesCommandHandler(
         {
             if (mapped is { Success: true } result)
             {
-                var (dataClassInfo, newInstance) = result;
+                (var dataClassInfo, bool newInstance) = result;
                 ArgumentNullException.ThrowIfNull(dataClassInfo, nameof(dataClassInfo));
 
                 kxpClassFacade.SetClass(dataClassInfo);

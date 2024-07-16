@@ -1,5 +1,5 @@
-
 using CMS.DataEngine;
+using CMS.FormEngine;
 using CMS.Globalization;
 using CMS.MediaLibrary;
 using CMS.Membership;
@@ -10,6 +10,7 @@ using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.KXP.Models;
 
 namespace Migration.Toolkit.Core.KX12.Helpers;
+
 public class Printer
 {
     public static string PrintKxpModelInfo<T>(T model)
@@ -37,15 +38,19 @@ public class Printer
     {
         string currentTypeName = ReflectionHelper<T>.CurrentType.Name;
 
-        string Fallback(object obj) => printType
-            ? $"{currentTypeName}({SerializationHelper.SerializeOnlyNonComplexProperties(obj)})"
-            : $"{SerializationHelper.SerializeOnlyNonComplexProperties(obj)}"
-        ;
+        string Fallback(object obj)
+        {
+            return printType
+                ? $"{currentTypeName}({SerializationHelper.SerializeOnlyNonComplexProperties(obj)})"
+                : $"{SerializationHelper.SerializeOnlyNonComplexProperties(obj)}";
+        }
 
-        string FormatModel(string inner) => printType
-            ? $"{currentTypeName}({inner})"
-            : $"{inner}"
-        ;
+        string FormatModel(string inner)
+        {
+            return printType
+                ? $"{currentTypeName}({inner})"
+                : $"{inner}";
+        }
 
         return model switch
         {
@@ -57,7 +62,7 @@ public class Printer
             StateInfo item => FormatModel($"ID={item.StateID}, GUID={item.StateGUID}, Name={item.StateName}"),
 
             ResourceInfo item => FormatModel($"ID={item.ResourceID}, Guid={item.ResourceGUID} Name={item.ResourceName}"),
-            CMS.FormEngine.AlternativeFormInfo item => FormatModel($"ID={item.FormID}, Guid={item.FormGUID} Name={item.FormName}"),
+            AlternativeFormInfo item => FormatModel($"ID={item.FormID}, Guid={item.FormGUID} Name={item.FormName}"),
             UserInfo item => FormatModel($"ID={item.UserID}, Guid={item.UserGUID} Name={item.UserName}"),
             RoleInfo item => FormatModel($"ID={item.RoleID}, Guid={item.RoleGUID} Name={item.RoleName}"),
             MemberInfo item => FormatModel($"ID={item.MemberID}, Guid={item.MemberGuid} Name={item.MemberName}"),

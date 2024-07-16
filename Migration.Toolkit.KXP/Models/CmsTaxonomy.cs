@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_Taxonomy")]
-public partial class CmsTaxonomy
+public class CmsTaxonomy
 {
     [Key]
     [Column("TaxonomyID")]

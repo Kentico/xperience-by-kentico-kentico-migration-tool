@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("CMS_PageTemplateCategory")]
 [Index("CategoryLevel", Name = "IX_CMS_PageTemplateCategory_CategoryLevel")]
 [Index("CategoryParentId", Name = "IX_CMS_PageTemplateCategory_CategoryParentID")]
-public partial class CmsPageTemplateCategory
+public class CmsPageTemplateCategory
 {
     [Key]
     [Column("CategoryID")]

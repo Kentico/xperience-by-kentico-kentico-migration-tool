@@ -1,4 +1,3 @@
-
 using System.Diagnostics;
 using System.Xml;
 
@@ -19,15 +18,19 @@ using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Model;
 
 namespace Migration.Toolkit.Source.Mappers;
-public class CmsClassMapper(ILogger<CmsClassMapper> logger,
-        PrimaryKeyMappingContext primaryKeyMappingContext,
-        IProtocol protocol,
-        FieldMigrationService fieldMigrationService,
-        ModelFacade modelFacade
-    )
+
+public class CmsClassMapper(
+    ILogger<CmsClassMapper> logger,
+    PrimaryKeyMappingContext primaryKeyMappingContext,
+    IProtocol protocol,
+    FieldMigrationService fieldMigrationService,
+    ModelFacade modelFacade
+)
     : EntityMapperBase<ICmsClass, DataClassInfo>(logger,
-    primaryKeyMappingContext, protocol)
+        primaryKeyMappingContext, protocol)
 {
+    private const string REQUIRED_RULE_IDENTIFIER = "Kentico.Administration.RequiredValue";
+
     protected override DataClassInfo? CreateNewInstance(ICmsClass source, MappingHelper mappingHelper, AddFailure addFailure) =>
         DataClassInfo.New();
 
@@ -57,6 +60,7 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
         {
             target.ClassTableName = source.ClassTableName;
         }
+
         target.ClassShowTemplateSelection = source.ClassShowTemplateSelection.UseKenticoDefault();
         target.ClassLastModified = source.ClassLastModified;
         target.ClassGUID = source.ClassGUID;
@@ -117,9 +121,6 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
             {
                 break;
             }
-
-            default:
-                break;
         }
 
         switch (source)
@@ -142,12 +143,12 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
 
             // Target Form,null
             case
-            {
-                ClassIsDocumentType: false,
-                ClassIsCoupledClass: true,
-                ClassIsForm: true,
-                // ClassIsPage: false
-            }
+                {
+                    ClassIsDocumentType: false,
+                    ClassIsCoupledClass: true,
+                    ClassIsForm: true
+                    // ClassIsPage: false
+                }
                 :
             {
                 target.ClassType = ClassType.FORM;
@@ -162,7 +163,7 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
                 ClassIsDocumentType: false,
                 ClassIsForm: false or null,
                 ClassShowAsSystemTable: false,
-                ClassIsCustomTable: false,
+                ClassIsCustomTable: false
                 // ClassIsPage: false
             }:
             {
@@ -178,7 +179,7 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
             case
             {
                 ClassIsDocumentType: true,
-                ClassIsForm: false or null,
+                ClassIsForm: false or null
                 // ClassIsPage: true
             }:
             {
@@ -188,9 +189,6 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
                 target = PatchDataClassInfo(target, out string? oldPrimaryKeyName, out string? documentNameField);
                 break;
             }
-
-            default:
-                break;
         }
 
         return target;
@@ -242,6 +240,7 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
             {
                 dataClass.ClassTableName = tableName;
             }
+
             var nfi = new FormInfo(dataClass.ClassFormDefinition);
 
             foreach (var dataDefinitionItem in fi.GetFormElements(true, true) ?? [])
@@ -291,14 +290,12 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
 
     public static string? GetLegacyDocumentName(FormInfo nfi, string className)
     {
-        if (nfi.GetFields(true, true, true).FirstOrDefault(f => GuidHelper.CreateDocumentNameFieldGuid($"documentname|{className}").Equals(f.Guid)) is { } foundField)
+        if (nfi.GetFields(true, true).FirstOrDefault(f => GuidHelper.CreateDocumentNameFieldGuid($"documentname|{className}").Equals(f.Guid)) is { } foundField)
         {
             return foundField.Name;
         }
-        else
-        {
-            return null;
-        }
+
+        return null;
     }
 
     private static void AppendDocumentNameField(FormInfo nfi, string className, out string documentNameField)
@@ -331,8 +328,6 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
             Settings = { { "controlname", "Kentico.Administration.TextInput" } }
         });
     }
-
-    private const string REQUIRED_RULE_IDENTIFIER = "Kentico.Administration.RequiredValue";
 
     private string AppendRequiredValidationRule(string rulesXml)
     {

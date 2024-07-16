@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_ModuleLicenseKey")]
 [Index("ModuleLicenseKeyResourceId", Name = "IX_CMS_ModuleLicenseKey_ModuleLicenseKeyResourceID")]
-public partial class CmsModuleLicenseKey
+public class CmsModuleLicenseKey
 {
     [Key]
     [Column("ModuleLicenseKeyID")]

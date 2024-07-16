@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("CMS_Avatar")]
 [Index("AvatarGuid", Name = "IX_CMS_Avatar_AvatarGUID")]
-public partial class CmsAvatar
+public class CmsAvatar
 {
     [Key]
     [Column("AvatarID")]

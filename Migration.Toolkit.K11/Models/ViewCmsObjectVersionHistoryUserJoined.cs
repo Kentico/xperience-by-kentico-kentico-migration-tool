@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.K11.Models;
 
 [Keyless]
-public partial class ViewCmsObjectVersionHistoryUserJoined
+public class ViewCmsObjectVersionHistoryUserJoined
 {
     [Column("VersionID")]
     public int VersionId { get; set; }

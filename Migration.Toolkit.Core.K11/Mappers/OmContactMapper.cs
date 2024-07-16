@@ -1,21 +1,22 @@
-
 using Microsoft.Extensions.Logging;
 
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.K11.Contexts;
-using Migration.Toolkit.KXP.Models;
+using Migration.Toolkit.K11.Models;
 
 namespace Migration.Toolkit.Core.K11.Mappers;
-public class OmContactMapper(ILogger<OmContactMapper> logger,
-        PrimaryKeyMappingContext primaryKeyMappingContext,
-        IEntityMapper<Toolkit.K11.Models.OmContactStatus, OmContactStatus> contactStatusMapper,
-        IProtocol protocol)
-    : EntityMapperBase<Toolkit.K11.Models.OmContact, OmContact>(logger, primaryKeyMappingContext, protocol)
-{
-    protected override OmContact? CreateNewInstance(Toolkit.K11.Models.OmContact tSourceEntity, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
-    protected override OmContact MapInternal(Toolkit.K11.Models.OmContact source, OmContact target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+public class OmContactMapper(
+    ILogger<OmContactMapper> logger,
+    PrimaryKeyMappingContext primaryKeyMappingContext,
+    IEntityMapper<OmContactStatus, KXP.Models.OmContactStatus> contactStatusMapper,
+    IProtocol protocol)
+    : EntityMapperBase<OmContact, KXP.Models.OmContact>(logger, primaryKeyMappingContext, protocol)
+{
+    protected override KXP.Models.OmContact? CreateNewInstance(OmContact tSourceEntity, MappingHelper mappingHelper, AddFailure addFailure) => new();
+
+    protected override KXP.Models.OmContact MapInternal(OmContact source, KXP.Models.OmContact target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         if (!newInstance && source.ContactGuid != target.ContactGuid)
         {
@@ -65,12 +66,9 @@ public class OmContactMapper(ILogger<OmContactMapper> logger,
                 }
                 case { Success: false } result:
                 {
-                    addFailure(new MapperResultFailure<OmContact>(result?.HandbookReference));
+                    addFailure(new MapperResultFailure<KXP.Models.OmContact>(result?.HandbookReference));
                     break;
                 }
-
-                default:
-                    break;
             }
         }
         else
@@ -79,7 +77,7 @@ public class OmContactMapper(ILogger<OmContactMapper> logger,
         }
 
         target.ContactSalesForceLeadId = source.ContactSalesForceLeadId;
-        if (mappingHelper.TranslateIdAllowNulls<Toolkit.K11.Models.CmsUser>(u => u.UserId, source.ContactOwnerUserId, out int? userId))
+        if (mappingHelper.TranslateIdAllowNulls<CmsUser>(u => u.UserId, source.ContactOwnerUserId, out int? userId))
         {
             target.ContactOwnerUserId = userId;
         }

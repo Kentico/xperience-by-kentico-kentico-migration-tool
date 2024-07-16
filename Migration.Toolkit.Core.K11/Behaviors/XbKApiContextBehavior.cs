@@ -1,4 +1,3 @@
-
 using CMS.Base;
 using CMS.Membership;
 
@@ -11,9 +10,11 @@ using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Api;
 
 namespace Migration.Toolkit.Core.K11.Behaviors;
-public class XbKApiContextBehavior<TRequest, TResponse>(ILogger<XbKApiContextBehavior<TRequest, TResponse>> logger,
-        IMigrationProtocol protocol,
-        KxpApiInitializer initializer)
+
+public class XbKApiContextBehavior<TRequest, TResponse>(
+    ILogger<XbKApiContextBehavior<TRequest, TResponse>> logger,
+    IMigrationProtocol protocol,
+    KxpApiInitializer initializer)
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
     where TResponse : CommandResult

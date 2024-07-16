@@ -1,10 +1,10 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_SearchEngine")]
-public partial class CmsSearchEngine
+public class CmsSearchEngine
 {
     [Key]
     [Column("SearchEngineID")]

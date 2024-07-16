@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("STORECONTENT_tablet")]
-public partial class StorecontentTablet
+public class StorecontentTablet
 {
     [Key]
     [Column("TabletID")]

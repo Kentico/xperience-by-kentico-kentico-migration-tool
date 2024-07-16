@@ -1,4 +1,3 @@
-
 using CMS.Base;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -8,10 +7,11 @@ using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.Source.Model;
 
 namespace Migration.Toolkit.Source.Helpers;
+
 public class AdminUserHelper
 {
     /// <summary>
-    /// maps source user id to target admin user
+    ///     maps source user id to target admin user
     /// </summary>
     /// <param name="sourceUserId">source user id</param>
     /// <param name="memberFallbackTargetUserId">in case user was migrated to member, replacement admin user shall be returned</param>
@@ -41,6 +41,7 @@ public class AdminUserHelper
                     }
                 }
             }
+
             return CMSActionContext.CurrentUser.UserID;
         }
 

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("CMS_LicenseKey")]
-public partial class CmsLicenseKey
+public class CmsLicenseKey
 {
     [Key]
     [Column("LicenseKeyID")]

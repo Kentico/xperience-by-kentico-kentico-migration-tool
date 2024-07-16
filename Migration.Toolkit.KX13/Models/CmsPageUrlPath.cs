@@ -9,7 +9,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("PageUrlPathNodeId", Name = "IX_CMS_PageUrlPath_PageUrlPathNodeID")]
 [Index("PageUrlPathSiteId", Name = "IX_CMS_PageUrlPath_PageUrlPathSiteID")]
 [Index("PageUrlPathUrlPathHash", "PageUrlPathCulture", "PageUrlPathSiteId", Name = "IX_CMS_PageUrlPath_PageUrlPathUrlPathHash_PageUrlPathCulture_PageUrlPathSiteID", IsUnique = true)]
-public partial class CmsPageUrlPath
+public class CmsPageUrlPath
 {
     [Key]
     [Column("PageUrlPathID")]

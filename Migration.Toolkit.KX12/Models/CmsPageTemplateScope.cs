@@ -11,7 +11,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("PageTemplateScopeLevels", Name = "IX_CMS_PageTemplateScope_PageTemplateScopeLevels")]
 [Index("PageTemplateScopeSiteId", Name = "IX_CMS_PageTemplateScope_PageTemplateScopeSiteID")]
 [Index("PageTemplateScopeTemplateId", Name = "IX_CMS_PageTemplateScope_PageTemplateScopeTemplateID")]
-public partial class CmsPageTemplateScope
+public class CmsPageTemplateScope
 {
     [Key]
     [Column("PageTemplateScopeID")]

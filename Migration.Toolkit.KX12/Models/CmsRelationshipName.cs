@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("CMS_RelationshipName")]
 [Index("RelationshipAllowedObjects", Name = "IX_CMS_RelationshipName_RelationshipAllowedObjects")]
 [Index("RelationshipName", "RelationshipDisplayName", Name = "IX_CMS_RelationshipName_RelationshipName_RelationshipDisplayName")]
-public partial class CmsRelationshipName
+public class CmsRelationshipName
 {
     [Key]
     [Column("RelationshipNameID")]

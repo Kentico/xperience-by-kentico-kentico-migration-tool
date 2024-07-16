@@ -1,4 +1,3 @@
-
 using CMS.Globalization;
 
 using Microsoft.EntityFrameworkCore;
@@ -9,27 +8,27 @@ using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX12.Contexts;
 using Migration.Toolkit.KX12.Context;
-using Migration.Toolkit.KX12.Models;
 using Migration.Toolkit.KXP.Api;
 
 namespace Migration.Toolkit.Core.KX12.Services;
+
 public class CountryMigrator
 {
-    private readonly ILogger<CountryMigrator> _logger;
+    private readonly IEntityMapper<KX12M.CmsCountry, CountryInfo> _countryMapper;
     private readonly IDbContextFactory<KX12Context> _kx12ContextFactory;
+    private readonly KxpApiInitializer _kxpApiInitializer;
+    private readonly ILogger<CountryMigrator> _logger;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IProtocol _protocol;
-    private readonly IEntityMapper<CmsCountry, CountryInfo> _countryMapper;
-    private readonly IEntityMapper<CmsState, StateInfo> _stateMapper;
-    private readonly KxpApiInitializer _kxpApiInitializer;
+    private readonly IEntityMapper<KX12M.CmsState, StateInfo> _stateMapper;
 
     public CountryMigrator(
         ILogger<CountryMigrator> logger,
         IDbContextFactory<KX12Context> kx12ContextFactory,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol,
-        IEntityMapper<CmsCountry, CountryInfo> countryMapper,
-        IEntityMapper<CmsState, StateInfo> stateMapper,
+        IEntityMapper<KX12M.CmsCountry, CountryInfo> countryMapper,
+        IEntityMapper<KX12M.CmsState, StateInfo> stateMapper,
         KxpApiInitializer kxpApiInitializer
     )
     {
@@ -46,7 +45,7 @@ public class CountryMigrator
     {
         if (!_kxpApiInitializer.EnsureApiIsInitialized())
         {
-            throw new InvalidOperationException($"Falied to initialize kentico API. Please check configuration.");
+            throw new InvalidOperationException("Falied to initialize kentico API. Please check configuration.");
         }
 
         var kx12Context = _kx12ContextFactory.CreateDbContext();
@@ -73,7 +72,7 @@ public class CountryMigrator
                     _protocol.Success(k12CmsCountry, countryInfo, mapped);
                     _logger.LogEntitySetAction(newInstance, countryInfo);
 
-                    _primaryKeyMappingContext.SetMapping<CmsCountry>(r => r.CountryId, k12CmsCountry.CountryId, countryInfo.CountryID);
+                    _primaryKeyMappingContext.SetMapping<KX12M.CmsCountry>(r => r.CountryId, k12CmsCountry.CountryId, countryInfo.CountryID);
                 }
                 catch (Exception exception)
                 {
@@ -109,7 +108,7 @@ public class CountryMigrator
                     _protocol.Success(k12CmsState, stateInfo, mapped);
                     _logger.LogEntitySetAction(newInstance, stateInfo);
 
-                    _primaryKeyMappingContext.SetMapping<CmsState>(r => r.StateId, k12CmsState.StateId, stateInfo.StateID);
+                    _primaryKeyMappingContext.SetMapping<KX12M.CmsState>(r => r.StateId, k12CmsState.StateId, stateInfo.StateID);
                 }
                 catch (Exception exception)
                 {

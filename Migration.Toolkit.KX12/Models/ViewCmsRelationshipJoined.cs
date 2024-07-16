@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.KX12.Models;
 
 [Keyless]
-public partial class ViewCmsRelationshipJoined
+public class ViewCmsRelationshipJoined
 {
     [Column("LeftNodeID")]
     public int LeftNodeId { get; set; }

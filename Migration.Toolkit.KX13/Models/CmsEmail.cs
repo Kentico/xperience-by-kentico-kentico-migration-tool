@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("CMS_Email")]
 [Index("EmailPriority", "EmailId", Name = "IX_CMS_Email_EmailPriority_EmailID", IsUnique = true, IsDescending = new[] { true, false })]
-public partial class CmsEmail
+public class CmsEmail
 {
     [Key]
     [Column("EmailID")]

@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_WorkflowStepUser")]
 [Index("UserId", Name = "IX_CMS_WorkflowStepUser_UserID")]
-public partial class CmsWorkflowStepUser
+public class CmsWorkflowStepUser
 {
     [Key]
     [Column("WorkflowStepUserID")]

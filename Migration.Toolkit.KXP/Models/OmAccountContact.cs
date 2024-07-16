@@ -9,7 +9,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Index("AccountId", Name = "IX_OM_AccountContact_AccountID")]
 [Index("ContactId", Name = "IX_OM_AccountContact_ContactID")]
 [Index("ContactRoleId", Name = "IX_OM_AccountContact_ContactRoleID")]
-public partial class OmAccountContact
+public class OmAccountContact
 {
     [Key]
     [Column("AccountContactID")]

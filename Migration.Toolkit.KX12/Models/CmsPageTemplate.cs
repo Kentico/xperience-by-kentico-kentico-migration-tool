@@ -10,7 +10,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("PageTemplateIsReusable", "PageTemplateForAllPages", "PageTemplateShowAsMasterTemplate", Name = "IX_CMS_PageTemplate_PageTemplateIsReusable_PageTemplateForAllPages_PageTemplateShowAsMasterTemplate")]
 [Index("PageTemplateLayoutId", Name = "IX_CMS_PageTemplate_PageTemplateLayoutID")]
 [Index("PageTemplateSiteId", "PageTemplateCodeName", "PageTemplateGuid", Name = "IX_CMS_PageTemplate_PageTemplateSiteID_PageTemplateCodeName_PageTemplateGUID")]
-public partial class CmsPageTemplate
+public class CmsPageTemplate
 {
     [Key]
     [Column("PageTemplateID")]

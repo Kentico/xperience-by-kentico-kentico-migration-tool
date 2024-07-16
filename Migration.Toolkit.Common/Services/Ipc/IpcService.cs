@@ -1,4 +1,3 @@
-
 using System.Text;
 
 using Microsoft.Extensions.Logging;
@@ -6,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Migration.Toolkit.Common.Services.Ipc;
+
 public class IpcService(ToolkitConfiguration toolkitConfiguration, ILogger<IpcService> logger)
 {
     private const string IPC_PING_PATH = "/ToolkitApi/Test";
@@ -21,10 +21,8 @@ public class IpcService(ToolkitConfiguration toolkitConfiguration, ILogger<IpcSe
             logger.LogInformation("Advanced features are disabled");
             return false;
         }
-        else
-        {
-            logger.LogInformation("Advanced features are enabled");
-        }
+
+        logger.LogInformation("Advanced features are enabled");
 
         var hc = new HttpClient();
         var results = new List<HttpResponseMessage>();

@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX12.Models;
 
 [Table("Newsletter_IssueContactGroup")]
 [Index("ContactGroupId", Name = "IX_Newsletter_IssueContactGroup_ContactGroupID")]
-public partial class NewsletterIssueContactGroup
+public class NewsletterIssueContactGroup
 {
     [Key]
     [Column("IssueContactGroupID")]

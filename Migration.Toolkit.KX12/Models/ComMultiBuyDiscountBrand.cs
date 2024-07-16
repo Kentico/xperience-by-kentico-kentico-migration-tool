@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [PrimaryKey("MultiBuyDiscountId", "BrandId")]
 [Table("COM_MultiBuyDiscountBrand")]
 [Index("BrandId", Name = "IX_COM_MultiBuyDiscountBrand_BrandID")]
-public partial class ComMultiBuyDiscountBrand
+public class ComMultiBuyDiscountBrand
 {
     [Key]
     [Column("MultiBuyDiscountID")]

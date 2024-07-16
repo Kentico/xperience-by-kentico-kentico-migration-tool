@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("CMS_Layout")]
 [Index("LayoutDisplayName", Name = "IX_CMS_Layout_LayoutDisplayName")]
-public partial class CmsLayout
+public class CmsLayout
 {
     [Key]
     [Column("LayoutID")]

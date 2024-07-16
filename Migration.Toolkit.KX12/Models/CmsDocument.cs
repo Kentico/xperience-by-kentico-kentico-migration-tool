@@ -19,7 +19,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("DocumentUrlPath", Name = "IX_CMS_Document_DocumentUrlPath_DocumentID_DocumentNodeID")]
 [Index("DocumentWildcardRule", "DocumentPriority", Name = "IX_CMS_Document_DocumentWildcardRule_DocumentPriority")]
 [Index("DocumentWorkflowStepId", Name = "IX_CMS_Document_DocumentWorkflowStepID")]
-public partial class CmsDocument
+public class CmsDocument
 {
     [Key]
     [Column("DocumentID")]

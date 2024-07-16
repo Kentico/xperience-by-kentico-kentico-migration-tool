@@ -1,4 +1,3 @@
-
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Xml.Linq;
@@ -23,6 +22,7 @@ using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Model;
 
 namespace Migration.Toolkit.Source.Handlers;
+
 public class MigrateFormsCommandHandler(
     ILogger<MigrateFormsCommandHandler> logger,
     IDbContextFactory<KxpContext> kxpContextFactory,
@@ -34,10 +34,12 @@ public class MigrateFormsCommandHandler(
     IProtocol protocol,
     ModelFacade modelFacade,
     ToolkitConfiguration configuration
-    )
+)
     : IRequestHandler<MigrateFormsCommand, CommandResult>, IDisposable
 {
     private KxpContext _kxpContext = kxpContextFactory.CreateDbContext();
+
+    public void Dispose() => _kxpContext.Dispose();
 
     public async Task<CommandResult> Handle(MigrateFormsCommand request, CancellationToken cancellationToken)
     {
@@ -70,7 +72,7 @@ public class MigrateFormsCommandHandler(
 
                 if (mapped is { Success: true } result)
                 {
-                    var (cmsForm, newInstance) = result;
+                    (var cmsForm, bool newInstance) = result;
                     ArgumentNullException.ThrowIfNull(cmsForm, nameof(cmsForm));
 
                     try
@@ -151,6 +153,45 @@ public class MigrateFormsCommandHandler(
         return new GenericCommandResult();
     }
 
+    private bool MapAndSaveUsingKxoApi(ICmsClass ksClass, DataClassInfo kxoDataClass)
+    {
+        var mapped = dataClassMapper.Map(ksClass, kxoDataClass);
+        protocol.MappedTarget(mapped);
+
+        if (mapped is { Success: true })
+        {
+            (var dataClassInfo, bool newInstance) = mapped;
+            ArgumentNullException.ThrowIfNull(dataClassInfo, nameof(dataClassInfo));
+
+            try
+            {
+                kxpClassFacade.SetClass(dataClassInfo);
+
+                protocol.Success(ksClass, dataClassInfo, mapped);
+                logger.LogEntitySetAction(newInstance, dataClassInfo);
+
+                primaryKeyMappingContext.SetMapping<CmsClass>(
+                    r => r.ClassId,
+                    ksClass.ClassID,
+                    dataClassInfo.ClassID
+                );
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                protocol.Append(HandbookReferences
+                    .ErrorCreatingTargetInstance<DataClassInfo>(ex)
+                    .NeedsManualAction()
+                    .WithIdentityPrint(dataClassInfo)
+                );
+                logger.LogEntitySetError(ex, newInstance, dataClassInfo);
+            }
+        }
+
+        return false;
+    }
+
     #region Directory globalization
 
     private async Task GlobalizeBizFormFiles()
@@ -220,45 +261,4 @@ public class MigrateFormsCommandHandler(
     }
 
     #endregion
-
-    private bool MapAndSaveUsingKxoApi(ICmsClass ksClass, DataClassInfo kxoDataClass)
-    {
-        var mapped = dataClassMapper.Map(ksClass, kxoDataClass);
-        protocol.MappedTarget(mapped);
-
-        if (mapped is { Success: true })
-        {
-            var (dataClassInfo, newInstance) = mapped;
-            ArgumentNullException.ThrowIfNull(dataClassInfo, nameof(dataClassInfo));
-
-            try
-            {
-                kxpClassFacade.SetClass(dataClassInfo);
-
-                protocol.Success(ksClass, dataClassInfo, mapped);
-                logger.LogEntitySetAction(newInstance, dataClassInfo);
-
-                primaryKeyMappingContext.SetMapping<CmsClass>(
-                    r => r.ClassId,
-                    ksClass.ClassID,
-                    dataClassInfo.ClassID
-                );
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                protocol.Append(HandbookReferences
-                    .ErrorCreatingTargetInstance<DataClassInfo>(ex)
-                    .NeedsManualAction()
-                    .WithIdentityPrint(dataClassInfo)
-                );
-                logger.LogEntitySetError(ex, newInstance, dataClassInfo);
-            }
-        }
-
-        return false;
-    }
-
-    public void Dispose() => _kxpContext.Dispose();
 }

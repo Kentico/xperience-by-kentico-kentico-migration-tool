@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("Newsletter_EmailTemplate")]
 [Index("TemplateSiteId", "TemplateName", Name = "IX_Newsletter_EmailTemplate_TemplateSiteID_TemplateName", IsUnique = true)]
-public partial class NewsletterEmailTemplate
+public class NewsletterEmailTemplate
 {
     [Key]
     [Column("TemplateID")]

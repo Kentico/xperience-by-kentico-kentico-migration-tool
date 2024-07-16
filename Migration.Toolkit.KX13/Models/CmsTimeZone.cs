@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("CMS_TimeZone")]
-public partial class CmsTimeZone
+public class CmsTimeZone
 {
     [Key]
     [Column("TimeZoneID")]

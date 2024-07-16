@@ -11,7 +11,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("ActivityItemDetailId", Name = "IX_OM_Activity_ActivityItemDetailID")]
 [Index("ActivitySiteId", Name = "IX_OM_Activity_ActivitySiteID")]
 [Index("ActivityType", "ActivityItemId", "ActivityNodeId", Name = "IX_OM_Activity_ActivityType_ActivityItemID_ActivityNodeID_ActivityUTMSource_ActivityUTMContent_ActivityCampaign")]
-public partial class OmActivity
+public class OmActivity
 {
     [Key]
     [Column("ActivityID")]

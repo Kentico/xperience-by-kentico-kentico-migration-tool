@@ -1,7 +1,7 @@
-
 using System.Linq.Expressions;
 
 namespace Migration.Toolkit.Core.KX12.Services;
+
 public record SourceTargetKeyMapping(int SourceId, int TargetId);
 
 public interface IPrimaryKeyLocatorService

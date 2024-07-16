@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.K11.Models;
 
 [Keyless]
-public partial class ViewCmsUserRoleJoined
+public class ViewCmsUserRoleJoined
 {
     [Column("UserID")]
     public int UserId { get; set; }

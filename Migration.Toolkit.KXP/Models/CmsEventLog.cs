@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_EventLog")]
-public partial class CmsEventLog
+public class CmsEventLog
 {
     [Key]
     [Column("EventID")]

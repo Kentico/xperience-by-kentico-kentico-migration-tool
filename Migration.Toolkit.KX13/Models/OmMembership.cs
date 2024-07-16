@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("OM_Membership")]
 [Index("ContactId", Name = "IX_OM_Membership_ContactID")]
 [Index("RelatedId", Name = "IX_OM_Membership_RelatedID")]
-public partial class OmMembership
+public class OmMembership
 {
     [Key]
     [Column("MembershipID")]

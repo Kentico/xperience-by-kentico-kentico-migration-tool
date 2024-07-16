@@ -9,7 +9,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("Media_LibraryRolePermission")]
 [Index("PermissionId", Name = "IX_Media_LibraryRolePermission_PermissionID")]
 [Index("RoleId", Name = "IX_Media_LibraryRolePermission_RoleID")]
-public partial class MediaLibraryRolePermission
+public class MediaLibraryRolePermission
 {
     [Key]
     [Column("LibraryID")]

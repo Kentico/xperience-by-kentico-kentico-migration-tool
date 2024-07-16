@@ -1,4 +1,3 @@
-
 using CMS.ContentEngine;
 using CMS.Websites;
 
@@ -16,9 +15,9 @@ using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX13.Helpers;
 using Migration.Toolkit.KX13;
 using Migration.Toolkit.KX13.Context;
-using Migration.Toolkit.KX13.Models;
 
 namespace Migration.Toolkit.Core.KX13.Handlers;
+
 // ReSharper disable once UnusedType.Global
 public class MigrateSitesCommandHandler(
     ILogger<MigrateSitesCommandHandler> logger,
@@ -96,13 +95,7 @@ public class MigrateSitesCommandHandler(
                 ? bool.TryParse(storeFormerUrlsStr, out bool sfu) ? sfu : null
                 : null;
 
-            var channelResult = await importer.ImportAsync(new ChannelModel
-            {
-                ChannelDisplayName = kx13CmsSite.SiteDisplayName,
-                ChannelName = kx13CmsSite.SiteName,
-                ChannelGUID = kx13CmsSite.SiteGuid,
-                ChannelType = ChannelType.Website
-            });
+            var channelResult = await importer.ImportAsync(new ChannelModel { ChannelDisplayName = kx13CmsSite.SiteDisplayName, ChannelName = kx13CmsSite.SiteName, ChannelGUID = kx13CmsSite.SiteGuid, ChannelType = ChannelType.Website });
 
             var webSiteChannelResult = await importer.ImportAsync(new WebsiteChannelModel
             {
@@ -128,6 +121,7 @@ public class MigrateSitesCommandHandler(
                 {
                     logger.LogError(webSiteChannelResult.Exception, "Failed to migrate site");
                 }
+
                 return new CommandFailureResult();
             }
 
@@ -149,7 +143,7 @@ public class MigrateSitesCommandHandler(
                         WebsiteCaptchaSettingsReCaptchaSiteKey = cmsRecaptchaV3PublicKey,
                         WebsiteCaptchaSettingsReCaptchaSecretKey = cmsReCaptchaV3PrivateKey,
                         WebsiteCaptchaSettingsReCaptchaThreshold = cmsRecaptchaV3Threshold ?? 0.5d,
-                        WebsiteCaptchaSettingsReCaptchaVersion = ReCaptchaVersion.ReCaptchaV3,
+                        WebsiteCaptchaSettingsReCaptchaVersion = ReCaptchaVersion.ReCaptchaV3
                     };
                 }
 
@@ -158,10 +152,10 @@ public class MigrateSitesCommandHandler(
                     if (reCaptchaSettings is not null)
                     {
                         logger.LogError("""
-                                         Conflicting settings found, ReCaptchaV2 and ReCaptchaV3 is set simultaneously.
-                                         Remove setting keys 'CMSReCaptchaPublicKey', 'CMSReCaptchaPrivateKey'
-                                         or remove setting keys 'CMSReCaptchaV3PrivateKey', 'CMSRecaptchaV3PublicKey', 'CMSRecaptchaV3Threshold'.
-                                         """);
+                                        Conflicting settings found, ReCaptchaV2 and ReCaptchaV3 is set simultaneously.
+                                        Remove setting keys 'CMSReCaptchaPublicKey', 'CMSReCaptchaPrivateKey'
+                                        or remove setting keys 'CMSReCaptchaV3PrivateKey', 'CMSRecaptchaV3PublicKey', 'CMSRecaptchaV3Threshold'.
+                                        """);
                         throw new InvalidOperationException("Invalid ReCaptcha settings");
                     }
 
@@ -170,7 +164,7 @@ public class MigrateSitesCommandHandler(
                         WebsiteCaptchaSettingsWebsiteChannelID = webSiteChannel.WebsiteChannelID,
                         WebsiteCaptchaSettingsReCaptchaSiteKey = cmsReCaptchaPublicKey,
                         WebsiteCaptchaSettingsReCaptchaSecretKey = cmsReCaptchaPrivateKey,
-                        WebsiteCaptchaSettingsReCaptchaVersion = ReCaptchaVersion.ReCaptchaV2,
+                        WebsiteCaptchaSettingsReCaptchaVersion = ReCaptchaVersion.ReCaptchaV2
                     };
                 }
 
@@ -184,12 +178,12 @@ public class MigrateSitesCommandHandler(
         return new GenericCommandResult();
     }
 
-    private string GetSiteCulture(CmsSite site)
+    private string GetSiteCulture(KX13M.CmsSite site)
     {
         // simplified logic from CMS.DocumentEngine.DefaultPreferredCultureEvaluator.Evaluate()
         // domain alias skipped, HttpContext logic skipped
         string? siteCulture = site.SiteDefaultVisitorCulture
-                          ?? KenticoHelper.GetSettingsKey(kx13ContextFactory, site.SiteId, SettingsKeys.CMSDefaultCultureCode);
+                              ?? KenticoHelper.GetSettingsKey(kx13ContextFactory, site.SiteId, SettingsKeys.CMSDefaultCultureCode);
 
         return siteCulture
                ?? throw new InvalidOperationException("Unknown site culture");

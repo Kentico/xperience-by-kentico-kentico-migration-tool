@@ -4,14 +4,14 @@ using Microsoft.Extensions.Configuration;
 
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Helpers;
-
 using Migration.Toolkit.Core.KX13.Helpers;
 
 namespace Migration.Toolkit.CLI;
+
 public enum ValidationMessageType
 {
     Error,
-    Warning,
+    Warning
 }
 
 public record ValidationMessage(ValidationMessageType Type, string Message, string? RecommendedFix = null);
@@ -38,7 +38,7 @@ public static class ConfigurationValidator
             yield return new ValidationMessage(ValidationMessageType.Warning, Resources.ConfigurationValidator_GetValidationErrors_SourceCmsDirPath_IsRecommended);
         }
 
-        if (settings?.GetValue<string>(ConfigurationNames.XbKConnectionString) is { })
+        if (settings?.GetValue<string>(ConfigurationNames.XbKConnectionString) is not null)
         {
             yield return new ValidationMessage(ValidationMessageType.Warning, $"Configuration key '{ConfigurationNames.XbKConnectionString}' is deprecated, use 'Settings:ConnectionStrings:CMSConnectionString' instead");
         }
@@ -123,10 +123,13 @@ public static class ConfigurationValidator
             var customMigrationModel = optInFeatures?.GetValue<CustomMigrationModel>(ConfigurationNames.CustomMigration);
             if (customMigrationModel is { FieldMigrations.Length: > 0 })
             {
-                static ValidationMessage Required(int item, string fieldName) => new ValidationMessage(
+                static ValidationMessage Required(int item, string fieldName)
+                {
+                    return new ValidationMessage(
                         ValidationMessageType.Error,
                         $"Custom DataType migration at index [{item}] is missing value '{fieldName}', supply value or remove whole DataType migration."
                     );
+                }
 
                 var fieldMigrations = customMigrationModel.FieldMigrations;
 
@@ -137,14 +140,17 @@ public static class ConfigurationValidator
                     {
                         yield return Required(i, nameof(ConfigurationNames.SourceDataType));
                     }
+
                     if (string.IsNullOrWhiteSpace(current.TargetDataType))
                     {
                         yield return Required(i, nameof(ConfigurationNames.TargetDataType));
                     }
+
                     if (string.IsNullOrWhiteSpace(current.SourceFormControl))
                     {
                         yield return Required(i, nameof(ConfigurationNames.SourceFormControl));
                     }
+
                     if (string.IsNullOrWhiteSpace(current.TargetFormComponent))
                     {
                         yield return Required(i, nameof(ConfigurationNames.TargetFormComponent));

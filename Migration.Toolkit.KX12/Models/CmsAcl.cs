@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("CMS_ACL")]
 [Index("AclinheritedAcls", Name = "IX_CMS_ACL_ACLInheritedACLs")]
 [Index("AclsiteId", Name = "IX_CMS_ACL_ACLSiteID")]
-public partial class CmsAcl
+public class CmsAcl
 {
     [Key]
     [Column("ACLID")]

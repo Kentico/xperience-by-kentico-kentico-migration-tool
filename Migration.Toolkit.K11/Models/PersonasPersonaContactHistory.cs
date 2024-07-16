@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("Personas_PersonaContactHistory")]
 [Index("PersonaContactHistoryPersonaId", Name = "IX_Personas_PersonaContactHistoryPersonaID")]
-public partial class PersonasPersonaContactHistory
+public class PersonasPersonaContactHistory
 {
     [Key]
     [Column("PersonaContactHistoryID")]

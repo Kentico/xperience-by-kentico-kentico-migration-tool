@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_CssStylesheet")]
 [Index("StylesheetName", Name = "IX_CMS_CssStylesheet_StylesheetName")]
-public partial class CmsCssStylesheet
+public class CmsCssStylesheet
 {
     [Key]
     [Column("StylesheetID")]

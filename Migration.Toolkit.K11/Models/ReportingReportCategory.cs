@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("Reporting_ReportCategory")]
 [Index("CategoryParentId", Name = "IX_Reporting_ReportCategory_CategoryParentID")]
-public partial class ReportingReportCategory
+public class ReportingReportCategory
 {
     [Key]
     [Column("CategoryID")]

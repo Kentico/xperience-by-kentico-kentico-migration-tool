@@ -11,10 +11,11 @@ public class SourceInstanceDiscoveredInfo
 public class EditingFormControlModel
 {
     /// <summary>
-    /// Identifier of the form component to be used for editing.
+    ///     Identifier of the form component to be used for editing.
     /// </summary>
     /// <remarks>
-    /// The identifier defines a <see cref="T:Kentico.Forms.Web.Mvc.FormComponent`2" /> registered via <see cref="T:Kentico.Forms.Web.Mvc.RegisterFormComponentAttribute" />.
+    ///     The identifier defines a <see cref="T:Kentico.Forms.Web.Mvc.FormComponent`2" /> registered via
+    ///     <see cref="T:Kentico.Forms.Web.Mvc.RegisterFormComponentAttribute" />.
     /// </remarks>
     /// <seealso cref="T:Kentico.Forms.Web.Mvc.RegisterFormComponentAttribute" />
     public string FormComponentIdentifier { get; set; }
@@ -28,7 +29,7 @@ public class EditingFormControlModel
     public object? DefaultValue { get; set; }
 
     /// <summary>
-    /// Gets or sets the explanation text of the form component.
+    ///     Gets or sets the explanation text of the form component.
     /// </summary>
     /// <seealso cref="P:Kentico.Forms.Web.Mvc.FormComponentProperties.ExplanationText" />
     public string ExplanationText { get; set; }

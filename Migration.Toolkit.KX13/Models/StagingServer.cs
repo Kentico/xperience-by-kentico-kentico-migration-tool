@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("Staging_Server")]
 [Index("ServerEnabled", Name = "IX_Staging_Server_ServerEnabled")]
 [Index("ServerSiteId", Name = "IX_Staging_Server_ServerSiteID")]
-public partial class StagingServer
+public class StagingServer
 {
     [Key]
     [Column("ServerID")]

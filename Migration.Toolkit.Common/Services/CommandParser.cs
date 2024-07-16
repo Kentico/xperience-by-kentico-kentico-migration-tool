@@ -3,6 +3,7 @@ using Migration.Toolkit.Common.Abstractions;
 using static Migration.Toolkit.Common.Helpers.ConsoleHelper;
 
 namespace Migration.Toolkit.Common.Services;
+
 public class CommandParser : ICommandParser
 {
     public List<ICommand> Parse(Queue<string> args, ref bool bypassDependencyCheck, bool firstHaveToBeMigrate = true)
@@ -116,7 +117,6 @@ public class CommandParser : ICommandParser
             if (arg == $"--{MigrateCustomTablesCommand.Moniker}")
             {
                 commands.Add(new MigrateCustomTablesCommand());
-                continue;
             }
         }
 

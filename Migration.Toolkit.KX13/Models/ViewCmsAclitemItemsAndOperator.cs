@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.KX13.Models;
 
 [Keyless]
-public partial class ViewCmsAclitemItemsAndOperator
+public class ViewCmsAclitemItemsAndOperator
 {
     [Column("ACLOwnerNodeID")]
     public int AclownerNodeId { get; set; }

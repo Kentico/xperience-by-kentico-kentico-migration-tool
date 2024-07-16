@@ -9,7 +9,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("CMS_EmailUser")]
 [Index("Status", Name = "IX_CMS_EmailUser_Status")]
 [Index("UserId", Name = "IX_CMS_EmailUser_UserID")]
-public partial class CmsEmailUser
+public class CmsEmailUser
 {
     [Key]
     [Column("EmailID")]

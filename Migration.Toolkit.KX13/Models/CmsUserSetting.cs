@@ -16,7 +16,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("UserSettingsUserId", Name = "IX_CMS_UserSettings_UserSettingsUserID", IsUnique = true)]
 [Index("UserTimeZoneId", Name = "IX_CMS_UserSettings_UserTimeZoneID")]
 [Index("UserWaitingForApproval", Name = "IX_CMS_UserSettings_UserWaitingForApproval")]
-public partial class CmsUserSetting
+public class CmsUserSetting
 {
     [Key]
     [Column("UserSettingsID")]

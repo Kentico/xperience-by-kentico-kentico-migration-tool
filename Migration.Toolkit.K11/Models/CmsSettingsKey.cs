@@ -8,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("CMS_SettingsKey")]
 [Index("KeyCategoryId", Name = "IX_CMS_SettingsKey_KeyCategoryID")]
 [Index("SiteId", "KeyName", Name = "IX_CMS_SettingsKey_SiteID_KeyName")]
-public partial class CmsSettingsKey
+public class CmsSettingsKey
 {
     [Key]
     [Column("KeyID")]

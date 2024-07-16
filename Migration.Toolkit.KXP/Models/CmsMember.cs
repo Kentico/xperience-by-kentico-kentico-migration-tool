@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_Member")]
-public partial class CmsMember
+public class CmsMember
 {
     [Key]
     [Column("MemberID")]

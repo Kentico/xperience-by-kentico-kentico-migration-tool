@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("Analytics_ExitPages")]
 [Index("ExitPageLastModified", Name = "IX_Analytics_ExitPages_ExitPageLastModified")]
 [Index("ExitPageSessionIdentifier", Name = "UQ_Analytics_ExitPages_ExitPageSessionIdentifier", IsUnique = true)]
-public partial class AnalyticsExitPage
+public class AnalyticsExitPage
 {
     public DateTime ExitPageLastModified { get; set; }
 

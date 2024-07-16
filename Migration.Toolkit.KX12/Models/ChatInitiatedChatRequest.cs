@@ -10,7 +10,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("InitiatedChatRequestUserId", Name = "IX_Chat_InitiatedChatRequest_InitiatedChatRequestUserID")]
 [Index("InitiatedChatRequestRoomId", Name = "UQ_Chat_InitiatedChatRequest_RoomID", IsUnique = true)]
 [Index("InitiatedChatRequestUserId", "InitiatedChatRequestContactId", Name = "UQ_Chat_InitiatedChatRequest_UserIDContactID", IsUnique = true)]
-public partial class ChatInitiatedChatRequest
+public class ChatInitiatedChatRequest
 {
     [Key]
     [Column("InitiatedChatRequestID")]

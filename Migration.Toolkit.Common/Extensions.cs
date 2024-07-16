@@ -1,7 +1,6 @@
-using System.Linq.Expressions;
-
 using System.Data;
 using System.Data.Common;
+using System.Linq.Expressions;
 using System.Xml.Linq;
 
 using CMS.Base;
@@ -10,6 +9,7 @@ using CMS.Helpers;
 using Newtonsoft.Json;
 
 namespace Migration.Toolkit.Common;
+
 public static class Extensions
 {
     public static T Unbox<T>(this IDataReader reader, string propertyName)
@@ -157,7 +157,6 @@ public static class Extensions
     #region System.Xml.Linq extensions
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="element"></param>
     /// <param name="name"></param>
@@ -170,13 +169,11 @@ public static class Extensions
             elementUpdate?.Invoke(result);
             return result;
         }
-        else
-        {
-            var newElement = new XElement(name);
-            elementUpdate?.Invoke(newElement);
-            element.Add(newElement);
-            return newElement;
-        }
+
+        var newElement = new XElement(name);
+        elementUpdate?.Invoke(newElement);
+        element.Add(newElement);
+        return newElement;
     }
 
     #endregion
@@ -197,20 +194,17 @@ public static class Extensions
     }
 
     public static T Value<T>(this XElement element) => element?.Value == default
-            ? default
-            : ValidationHelper.GetValue<T>(element.Value);
+        ? default
+        : ValidationHelper.GetValue<T>(element.Value);
 
 
     public static bool? ValueAsBool(this XElement element)
     {
-
         if (element != null && bool.TryParse(element.Value, out bool value))
         {
             return value;
         }
-        else
-        {
-            return default;
-        }
+
+        return default;
     }
 }

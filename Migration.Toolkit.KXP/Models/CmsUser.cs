@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("CMS_User")]
 [Index("UserGuid", Name = "IX_CMS_User_UserGUID", IsUnique = true)]
 [Index("UserName", Name = "IX_CMS_User_UserName", IsUnique = true)]
-public partial class CmsUser
+public class CmsUser
 {
     [Key]
     [Column("UserID")]

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("STORECONTENT_MediaPlayer")]
-public partial class StorecontentMediaPlayer
+public class StorecontentMediaPlayer
 {
     [Key]
     [Column("MediaPlayerID")]

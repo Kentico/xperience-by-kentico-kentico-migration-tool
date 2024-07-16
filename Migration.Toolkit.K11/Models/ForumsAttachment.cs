@@ -8,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("Forums_Attachment")]
 [Index("AttachmentSiteId", "AttachmentGuid", Name = "IX_Forums_Attachment_AttachmentGUID", IsUnique = true)]
 [Index("AttachmentPostId", Name = "IX_Forums_Attachment_AttachmentPostID")]
-public partial class ForumsAttachment
+public class ForumsAttachment
 {
     [Key]
     [Column("AttachmentID")]

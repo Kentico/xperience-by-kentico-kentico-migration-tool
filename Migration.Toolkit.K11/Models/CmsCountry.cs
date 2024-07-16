@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_Country")]
-public partial class CmsCountry
+public class CmsCountry
 {
     [Key]
     [Column("CountryID")]

@@ -9,7 +9,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("UnsubscriptionEmail", "UnsubscriptionNewsletterId", Name = "IX_Newsletter_Unsubscription_Email_NewsletterID")]
 [Index("UnsubscriptionNewsletterId", Name = "IX_Newsletter_Unsubscription_NewsletterID")]
 [Index("UnsubscriptionFromIssueId", Name = "IX_Newsletter_Unsubscription_UnsubscriptionFromIssueID")]
-public partial class NewsletterUnsubscription
+public class NewsletterUnsubscription
 {
     [Key]
     [Column("UnsubscriptionID")]

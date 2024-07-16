@@ -3,13 +3,14 @@ using CMS.ContentEngine.Internal;
 using CMS.Helpers;
 
 namespace Migration.Toolkit.Core.KX13.Providers;
+
 internal class ContentItemNameProvider
 {
     private readonly IContentItemNameValidator codeNameValidator;
 
 
     /// <summary>
-    /// Creates a new instance of <see cref="ContentItemNameProvider"/>.
+    ///     Creates a new instance of <see cref="ContentItemNameProvider" />.
     /// </summary>
     public ContentItemNameProvider(IContentItemNameValidator codeNameValidator) => this.codeNameValidator = codeNameValidator;
 

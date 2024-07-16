@@ -19,7 +19,7 @@ public class LegacyAttachmentHandler : CMS.DataEngine.Module
     }
 
     /// <summary>
-    /// Handles the module pre-initialization.
+    ///     Handles the module pre-initialization.
     /// </summary>
     protected override void OnPreInit()
     {
@@ -34,13 +34,7 @@ public class LegacyAttachmentHandler : CMS.DataEngine.Module
         var registerMethod = HttpHandlerRouteTable.Default.GetType().GetMethod("Register", BindingFlags.NonPublic | BindingFlags.Instance);
         var handlerType = customHandlerType ?? typeof(MediaFileInfo).Assembly.GetType("CMS.MediaLibrary.GetMediaService");
 
-        registerMethod.Invoke(HttpHandlerRouteTable.Default, new object[]
-        {
-            new RegisterHttpHandlerAttribute(routeTemplate, handlerType)
-            {
-                Order = order
-            }
-        });
+        registerMethod.Invoke(HttpHandlerRouteTable.Default, new object[] { new RegisterHttpHandlerAttribute(routeTemplate, handlerType) { Order = order } });
     }
 }
 
@@ -86,11 +80,7 @@ public class AttachmentsService : ActionResultServiceBase
             }
 
             string mediaPath = MediaFileInfoProvider.GetMediaFilePath(mediaFile.FilePath, mediaFile.FileLibraryID, SystemContext.WebApplicationPhysicalPath);
-            var result = new CMSPhysicalFileResult(mediaPath)
-            {
-                ContentType = mediaFile.FileMimeType,
-                ContentDisposition = HTTPHelper.GetFileDisposition(mediaPath, System.IO.Path.GetExtension(mediaPath))
-            };
+            var result = new CMSPhysicalFileResult(mediaPath) { ContentType = mediaFile.FileMimeType, ContentDisposition = HTTPHelper.GetFileDisposition(mediaPath, System.IO.Path.GetExtension(mediaPath)) };
             return result;
         }
 

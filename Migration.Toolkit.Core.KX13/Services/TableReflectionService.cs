@@ -1,11 +1,12 @@
-
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Microsoft.Extensions.Logging;
 
 using Migration.Toolkit.Common.Helpers;
+using Migration.Toolkit.KX13.Context;
 
 namespace Migration.Toolkit.Core.KX13.Services;
+
 public class TableReflectionService
 {
     private readonly ILogger<TableReflectionService> _logger;
@@ -14,7 +15,7 @@ public class TableReflectionService
     public TableReflectionService(ILogger<TableReflectionService> logger)
     {
         _logger = logger;
-        var (_, tableNameLookup) = typeof(Toolkit.KX13.Context.KX13Context).Assembly.GetTypes().Aggregate((
+        var (_, tableNameLookup) = typeof(KX13Context).Assembly.GetTypes().Aggregate((
             nameLookup: new Dictionary<string, Type>(),
             tableNameLookup: new Dictionary<string, Type>()
         ), (lookups, type) =>
@@ -41,6 +42,7 @@ public class TableReflectionService
             _logger.LogError("Invalid table name, use one of following: {TableNames}", joinedKeys);
             throw new KeyNotFoundException($"Invalid table name, use one of following: {joinedKeys}");
         }
+
         return _tableNameLookup[tableName];
     }
 }

@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("COM_SKUOptionCategory")]
 [Index("CategoryId", Name = "IX_COM_SKUOptionCategory_CategoryID")]
 [Index("Skuid", Name = "IX_COM_SKUOptionCategory_SKUID")]
-public partial class ComSkuoptionCategory
+public class ComSkuoptionCategory
 {
     [Column("SKUID")]
     public int Skuid { get; set; }

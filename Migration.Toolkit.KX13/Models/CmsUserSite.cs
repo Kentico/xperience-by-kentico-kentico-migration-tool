@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("CMS_UserSite")]
 [Index("SiteId", Name = "IX_CMS_UserSite_SiteID")]
 [Index("UserId", "SiteId", Name = "IX_CMS_UserSite_UserID_SiteID", IsUnique = true)]
-public partial class CmsUserSite
+public class CmsUserSite
 {
     [Key]
     [Column("UserSiteID")]

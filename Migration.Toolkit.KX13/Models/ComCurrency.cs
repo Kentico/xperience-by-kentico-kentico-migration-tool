@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("COM_Currency")]
 [Index("CurrencyDisplayName", Name = "IX_COM_Currency_CurrencyDisplayName")]
 [Index("CurrencySiteId", Name = "IX_COM_Currency_CurrencySiteID")]
-public partial class ComCurrency
+public class ComCurrency
 {
     [Key]
     [Column("CurrencyID")]

@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX12.Models;
 
 [Table("CMS_WebPartLayout")]
 [Index("WebPartLayoutWebPartId", Name = "IX_CMS_WebPartLayout_WebPartLayoutWebPartID")]
-public partial class CmsWebPartLayout
+public class CmsWebPartLayout
 {
     [Key]
     [Column("WebPartLayoutID")]

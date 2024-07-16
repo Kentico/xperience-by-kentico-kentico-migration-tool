@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("CMS_MetaFile")]
 [Index("MetaFileGuid", "MetaFileSiteId", "MetaFileObjectType", "MetaFileObjectId", "MetaFileGroupName", Name = "IX_CMS_MetaFile_MetaFileGUID_MetaFileSiteID_MetaFileObjectType_MetaFileObjectID_MetaFileGroupName")]
 [Index("MetaFileSiteId", Name = "IX_CMS_MetaFile_MetaFileSiteID")]
-public partial class CmsMetaFile
+public class CmsMetaFile
 {
     [Key]
     [Column("MetaFileID")]

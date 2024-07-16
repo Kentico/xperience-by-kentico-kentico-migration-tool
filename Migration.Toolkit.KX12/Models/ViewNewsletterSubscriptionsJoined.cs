@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.KX12.Models;
 
 [Keyless]
-public partial class ViewNewsletterSubscriptionsJoined
+public class ViewNewsletterSubscriptionsJoined
 {
     [Column("SubscriberID")]
     public int SubscriberId { get; set; }

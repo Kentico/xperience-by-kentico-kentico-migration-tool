@@ -10,7 +10,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("WidgetIsEnabled", "WidgetForGroup", "WidgetForEditor", "WidgetForUser", Name = "IX_CMS_Widget_WidgetIsEnabled_WidgetForGroup_WidgetForEditor_WidgetForUser")]
 [Index("WidgetLayoutId", Name = "IX_CMS_Widget_WidgetLayoutID")]
 [Index("WidgetWebPartId", Name = "IX_CMS_Widget_WidgetWebPartID")]
-public partial class CmsWidget
+public class CmsWidget
 {
     [Key]
     [Column("WidgetID")]

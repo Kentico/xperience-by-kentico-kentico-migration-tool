@@ -2,7 +2,7 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-<!--        <GenerateDocumentationFile>true</GenerateDocumentationFile>-->
+        <!--        <GenerateDocumentationFile>true</GenerateDocumentationFile>-->
         <Nullable>enable</Nullable>
     </PropertyGroup>
 </Project>

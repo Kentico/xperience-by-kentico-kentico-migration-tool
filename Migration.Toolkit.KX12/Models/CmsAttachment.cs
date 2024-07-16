@@ -11,7 +11,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("AttachmentIsUnsorted", "AttachmentGroupGuid", "AttachmentFormGuid", "AttachmentOrder", Name = "IX_CMS_Attachment_AttachmentIsUnsorted_AttachmentGroupGUID_AttachmentFormGUID_AttachmentOrder")]
 [Index("AttachmentSiteId", Name = "IX_CMS_Attachment_AttachmentSiteID")]
 [Index("AttachmentVariantParentId", Name = "IX_CMS_Attachment_AttachmentVariantParentID")]
-public partial class CmsAttachment
+public class CmsAttachment
 {
     [Key]
     [Column("AttachmentID")]

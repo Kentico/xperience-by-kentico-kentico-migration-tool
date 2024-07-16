@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("Newsletter_EmailWidget")]
 [Index("EmailWidgetSiteId", Name = "IX_Newsletter_EmailWidget_EmailWidgetSiteID")]
-public partial class NewsletterEmailWidget
+public class NewsletterEmailWidget
 {
     [Key]
     [Column("EmailWidgetID")]

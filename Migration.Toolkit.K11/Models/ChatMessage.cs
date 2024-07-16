@@ -11,7 +11,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("ChatMessageRoomId", Name = "IX_Chat_Message_ChatMessageRoomID")]
 [Index("ChatMessageSystemMessageType", Name = "IX_Chat_Message_ChatMessageSystemMessageType")]
 [Index("ChatMessageUserId", Name = "IX_Chat_Message_ChatMessageUserID")]
-public partial class ChatMessage
+public class ChatMessage
 {
     [Key]
     [Column("ChatMessageID")]

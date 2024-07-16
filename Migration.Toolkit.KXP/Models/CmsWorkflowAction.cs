@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_WorkflowAction")]
 [Index("ActionResourceId", Name = "IX_CMS_WorkflowAction_ActionResourceID")]
-public partial class CmsWorkflowAction
+public class CmsWorkflowAction
 {
     [Key]
     [Column("ActionID")]

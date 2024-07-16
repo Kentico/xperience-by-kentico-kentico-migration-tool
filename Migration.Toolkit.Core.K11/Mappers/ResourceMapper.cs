@@ -1,4 +1,3 @@
-
 using CMS.Modules;
 
 using Microsoft.Extensions.Logging;
@@ -10,6 +9,7 @@ using Migration.Toolkit.Core.K11.Contexts;
 using Migration.Toolkit.K11.Models;
 
 namespace Migration.Toolkit.Core.K11.Mappers;
+
 public class ResourceMapper(ILogger<ResourceMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : EntityMapperBase<CmsResource, ResourceInfo>(logger, pkContext, protocol)
 {
     protected override ResourceInfo? CreateNewInstance(CmsResource source, MappingHelper mappingHelper, AddFailure addFailure)

@@ -1,8 +1,8 @@
-
 using System.Security.Cryptography;
 using System.Text;
 
 namespace Migration.Toolkit.Common.Helpers;
+
 public static class GuidV5
 {
     private static readonly UuidV5Generator V5Generator = new();
@@ -11,6 +11,8 @@ public static class GuidV5
 
 internal class UuidV5Generator
 {
+    private ThreadLocal<HashAlgorithm?> HashAlgorithm { get; } = new(SHA1.Create);
+
     public static bool TryWriteBytes(Guid guid, Span<byte> bytes, bool bigEndian, out int bytesWritten)
     {
         if (bytes.Length < 16 || !guid.TryWriteBytes(bytes))
@@ -41,7 +43,7 @@ internal class UuidV5Generator
         var utf8NameBytes = utf8NameByteCount > 256 ? new byte[utf8NameByteCount] : stackalloc byte[utf8NameByteCount];
         Encoding.UTF8.GetBytes(name, utf8NameBytes);
         Span<byte> namespaceBytes = stackalloc byte[16];
-        TryWriteBytes(namespaceId, namespaceBytes, bigEndian: true, out _);
+        TryWriteBytes(namespaceId, namespaceBytes, true, out _);
         int bytesToHashCount = namespaceBytes.Length + utf8NameBytes.Length;
         var bytesToHash = utf8NameByteCount > 256 ? new byte[bytesToHashCount] : stackalloc byte[bytesToHashCount];
         namespaceBytes.CopyTo(bytesToHash);
@@ -68,6 +70,4 @@ internal class UuidV5Generator
 
         return new Guid(localBytes);
     }
-
-    private ThreadLocal<HashAlgorithm?> HashAlgorithm { get; } = new(SHA1.Create);
 }

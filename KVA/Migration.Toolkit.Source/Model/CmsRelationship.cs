@@ -5,6 +5,7 @@ using System.Data;
 using Migration.Toolkit.Common;
 
 namespace Migration.Toolkit.Source.Model;
+
 public interface ICmsRelationship : ISourceModel<ICmsRelationship>
 {
     int RelationshipID { get; }
@@ -22,6 +23,7 @@ public interface ICmsRelationship : ISourceModel<ICmsRelationship>
         { Major: 13 } => CmsRelationshipK13.GetPrimaryKeyName(version),
         _ => throw new InvalidCastException($"Invalid version {version}")
     };
+
     static bool ISourceModel<ICmsRelationship>.IsAvailable(SemanticVersion version) => version switch
     {
         { Major: 11 } => CmsRelationshipK11.IsAvailable(version),
@@ -29,8 +31,10 @@ public interface ICmsRelationship : ISourceModel<ICmsRelationship>
         { Major: 13 } => CmsRelationshipK13.IsAvailable(version),
         _ => throw new InvalidCastException($"Invalid version {version}")
     };
+
     static string ISourceModel<ICmsRelationship>.TableName => "CMS_Relationship";
     static string ISourceModel<ICmsRelationship>.GuidColumnName => ""; //assumtion, class Guid column doesn't change between versions
+
     static ICmsRelationship ISourceModel<ICmsRelationship>.FromReader(IDataReader reader, SemanticVersion version) => version switch
     {
         { Major: 11 } => CmsRelationshipK11.FromReader(reader, version),
@@ -39,42 +43,57 @@ public interface ICmsRelationship : ISourceModel<ICmsRelationship>
         _ => throw new InvalidCastException($"Invalid version {version}")
     };
 }
-public partial record CmsRelationshipK11(int RelationshipID, int LeftNodeID, int RightNodeID, int RelationshipNameID, string? RelationshipCustomData, int? RelationshipOrder, bool? RelationshipIsAdHoc) : ICmsRelationship, ISourceModel<CmsRelationshipK11>
+
+public record CmsRelationshipK11(int RelationshipID, int LeftNodeID, int RightNodeID, int RelationshipNameID, string? RelationshipCustomData, int? RelationshipOrder, bool? RelationshipIsAdHoc) : ICmsRelationship, ISourceModel<CmsRelationshipK11>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
     public static string GetPrimaryKeyName(SemanticVersion version) => "RelationshipID";
     public static string TableName => "CMS_Relationship";
     public static string GuidColumnName => "";
-    static CmsRelationshipK11 ISourceModel<CmsRelationshipK11>.FromReader(IDataReader reader, SemanticVersion version) => new CmsRelationshipK11(
-            reader.Unbox<int>("RelationshipID"), reader.Unbox<int>("LeftNodeID"), reader.Unbox<int>("RightNodeID"), reader.Unbox<int>("RelationshipNameID"), reader.Unbox<string?>("RelationshipCustomData"), reader.Unbox<int?>("RelationshipOrder"), reader.Unbox<bool?>("RelationshipIsAdHoc")
-        );
-    public static CmsRelationshipK11 FromReader(IDataReader reader, SemanticVersion version) => new CmsRelationshipK11(
-            reader.Unbox<int>("RelationshipID"), reader.Unbox<int>("LeftNodeID"), reader.Unbox<int>("RightNodeID"), reader.Unbox<int>("RelationshipNameID"), reader.Unbox<string?>("RelationshipCustomData"), reader.Unbox<int?>("RelationshipOrder"), reader.Unbox<bool?>("RelationshipIsAdHoc")
-        );
-};
-public partial record CmsRelationshipK12(int RelationshipID, int LeftNodeID, int RightNodeID, int RelationshipNameID, string? RelationshipCustomData, int? RelationshipOrder, bool? RelationshipIsAdHoc) : ICmsRelationship, ISourceModel<CmsRelationshipK12>
+
+    static CmsRelationshipK11 ISourceModel<CmsRelationshipK11>.FromReader(IDataReader reader, SemanticVersion version) => new(
+        reader.Unbox<int>("RelationshipID"), reader.Unbox<int>("LeftNodeID"), reader.Unbox<int>("RightNodeID"), reader.Unbox<int>("RelationshipNameID"), reader.Unbox<string?>("RelationshipCustomData"), reader.Unbox<int?>("RelationshipOrder"),
+        reader.Unbox<bool?>("RelationshipIsAdHoc")
+    );
+
+    public static CmsRelationshipK11 FromReader(IDataReader reader, SemanticVersion version) => new(
+        reader.Unbox<int>("RelationshipID"), reader.Unbox<int>("LeftNodeID"), reader.Unbox<int>("RightNodeID"), reader.Unbox<int>("RelationshipNameID"), reader.Unbox<string?>("RelationshipCustomData"), reader.Unbox<int?>("RelationshipOrder"),
+        reader.Unbox<bool?>("RelationshipIsAdHoc")
+    );
+}
+
+public record CmsRelationshipK12(int RelationshipID, int LeftNodeID, int RightNodeID, int RelationshipNameID, string? RelationshipCustomData, int? RelationshipOrder, bool? RelationshipIsAdHoc) : ICmsRelationship, ISourceModel<CmsRelationshipK12>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
     public static string GetPrimaryKeyName(SemanticVersion version) => "RelationshipID";
     public static string TableName => "CMS_Relationship";
     public static string GuidColumnName => "";
-    static CmsRelationshipK12 ISourceModel<CmsRelationshipK12>.FromReader(IDataReader reader, SemanticVersion version) => new CmsRelationshipK12(
-            reader.Unbox<int>("RelationshipID"), reader.Unbox<int>("LeftNodeID"), reader.Unbox<int>("RightNodeID"), reader.Unbox<int>("RelationshipNameID"), reader.Unbox<string?>("RelationshipCustomData"), reader.Unbox<int?>("RelationshipOrder"), reader.Unbox<bool?>("RelationshipIsAdHoc")
-        );
-    public static CmsRelationshipK12 FromReader(IDataReader reader, SemanticVersion version) => new CmsRelationshipK12(
-            reader.Unbox<int>("RelationshipID"), reader.Unbox<int>("LeftNodeID"), reader.Unbox<int>("RightNodeID"), reader.Unbox<int>("RelationshipNameID"), reader.Unbox<string?>("RelationshipCustomData"), reader.Unbox<int?>("RelationshipOrder"), reader.Unbox<bool?>("RelationshipIsAdHoc")
-        );
-};
-public partial record CmsRelationshipK13(int RelationshipID, int LeftNodeID, int RightNodeID, int RelationshipNameID, string? RelationshipCustomData, int? RelationshipOrder, bool? RelationshipIsAdHoc) : ICmsRelationship, ISourceModel<CmsRelationshipK13>
+
+    static CmsRelationshipK12 ISourceModel<CmsRelationshipK12>.FromReader(IDataReader reader, SemanticVersion version) => new(
+        reader.Unbox<int>("RelationshipID"), reader.Unbox<int>("LeftNodeID"), reader.Unbox<int>("RightNodeID"), reader.Unbox<int>("RelationshipNameID"), reader.Unbox<string?>("RelationshipCustomData"), reader.Unbox<int?>("RelationshipOrder"),
+        reader.Unbox<bool?>("RelationshipIsAdHoc")
+    );
+
+    public static CmsRelationshipK12 FromReader(IDataReader reader, SemanticVersion version) => new(
+        reader.Unbox<int>("RelationshipID"), reader.Unbox<int>("LeftNodeID"), reader.Unbox<int>("RightNodeID"), reader.Unbox<int>("RelationshipNameID"), reader.Unbox<string?>("RelationshipCustomData"), reader.Unbox<int?>("RelationshipOrder"),
+        reader.Unbox<bool?>("RelationshipIsAdHoc")
+    );
+}
+
+public record CmsRelationshipK13(int RelationshipID, int LeftNodeID, int RightNodeID, int RelationshipNameID, string? RelationshipCustomData, int? RelationshipOrder, bool? RelationshipIsAdHoc) : ICmsRelationship, ISourceModel<CmsRelationshipK13>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
     public static string GetPrimaryKeyName(SemanticVersion version) => "RelationshipID";
     public static string TableName => "CMS_Relationship";
     public static string GuidColumnName => "";
-    static CmsRelationshipK13 ISourceModel<CmsRelationshipK13>.FromReader(IDataReader reader, SemanticVersion version) => new CmsRelationshipK13(
-            reader.Unbox<int>("RelationshipID"), reader.Unbox<int>("LeftNodeID"), reader.Unbox<int>("RightNodeID"), reader.Unbox<int>("RelationshipNameID"), reader.Unbox<string?>("RelationshipCustomData"), reader.Unbox<int?>("RelationshipOrder"), reader.Unbox<bool?>("RelationshipIsAdHoc")
-        );
-    public static CmsRelationshipK13 FromReader(IDataReader reader, SemanticVersion version) => new CmsRelationshipK13(
-            reader.Unbox<int>("RelationshipID"), reader.Unbox<int>("LeftNodeID"), reader.Unbox<int>("RightNodeID"), reader.Unbox<int>("RelationshipNameID"), reader.Unbox<string?>("RelationshipCustomData"), reader.Unbox<int?>("RelationshipOrder"), reader.Unbox<bool?>("RelationshipIsAdHoc")
-        );
-};
+
+    static CmsRelationshipK13 ISourceModel<CmsRelationshipK13>.FromReader(IDataReader reader, SemanticVersion version) => new(
+        reader.Unbox<int>("RelationshipID"), reader.Unbox<int>("LeftNodeID"), reader.Unbox<int>("RightNodeID"), reader.Unbox<int>("RelationshipNameID"), reader.Unbox<string?>("RelationshipCustomData"), reader.Unbox<int?>("RelationshipOrder"),
+        reader.Unbox<bool?>("RelationshipIsAdHoc")
+    );
+
+    public static CmsRelationshipK13 FromReader(IDataReader reader, SemanticVersion version) => new(
+        reader.Unbox<int>("RelationshipID"), reader.Unbox<int>("LeftNodeID"), reader.Unbox<int>("RightNodeID"), reader.Unbox<int>("RelationshipNameID"), reader.Unbox<string?>("RelationshipCustomData"), reader.Unbox<int?>("RelationshipOrder"),
+        reader.Unbox<bool?>("RelationshipIsAdHoc")
+    );
+}

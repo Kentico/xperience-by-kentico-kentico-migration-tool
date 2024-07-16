@@ -9,7 +9,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("Personas_PersonaNode")]
 [Index("NodeId", Name = "IX_Personas_PersonaNode_NodeID")]
 [Index("PersonaId", Name = "IX_Personas_PersonaNode_PersonaID")]
-public partial class PersonasPersonaNode
+public class PersonasPersonaNode
 {
     [Key]
     [Column("PersonaID")]

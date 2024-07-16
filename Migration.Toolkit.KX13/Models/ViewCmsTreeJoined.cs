@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.KX13.Models;
 
 [Keyless]
-public partial class ViewCmsTreeJoined
+public class ViewCmsTreeJoined
 {
     [StringLength(100)]
     public string ClassName { get; set; } = null!;

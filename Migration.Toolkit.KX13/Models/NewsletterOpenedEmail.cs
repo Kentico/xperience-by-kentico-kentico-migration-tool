@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("Newsletter_OpenedEmail")]
 [Index("OpenedEmailIssueId", Name = "IX_Newsletter_OpenedEmail_OpenedEmailIssueID")]
-public partial class NewsletterOpenedEmail
+public class NewsletterOpenedEmail
 {
     [Key]
     [Column("OpenedEmailID")]

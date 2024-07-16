@@ -1,4 +1,3 @@
-
 using MediatR;
 
 using Migration.Toolkit.Common;
@@ -7,6 +6,7 @@ using Migration.Toolkit.Source.Model;
 using Migration.Toolkit.Source.Services;
 
 namespace Migration.Toolkit.Source.Handlers;
+
 // ReSharper disable once UnusedMember.Global [implicit use]
 public class MigrateAttachmentsCommandHandler(
     ModelFacade modelFacade,
@@ -25,7 +25,7 @@ public class MigrateAttachmentsCommandHandler(
                 continue;
             }
 
-            var (_, canContinue, _, _) = attachmentMigrator.MigrateAttachment(ksCmsAttachment);
+            (_, bool canContinue, _, _) = attachmentMigrator.MigrateAttachment(ksCmsAttachment);
             if (!canContinue)
             {
                 break;

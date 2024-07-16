@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.K11.Models;
 
 [Keyless]
-public partial class ViewOmContactGroupMemberAccountJoined
+public class ViewOmContactGroupMemberAccountJoined
 {
     [Column("AccountID")]
     public int AccountId { get; set; }

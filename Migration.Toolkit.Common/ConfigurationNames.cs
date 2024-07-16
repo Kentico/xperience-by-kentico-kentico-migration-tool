@@ -27,6 +27,8 @@ public class ConfigurationNames
 
     public const string CreateReusableFieldSchemaForClasses = "CreateReusableFieldSchemaForClasses";
 
+    public const string TodoPlaceholder = "[TODO]";
+
     #region "Section names"
 
     public const string CmsConnectionString = "CMSConnectionString";
@@ -51,6 +53,4 @@ public class ConfigurationNames
     public const string XbKApiSettings = "XbKApiSettings";
 
     #endregion
-
-    public const string TodoPlaceholder = "[TODO]";
 }

@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KXP.Models;
 
 [Table("CI_Migration")]
 [Index("MigrationName", Name = "IX_CI_Migration_MigrationName", IsUnique = true)]
-public partial class CiMigration
+public class CiMigration
 {
     [Key]
     [Column("MigrationID")]

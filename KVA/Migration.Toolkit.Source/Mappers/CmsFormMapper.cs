@@ -1,4 +1,3 @@
-
 using CMS.FormEngine;
 using CMS.OnlineForms;
 
@@ -7,10 +6,12 @@ using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
+using Migration.Toolkit.KXP.Models;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Model;
 
 namespace Migration.Toolkit.Source.Mappers;
+
 public class CmsFormMapper(
     ILogger<CmsFormMapper> logger,
     PrimaryKeyMappingContext primaryKeyMappingContext,
@@ -53,10 +54,8 @@ public class CmsFormMapper(
                 target.FormBuilderLayout = s.FormBuilderLayout;
                 break;
             }
-
-            default:
-                break;
         }
+
         if (mappingHelper.TranslateRequiredId<ICmsClass>(c => c.ClassID, source.FormClassID, out int formClassId))
         {
             target.FormClassID = formClassId;
@@ -66,15 +65,15 @@ public class CmsFormMapper(
     }
 }
 
-public class CmsFormMapperEf : EntityMapperBase<ICmsForm, KXP.Models.CmsForm>
+public class CmsFormMapperEf : EntityMapperBase<ICmsForm, CmsForm>
 {
     public CmsFormMapperEf(ILogger<CmsFormMapperEf> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : base(logger, pkContext, protocol)
     {
     }
 
-    protected override KXP.Models.CmsForm? CreateNewInstance(ICmsForm source, MappingHelper mappingHelper, AddFailure addFailure) => new();
+    protected override CmsForm? CreateNewInstance(ICmsForm source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
-    protected override KXP.Models.CmsForm MapInternal(ICmsForm source, KXP.Models.CmsForm target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override CmsForm MapInternal(ICmsForm source, CmsForm target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         target.FormDisplayName = source.FormDisplayName;
         target.FormName = source.FormName;
@@ -113,9 +112,6 @@ public class CmsFormMapperEf : EntityMapperBase<ICmsForm, KXP.Models.CmsForm>
                 target.FormBuilderLayout = s.FormBuilderLayout;
                 break;
             }
-
-            default:
-                break;
         }
 
         // TODO tk: 2022-05-20 new deduce: target.FormAfterSubmitMode = source.FormAfterSubmitMode;

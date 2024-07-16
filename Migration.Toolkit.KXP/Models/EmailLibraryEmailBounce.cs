@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KXP.Models;
 
 [Table("EmailLibrary_EmailBounce")]
 [Index("EmailBounceEmailAddress", Name = "IX_EmailLibrary_EmailBounce_EmailBounceEmailAddress", IsUnique = true)]
-public partial class EmailLibraryEmailBounce
+public class EmailLibraryEmailBounce
 {
     [Key]
     [Column("EmailBounceID")]

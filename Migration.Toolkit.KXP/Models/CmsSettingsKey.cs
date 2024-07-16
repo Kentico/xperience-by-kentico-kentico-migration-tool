@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("CMS_SettingsKey")]
 [Index("KeyCategoryId", Name = "IX_CMS_SettingsKey_KeyCategoryID")]
 [Index("KeyName", Name = "IX_CMS_SettingsKey_KeyName")]
-public partial class CmsSettingsKey
+public class CmsSettingsKey
 {
     [Key]
     [Column("KeyID")]

@@ -1,5 +1,4 @@
-
-using System.Data;
+﻿using System.Data;
 
 using CMS.FormEngine;
 using CMS.Membership;
@@ -18,6 +17,7 @@ using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KXP.Api;
 
 namespace Migration.Toolkit.Core.KX13.Mappers;
+
 public record MemberInfoMapperSource(KX13M.CmsUser User, KX13M.CmsUserSetting UserSetting);
 
 public class MemberInfoMapper(
@@ -29,8 +29,6 @@ public class MemberInfoMapper(
     IDbContextFactory<KX13Context> kx13DbContextFactory)
     : EntityMapperBase<MemberInfoMapperSource, MemberInfo>(logger, primaryKeyMappingContext, protocol)
 {
-    protected override MemberInfo CreateNewInstance(MemberInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) => new();
-
     public static IReadOnlyList<string> MigratedUserFields = new List<string>
     {
         nameof(KX13M.CmsUser.UserGuid),
@@ -39,8 +37,10 @@ public class MemberInfoMapper(
         // nameof(KX13M.CmsUser.UserPassword),
         nameof(KX13M.CmsUser.UserEnabled),
         nameof(KX13M.CmsUser.UserCreated),
-        nameof(KX13M.CmsUser.UserSecurityStamp),
+        nameof(KX13M.CmsUser.UserSecurityStamp)
     };
+
+    protected override MemberInfo CreateNewInstance(MemberInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
     protected override MemberInfo MapInternal(MemberInfoMapperSource source, MemberInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {

@@ -9,7 +9,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("TaskIsInbound", Name = "IX_Integration_Task_TaskIsInbound")]
 [Index("TaskSiteId", Name = "IX_Integration_Task_TaskSiteID")]
 [Index("TaskType", Name = "IX_Integration_Task_TaskType")]
-public partial class IntegrationTask
+public class IntegrationTask
 {
     [Key]
     [Column("TaskID")]

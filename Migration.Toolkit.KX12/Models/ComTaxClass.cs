@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX12.Models;
 
 [Table("COM_TaxClass")]
 [Index("TaxClassSiteId", Name = "IX_COM_TaxClass_TaxClassSiteID")]
-public partial class ComTaxClass
+public class ComTaxClass
 {
     [Key]
     [Column("TaxClassID")]

@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("Export_History")]
 [Index("ExportSiteId", Name = "IX_Export_History_ExportSiteID")]
 [Index("ExportUserId", Name = "IX_Export_History_ExportUserID")]
-public partial class ExportHistory
+public class ExportHistory
 {
     [Key]
     [Column("ExportID")]

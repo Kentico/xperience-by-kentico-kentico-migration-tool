@@ -1,4 +1,3 @@
-
 using System.Text.RegularExpressions;
 
 using Microsoft.Extensions.Logging;
@@ -6,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
 
 namespace Migration.Toolkit.KXP.Api.Services.CmsClass;
+
 public class FieldMigrationService // shall be singleton to cache necessary data
 {
     private readonly ILogger<FieldMigrationService> _logger;
@@ -37,14 +37,14 @@ public class FieldMigrationService // shall be singleton to cache necessary data
         }
 
         var userDefined = GetFieldMigrationInternal(_userDefinedMigrations, sourceDataType, sourceFormControl, fieldName);
-        if (userDefined is { })
+        if (userDefined is not null)
         {
             _logger.LogDebug("Field migration matched: '{MatchType}', {Migration}", "UserDefined", userDefined);
             return userDefined;
         }
 
         var preDefined = GetFieldMigrationInternal(FieldMappingInstance.BuiltInFieldMigrations, sourceDataType, sourceFormControl, fieldName);
-        if (preDefined is { })
+        if (preDefined is not null)
         {
             _logger.LogDebug("Field migration matched: '{MatchType}', {Migration}", "BuiltIn", preDefined);
             return preDefined;
@@ -77,7 +77,7 @@ public class FieldMigrationService // shall be singleton to cache necessary data
             string.Equals(x.SourceDataType, sourceDataType, StringComparison.InvariantCultureIgnoreCase) &&
             string.Equals(x.SourceFormControl, SfcDirective.CatchAnyNonMatching, StringComparison.InvariantCultureIgnoreCase)
         );
-        if (generalMatch is { })
+        if (generalMatch is not null)
         {
             return generalMatch;
         }

@@ -1,4 +1,3 @@
-
 using CMS.DataEngine;
 using CMS.FormEngine;
 using CMS.Globalization;
@@ -26,6 +25,7 @@ using Migration.Toolkit.Core.KX12.Services;
 using Migration.Toolkit.KXP.Models;
 
 namespace Migration.Toolkit.Core.KX12;
+
 public static class Kx12CoreDiExtensions
 {
     public static IServiceCollection UseKx12ToolkitCore(this IServiceCollection services)

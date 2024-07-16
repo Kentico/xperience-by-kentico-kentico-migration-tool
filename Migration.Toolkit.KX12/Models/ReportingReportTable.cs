@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("Reporting_ReportTable")]
 [Index("TableReportId", Name = "IX_Reporting_ReportTable_TableReportID")]
 [Index("TableName", "TableReportId", Name = "IX_Reporting_ReportTable_TableReportID_TableName", IsUnique = true)]
-public partial class ReportingReportTable
+public class ReportingReportTable
 {
     [Key]
     [Column("TableID")]

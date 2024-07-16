@@ -5,6 +5,7 @@ using Migration.Toolkit.Common.Services.Ipc;
 using Migration.Toolkit.Source.Model;
 
 namespace Migration.Toolkit.Source.Contexts;
+
 public class SourceInstanceContext(
     IpcService ipcService,
     ILogger<SourceInstanceContext> logger,
@@ -24,7 +25,7 @@ public class SourceInstanceContext(
         if (!_sourceInfoLoaded)
         {
             var result = await ipcService.GetSourceInstanceDiscoveredInfos();
-            foreach (var (key, value) in result)
+            foreach ((string key, var value) in result)
             {
                 _cachedInfos.Add(key, value);
                 logger.LogInformation("Source instance info loaded for site '{SiteName}' successfully", key);

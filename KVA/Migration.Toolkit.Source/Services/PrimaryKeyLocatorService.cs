@@ -1,4 +1,3 @@
-
 using System.Linq.Expressions;
 
 using Microsoft.EntityFrameworkCore;
@@ -9,21 +8,13 @@ using Migration.Toolkit.KXP.Context;
 using Migration.Toolkit.Source.Model;
 
 namespace Migration.Toolkit.Source.Services;
+
 public class PrimaryKeyLocatorService(
     ILogger<PrimaryKeyLocatorService> logger,
     IDbContextFactory<KxpContext> kxpContextFactory,
     ModelFacade modelFacade
-    ) : IPrimaryKeyLocatorService
+) : IPrimaryKeyLocatorService
 {
-    private class KeyEqualityComparerWithLambda<T>(Func<T?, T?, bool> equalityComparer) : IEqualityComparer<T>
-    {
-        public bool Equals(T? x, T? y) => equalityComparer.Invoke(x, y);
-
-        public int GetHashCode(T obj) => obj?.GetHashCode() ?? 0;
-    }
-
-    private record CmsUserKey(Guid UserGuid, string UserName);
-
     public IEnumerable<SourceTargetKeyMapping> SelectAll<T>(Expression<Func<T, object>> keyNameSelector)
     {
         using var kxpContext = kxpContextFactory.CreateDbContext();
@@ -115,7 +106,6 @@ public class PrimaryKeyLocatorService(
         }
 
 
-
         throw new NotImplementedException();
     }
 
@@ -200,6 +190,7 @@ public class PrimaryKeyLocatorService(
             {
                 logger.LogWarning("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
             }
+
             return false;
         }
         finally
@@ -214,4 +205,13 @@ public class PrimaryKeyLocatorService(
         targetId = -1;
         return false;
     }
+
+    private class KeyEqualityComparerWithLambda<T>(Func<T?, T?, bool> equalityComparer) : IEqualityComparer<T>
+    {
+        public bool Equals(T? x, T? y) => equalityComparer.Invoke(x, y);
+
+        public int GetHashCode(T obj) => obj?.GetHashCode() ?? 0;
+    }
+
+    private record CmsUserKey(Guid UserGuid, string UserName);
 }

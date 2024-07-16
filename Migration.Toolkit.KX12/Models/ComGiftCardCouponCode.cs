@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX12.Models;
 
 [Table("COM_GiftCardCouponCode")]
 [Index("GiftCardCouponCodeGiftCardId", Name = "IX_COM_GiftCardCouponCodeGiftCardID")]
-public partial class ComGiftCardCouponCode
+public class ComGiftCardCouponCode
 {
     [Key]
     [Column("GiftCardCouponCodeID")]

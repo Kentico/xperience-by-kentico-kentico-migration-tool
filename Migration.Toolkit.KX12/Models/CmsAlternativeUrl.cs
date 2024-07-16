@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("CMS_AlternativeUrl")]
 [Index("AlternativeUrlDocumentId", Name = "IX_CMS_AlternativeUrl_AlternativeUrlDocumentID")]
 [Index("AlternativeUrlSiteId", "AlternativeUrlUrl", Name = "IX_CMS_AlternativeUrl_AlternativeUrlSiteID_AlternativeUrlUrl", IsUnique = true)]
-public partial class CmsAlternativeUrl
+public class CmsAlternativeUrl
 {
     [Key]
     [Column("AlternativeUrlID")]

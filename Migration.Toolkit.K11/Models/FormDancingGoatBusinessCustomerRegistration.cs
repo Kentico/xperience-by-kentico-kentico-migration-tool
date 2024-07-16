@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("Form_DancingGoat_BusinessCustomerRegistration")]
-public partial class FormDancingGoatBusinessCustomerRegistration
+public class FormDancingGoatBusinessCustomerRegistration
 {
     [Key]
     [Column("BusinessCustomerRegistrationID")]

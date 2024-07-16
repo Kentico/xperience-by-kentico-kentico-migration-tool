@@ -1,4 +1,3 @@
-
 using CMS.Globalization;
 
 using Microsoft.EntityFrameworkCore;
@@ -9,19 +8,19 @@ using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX13.Contexts;
 using Migration.Toolkit.KX13.Context;
-using Migration.Toolkit.KX13.Models;
 using Migration.Toolkit.KXP.Api;
 
 namespace Migration.Toolkit.Core.KX13.Services;
+
 public class CountryMigrator
 {
-    private readonly ILogger<CountryMigrator> _logger;
+    private readonly IEntityMapper<KX13M.CmsCountry, CountryInfo> _countryMapper;
     private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
+    private readonly KxpApiInitializer _kxpApiInitializer;
+    private readonly ILogger<CountryMigrator> _logger;
     private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
     private readonly IProtocol _protocol;
-    private readonly IEntityMapper<CmsCountry, CountryInfo> _countryMapper;
-    private readonly IEntityMapper<CmsState, StateInfo> _stateMapper;
-    private readonly KxpApiInitializer _kxpApiInitializer;
+    private readonly IEntityMapper<KX13M.CmsState, StateInfo> _stateMapper;
 
     public CountryMigrator(
         ILogger<CountryMigrator> logger,
@@ -29,8 +28,8 @@ public class CountryMigrator
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol,
-        IEntityMapper<CmsCountry, CountryInfo> countryMapper,
-        IEntityMapper<CmsState, StateInfo> stateMapper,
+        IEntityMapper<KX13M.CmsCountry, CountryInfo> countryMapper,
+        IEntityMapper<KX13M.CmsState, StateInfo> stateMapper,
         KxpApiInitializer kxpApiInitializer
     )
     {
@@ -47,7 +46,7 @@ public class CountryMigrator
     {
         if (!_kxpApiInitializer.EnsureApiIsInitialized())
         {
-            throw new InvalidOperationException($"Falied to initialize kentico API. Please check configuration.");
+            throw new InvalidOperationException("Falied to initialize kentico API. Please check configuration.");
         }
 
         var kx13Context = _kx13ContextFactory.CreateDbContext();
@@ -74,7 +73,7 @@ public class CountryMigrator
                     _protocol.Success(kx13CmsCountry, countryInfo, mapped);
                     _logger.LogEntitySetAction(newInstance, countryInfo);
 
-                    _primaryKeyMappingContext.SetMapping<CmsCountry>(r => r.CountryId, kx13CmsCountry.CountryId, countryInfo.CountryID);
+                    _primaryKeyMappingContext.SetMapping<KX13M.CmsCountry>(r => r.CountryId, kx13CmsCountry.CountryId, countryInfo.CountryID);
                 }
                 catch (Exception exception)
                 {
@@ -110,7 +109,7 @@ public class CountryMigrator
                     _protocol.Success(kx13CmsState, stateInfo, mapped);
                     _logger.LogEntitySetAction(newInstance, stateInfo);
 
-                    _primaryKeyMappingContext.SetMapping<CmsState>(r => r.StateId, kx13CmsState.StateId, stateInfo.StateID);
+                    _primaryKeyMappingContext.SetMapping<KX13M.CmsState>(r => r.StateId, kx13CmsState.StateId, stateInfo.StateID);
                 }
                 catch (Exception exception)
                 {

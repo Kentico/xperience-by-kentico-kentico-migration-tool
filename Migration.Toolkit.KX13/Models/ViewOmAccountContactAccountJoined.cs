@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.KX13.Models;
 
 [Keyless]
-public partial class ViewOmAccountContactAccountJoined
+public class ViewOmAccountContactAccountJoined
 {
     [Column("AccountID")]
     public int AccountId { get; set; }

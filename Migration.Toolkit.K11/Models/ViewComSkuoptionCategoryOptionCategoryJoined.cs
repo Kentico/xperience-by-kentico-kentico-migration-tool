@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.K11.Models;
 
 [Keyless]
-public partial class ViewComSkuoptionCategoryOptionCategoryJoined
+public class ViewComSkuoptionCategoryOptionCategoryJoined
 {
     [Column("SKUID")]
     public int Skuid { get; set; }

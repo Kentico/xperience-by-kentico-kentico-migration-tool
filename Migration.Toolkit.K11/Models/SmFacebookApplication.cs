@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("SM_FacebookApplication")]
 [Index("FacebookApplicationSiteId", Name = "IX_SM_FacebookApplication_FacebookApplicationSiteID")]
-public partial class SmFacebookApplication
+public class SmFacebookApplication
 {
     [Key]
     [Column("FacebookApplicationID")]

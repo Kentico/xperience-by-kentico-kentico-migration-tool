@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("CMS_SettingsCategory")]
 [Index("CategoryParentId", Name = "IX_CMS_SettingsCategory_CategoryParentID")]
 [Index("CategoryResourceId", Name = "IX_CMS_SettingsCategory_CategoryResourceID")]
-public partial class CmsSettingsCategory
+public class CmsSettingsCategory
 {
     [Key]
     [Column("CategoryID")]

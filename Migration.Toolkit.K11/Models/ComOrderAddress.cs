@@ -8,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("COM_OrderAddress")]
 [Index("AddressCountryId", Name = "IX_COM_OrderAddress_AddressCountryID")]
 [Index("AddressStateId", Name = "IX_COM_OrderAddress_AddressStateID")]
-public partial class ComOrderAddress
+public class ComOrderAddress
 {
     [Key]
     [Column("AddressID")]

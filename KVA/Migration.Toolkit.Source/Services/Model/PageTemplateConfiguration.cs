@@ -1,12 +1,12 @@
-
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Migration.Toolkit.Source.Services.Model;
+
 /// <summary>
-/// Page template configuration for the <see cref="T:CMS.DocumentEngine.TreeNode" /> instance.
+///     Page template configuration for the <see cref="T:CMS.DocumentEngine.TreeNode" /> instance.
 /// </summary>
 [DataContract(Name = "PageTemplate", Namespace = "")]
 public class PageTemplateConfiguration
@@ -17,7 +17,7 @@ public class PageTemplateConfiguration
     public string Identifier { get; set; }
 
     /// <summary>
-    /// Identifier of the page template configuration based on which the page was created.
+    ///     Identifier of the page template configuration based on which the page was created.
     /// </summary>
     [DataMember]
     [JsonProperty("configurationIdentifier")]

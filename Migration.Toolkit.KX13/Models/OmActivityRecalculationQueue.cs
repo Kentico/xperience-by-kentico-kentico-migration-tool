@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("OM_ActivityRecalculationQueue")]
-public partial class OmActivityRecalculationQueue
+public class OmActivityRecalculationQueue
 {
     [Key]
     [Column("ActivityRecalculationQueueID")]

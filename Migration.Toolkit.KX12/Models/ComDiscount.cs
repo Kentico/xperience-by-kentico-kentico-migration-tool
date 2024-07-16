@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX12.Models;
 
 [Table("COM_Discount")]
 [Index("DiscountSiteId", Name = "IX_COM_Discount_DiscountSiteID")]
-public partial class ComDiscount
+public class ComDiscount
 {
     [Key]
     [Column("DiscountID")]

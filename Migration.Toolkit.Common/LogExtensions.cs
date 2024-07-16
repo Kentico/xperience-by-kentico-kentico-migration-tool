@@ -1,4 +1,3 @@
-
 using Microsoft.Extensions.Logging;
 
 using Migration.Toolkit.Common.Abstractions;
@@ -7,6 +6,7 @@ using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Common.Services;
 
 namespace Migration.Toolkit.Common;
+
 public static class LogExtensions
 {
     public static IPrintService PrintService = default;

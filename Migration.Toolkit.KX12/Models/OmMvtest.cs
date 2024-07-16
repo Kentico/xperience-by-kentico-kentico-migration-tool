@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX12.Models;
 
 [Table("OM_MVTest")]
 [Index("MvtestSiteId", Name = "IX_OM_MVTest_MVTestSiteID")]
-public partial class OmMvtest
+public class OmMvtest
 {
     [Key]
     [Column("MVTestID")]

@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX12.Models;
 
 [Table("OM_ABVariantData")]
 [Index("AbvariantTestId", "AbvariantGuid", Name = "IX_OM_ABVariantData_ABVariantTestID_ABVariantGUID")]
-public partial class OmAbvariantDatum
+public class OmAbvariantDatum
 {
     [Key]
     [Column("ABVariantID")]

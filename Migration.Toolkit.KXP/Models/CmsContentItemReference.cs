@@ -9,7 +9,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Index("ContentItemReferenceSourceCommonDataId", Name = "IX_CMS_ContentItemReference_ContentItemReferenceSourceCommonDataID")]
 [Index("ContentItemReferenceSourceCommonDataId", "ContentItemReferenceTargetItemId", "ContentItemReferenceGroupGuid", Name = "IX_CMS_ContentItemReference_ContentItemReferenceSourceCommonDataID_TargetItemID_GroupGUID", IsUnique = true)]
 [Index("ContentItemReferenceTargetItemId", Name = "IX_CMS_ContentItemReference_ContentItemReferenceTargetItemID")]
-public partial class CmsContentItemReference
+public class CmsContentItemReference
 {
     [Key]
     [Column("ContentItemReferenceID")]

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_SMTPServer")]
-public partial class CmsSmtpserver
+public class CmsSmtpserver
 {
     [Key]
     [Column("ServerID")]

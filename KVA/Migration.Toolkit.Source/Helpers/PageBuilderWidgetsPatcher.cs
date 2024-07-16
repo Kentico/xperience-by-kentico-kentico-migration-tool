@@ -1,10 +1,10 @@
-
 using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.Source.Services.Model;
 
 using Newtonsoft.Json.Linq;
 
 namespace Migration.Toolkit.Source.Helpers;
+
 public static class PageBuilderWidgetsPatcher
 {
     public static EditableAreasConfiguration DeferredPatchConfiguration(EditableAreasConfiguration configuration, TreePathConvertor convertor, out bool anythingChanged)
@@ -52,7 +52,7 @@ public static class PageBuilderWidgetsPatcher
         anythingChanged = false;
         if (propertyContainer?["properties"] is JObject { Count: 1 } properties)
         {
-            foreach (var (key, value) in properties)
+            foreach ((string key, var value) in properties)
             {
                 switch (key)
                 {
@@ -65,11 +65,9 @@ public static class PageBuilderWidgetsPatcher
                             properties["TreePath"] = JToken.FromObject(treePath);
                             anythingChanged = true;
                         }
+
                         break;
                     }
-
-                    default:
-                        break;
                 }
             }
         }

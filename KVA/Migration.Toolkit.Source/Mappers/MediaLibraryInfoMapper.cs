@@ -1,4 +1,3 @@
-
 using CMS.MediaLibrary;
 
 using Microsoft.Extensions.Logging;
@@ -9,6 +8,7 @@ using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Model;
 
 namespace Migration.Toolkit.Source.Mappers;
+
 public record MediaLibraryInfoMapperSource(IMediaLibrary MediaLibrary, ICmsSite Site);
 
 public class MediaLibraryInfoMapper(ILogger<MediaLibraryInfoMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext, IProtocol protocol)

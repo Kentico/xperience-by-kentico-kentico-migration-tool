@@ -9,7 +9,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Index("ContentItemContentFolderId", Name = "IX_CMS_ContentItem_ContentItemContentFolderID")]
 [Index("ContentItemContentTypeId", Name = "IX_CMS_ContentItem_ContentItemContentTypeID")]
 [Index("ContentItemName", Name = "IX_CMS_ContentItem_ContentItemName", IsUnique = true)]
-public partial class CmsContentItem
+public class CmsContentItem
 {
     [Key]
     [Column("ContentItemID")]

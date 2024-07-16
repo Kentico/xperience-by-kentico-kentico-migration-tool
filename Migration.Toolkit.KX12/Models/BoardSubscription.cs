@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("Board_Subscription")]
 [Index("SubscriptionBoardId", Name = "IX_Board_Subscription_SubscriptionBoardID")]
 [Index("SubscriptionUserId", Name = "IX_Board_Subscription_SubscriptionUserID")]
-public partial class BoardSubscription
+public class BoardSubscription
 {
     [Key]
     [Column("SubscriptionID")]

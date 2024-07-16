@@ -9,7 +9,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("SubscriptionForumId", Name = "IX_Forums_ForumSubscription_SubscriptionForumID")]
 [Index("SubscriptionPostId", Name = "IX_Forums_ForumSubscription_SubscriptionPostID")]
 [Index("SubscriptionUserId", Name = "IX_Forums_ForumSubscription_SubscriptionUserID")]
-public partial class ForumsForumSubscription
+public class ForumsForumSubscription
 {
     [Key]
     [Column("SubscriptionID")]

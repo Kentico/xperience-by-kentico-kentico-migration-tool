@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("SharePoint_SharePointConnection")]
 [Index("SharePointConnectionSiteId", Name = "IX_SharePoint_SharePointConnection_SharePointConnectionSiteID")]
-public partial class SharePointSharePointConnection
+public class SharePointSharePointConnection
 {
     [Key]
     [Column("SharePointConnectionID")]

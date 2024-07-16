@@ -1,4 +1,3 @@
-
 using CMS.Membership;
 
 using Microsoft.Extensions.Logging;
@@ -9,6 +8,7 @@ using Migration.Toolkit.Core.K11.Contexts;
 using Migration.Toolkit.K11.Models;
 
 namespace Migration.Toolkit.Core.K11.Mappers;
+
 public class UserRoleInfoMapper(ILogger<UserRoleInfoMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : EntityMapperBase<CmsUserRole, UserRoleInfo>(logger, pkContext, protocol)
 {
     protected override UserRoleInfo? CreateNewInstance(CmsUserRole source, MappingHelper mappingHelper, AddFailure addFailure)

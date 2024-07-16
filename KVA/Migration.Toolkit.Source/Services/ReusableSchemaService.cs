@@ -1,4 +1,3 @@
-
 using CMS.ContentEngine.Internal;
 using CMS.Core;
 using CMS.DataEngine;
@@ -10,6 +9,7 @@ using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Helpers;
 
 namespace Migration.Toolkit.Source.Services;
+
 public class ReusableSchemaService(ILogger<ReusableSchemaService> logger, ToolkitConfiguration configuration)
 {
     private readonly IReusableFieldSchemaManager _reusableFieldSchemaManager = Service.Resolve<IReusableFieldSchemaManager>();

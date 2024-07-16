@@ -1,19 +1,61 @@
 using Microsoft.Extensions.Configuration;
 
 namespace Migration.Toolkit.Common;
+
 /// <summary>
-/// Autofix enum
+///     Autofix enum
 /// </summary>
 /// <remarks>do not update value names, they are used in json configuration</remarks>
 public enum AutofixEnum
 {
     DiscardData,
     AttemptFix,
-    Error,
+    Error
 }
 
 public class ToolkitConfiguration
 {
+    #region Path to CMS dir of source instance
+
+    [ConfigurationKeyName(ConfigurationNames.KxCmsDirPath)]
+    public string? KxCmsDirPath { get; set; }
+
+    #endregion
+
+    [ConfigurationKeyName(ConfigurationNames.EntityConfigurations)]
+    public EntityConfigurations EntityConfigurations { get; set; } = [];
+
+    [ConfigurationKeyName(ConfigurationNames.MigrateOnlyMediaFileInfo)]
+    public bool? MigrateOnlyMediaFileInfo { get; set; } = true;
+
+    [ConfigurationKeyName(ConfigurationNames.UseOmActivityNodeRelationAutofix)]
+    public AutofixEnum? UseOmActivityNodeRelationAutofix { get; set; } = AutofixEnum.Error;
+
+    [ConfigurationKeyName(ConfigurationNames.UseOmActivitySiteRelationAutofix)]
+    public AutofixEnum? UseOmActivitySiteRelationAutofix { get; set; } = AutofixEnum.Error;
+
+    [ConfigurationKeyName(ConfigurationNames.MigrationProtocolPath)]
+    public string? MigrationProtocolPath { get; set; }
+
+    [ConfigurationKeyName(ConfigurationNames.MemberIncludeUserSystemFields)]
+    public string? MemberIncludeUserSystemFields { get; set; }
+
+    [ConfigurationKeyName(ConfigurationNames.CreateReusableFieldSchemaForClasses)]
+    public string? CreateReusableFieldSchemaForClasses { get; set; }
+
+
+    public IReadOnlySet<string> ClassNamesCreateReusableSchema => _classNamesCreateReusableSchema ??= new HashSet<string>(
+        (CreateReusableFieldSchemaForClasses?.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries) ?? []).Select(x => x.Trim()),
+        StringComparer.InvariantCultureIgnoreCase
+    );
+
+    #region Opt-in features
+
+    [ConfigurationKeyName(ConfigurationNames.OptInFeatures)]
+    public OptInFeatures? OptInFeatures { get; set; }
+
+    #endregion
+
     #region Connection string of source instance
 
     private string? _kxConnectionString;
@@ -24,13 +66,6 @@ public class ToolkitConfiguration
         get => _kxConnectionString!;
         set => _kxConnectionString = value;
     }
-
-    #endregion
-
-    #region Path to CMS dir of source instance
-
-    [ConfigurationKeyName(ConfigurationNames.KxCmsDirPath)]
-    public string? KxCmsDirPath { get; set; }
 
     #endregion
 
@@ -60,40 +95,6 @@ public class ToolkitConfiguration
 
     [ConfigurationKeyName(ConfigurationNames.XbKDirPath)]
     public string? XbKDirPath { get; set; } = null;
-
-    #endregion
-
-    [ConfigurationKeyName(ConfigurationNames.EntityConfigurations)]
-    public EntityConfigurations EntityConfigurations { get; set; } = [];
-
-    [ConfigurationKeyName(ConfigurationNames.MigrateOnlyMediaFileInfo)]
-    public bool? MigrateOnlyMediaFileInfo { get; set; } = true;
-
-    [ConfigurationKeyName(ConfigurationNames.UseOmActivityNodeRelationAutofix)]
-    public AutofixEnum? UseOmActivityNodeRelationAutofix { get; set; } = AutofixEnum.Error;
-
-    [ConfigurationKeyName(ConfigurationNames.UseOmActivitySiteRelationAutofix)]
-    public AutofixEnum? UseOmActivitySiteRelationAutofix { get; set; } = AutofixEnum.Error;
-
-    [ConfigurationKeyName(ConfigurationNames.MigrationProtocolPath)]
-    public string? MigrationProtocolPath { get; set; }
-
-    [ConfigurationKeyName(ConfigurationNames.MemberIncludeUserSystemFields)]
-    public string? MemberIncludeUserSystemFields { get; set; }
-
-    [ConfigurationKeyName(ConfigurationNames.CreateReusableFieldSchemaForClasses)]
-    public string? CreateReusableFieldSchemaForClasses { get; set; }
-
-
-    public IReadOnlySet<string> ClassNamesCreateReusableSchema => _classNamesCreateReusableSchema ??= new HashSet<string>(
-        (CreateReusableFieldSchemaForClasses?.Split(new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries) ?? []).Select(x => x.Trim()),
-        StringComparer.InvariantCultureIgnoreCase
-    );
-
-    #region Opt-in features
-
-    [ConfigurationKeyName(ConfigurationNames.OptInFeatures)]
-    public OptInFeatures? OptInFeatures { get; set; }
 
     #endregion
 }

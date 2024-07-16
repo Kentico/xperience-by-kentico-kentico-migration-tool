@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("customtable_SampleTable")]
-public partial class CustomtableSampleTable
+public class CustomtableSampleTable
 {
     [Key]
     [Column("ItemID")]

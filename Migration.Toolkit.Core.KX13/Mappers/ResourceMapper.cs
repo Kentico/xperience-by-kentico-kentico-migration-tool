@@ -1,4 +1,3 @@
-
 using CMS.Modules;
 
 using Microsoft.Extensions.Logging;
@@ -7,19 +6,19 @@ using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Enumerations;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX13.Contexts;
-using Migration.Toolkit.KX13.Models;
 
 namespace Migration.Toolkit.Core.KX13.Mappers;
-public class ResourceMapper : EntityMapperBase<CmsResource, ResourceInfo>
+
+public class ResourceMapper : EntityMapperBase<KX13M.CmsResource, ResourceInfo>
 {
     private readonly ILogger<ResourceMapper> _logger;
 
     public ResourceMapper(ILogger<ResourceMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : base(logger, pkContext, protocol) => _logger = logger;
 
-    protected override ResourceInfo? CreateNewInstance(CmsResource source, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override ResourceInfo? CreateNewInstance(KX13M.CmsResource source, MappingHelper mappingHelper, AddFailure addFailure)
         => ResourceInfo.New();
 
-    protected override ResourceInfo MapInternal(CmsResource source, ResourceInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override ResourceInfo MapInternal(KX13M.CmsResource source, ResourceInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         target.ResourceDescription = source.ResourceDescription;
         target.ResourceDisplayName = source.ResourceDisplayName;

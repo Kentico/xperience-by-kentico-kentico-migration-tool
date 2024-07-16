@@ -12,7 +12,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("UserGuid", Name = "IX_CMS_User_UserGUID", IsUnique = true)]
 [Index("UserName", Name = "IX_CMS_User_UserName", IsUnique = true)]
 [Index("UserPrivilegeLevel", Name = "IX_CMS_User_UserPrivilegeLevel")]
-public partial class CmsUser
+public class CmsUser
 {
     [Key]
     [Column("UserID")]

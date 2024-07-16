@@ -9,7 +9,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("Forums_ForumRoles")]
 [Index("PermissionId", Name = "IX_Forums_ForumRoles_PermissionID")]
 [Index("RoleId", Name = "IX_Forums_ForumRoles_RoleID")]
-public partial class ForumsForumRole
+public class ForumsForumRole
 {
     [Key]
     [Column("ForumID")]

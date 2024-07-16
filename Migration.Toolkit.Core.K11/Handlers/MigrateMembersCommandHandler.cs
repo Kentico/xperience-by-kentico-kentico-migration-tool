@@ -16,14 +16,20 @@ using Migration.Toolkit.K11.Models;
 using Migration.Toolkit.KXP.Api.Auxiliary;
 
 namespace Migration.Toolkit.Core.K11.Handlers;
-public class MigrateMembersCommandHandler(ILogger<MigrateMembersCommandHandler> logger,
-        IDbContextFactory<K11Context> k11ContextFactory,
-        IEntityMapper<MemberInfoMapperSource, MemberInfo> memberInfoMapper,
-        PrimaryKeyMappingContext primaryKeyMappingContext,
-        IProtocol protocol)
+
+public class MigrateMembersCommandHandler(
+    ILogger<MigrateMembersCommandHandler> logger,
+    IDbContextFactory<K11Context> k11ContextFactory,
+    IEntityMapper<MemberInfoMapperSource, MemberInfo> memberInfoMapper,
+    PrimaryKeyMappingContext primaryKeyMappingContext,
+    IProtocol protocol)
     : IRequestHandler<MigrateMembersCommand, CommandResult>, IDisposable
 {
     private const string USER_PUBLIC = "public";
+
+    public void Dispose()
+    {
+    }
 
     public async Task<CommandResult> Handle(MigrateMembersCommand request, CancellationToken cancellationToken)
     {
@@ -62,7 +68,7 @@ public class MigrateMembersCommandHandler(ILogger<MigrateMembersCommandHandler> 
     {
         if (mapped is { Success: true } result)
         {
-            var (memberInfo, newInstance) = result;
+            (var memberInfo, bool newInstance) = result;
             ArgumentNullException.ThrowIfNull(memberInfo);
 
             try
@@ -77,7 +83,7 @@ public class MigrateMembersCommandHandler(ILogger<MigrateMembersCommandHandler> 
             {
                 logger.LogEntitySetError(sqlException, newInstance, memberInfo);
                 protocol.Append(HandbookReferences.DbConstraintBroken(sqlException, k11User)
-                    .WithData(new { k11User.UserName, k11User.UserGuid, k11User.UserId, })
+                    .WithData(new { k11User.UserName, k11User.UserGuid, k11User.UserId })
                     .WithMessage("Failed to migrate user, target database broken.")
                 );
             }
@@ -94,10 +100,5 @@ public class MigrateMembersCommandHandler(ILogger<MigrateMembersCommandHandler> 
             // left for OM_Activity
             primaryKeyMappingContext.SetMapping<CmsUser>(r => r.UserId, k11User.UserId, memberInfo.MemberID);
         }
-    }
-
-    public void Dispose()
-    {
-
     }
 }

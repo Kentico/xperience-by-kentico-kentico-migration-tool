@@ -1,4 +1,3 @@
-
 using System.Diagnostics;
 
 using CMS.DataEngine;
@@ -7,9 +6,11 @@ using CMS.MediaLibrary;
 using Microsoft.Extensions.Logging;
 
 namespace Migration.Toolkit.KXP.Api;
+
 public class KxpMediaFileFacade
 {
     private readonly ILogger<KxpMediaFileFacade> _logger;
+
     public KxpMediaFileFacade(ILogger<KxpMediaFileFacade> logger, KxpApiInitializer kxpApiInitializer)
     {
         _logger = logger;
@@ -47,7 +48,7 @@ public class KxpMediaFileFacade
     {
         string? librarySubDir = System.IO.Path.GetDirectoryName(mfi.FilePath);
         // TODOV27 tomas.krch: 2023-09-05: media library => obsolete create method with sitename
-        MediaLibraryInfoProvider.CreateMediaLibraryFolder(libraryId, $"{librarySubDir}", false);
+        MediaLibraryInfoProvider.CreateMediaLibraryFolder(libraryId, $"{librarySubDir}");
     }
 
     public MediaLibraryInfo CreateMediaLibrary(int siteId, string libraryFolder, string libraryDescription, string libraryName, string libraryDisplayName)
@@ -56,10 +57,7 @@ public class KxpMediaFileFacade
         var newLibrary = new MediaLibraryInfo
         {
             // Sets the library properties
-            LibraryDisplayName = libraryDisplayName,
-            LibraryName = libraryName,
-            LibraryDescription = libraryDescription,
-            LibraryFolder = libraryFolder
+            LibraryDisplayName = libraryDisplayName, LibraryName = libraryName, LibraryDescription = libraryDescription, LibraryFolder = libraryFolder
         };
 
         // TODO tomas.krch: 2023-11-02 ?? newLibrary.LibraryUseDirectPathForContent

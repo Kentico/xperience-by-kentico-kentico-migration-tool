@@ -12,7 +12,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Index("ActivityItemDetailId", Name = "IX_OM_Activity_ActivityItemDetailID")]
 [Index("ActivityLanguageId", Name = "IX_OM_Activity_ActivityLanguageID")]
 [Index("ActivityType", "ActivityItemId", "ActivityWebPageItemGuid", Name = "IX_OM_Activity_ActivityType_ActivityItemID_ActivityWebPageItemGUID_ActivityUTMSource_ActivityUTMContent")]
-public partial class OmActivity
+public class OmActivity
 {
     [Key]
     [Column("ActivityID")]

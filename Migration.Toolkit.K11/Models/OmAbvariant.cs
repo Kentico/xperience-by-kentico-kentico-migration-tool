@@ -8,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("OM_ABVariant")]
 [Index("AbvariantSiteId", Name = "IX_OM_ABVariant_ABVariantSiteID")]
 [Index("AbvariantTestId", Name = "IX_OM_ABVariant_ABVariantTestID")]
-public partial class OmAbvariant
+public class OmAbvariant
 {
     [Key]
     [Column("ABVariantID")]

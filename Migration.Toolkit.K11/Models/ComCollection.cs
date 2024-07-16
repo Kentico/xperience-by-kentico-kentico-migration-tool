@@ -8,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("COM_Collection")]
 [Index("CollectionDisplayName", Name = "IX_COM_Collection_CollectionDisplayName")]
 [Index("CollectionSiteId", "CollectionEnabled", Name = "IX_COM_Collection_CollectionSiteID_CollectionEnabled")]
-public partial class ComCollection
+public class ComCollection
 {
     [Key]
     [Column("CollectionID")]

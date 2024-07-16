@@ -58,15 +58,16 @@ public static class Kx13SystemResource
     public const string CMS_WYSIWYGEditor = "CMS.WYSIWYGEditor";
     public const string Licenses = "Licenses";
 
-    public static HashSet<string> All = new(new[]
-    {
-        CMS, CMS_ABTest, CMS_Activities, CMS_Badges, CMS_Categories, CMS_ContactManagement, CMS_Content, CMS_ContinuousIntegration, cms_customsystemmodule, CMS_CustomTables, CMS_DataProtection,
-        CMS_Design, CMS_DocumentEngine, CMS_Ecommerce, CMS_EmailEngine, CMS_EmailTemplates, CMS_EventLog, CMS_Form, CMS_Globalization, CMS_GlobalPermissions, CMS_Localization, CMS_MacroEngine,
-        CMS_MediaDialog, CMS_MediaLibrary, CMS_Membership, CMS_ModuleLicenses, CMS_ModuleUsageTracking, CMS_Newsletter, CMS_OnlineMarketing, CMS_Permissions,
-        CMS_Personas, CMS_Relationships, CMS_Reporting, CMS_Roles, CMS_ScheduledTasks, CMS_Scoring, CMS_Search, CMS_Search_Azure, CMS_SharePoint, CMS_SocialMarketing, CMS_Staging,
-        CMS_Synchronization, CMS_Taxonomy, CMS_TranslationServices, CMS_UIPersonalization, CMS_Users, CMS_WebAnalytics, CMS_WebFarm, CMS_Widgets, CMS_WIFIntegration, CMS_WorkflowEngine,
-        CMS_WYSIWYGEditor, Licenses,
-    }, StringComparer.InvariantCultureIgnoreCase);
+    public static HashSet<string> All =
+        new(
+            new[]
+            {
+                CMS, CMS_ABTest, CMS_Activities, CMS_Badges, CMS_Categories, CMS_ContactManagement, CMS_Content, CMS_ContinuousIntegration, cms_customsystemmodule, CMS_CustomTables, CMS_DataProtection, CMS_Design, CMS_DocumentEngine,
+                CMS_Ecommerce, CMS_EmailEngine, CMS_EmailTemplates, CMS_EventLog, CMS_Form, CMS_Globalization, CMS_GlobalPermissions, CMS_Localization, CMS_MacroEngine, CMS_MediaDialog, CMS_MediaLibrary, CMS_Membership, CMS_ModuleLicenses,
+                CMS_ModuleUsageTracking, CMS_Newsletter, CMS_OnlineMarketing, CMS_Permissions, CMS_Personas, CMS_Relationships, CMS_Reporting, CMS_Roles, CMS_ScheduledTasks, CMS_Scoring, CMS_Search, CMS_Search_Azure, CMS_SharePoint,
+                CMS_SocialMarketing, CMS_Staging, CMS_Synchronization, CMS_Taxonomy, CMS_TranslationServices, CMS_UIPersonalization, CMS_Users, CMS_WebAnalytics, CMS_WebFarm, CMS_Widgets, CMS_WIFIntegration, CMS_WorkflowEngine, CMS_WYSIWYGEditor,
+                Licenses
+            }, StringComparer.InvariantCultureIgnoreCase);
 
     public static HashSet<string> ConvertToNonSysResource = new(new[] { cms_customsystemmodule }, StringComparer.CurrentCultureIgnoreCase);
 }

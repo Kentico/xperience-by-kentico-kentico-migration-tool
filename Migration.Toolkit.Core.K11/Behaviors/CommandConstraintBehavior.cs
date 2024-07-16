@@ -1,4 +1,3 @@
-
 using MediatR;
 
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +9,7 @@ using Migration.Toolkit.K11;
 using Migration.Toolkit.K11.Models;
 
 namespace Migration.Toolkit.Core.K11.Behaviors;
+
 public class CommandConstraintBehavior<TRequest, TResponse>(
     ILogger<CommandConstraintBehavior<TRequest, TResponse>> logger,
     IMigrationProtocol protocol,

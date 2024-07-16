@@ -1,4 +1,3 @@
-
 using System.Diagnostics;
 
 using MediatR;
@@ -9,6 +8,7 @@ using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 
 namespace Migration.Toolkit.Core.KX13.Behaviors;
+
 public class RequestHandlingBehavior<TRequest, TResponse>(
     ILogger<RequestHandlingBehavior<TRequest, TResponse>> logger,
     IMigrationProtocol protocol) : IPipelineBehavior<TRequest, TResponse>

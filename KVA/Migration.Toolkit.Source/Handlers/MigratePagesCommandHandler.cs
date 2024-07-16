@@ -1,4 +1,3 @@
-
 using System.Collections.Concurrent;
 using System.Diagnostics;
 
@@ -33,6 +32,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Migration.Toolkit.Source.Handlers;
+
 // ReSharper disable once UnusedType.Global
 public class MigratePagesCommandHandler(
     ILogger<MigratePagesCommandHandler> logger,
@@ -49,6 +49,8 @@ public class MigratePagesCommandHandler(
     private const string CLASS_CMS_ROOT = "CMS.Root";
 
     private readonly ContentItemNameProvider _contentItemNameProvider = new(new ContentItemNameValidator());
+
+    private readonly ConcurrentDictionary<string, ContentLanguageInfo> _languages = new(StringComparer.InvariantCultureIgnoreCase);
 
     public async Task<CommandResult> Handle(MigratePagesCommand request, CancellationToken cancellationToken)
     {
@@ -229,9 +231,6 @@ public class MigratePagesCommandHandler(
                                 webPageItemInfo = wp;
                                 break;
                             }
-
-                            default:
-                                break;
                         }
                     }
 
@@ -360,7 +359,7 @@ public class MigratePagesCommandHandler(
                                 VersionStatus.Published => false,
                                 VersionStatus.Archived => false,
                                 _ => throw new ArgumentOutOfRangeException()
-                            },
+                            }
                         };
 
                         var ep = existingPaths.FirstOrDefault(ep =>
@@ -398,9 +397,6 @@ public class MigratePagesCommandHandler(
 
                                 break;
                             }
-
-                            default:
-                                break;
                         }
                     }
                 }
@@ -431,7 +427,7 @@ public class MigratePagesCommandHandler(
                             VersionStatus.Published => false,
                             VersionStatus.Unpublished => false,
                             _ => throw new ArgumentOutOfRangeException()
-                        },
+                        }
                     };
 
                     var ep = existingPaths.FirstOrDefault(ep =>
@@ -469,9 +465,6 @@ public class MigratePagesCommandHandler(
 
                             break;
                         }
-
-                        default:
-                            break;
                     }
                 }
             }
@@ -509,7 +502,7 @@ public class MigratePagesCommandHandler(
                         VersionStatus.Published => false,
                         VersionStatus.Archived => false,
                         _ => throw new ArgumentOutOfRangeException()
-                    },
+                    }
                 };
 
                 switch (await importer.ImportAsync(webPageUrlPath))
@@ -533,15 +526,10 @@ public class MigratePagesCommandHandler(
 
                         break;
                     }
-
-                    default:
-                        break;
                 }
             }
         }
     }
-
-    private readonly ConcurrentDictionary<string, ContentLanguageInfo> _languages = new(StringComparer.InvariantCultureIgnoreCase);
 
     private void MigrateFormerUrls(ICmsTree ksNode, WebPageItemInfo targetPage)
     {
@@ -637,7 +625,7 @@ public class MigratePagesCommandHandler(
     {
         logger.LogInformation("Executing TreePath patch");
 
-        foreach (var (uniqueId, className, webSiteChannelId) in deferredPathService.GetWidgetsToPatch())
+        foreach ((var uniqueId, string className, int webSiteChannelId) in deferredPathService.GetWidgetsToPatch())
         {
             if (className == ContentItemCommonDataInfo.TYPEINFO.ObjectClassName)
             {
@@ -698,11 +686,9 @@ public class MigratePagesCommandHandler(
             );
             return JsonConvert.SerializeObject(patched);
         }
-        else
-        {
-            anythingChanged = false;
-            return documentPageBuilderWidgets;
-        }
+
+        anythingChanged = false;
+        return documentPageBuilderWidgets;
     }
 
     #endregion

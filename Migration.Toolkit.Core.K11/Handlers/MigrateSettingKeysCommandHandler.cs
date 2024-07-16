@@ -1,4 +1,3 @@
-
 using CMS.DataEngine;
 
 using MediatR;
@@ -13,11 +12,13 @@ using Migration.Toolkit.K11;
 using Migration.Toolkit.K11.Models;
 
 namespace Migration.Toolkit.Core.K11.Handlers;
-public class MigrateSettingKeysCommandHandler(ILogger<MigrateSettingKeysCommandHandler> logger,
-        IEntityMapper<CmsSettingsKey, SettingsKeyInfo> mapper,
-        IDbContextFactory<K11Context> k11ContextFactory,
-        ToolkitConfiguration toolkitConfiguration,
-        IProtocol protocol)
+
+public class MigrateSettingKeysCommandHandler(
+    ILogger<MigrateSettingKeysCommandHandler> logger,
+    IEntityMapper<CmsSettingsKey, SettingsKeyInfo> mapper,
+    IDbContextFactory<K11Context> k11ContextFactory,
+    ToolkitConfiguration toolkitConfiguration,
+    IProtocol protocol)
     : IRequestHandler<MigrateSettingKeysCommand, CommandResult>
 {
     public async Task<CommandResult> Handle(MigrateSettingKeysCommand request, CancellationToken cancellationToken)
@@ -49,12 +50,7 @@ public class MigrateSettingKeysCommandHandler(ILogger<MigrateSettingKeysCommandH
                         .NotCurrentlySupportedSkip<SettingsKeyInfo>()
                         .WithId(nameof(k11CmsSettingsKey.KeyId), k11CmsSettingsKey.KeyId)
                         .WithMessage("Settings key is not supported in target instance")
-                        .WithData(new
-                        {
-                            k11CmsSettingsKey.KeyName,
-                            k11CmsSettingsKey.SiteId,
-                            k11CmsSettingsKey.KeyGuid
-                        })
+                        .WithData(new { k11CmsSettingsKey.KeyName, k11CmsSettingsKey.SiteId, k11CmsSettingsKey.KeyGuid })
                 );
                 continue;
             }

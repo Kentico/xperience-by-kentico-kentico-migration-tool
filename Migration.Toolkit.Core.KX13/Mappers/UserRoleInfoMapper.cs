@@ -1,4 +1,3 @@
-
 using CMS.Membership;
 
 using Microsoft.Extensions.Logging;
@@ -8,6 +7,7 @@ using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX13.Contexts;
 
 namespace Migration.Toolkit.Core.KX13.Mappers;
+
 public class UserRoleInfoMapper : EntityMapperBase<KX13M.CmsUserRole, UserRoleInfo>
 {
     public UserRoleInfoMapper(ILogger<UserRoleInfoMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : base(logger, pkContext, protocol)

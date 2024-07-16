@@ -9,7 +9,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("Community_GroupRolePermission")]
 [Index("PermissionId", Name = "IX_Community_GroupRolePermission_PermissionID")]
 [Index("RoleId", Name = "IX_Community_GroupRolePermission_RoleID")]
-public partial class CommunityGroupRolePermission
+public class CommunityGroupRolePermission
 {
     [Key]
     [Column("GroupID")]

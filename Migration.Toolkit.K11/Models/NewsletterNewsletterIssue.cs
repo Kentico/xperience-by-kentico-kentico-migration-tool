@@ -11,7 +11,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("IssueSiteId", Name = "IX_Newsletter_NewsletterIssue_IssueSiteID")]
 [Index("IssueTemplateId", Name = "IX_Newsletter_NewsletterIssue_IssueTemplateID")]
 [Index("IssueVariantOfIssueId", Name = "IX_Newsletter_NewsletterIssue_IssueVariantOfIssueID")]
-public partial class NewsletterNewsletterIssue
+public class NewsletterNewsletterIssue
 {
     [Key]
     [Column("IssueID")]

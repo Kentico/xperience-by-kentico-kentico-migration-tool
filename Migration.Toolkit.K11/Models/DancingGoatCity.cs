@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("DancingGoat_City")]
-public partial class DancingGoatCity
+public class DancingGoatCity
 {
     [Key]
     [Column("CityID")]

@@ -1,9 +1,9 @@
-
 using MediatR;
 
 using Migration.Toolkit.Common.Abstractions;
 
 namespace Migration.Toolkit.Common;
+
 public record MigrateSitesCommand : IRequest<CommandResult>, ICommand
 {
     public static readonly int Rank = 1;
@@ -133,7 +133,6 @@ public record MigrateCustomModulesCommand : IRequest<CommandResult>, ICommand
 
     public Type[] Dependencies => [typeof(MigrateSitesCommand)];
 }
-
 
 public record MigrateCustomTablesCommand : IRequest<CommandResult>, ICommand
 {

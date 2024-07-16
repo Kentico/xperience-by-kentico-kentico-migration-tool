@@ -9,7 +9,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("WidgetCategoryId", Name = "IX_CMS_Widget_WidgetCategoryID")]
 [Index("WidgetLayoutId", Name = "IX_CMS_Widget_WidgetLayoutID")]
 [Index("WidgetWebPartId", Name = "IX_CMS_Widget_WidgetWebPartID")]
-public partial class CmsWidget
+public class CmsWidget
 {
     [Key]
     [Column("WidgetID")]

@@ -1,4 +1,3 @@
-
 using System.Linq.Expressions;
 
 using Microsoft.Extensions.Logging;
@@ -6,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common.MigrationProtocol;
 
 namespace Migration.Toolkit.Common.Abstractions;
+
 public abstract class EntityMapperBase<TSourceEntity, TTargetEntity> : IEntityMapper<TSourceEntity, TTargetEntity>
 {
     private readonly ILogger _logger;

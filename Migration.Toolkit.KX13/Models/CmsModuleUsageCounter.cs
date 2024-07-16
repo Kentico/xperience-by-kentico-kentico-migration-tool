@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Keyless]
 [Table("CMS_ModuleUsageCounter")]
-public partial class CmsModuleUsageCounter
+public class CmsModuleUsageCounter
 {
     [Column("ModuleUsageCounterID")]
     public int ModuleUsageCounterId { get; set; }

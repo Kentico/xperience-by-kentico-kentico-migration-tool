@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_Form")]
 [Index("FormClassId", Name = "IX_CMS_Form_FormClassID")]
-public partial class CmsForm
+public class CmsForm
 {
     [Key]
     [Column("FormID")]

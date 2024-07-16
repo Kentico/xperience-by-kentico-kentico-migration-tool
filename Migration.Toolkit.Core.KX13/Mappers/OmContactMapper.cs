@@ -1,4 +1,3 @@
-
 using Microsoft.Extensions.Logging;
 
 using Migration.Toolkit.Common.Abstractions;
@@ -7,10 +6,11 @@ using Migration.Toolkit.Core.KX13.Contexts;
 using Migration.Toolkit.KXP.Models;
 
 namespace Migration.Toolkit.Core.KX13.Mappers;
+
 public class OmContactMapper : EntityMapperBase<KX13M.OmContact, OmContact>
 {
-    private readonly ILogger<OmContactMapper> _logger;
     private readonly IEntityMapper<KX13M.OmContactStatus, OmContactStatus> _contactStatusMapper;
+    private readonly ILogger<OmContactMapper> _logger;
 
     public OmContactMapper(
         ILogger<OmContactMapper> logger,
@@ -78,9 +78,6 @@ public class OmContactMapper : EntityMapperBase<KX13M.OmContact, OmContact>
                     addFailure(new MapperResultFailure<OmContact>(result?.HandbookReference));
                     break;
                 }
-
-                default:
-                    break;
             }
         }
         else

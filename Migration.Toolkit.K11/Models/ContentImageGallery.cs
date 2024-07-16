@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("CONTENT_ImageGallery")]
-public partial class ContentImageGallery
+public class ContentImageGallery
 {
     [Key]
     [Column("ImageGalleryID")]

@@ -13,7 +13,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("OrderShippingOptionId", Name = "IX_COM_Order_OrderShippingOptionID")]
 [Index("OrderSiteId", "OrderDate", Name = "IX_COM_Order_OrderSiteID_OrderDate", IsDescending = new[] { false, true })]
 [Index("OrderStatusId", Name = "IX_COM_Order_OrderStatusID")]
-public partial class ComOrder
+public class ComOrder
 {
     [Key]
     [Column("OrderID")]

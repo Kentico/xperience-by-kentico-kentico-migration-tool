@@ -1,10 +1,10 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("EmailLibrary_EmailTemplate")]
-public partial class EmailLibraryEmailTemplate
+public class EmailLibraryEmailTemplate
 {
     [Key]
     [Column("EmailTemplateID")]

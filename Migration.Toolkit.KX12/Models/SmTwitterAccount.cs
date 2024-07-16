@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("SM_TwitterAccount")]
 [Index("TwitterAccountSiteId", Name = "IX_SM_TwitterAccount_TwitterAccountSiteID")]
 [Index("TwitterAccountTwitterApplicationId", Name = "IX_SM_TwitterAccount_TwitterAccountTwitterApplicationID")]
-public partial class SmTwitterAccount
+public class SmTwitterAccount
 {
     [Key]
     [Column("TwitterAccountID")]

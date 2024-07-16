@@ -1,4 +1,3 @@
-
 using CMS.DataEngine;
 using CMS.FormEngine;
 
@@ -12,6 +11,7 @@ using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Model;
 
 namespace Migration.Toolkit.Source.Mappers;
+
 public record AlternativeFormMapperSource(ICmsAlternativeForm AlternativeForm, DataClassInfo XbkFormClass);
 
 public class AlternativeFormMapper(
@@ -20,7 +20,7 @@ public class AlternativeFormMapper(
     IProtocol protocol,
     FieldMigrationService fieldMigrationService,
     ModelFacade modelFacade
-    )
+)
     : EntityMapperBase<AlternativeFormMapperSource, AlternativeFormInfo>(logger, pkContext, protocol)
 {
     protected override AlternativeFormInfo? CreateNewInstance(AlternativeFormMapperSource source, MappingHelper mappingHelper, AddFailure addFailure)
@@ -52,6 +52,7 @@ public class AlternativeFormMapper(
             logger.LogDebug("Merging coupled class ('{FormCoupledClassName}') form definition with form definition ('{FormClassName}')", formCoupledClass.ClassName, formClass.ClassName);
             mergedDefinition = FormHelper.MergeFormDefinitions(mergedDefinition, formCoupledClass.ClassFormDefinition);
         }
+
         mergedDefinition = FormHelper.MergeFormDefinitions(mergedDefinition, source.FormDefinition);
 
         var patcher = new FormDefinitionPatcher(

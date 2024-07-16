@@ -9,7 +9,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("TwitterPostCampaignId", Name = "IX_SM_TwitterPost_TwitterPostCampaignID")]
 [Index("TwitterPostSiteId", Name = "IX_SM_TwitterPost_TwitterPostSiteID")]
 [Index("TwitterPostTwitterAccountId", Name = "IX_SM_TwitterPost_TwitterPostTwitterAccountID")]
-public partial class SmTwitterPost
+public class SmTwitterPost
 {
     [Key]
     [Column("TwitterPostID")]

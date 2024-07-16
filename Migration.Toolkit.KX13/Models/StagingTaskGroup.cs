@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("staging_TaskGroup")]
-public partial class StagingTaskGroup
+public class StagingTaskGroup
 {
     [Key]
     [Column("TaskGroupID")]

@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_BannedIP")]
 [Index("IpaddressSiteId", Name = "IX_CMS_BannedIP_IPAddressSiteID")]
-public partial class CmsBannedIp
+public class CmsBannedIp
 {
     [Key]
     [Column("IPAddressID")]

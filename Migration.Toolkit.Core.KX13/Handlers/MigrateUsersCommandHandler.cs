@@ -1,4 +1,3 @@
-
 using CMS.Membership;
 
 using MediatR;
@@ -14,8 +13,10 @@ using Migration.Toolkit.Core.KX13.Contexts;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Api.Enums;
+using Migration.Toolkit.KXP.Models;
 
 namespace Migration.Toolkit.Core.KX13.Handlers;
+
 public class MigrateUsersCommandHandler(
     ILogger<MigrateUsersCommandHandler> logger,
     IDbContextFactory<KX13Context> kx13ContextFactory,
@@ -27,6 +28,10 @@ public class MigrateUsersCommandHandler(
     : IRequestHandler<MigrateUsersCommand, CommandResult>, IDisposable
 {
     private const string USER_PUBLIC = "public";
+
+    public void Dispose()
+    {
+    }
 
     public async Task<CommandResult> Handle(MigrateUsersCommand request, CancellationToken cancellationToken)
     {
@@ -80,7 +85,7 @@ public class MigrateUsersCommandHandler(
     {
         if (mapped is { Success: true } result)
         {
-            var (userInfo, newInstance) = result;
+            (var userInfo, bool newInstance) = result;
             ArgumentNullException.ThrowIfNull(userInfo);
 
             try
@@ -95,7 +100,7 @@ public class MigrateUsersCommandHandler(
             {
                 logger.LogEntitySetError(sqlException, newInstance, userInfo);
                 protocol.Append(HandbookReferences.DbConstraintBroken(sqlException, kx13User)
-                    .WithData(new { kx13User.UserName, kx13User.UserGuid, kx13User.UserId, })
+                    .WithData(new { kx13User.UserName, kx13User.UserGuid, kx13User.UserId })
                     .WithMessage("Failed to migrate user, target database broken.")
                 );
                 return Task.CompletedTask;
@@ -187,7 +192,7 @@ public class MigrateUsersCommandHandler(
             if (!primaryKeyMappingContext.TryRequireMapFromSource<KX13M.CmsRole>(u => u.RoleId, kx13RoleId, out int xbkRoleId))
             {
                 var handbookRef = HandbookReferences
-                    .MissingRequiredDependency<KXP.Models.CmsRole>(nameof(UserRoleInfo.RoleID), kx13UserRole.RoleId)
+                    .MissingRequiredDependency<CmsRole>(nameof(UserRoleInfo.RoleID), kx13UserRole.RoleId)
                     .NeedsManualAction();
 
                 protocol.Append(handbookRef);
@@ -208,7 +213,7 @@ public class MigrateUsersCommandHandler(
 
             if (mapped is { Success: true })
             {
-                var (userRoleInfo, newInstance) = mapped;
+                (var userRoleInfo, bool newInstance) = mapped;
                 ArgumentNullException.ThrowIfNull(userRoleInfo);
 
                 try
@@ -222,16 +227,11 @@ public class MigrateUsersCommandHandler(
                 {
                     logger.LogEntitySetError(ex, newInstance, userRoleInfo);
                     protocol.Append(HandbookReferences.ErrorSavingTargetInstance<UserRoleInfo>(ex)
-                        .WithData(new { kx13UserRole.UserRoleId, kx13UserRole.UserId, kx13UserRole.RoleId, })
+                        .WithData(new { kx13UserRole.UserRoleId, kx13UserRole.UserId, kx13UserRole.RoleId })
                         .WithMessage("Failed to migrate user role")
                     );
                 }
             }
         }
-    }
-
-    public void Dispose()
-    {
-
     }
 }

@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX12.Models;
 
 [Table("SM_InsightHit_Month")]
 [Index("InsightHitInsightId", "InsightHitPeriodFrom", "InsightHitPeriodTo", Name = "UQ_SM_InsightHit_Month_InsightHitInsightID_InsightHitPeriodFrom_InsightHitPeriodTo", IsUnique = true)]
-public partial class SmInsightHitMonth
+public class SmInsightHitMonth
 {
     [Key]
     [Column("InsightHitID")]

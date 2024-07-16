@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("CMS_MacroRuleMacroRuleCategory")]
 [Index("MacroRuleCategoryId", Name = "IX_CMS_MacroRuleMacroRuleCategory_MacroRuleCategoryID")]
 [Index("MacroRuleId", Name = "IX_CMS_MacroRuleMacroRuleCategory_MacroRuleID")]
-public partial class CmsMacroRuleMacroRuleCategory
+public class CmsMacroRuleMacroRuleCategory
 {
     [Key]
     [Column("MacroRuleMacroRuleCategoryID")]

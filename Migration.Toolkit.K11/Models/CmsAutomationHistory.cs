@@ -12,7 +12,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("HistoryStepId", Name = "IX_CMS_AutomationHistory_HistoryStepID")]
 [Index("HistoryTargetStepId", Name = "IX_CMS_AutomationHistory_HistoryTargetStepID")]
 [Index("HistoryWorkflowId", Name = "IX_CMS_AutomationHistory_HistoryWorkflowID")]
-public partial class CmsAutomationHistory
+public class CmsAutomationHistory
 {
     [Key]
     [Column("HistoryID")]

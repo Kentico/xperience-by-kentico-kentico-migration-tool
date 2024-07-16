@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.K11.Models;
 
 [Table("CONTENT_Software")]
-public partial class ContentSoftware
+public class ContentSoftware
 {
     [Key]
     [Column("SoftwareID")]

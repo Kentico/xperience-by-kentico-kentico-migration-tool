@@ -1,4 +1,3 @@
-
 using System.Text;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -13,6 +12,7 @@ using Migration.Toolkit.Core.KX12.Contexts;
 using Migration.Toolkit.KXP.Models;
 
 namespace Migration.Toolkit.Core.KX12.Mappers;
+
 public class CmsConsentMapper : EntityMapperBase<KX12M.CmsConsent, CmsConsent>
 {
     public CmsConsentMapper(ILogger<CmsConsentMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : base(logger, pkContext, protocol)

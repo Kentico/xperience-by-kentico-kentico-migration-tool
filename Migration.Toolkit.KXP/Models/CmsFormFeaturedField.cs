@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_FormFeaturedField")]
-public partial class CmsFormFeaturedField
+public class CmsFormFeaturedField
 {
     [Key]
     [Column("FormFeaturedFieldID")]

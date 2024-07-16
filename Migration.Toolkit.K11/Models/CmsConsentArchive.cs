@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_ConsentArchive")]
 [Index("ConsentArchiveConsentId", Name = "IX_ConsentArchive_ConsentArchiveConsentID")]
-public partial class CmsConsentArchive
+public class CmsConsentArchive
 {
     [Key]
     [Column("ConsentArchiveID")]

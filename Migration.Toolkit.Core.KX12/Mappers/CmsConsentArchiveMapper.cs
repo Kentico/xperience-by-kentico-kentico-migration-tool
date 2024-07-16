@@ -1,4 +1,3 @@
-
 using Microsoft.Extensions.Logging;
 
 using Migration.Toolkit.Common.Abstractions;
@@ -7,6 +6,7 @@ using Migration.Toolkit.Core.KX12.Contexts;
 using Migration.Toolkit.KXP.Models;
 
 namespace Migration.Toolkit.Core.KX12.Mappers;
+
 public class CmsConsentArchiveMapper : EntityMapperBase<KX12M.CmsConsentArchive, CmsConsentArchive>
 {
     public CmsConsentArchiveMapper(ILogger<CmsConsentArchiveMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext,

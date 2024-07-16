@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("COM_Supplier")]
 [Index("SupplierSiteId", Name = "IX_COM_Supplier_SupplierSiteID")]
-public partial class ComSupplier
+public class ComSupplier
 {
     [Key]
     [Column("SupplierID")]

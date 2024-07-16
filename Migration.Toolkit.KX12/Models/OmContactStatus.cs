@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("OM_ContactStatus")]
-public partial class OmContactStatus
+public class OmContactStatus
 {
     [Key]
     [Column("ContactStatusID")]

@@ -7,7 +7,7 @@ namespace Migration.Toolkit.K11.Models;
 
 [Table("COM_SKUFile")]
 [Index("FileSkuid", Name = "IX_COM_SKUFile_FileSKUID")]
-public partial class ComSkufile
+public class ComSkufile
 {
     [Key]
     [Column("FileID")]

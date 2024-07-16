@@ -8,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("CMS_EmailTemplate")]
 [Index("EmailTemplateName", "EmailTemplateSiteId", Name = "IX_CMS_EmailTemplate_EmailTemplateName_EmailTemplateSiteID")]
 [Index("EmailTemplateSiteId", Name = "IX_CMS_EmailTemplate_EmailTemplateSiteID")]
-public partial class CmsEmailTemplate
+public class CmsEmailTemplate
 {
     [Key]
     [Column("EmailTemplateID")]

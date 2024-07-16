@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("COM_InternalStatus")]
 [Index("InternalStatusSiteId", "InternalStatusDisplayName", "InternalStatusEnabled", Name = "IX_COM_InternalStatus_InternalStatusSiteID_InternalStatusDisplayName_InternalStatusEnabled")]
-public partial class ComInternalStatus
+public class ComInternalStatus
 {
     [Key]
     [Column("InternalStatusID")]

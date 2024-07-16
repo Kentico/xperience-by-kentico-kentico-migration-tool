@@ -1,21 +1,23 @@
-
 using System.Data;
 
 namespace Migration.Toolkit.Common.Services.BulkCopy;
+
 public record ValueInterceptorResult(object? Value = null, bool OverwriteValue = false, bool SkipDataRow = false)
 {
     public static ValueInterceptorResult DoNothing => new();
     public static ValueInterceptorResult SkipRow => new(null, false, true);
-    public static ValueInterceptorResult ReplaceValue(object? value) => new(value, true, false);
-};
+    public static ValueInterceptorResult ReplaceValue(object? value) => new(value, true);
+}
+
 public delegate ValueInterceptorResult ValueInterceptor(int columnOrdinal, string columnName, object value, Dictionary<string, object?> currentRow);
+
 public delegate void ValueInterceptingReaderSkippedRow(Dictionary<string, object?> current);
 
 public class ValueInterceptingReader : DataReaderProxyBase
 {
-    private readonly ValueInterceptor _valueInterceptor;
-    private readonly ValueInterceptingReaderSkippedRow? _skippedValueCallback;
     private readonly Dictionary<int, string> _columnOrdinals;
+    private readonly ValueInterceptingReaderSkippedRow? _skippedValueCallback;
+    private readonly ValueInterceptor _valueInterceptor;
 
     private Dictionary<int, object?> _overwrittenValues = [];
 
@@ -36,10 +38,9 @@ public class ValueInterceptingReader : DataReaderProxyBase
 
             bool skipCurrentDataRow = false;
             var currentRow = _columnOrdinals.ToDictionary(k => k.Value, v => base.GetValue(v.Key));
-            foreach (var (columnOrdinal, columnName) in _columnOrdinals)
+            foreach ((int columnOrdinal, string columnName) in _columnOrdinals)
             {
-
-                var (newValue, overwriteValue, skipDataRow) = _valueInterceptor.Invoke(columnOrdinal, columnName, base.GetValue(columnOrdinal), currentRow);
+                (object? newValue, bool overwriteValue, bool skipDataRow) = _valueInterceptor.Invoke(columnOrdinal, columnName, base.GetValue(columnOrdinal), currentRow);
                 if (skipDataRow)
                 {
                     skipCurrentDataRow = true;

@@ -9,7 +9,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("CMS_UserCulture")]
 [Index("CultureId", Name = "IX_CMS_UserCulture_CultureID")]
 [Index("SiteId", Name = "IX_CMS_UserCulture_SiteID")]
-public partial class CmsUserCulture
+public class CmsUserCulture
 {
     [Key]
     [Column("UserID")]

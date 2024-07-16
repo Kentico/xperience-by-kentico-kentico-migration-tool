@@ -11,7 +11,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("CustomerLastName", Name = "IX_COM_Customer_CustomerLastName")]
 [Index("CustomerSiteId", Name = "IX_COM_Customer_CustomerSiteID")]
 [Index("CustomerUserId", Name = "IX_COM_Customer_CustomerUserID")]
-public partial class ComCustomer
+public class ComCustomer
 {
     [Key]
     [Column("CustomerID")]

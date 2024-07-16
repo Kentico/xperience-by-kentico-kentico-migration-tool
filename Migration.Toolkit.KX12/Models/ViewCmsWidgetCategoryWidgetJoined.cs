@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Migration.Toolkit.KX12.Models;
 
 [Keyless]
-public partial class ViewCmsWidgetCategoryWidgetJoined
+public class ViewCmsWidgetCategoryWidgetJoined
 {
     [Column("ObjectID")]
     public int ObjectId { get; set; }

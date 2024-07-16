@@ -7,7 +7,7 @@ namespace Migration.Toolkit.KX13.Models;
 
 [Table("Newsletter_ClickedLink")]
 [Index("ClickedLinkNewsletterLinkId", Name = "IX_Newsletter_ClickedLink_ClickedLinkNewsletterLinkID")]
-public partial class NewsletterClickedLink
+public class NewsletterClickedLink
 {
     [Key]
     [Column("ClickedLinkID")]

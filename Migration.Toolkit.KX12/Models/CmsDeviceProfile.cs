@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("CMS_DeviceProfile")]
-public partial class CmsDeviceProfile
+public class CmsDeviceProfile
 {
     [Key]
     [Column("ProfileID")]
