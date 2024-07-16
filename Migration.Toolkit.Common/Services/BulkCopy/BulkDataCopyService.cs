@@ -1,11 +1,13 @@
-namespace Migration.Toolkit.Common.Services.BulkCopy;
 
 using System.Data;
 using System.Text;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Helpers;
 
+namespace Migration.Toolkit.Common.Services.BulkCopy;
 public record SqlColumn(string ColumnName, int OrdinalPosition);
 
 public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<BulkDataCopyService> logger)
@@ -14,7 +16,7 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
     {
         using var targetConnection = new SqlConnection(configuration.XbKConnectionString);
         using var command = targetConnection.CreateCommand();
-        var query = $"SELECT COUNT(*) FROM {tableName}";
+        string query = $"SELECT COUNT(*) FROM {tableName}";
         command.CommandText = query;
 
 
@@ -24,7 +26,7 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
 
     public bool CheckForTableColumnsDifferences(string tableName, Dictionary<string, string>? checkedColumns, out List<(string? sourceColumn, string? targetColumn)> columnsWithFailedCheck)
     {
-        var anyFailedColumnCheck = false;
+        bool anyFailedColumnCheck = false;
         var sourceTableColumns = GetSqlTableColumns(tableName, configuration.KxConnectionString)
             .Where(c => checkedColumns?.Keys.Any(k => k.Equals(c.ColumnName, StringComparison.InvariantCultureIgnoreCase)) ?? true)
             .Select(x => x.ColumnName).OrderBy(x => x);
@@ -41,7 +43,7 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
             false
         );
 
-        columnsWithFailedCheck = new List<(string sourceColumn, string targetColumn)>();
+        columnsWithFailedCheck = [];
         while (aligner.MoveNext())
         {
             switch (aligner.Current)
@@ -53,6 +55,8 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
                     columnsWithFailedCheck.Add((result.A, result.B));
                     logger.LogError("Table {Table} pairing source({SourceColumnName}) <> target({TargetColumnName}) has failed", tableName, result?.A, result?.B);
                     anyFailedColumnCheck = true;
+                    break;
+                default:
                     break;
             }
         }
@@ -88,13 +92,10 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
         // sqlBulkCopy.BulkCopyTimeout
 
         sqlBulkCopy.NotifyAfter = 100000;
-        sqlBulkCopy.SqlRowsCopied += (sender, args) =>
-        {
-            logger.LogInformation("Copy '{TableName}': Rows copied={Rows}", tableName, args.RowsCopied);
-        };
+        sqlBulkCopy.SqlRowsCopied += (sender, args) => logger.LogInformation("Copy '{TableName}': Rows copied={Rows}", tableName, args.RowsCopied);
 
 
-        var selectQuery = BuildSelectQuery(tableName, sourceColumns, orderBy).ToString();
+        string selectQuery = BuildSelectQuery(tableName, sourceColumns, orderBy).ToString();
         logger.LogTrace("Select QUERY: {Query}", selectQuery);
         sqlBulkCopy.DestinationTableName = tableName;
         // foreach (var (columnName, ordinalPosition) in sourceColumns)
@@ -177,9 +178,9 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
 
     private static StringBuilder BuildSelectQuery(string tableName, SqlColumn[] sourceColumns, string? orderBy)
     {
-        StringBuilder selectBuilder = new StringBuilder();
+        var selectBuilder = new StringBuilder();
         selectBuilder.Append("SELECT ");
-        for (var i = 0; i < sourceColumns.Length; i++)
+        for (int i = 0; i < sourceColumns.Length; i++)
         {
             var (columnName, ordinalPosition) = sourceColumns[i];
             selectBuilder.Append($"[{columnName}]");
@@ -190,7 +191,11 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
         }
 
         selectBuilder.Append($" FROM {tableName}");
-        if (orderBy != null) selectBuilder.Append($" ORDER BY {orderBy}");
+        if (orderBy != null)
+        {
+            selectBuilder.Append($" ORDER BY {orderBy}");
+        }
+
         return selectBuilder;
     }
 
@@ -207,7 +212,7 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
         sourceConnection.Open();
         using var reader = cmd.ExecuteReader();
 
-        var ordinal = 0;
+        int ordinal = 0;
 
         var allowedColumnsList = allowedColumns?.ToList();
         var columnFiler = allowedColumnsList != null && allowedColumnsList.Count != 0
@@ -216,7 +221,7 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
 
         while (reader.Read())
         {
-            var columnName = reader.GetString("COLUMN_NAME");
+            string columnName = reader.GetString("COLUMN_NAME");
             if (columnFiler(columnName))
             {
                 logger.LogTrace("[{Table}].{ColumnName} INCLUDED", tableName, columnName);

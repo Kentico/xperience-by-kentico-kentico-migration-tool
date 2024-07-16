@@ -1,11 +1,10 @@
-namespace Migration.Toolkit.Source.Contexts;
-
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Services.Ipc;
 using Migration.Toolkit.Source.Model;
 
+namespace Migration.Toolkit.Source.Contexts;
 public class SourceInstanceContext(
     IpcService ipcService,
     ILogger<SourceInstanceContext> logger,
@@ -18,10 +17,7 @@ public class SourceInstanceContext(
 
     public bool HasInfo => _cachedInfos.Count > 0 && _sourceInfoLoaded;
 
-    public bool IsQuerySourceInstanceEnabled()
-    {
-        return configuration.OptInFeatures?.QuerySourceInstanceApi?.Enabled ?? false;
-    }
+    public bool IsQuerySourceInstanceEnabled() => configuration.OptInFeatures?.QuerySourceInstanceApi?.Enabled ?? false;
 
     public async Task<bool> RequestSourceInstanceInfo()
     {
@@ -66,7 +62,7 @@ public class SourceInstanceContext(
 
     public List<EditingFormControlModel>? GetWidgetPropertyFormComponents(int siteId, string widgetIdentifier)
     {
-        var siteName =
+        string siteName =
             modelFacade.SelectById<ICmsSite>(siteId)?.SiteName
             ?? throw new InvalidOperationException($"Source site with SiteID '{siteId}' not exists");
 
@@ -75,7 +71,7 @@ public class SourceInstanceContext(
 
     public List<EditingFormControlModel>? GetPageTemplateFormComponents(int siteId, string pageTemplateIdentifier)
     {
-        var siteName =
+        string siteName =
             modelFacade.SelectById<ICmsSite>(siteId)?.SiteName
             ?? throw new InvalidOperationException($"Source site with SiteID '{siteId}' not exists");
 
@@ -84,7 +80,7 @@ public class SourceInstanceContext(
 
     public List<EditingFormControlModel>? GetSectionFormComponents(int siteId, string sectionIdentifier)
     {
-        var siteName =
+        string siteName =
             modelFacade.SelectById<ICmsSite>(siteId)?.SiteName
             ?? throw new InvalidOperationException($"Source site with SiteID '{siteId}' not exists");
 

@@ -1,13 +1,15 @@
-namespace Migration.Toolkit.Core.KX12.Mappers;
 
 using CMS.Globalization;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX12.Contexts;
 using Migration.Toolkit.KX12.Models;
 
-public class CountryInfoMapper : EntityMapperBase<KX12M.CmsCountry, CountryInfo>
+namespace Migration.Toolkit.Core.KX12.Mappers;
+public class CountryInfoMapper : EntityMapperBase<CmsCountry, CountryInfo>
 {
     public CountryInfoMapper(ILogger<CountryInfoMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : base(logger, pkContext, protocol)
     {

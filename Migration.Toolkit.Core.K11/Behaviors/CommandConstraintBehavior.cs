@@ -1,15 +1,15 @@
-namespace Migration.Toolkit.Core.K11.Behaviors;
 
 using MediatR;
-using Microsoft.Data.SqlClient;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Common;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.K11;
 using Migration.Toolkit.K11.Models;
 
+namespace Migration.Toolkit.Core.K11.Behaviors;
 public class CommandConstraintBehavior<TRequest, TResponse>(
     ILogger<CommandConstraintBehavior<TRequest, TResponse>> logger,
     IMigrationProtocol protocol,
@@ -25,7 +25,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
         {
             var k11Context = await k11ContextFactory.CreateDbContextAsync(cancellationToken);
 
-            var criticalCheckPassed = PerformChecks(request, k11Context);
+            bool criticalCheckPassed = PerformChecks(request, k11Context);
             if (!criticalCheckPassed)
             {
                 return (TResponse)(CommandResult)new CommandCheckFailedResult(criticalCheckPassed);
@@ -43,7 +43,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
 
     private bool PerformChecks(TRequest request, K11Context k11Context)
     {
-        var criticalCheckPassed = true;
+        bool criticalCheckPassed = true;
         var sourceSites = k11Context.CmsSites
             .Include(s => s.Cultures)
             .ToList();
@@ -63,11 +63,11 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
 
     private bool CheckSite(List<CmsSite> sourceSites, int sourceSiteId)
     {
-        var criticalCheckPassed = true;
+        bool criticalCheckPassed = true;
         if (sourceSites.All(s => s.SiteId != sourceSiteId))
         {
             var supportedSites = sourceSites.Select(x => new { x.SiteName, x.SiteId }).ToArray();
-            var supportedSitesStr = string.Join(", ", supportedSites.Select(x => x.ToString()));
+            string supportedSitesStr = string.Join(", ", supportedSites.Select(x => x.ToString()));
             logger.LogCritical("Unable to find site with ID '{SourceSiteId}'. Check --siteId parameter. Supported sites: {SupportedSites}", sourceSiteId,
                 supportedSitesStr);
             protocol.Append(HandbookReferences.CommandConstraintBroken("Site exists")
@@ -81,8 +81,8 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
 
     private bool CheckCulture(ICultureReliantCommand cultureReliantCommand, List<CmsSite> sourceSites)
     {
-        var criticalCheckPassed = true;
-        var cultureCode = cultureReliantCommand.CultureCode;
+        bool criticalCheckPassed = true;
+        string cultureCode = cultureReliantCommand.CultureCode;
         var siteCultureLookup = sourceSites
             .ToDictionary(x => x.SiteId, x => x.Cultures.Select(s => s.CultureCode.ToLowerInvariant()));
 
@@ -90,10 +90,10 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
         {
             if (siteCultureLookup.TryGetValue(site.SiteId, out var value))
             {
-                var siteCultures = value.ToArray();
+                string[] siteCultures = value.ToArray();
                 if (!siteCultures.Contains(cultureCode.ToLowerInvariant()))
                 {
-                    var supportedCultures = string.Join(", ", siteCultures);
+                    string supportedCultures = string.Join(", ", siteCultures);
                     logger.LogCritical("Unable to find culture '{Culture}' mapping to site '{SiteId}'. Check --culture parameter. Supported cultures for site: {SupportedCultures}", cultureCode,
                         site.SiteId, supportedCultures);
                     protocol.Append(HandbookReferences.CommandConstraintBroken("Culture is mapped to site")

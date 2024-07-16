@@ -1,15 +1,16 @@
-namespace Migration.Toolkit.Core.KX12.Behaviors;
 
 using MediatR;
-using Microsoft.Data.SqlClient;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KX12;
 using Migration.Toolkit.KX12.Context;
 
+namespace Migration.Toolkit.Core.KX12.Behaviors;
 public class CommandConstraintBehavior<TRequest, TResponse>(
     ILogger<CommandConstraintBehavior<TRequest, TResponse>> logger,
     IMigrationProtocol protocol,
@@ -24,7 +25,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
         {
             var kx12Context = await kx12ContextFactory.CreateDbContextAsync(cancellationToken);
 
-            var criticalCheckPassed = PerformChecks(request, kx12Context);
+            bool criticalCheckPassed = PerformChecks(request, kx12Context);
             if (!criticalCheckPassed)
             {
                 return (TResponse)(CommandResult)new CommandCheckFailedResult(criticalCheckPassed);
@@ -42,7 +43,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
 
     private bool PerformChecks(TRequest request, KX12Context KX12Context)
     {
-        var criticalCheckPassed = true;
+        bool criticalCheckPassed = true;
         const string supportedVersion = "12.0.20";
         if (SemanticVersion.TryParse(supportedVersion, out var minimalVersion))
         {
@@ -68,7 +69,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
 
     private bool CheckVersion(KX12Context KX12Context, SemanticVersion minimalVersion)
     {
-        var criticalCheckPassed = true;
+        bool criticalCheckPassed = true;
 
         #region Check conclusion methods
 
@@ -160,7 +161,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
 
         if (KX12Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == SettingsKeys.CMSHotfixDataVersion) is { } cmsHotfixDataVersion)
         {
-            if (int.TryParse(cmsHotfixDataVersion.KeyValue, out var version))
+            if (int.TryParse(cmsHotfixDataVersion.KeyValue, out int version))
             {
                 if (version < minimalVersion.Hotfix)
                 {
@@ -179,7 +180,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
 
         if (KX12Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == SettingsKeys.CMSHotfixVersion) is { } cmsHotfixVersion)
         {
-            if (int.TryParse(cmsHotfixVersion.KeyValue, out var version))
+            if (int.TryParse(cmsHotfixVersion.KeyValue, out int version))
             {
                 if (version < minimalVersion.Hotfix)
                 {
@@ -201,7 +202,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
 
     private bool CheckSite(List<KX12M.CmsSite> sourceSites, int sourceSiteId)
     {
-        var criticalCheckPassed = true;
+        bool criticalCheckPassed = true;
         if (sourceSites.All(s => s.SiteId != sourceSiteId))
         {
             var supportedSites = sourceSites.Select(x => new
@@ -209,7 +210,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
                 x.SiteName,
                 x.SiteId
             }).ToArray();
-            var supportedSitesStr = string.Join(", ", supportedSites.Select(x => x.ToString()));
+            string supportedSitesStr = string.Join(", ", supportedSites.Select(x => x.ToString()));
             logger.LogCritical("Unable to find site with ID '{SourceSiteId}'. Check --siteId parameter. Supported sites: {SupportedSites}", sourceSiteId,
                 supportedSitesStr);
             protocol.Append(HandbookReferences.CommandConstraintBroken("Site exists")
@@ -227,8 +228,8 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
 
     private bool CheckCulture(ICultureReliantCommand cultureReliantCommand, List<KX12M.CmsSite> sourceSites)
     {
-        var criticalCheckPassed = true;
-        var cultureCode = cultureReliantCommand.CultureCode;
+        bool criticalCheckPassed = true;
+        string cultureCode = cultureReliantCommand.CultureCode;
         var siteCultureLookup = sourceSites
             .ToDictionary(x => x.SiteId, x => x.Cultures.Select(s => s.CultureCode.ToLowerInvariant()));
 
@@ -236,10 +237,10 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
         {
             if (siteCultureLookup.TryGetValue(site.SiteId, out var value))
             {
-                var siteCultures = value.ToArray();
+                string[] siteCultures = value.ToArray();
                 if (!siteCultures.Contains(cultureCode.ToLowerInvariant()))
                 {
-                    var supportedCultures = string.Join(", ", siteCultures);
+                    string supportedCultures = string.Join(", ", siteCultures);
                     logger.LogCritical("Unable to find culture '{Culture}' mapping to site '{SiteId}'. Check --culture parameter. Supported cultures for site: {SupportedCultures}", cultureCode, site.SiteId, supportedCultures);
                     protocol.Append(HandbookReferences.CommandConstraintBroken("Culture is mapped to site")
                         .WithMessage("Check program argument '--culture'")

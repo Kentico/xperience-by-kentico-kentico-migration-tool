@@ -1,4 +1,3 @@
-namespace Migration.Toolkit.Source;
 
 using CMS.DataEngine;
 using CMS.FormEngine;
@@ -7,9 +6,13 @@ using CMS.Membership;
 using CMS.Modules;
 using CMS.OnlineForms;
 using CMS.Websites;
+
 using Kentico.Xperience.UMT;
+
 using MediatR;
+
 using Microsoft.Extensions.DependencyInjection;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
@@ -19,19 +22,16 @@ using Migration.Toolkit.Common.Services.Ipc;
 using Migration.Toolkit.KXP.Models;
 using Migration.Toolkit.Source.Behaviors;
 using Migration.Toolkit.Source.Contexts;
-using Migration.Toolkit.Source.Handlers;
 using Migration.Toolkit.Source.Helpers;
 using Migration.Toolkit.Source.Mappers;
 using Migration.Toolkit.Source.Model;
 using Migration.Toolkit.Source.Services;
 
+namespace Migration.Toolkit.Source;
 public static class KsCoreDiExtensions
 {
     public static IServiceProvider ServiceProvider { get; private set; } = null!;
-    public static void InitServiceProvider(IServiceProvider serviceProvider)
-    {
-        ServiceProvider = serviceProvider;
-    }
+    public static void InitServiceProvider(IServiceProvider serviceProvider) => ServiceProvider = serviceProvider;
 
     public static IServiceCollection UseKsToolkitCore(this IServiceCollection services)
     {
@@ -44,7 +44,7 @@ public static class KsCoreDiExtensions
 
         services.AddSingleton<ModelFacade>();
         services.AddSingleton<ISpoiledGuidContext, SpoiledGuidContext>();
-        services.AddSingleton<SpoiledGuidContext>(s => s.GetRequiredService<ISpoiledGuidContext>() as SpoiledGuidContext ?? throw new InvalidOperationException());
+        services.AddSingleton(s => s.GetRequiredService<ISpoiledGuidContext>() as SpoiledGuidContext ?? throw new InvalidOperationException());
 
         services.AddTransient<BulkDataCopyService>();
         services.AddTransient<CmsRelationshipService>();
@@ -53,7 +53,7 @@ public static class KsCoreDiExtensions
         services.AddScoped<PageTemplateMigrator>();
         services.AddScoped<ClassService>();
 
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Source.KsCoreDiExtensions).Assembly));
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(KsCoreDiExtensions).Assembly));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestHandlingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CommandConstraintBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(XbKApiContextBehavior<,>));

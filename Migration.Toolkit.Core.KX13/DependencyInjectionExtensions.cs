@@ -1,4 +1,3 @@
-namespace Migration.Toolkit.Core.KX13;
 
 using CMS.DataEngine;
 using CMS.FormEngine;
@@ -6,26 +5,27 @@ using CMS.Globalization;
 using CMS.MediaLibrary;
 using CMS.Membership;
 using CMS.Modules;
-using CMS.OnlineForms;
-using CMS.Websites;
+
 using Kentico.Xperience.UMT;
+
 using MediatR;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.Common.Services.BulkCopy;
-using Migration.Toolkit.Common.Services.Ipc;
 using Migration.Toolkit.Core.KX13.Behaviors;
 using Migration.Toolkit.Core.KX13.Contexts;
-using Migration.Toolkit.Core.KX13.Handlers;
 using Migration.Toolkit.Core.KX13.Helpers;
 using Migration.Toolkit.Core.KX13.Mappers;
 using Migration.Toolkit.Core.KX13.Services;
 using Migration.Toolkit.KXP.Models;
 
+namespace Migration.Toolkit.Core.KX13;
 public static class DependencyInjectionExtensions
 {
     public static IServiceCollection UseKx13ToolkitCore(this IServiceCollection services)
@@ -39,7 +39,7 @@ public static class DependencyInjectionExtensions
         services.AddTransient<CoupledDataService>();
         services.AddScoped<CountryMigrator>();
 
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(KX13.DependencyInjectionExtensions).Assembly));
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(DependencyInjectionExtensions).Assembly));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestHandlingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CommandConstraintBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(XbKApiContextBehavior<,>));

@@ -1,13 +1,16 @@
-namespace Migration.Toolkit.Core.KX13.Mappers;
 
 using System.Diagnostics;
+
 using CMS.DataEngine;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX13.Contexts;
 
-public class CmsSettingsKeyMapper : EntityMapperBase<Migration.Toolkit.KX13.Models.CmsSettingsKey, SettingsKeyInfo>
+namespace Migration.Toolkit.Core.KX13.Mappers;
+public class CmsSettingsKeyMapper : EntityMapperBase<KX13M.CmsSettingsKey, SettingsKeyInfo>
 {
     private const string SOURCE_KEY_NAME = "CMSDefaultUserID";
 
@@ -16,9 +19,9 @@ public class CmsSettingsKeyMapper : EntityMapperBase<Migration.Toolkit.KX13.Mode
 
     }
 
-    protected override SettingsKeyInfo CreateNewInstance(Toolkit.KX13.Models.CmsSettingsKey source, MappingHelper mappingHelper, AddFailure addFailure) => new();
+    protected override SettingsKeyInfo CreateNewInstance(KX13M.CmsSettingsKey source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
-    protected override SettingsKeyInfo MapInternal(Toolkit.KX13.Models.CmsSettingsKey source, SettingsKeyInfo target, bool newInstance,
+    protected override SettingsKeyInfo MapInternal(KX13M.CmsSettingsKey source, SettingsKeyInfo target, bool newInstance,
         MappingHelper mappingHelper, AddFailure addFailure)
     {
         if (newInstance)
@@ -48,14 +51,14 @@ public class CmsSettingsKeyMapper : EntityMapperBase<Migration.Toolkit.KX13.Mode
         switch (source.KeyName)
         {
             case SOURCE_KEY_NAME:
-                {
-                    target.KeyValue = int.TryParse(source.KeyValue, out var cmsDefaultUserId)
-                        ? mappingHelper.TranslateRequiredId<Toolkit.KX13.Models.CmsUser>(u => u.UserId, cmsDefaultUserId, out var targetCmsDefaultUserId)
-                            ? targetCmsDefaultUserId.ToString()
-                            : source.KeyValue
-                        : source.KeyValue;
-                    break;
-                }
+            {
+                target.KeyValue = int.TryParse(source.KeyValue, out int cmsDefaultUserId)
+                    ? mappingHelper.TranslateRequiredId<KX13M.CmsUser>(u => u.UserId, cmsDefaultUserId, out int targetCmsDefaultUserId)
+                        ? targetCmsDefaultUserId.ToString()
+                        : source.KeyValue
+                    : source.KeyValue;
+                break;
+            }
             default:
                 target.KeyValue = source.KeyValue;
                 break;

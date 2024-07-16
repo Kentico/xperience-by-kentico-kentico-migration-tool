@@ -1,8 +1,8 @@
-namespace Migration.Toolkit.Common.Helpers;
 
 using CMS.ContentEngine.Internal;
 using CMS.Websites.Internal;
 
+namespace Migration.Toolkit.Common.Helpers;
 /// <summary>
 /// Provides unique tree path.
 /// </summary>
@@ -31,25 +31,22 @@ internal class UniqueTreePathProvider : UniqueStringValueProviderBase
 
 
     ///<inheritdoc/>
-    protected override Task<bool> IsValueUnique(string value)
-    {
-        return treePathValidator.IsUnique(websiteChannelId, value);
-    }
+    protected override Task<bool> IsValueUnique(string value) => treePathValidator.IsUnique(websiteChannelId, value);
 
 
     ///<inheritdoc/>
     protected override string AddRandomSuffix(string source, string randomSuffix)
     {
-        var lastSegment = TreePathUtils.GetLastPathSegment(source);
-        var lastSegmentWithSuffix = $"{lastSegment}{randomSuffix}";
+        string lastSegment = TreePathUtils.GetLastPathSegment(source);
+        string lastSegmentWithSuffix = $"{lastSegment}{randomSuffix}";
 
-        var modifiedPath = $"{source}{randomSuffix}";
+        string modifiedPath = $"{source}{randomSuffix}";
 
         if (lastSegmentWithSuffix.Length > maxTreePathSegmentLength)
         {
-            var pathWithoutLastSegment = TreePathUtils.RemoveLastPathSegment(source);
+            string pathWithoutLastSegment = TreePathUtils.RemoveLastPathSegment(source);
 
-            var availableLastSegmentLength = maxTreePathSegmentLength - randomSuffix.Length;
+            int availableLastSegmentLength = maxTreePathSegmentLength - randomSuffix.Length;
 
             if (availableLastSegmentLength <= 0)
             {
@@ -57,7 +54,7 @@ internal class UniqueTreePathProvider : UniqueStringValueProviderBase
             }
             else
             {
-                var modifiedLastSegment = (lastSegment.Length > availableLastSegmentLength) ? lastSegment[..availableLastSegmentLength] : lastSegment;
+                string modifiedLastSegment = (lastSegment.Length > availableLastSegmentLength) ? lastSegment[..availableLastSegmentLength] : lastSegment;
 
                 modifiedPath = $"{pathWithoutLastSegment}/{modifiedLastSegment}{randomSuffix}";
             }
@@ -71,8 +68,5 @@ internal class UniqueTreePathProvider : UniqueStringValueProviderBase
     /// Ensures path with random suffix does not exceeds tree path length limit.
     /// </summary>
     /// <param name="path">Path.</param>
-    private string EnsureMaxTreePathLength(string path)
-    {
-        return path.Length > MaxLength ? path[..MaxLength] : path;
-    }
+    private string EnsureMaxTreePathLength(string path) => path.Length > MaxLength ? path[..MaxLength] : path;
 }

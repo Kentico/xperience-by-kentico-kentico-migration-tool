@@ -1,13 +1,16 @@
-namespace Migration.Toolkit.KXP.Api.Services.CmsClass;
 
 using System.Text.RegularExpressions;
+
 using CMS.DataEngine;
 using CMS.OnlineForms;
+
 using Migration.Toolkit.Common.Enumerations;
 using Migration.Toolkit.KXP.Api.Auxiliary;
-using FcText = Common.Enumerations.Kx13FormControls.UserControlForText;
-using FcLongText = Common.Enumerations.Kx13FormControls.UserControlForLongText;
 
+using FcLongText = Common.Enumerations.Kx13FormControls.UserControlForLongText;
+using FcText = Common.Enumerations.Kx13FormControls.UserControlForText;
+
+namespace Migration.Toolkit.KXP.Api.Services.CmsClass;
 public record FormComponentReplacement(string OldFormComponent, string NewFormComponent);
 
 public record DataTypeMigrationModel(

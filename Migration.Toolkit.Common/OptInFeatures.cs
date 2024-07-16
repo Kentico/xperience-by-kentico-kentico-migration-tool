@@ -1,8 +1,6 @@
-namespace Migration.Toolkit.Common;
-
-using System.Text.Json.Serialization;
 using Microsoft.Extensions.Configuration;
 
+namespace Migration.Toolkit.Common;
 // ReSharper disable once ClassNeverInstantiated.Global
 public class OptInFeatures
 {
@@ -20,7 +18,7 @@ public class AdvancedFeatureQuerySourceInstanceApi
     public bool Enabled { get; set; } = false;
 
     [ConfigurationKeyName(ConfigurationNames.Connections)]
-    public List<SourceInstanceInfo> Connections { get; set; } = new();
+    public List<SourceInstanceInfo> Connections { get; set; } = [];
 }
 
 // ReSharper disable once ClassNeverInstantiated.Global

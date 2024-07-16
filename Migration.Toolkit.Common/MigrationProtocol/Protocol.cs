@@ -1,16 +1,14 @@
-namespace Migration.Toolkit.Common.MigrationProtocol;
 
 using MediatR;
+
 using Migration.Toolkit.Common.Abstractions;
 
+namespace Migration.Toolkit.Common.MigrationProtocol;
 public class Protocol : IProtocol
 {
     private readonly IEnumerable<IMigrationProtocol> _protocols;
 
-    public Protocol(IEnumerable<IMigrationProtocol> protocols)
-    {
-        _protocols = protocols;
-    }
+    public Protocol(IEnumerable<IMigrationProtocol> protocols) => _protocols = protocols;
 
     public void MappedTarget<TTarget>(IModelMappingResult<TTarget> mapped)
     {

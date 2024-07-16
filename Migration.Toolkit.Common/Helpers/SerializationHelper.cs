@@ -1,10 +1,11 @@
-namespace Migration.Toolkit.Common.Helpers;
 
 using System.Collections;
 using System.Reflection;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
+namespace Migration.Toolkit.Common.Helpers;
 public class SerializationHelper
 {
     public class ShouldSerializeContractResolver : DefaultContractResolver
@@ -19,9 +20,7 @@ public class SerializationHelper
         }
     }
 
-    public static string SerializeOnlyNonComplexProperties<T>(T obj)
-    {
-        return JsonConvert.SerializeObject(obj, Formatting.Indented,
+    public static string SerializeOnlyNonComplexProperties<T>(T obj) => JsonConvert.SerializeObject(obj, Formatting.Indented,
             new JsonSerializerSettings
             {
                 ContractResolver = new ShouldSerializeContractResolver(),
@@ -29,5 +28,4 @@ public class SerializationHelper
                 DefaultValueHandling = DefaultValueHandling.Ignore,
                 MaxDepth = 1
             });
-    }
 }

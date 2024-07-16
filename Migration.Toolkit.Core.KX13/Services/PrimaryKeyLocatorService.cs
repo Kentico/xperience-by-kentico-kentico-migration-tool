@@ -1,11 +1,13 @@
-namespace Migration.Toolkit.Core.KX13.Services;
 
 using System.Linq.Expressions;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.KXP.Context;
 
+namespace Migration.Toolkit.Core.KX13.Services;
 public class PrimaryKeyLocatorService(
     ILogger<PrimaryKeyLocatorService> logger,
     IDbContextFactory<KxpContext> kxpContextFactory,
@@ -27,11 +29,11 @@ public class PrimaryKeyLocatorService(
         using var kx13Context = kx13ContextFactory.CreateDbContext();
 
         var sourceType = typeof(T);
-        var memberName = keyNameSelector.GetMemberName();
+        string memberName = keyNameSelector.GetMemberName();
 
         logger.LogTrace("Preload of entity {Entity} member {MemberName} mapping requested", sourceType.Name, memberName);
 
-        if (sourceType == typeof(Toolkit.KX13.Models.CmsUser) && memberName == nameof(KX13M.CmsUser.UserId))
+        if (sourceType == typeof(KX13M.CmsUser) && memberName == nameof(KX13M.CmsUser.UserId))
         {
             var sourceUsers = kx13Context.CmsUsers.Select(x => new { x.UserId, x.UserGuid, x.UserName }).ToList();
             var targetUsers = kxpContext.CmsUsers.Select(x => new { x.UserId, x.UserName, x.UserGuid }).ToList();
@@ -51,7 +53,7 @@ public class PrimaryKeyLocatorService(
             yield break;
         }
 
-        if (sourceType == typeof(Toolkit.KX13.Models.OmContact) && memberName == nameof(KX13M.OmContact.ContactId))
+        if (sourceType == typeof(KX13M.OmContact) && memberName == nameof(KX13M.OmContact.ContactId))
         {
             var source = kx13Context.OmContacts
                 .OrderBy(c => c.ContactCreated)
@@ -74,7 +76,7 @@ public class PrimaryKeyLocatorService(
             yield break;
         }
 
-        if (sourceType == typeof(Toolkit.KX13.Models.CmsState) && memberName == nameof(KX13M.CmsState.StateId))
+        if (sourceType == typeof(KX13M.CmsState) && memberName == nameof(KX13M.CmsState.StateId))
         {
             var source = kx13Context.CmsStates.Select(x => new { x.StateId, x.StateName }).ToList();
             var target = kxpContext.CmsStates.Select(x => new { x.StateId, x.StateName }).ToList();
@@ -93,7 +95,7 @@ public class PrimaryKeyLocatorService(
             yield break;
         }
 
-        if (sourceType == typeof(Toolkit.KX13.Models.CmsCountry) && memberName == nameof(KX13M.CmsCountry.CountryId))
+        if (sourceType == typeof(KX13M.CmsCountry) && memberName == nameof(KX13M.CmsCountry.CountryId))
         {
             var source = kx13Context.CmsCountries.Select(x => new { x.CountryId, x.CountryName }).ToList();
             var target = kxpContext.CmsCountries.Select(x => new { x.CountryId, x.CountryName }).ToList();
@@ -131,14 +133,14 @@ public class PrimaryKeyLocatorService(
                 return true;
             }
 
-            if (sourceType == typeof(Toolkit.KX13.Models.CmsClass))
+            if (sourceType == typeof(KX13M.CmsClass))
             {
                 var kx13Guid = kx13Context.CmsClasses.Where(c => c.ClassId == sourceId).Select(x => x.ClassGuid).Single();
                 targetId = kxpContext.CmsClasses.Where(x => x.ClassGuid == kx13Guid).Select(x => x.ClassId).Single();
                 return true;
             }
 
-            if (sourceType == typeof(Toolkit.KX13.Models.CmsUser))
+            if (sourceType == typeof(KX13M.CmsUser))
             {
                 var kx13User = kx13Context.CmsUsers.Where(c => c.UserId == sourceId).Select(x => new { x.UserGuid, x.UserName }).Single();
                 targetId = kxpContext.CmsUsers.Where(x => x.UserGuid == kx13User.UserGuid || x.UserName == kx13User.UserName).Select(x => x.UserId).Single();
@@ -152,35 +154,35 @@ public class PrimaryKeyLocatorService(
                 return true;
             }
 
-            if (sourceType == typeof(Toolkit.KX13.Models.CmsSite))
+            if (sourceType == typeof(KX13M.CmsSite))
             {
                 var kx13Guid = kx13Context.CmsSites.Where(c => c.SiteId == sourceId).Select(x => x.SiteGuid).Single();
                 targetId = kxpContext.CmsChannels.Where(x => x.ChannelGuid == kx13Guid).Select(x => x.ChannelId).Single();
                 return true;
             }
 
-            if (sourceType == typeof(Toolkit.KX13.Models.CmsState))
+            if (sourceType == typeof(KX13M.CmsState))
             {
-                var kx13CodeName = kx13Context.CmsStates.Where(c => c.StateId == sourceId).Select(x => x.StateName).Single();
+                string kx13CodeName = kx13Context.CmsStates.Where(c => c.StateId == sourceId).Select(x => x.StateName).Single();
                 targetId = kxpContext.CmsStates.Where(x => x.StateName == kx13CodeName).Select(x => x.StateId).Single();
                 return true;
             }
 
-            if (sourceType == typeof(Toolkit.KX13.Models.CmsCountry))
+            if (sourceType == typeof(KX13M.CmsCountry))
             {
-                var kx13CodeName = kx13Context.CmsCountries.Where(c => c.CountryId == sourceId).Select(x => x.CountryName).Single();
+                string kx13CodeName = kx13Context.CmsCountries.Where(c => c.CountryId == sourceId).Select(x => x.CountryName).Single();
                 targetId = kxpContext.CmsCountries.Where(x => x.CountryName == kx13CodeName).Select(x => x.CountryId).Single();
                 return true;
             }
 
-            if (sourceType == typeof(Toolkit.KX13.Models.OmContactStatus))
+            if (sourceType == typeof(KX13M.OmContactStatus))
             {
-                var kx13Guid = kx13Context.OmContactStatuses.Where(c => c.ContactStatusId == sourceId).Select(x => x.ContactStatusName).Single();
+                string kx13Guid = kx13Context.OmContactStatuses.Where(c => c.ContactStatusId == sourceId).Select(x => x.ContactStatusName).Single();
                 targetId = kxpContext.OmContactStatuses.Where(x => x.ContactStatusName == kx13Guid).Select(x => x.ContactStatusId).Single();
                 return true;
             }
 
-            if (sourceType == typeof(Toolkit.KX13.Models.OmContact))
+            if (sourceType == typeof(KX13M.OmContact))
             {
                 var kx13Guid = kx13Context.OmContacts.Where(c => c.ContactId == sourceId).Select(x => x.ContactGuid).Single();
                 targetId = kxpContext.OmContacts.Where(x => x.ContactGuid == kx13Guid).Select(x => x.ContactId).Single();

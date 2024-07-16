@@ -1,7 +1,7 @@
-namespace Migration.Toolkit.Common.Services.BulkCopy;
 
 using System.Data;
 
+namespace Migration.Toolkit.Common.Services.BulkCopy;
 public class FilteredDbDataReader<TReader>(IDataReader innerReader, Func<IDataReader, bool> includePredicate) : DataReaderProxyBase(innerReader)
     where TReader : IDataReader
 {

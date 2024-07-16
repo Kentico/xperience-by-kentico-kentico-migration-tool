@@ -1,14 +1,15 @@
-namespace Migration.Toolkit.Core.K11.Services;
 
 using System.Linq.Expressions;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
-using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.K11;
 using Migration.Toolkit.K11.Models;
 using Migration.Toolkit.KXP.Context;
 
+namespace Migration.Toolkit.Core.K11.Services;
 public class PrimaryKeyLocatorService(ILogger<PrimaryKeyLocatorService> logger,
         IDbContextFactory<KxpContext> kxpContextFactory,
         IDbContextFactory<K11Context> k11ContextFactory)
@@ -29,7 +30,7 @@ public class PrimaryKeyLocatorService(ILogger<PrimaryKeyLocatorService> logger,
         using var k11Context = k11ContextFactory.CreateDbContext();
 
         var sourceType = typeof(T);
-        var memberName = keyNameSelector.GetMemberName();
+        string memberName = keyNameSelector.GetMemberName();
 
         logger.LogTrace("Preload of entity {Entity} member {MemberName} mapping requested", sourceType.Name, memberName);
 
@@ -165,21 +166,21 @@ public class PrimaryKeyLocatorService(ILogger<PrimaryKeyLocatorService> logger,
 
             if (sourceType == typeof(CmsState))
             {
-                var k11CodeName = KX12Context.CmsStates.Where(c => c.StateId == sourceId).Select(x => x.StateName).Single();
+                string k11CodeName = KX12Context.CmsStates.Where(c => c.StateId == sourceId).Select(x => x.StateName).Single();
                 targetId = kxpContext.CmsStates.Where(x => x.StateName == k11CodeName).Select(x => x.StateId).Single();
                 return true;
             }
 
             if (sourceType == typeof(CmsCountry))
             {
-                var k11CodeName = KX12Context.CmsCountries.Where(c => c.CountryId == sourceId).Select(x => x.CountryName).Single();
+                string k11CodeName = KX12Context.CmsCountries.Where(c => c.CountryId == sourceId).Select(x => x.CountryName).Single();
                 targetId = kxpContext.CmsCountries.Where(x => x.CountryName == k11CodeName).Select(x => x.CountryId).Single();
                 return true;
             }
 
             if (sourceType == typeof(OmContactStatus))
             {
-                var k11Guid = KX12Context.OmContactStatuses.Where(c => c.ContactStatusId == sourceId).Select(x => x.ContactStatusName).Single();
+                string k11Guid = KX12Context.OmContactStatuses.Where(c => c.ContactStatusId == sourceId).Select(x => x.ContactStatusName).Single();
                 targetId = kxpContext.OmContactStatuses.Where(x => x.ContactStatusName == k11Guid).Select(x => x.ContactStatusId).Single();
                 return true;
             }

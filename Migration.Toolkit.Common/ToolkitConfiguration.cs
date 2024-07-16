@@ -1,11 +1,6 @@
-using System.Linq.Expressions;
-using System.Text.Json.Serialization;
-
-namespace Migration.Toolkit.Common;
-
-using System.Runtime.Serialization;
 using Microsoft.Extensions.Configuration;
 
+namespace Migration.Toolkit.Common;
 /// <summary>
 /// Autofix enum
 /// </summary>
@@ -69,7 +64,7 @@ public class ToolkitConfiguration
     #endregion
 
     [ConfigurationKeyName(ConfigurationNames.EntityConfigurations)]
-    public EntityConfigurations EntityConfigurations { get; set; } = new();
+    public EntityConfigurations EntityConfigurations { get; set; } = [];
 
     [ConfigurationKeyName(ConfigurationNames.MigrateOnlyMediaFileInfo)]
     public bool? MigrateOnlyMediaFileInfo { get; set; } = true;

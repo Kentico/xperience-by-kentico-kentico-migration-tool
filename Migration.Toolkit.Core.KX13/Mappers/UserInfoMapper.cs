@@ -1,15 +1,18 @@
-namespace Migration.Toolkit.Core.KX13.Mappers;
 
 using System.Data;
+
 using CMS.Membership;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX13.Contexts;
 using Migration.Toolkit.KXP.Api;
 
+namespace Migration.Toolkit.Core.KX13.Mappers;
 public class UserInfoMapper : EntityMapperBase<KX13M.CmsUser, UserInfo>
 {
     private readonly ILogger<UserInfoMapper> _logger;
@@ -29,9 +32,9 @@ public class UserInfoMapper : EntityMapperBase<KX13M.CmsUser, UserInfo>
         _toolkitConfiguration = toolkitConfiguration;
     }
 
-    protected override UserInfo CreateNewInstance(Toolkit.KX13.Models.CmsUser source, MappingHelper mappingHelper, AddFailure addFailure) => new();
+    protected override UserInfo CreateNewInstance(KX13M.CmsUser source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
-    protected override UserInfo MapInternal(Toolkit.KX13.Models.CmsUser source, UserInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override UserInfo MapInternal(KX13M.CmsUser source, UserInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         if (!newInstance && source.UserGuid != target.UserGUID)
         {
@@ -69,7 +72,7 @@ public class UserInfoMapper : EntityMapperBase<KX13M.CmsUser, UserInfo>
         {
             try
             {
-                var query =
+                string query =
                     $"SELECT {string.Join(", ", customizedFields.Select(x => x.FieldName))} FROM {UserInfo.TYPEINFO.ClassStructureInfo.TableName} WHERE {UserInfo.TYPEINFO.ClassStructureInfo.IDColumn} = @id";
 
                 using var conn = new SqlConnection(_toolkitConfiguration.KxConnectionString);

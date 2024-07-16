@@ -1,14 +1,16 @@
-namespace Migration.Toolkit.Core.KX12.Mappers;
 
 using CMS.FormEngine;
 using CMS.OnlineForms;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX12.Contexts;
 using Migration.Toolkit.KXP.Models;
 
+namespace Migration.Toolkit.Core.KX12.Mappers;
 public class CmsFormMapper : EntityMapperBase<KX12M.CmsForm, BizFormInfo>
 {
     public CmsFormMapper(
@@ -39,7 +41,7 @@ public class CmsFormMapper : EntityMapperBase<KX12M.CmsForm, BizFormInfo>
         target.FormLogActivity = source.FormLogActivity.UseKenticoDefault();
         target.FormBuilderLayout = source.FormBuilderLayout;
 
-        if (mappingHelper.TranslateRequiredId<KX12M.CmsClass>(c => c.ClassId, source.FormClassId, out var formClassId))
+        if (mappingHelper.TranslateRequiredId<KX12M.CmsClass>(c => c.ClassId, source.FormClassId, out int formClassId))
         {
             target.FormClassID = formClassId;
         }
@@ -48,7 +50,7 @@ public class CmsFormMapper : EntityMapperBase<KX12M.CmsForm, BizFormInfo>
     }
 }
 
-public class CmsFormMapperEf : EntityMapperBase<KX12M.CmsForm, Migration.Toolkit.KXP.Models.CmsForm>
+public class CmsFormMapperEf : EntityMapperBase<KX12M.CmsForm, CmsForm>
 {
     public CmsFormMapperEf(ILogger<CmsFormMapperEf> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : base(logger, pkContext, protocol)
     {
@@ -79,7 +81,7 @@ public class CmsFormMapperEf : EntityMapperBase<KX12M.CmsForm, Migration.Toolkit
         target.FormLogActivity = source.FormLogActivity ?? false;
         target.FormBuilderLayout = source.FormBuilderLayout;
 
-        if (mappingHelper.TranslateRequiredId<KX12M.CmsClass>(c => c.ClassId, source.FormClassId, out var classId))
+        if (mappingHelper.TranslateRequiredId<KX12M.CmsClass>(c => c.ClassId, source.FormClassId, out int classId))
         {
             target.FormClassId = classId;
         }

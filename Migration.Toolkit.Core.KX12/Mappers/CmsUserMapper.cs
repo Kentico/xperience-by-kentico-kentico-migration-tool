@@ -1,11 +1,12 @@
-namespace Migration.Toolkit.Core.KX12.Mappers;
 
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX12.Contexts;
 using Migration.Toolkit.KXP.Models;
 
+namespace Migration.Toolkit.Core.KX12.Mappers;
 public class CmsUserMapper : EntityMapperBase<KX12M.CmsUser, CmsUser>
 {
     private readonly ILogger<CmsUserMapper> _logger;
@@ -14,10 +15,7 @@ public class CmsUserMapper : EntityMapperBase<KX12M.CmsUser, CmsUser>
         ILogger<CmsUserMapper> logger,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol
-    ) : base(logger, primaryKeyMappingContext, protocol)
-    {
-        _logger = logger;
-    }
+    ) : base(logger, primaryKeyMappingContext, protocol) => _logger = logger;
 
     protected override CmsUser CreateNewInstance(KX12M.CmsUser tSourceEntity, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
@@ -48,7 +46,7 @@ public class CmsUserMapper : EntityMapperBase<KX12M.CmsUser, CmsUser>
 
         foreach (var sourceCmsUserRole in source.CmsUserRoles)
         {
-            if (mappingHelper.TranslateRequiredId<KX12M.CmsRole>(r => r.RoleId, sourceCmsUserRole.RoleId, out var targetRoleId))
+            if (mappingHelper.TranslateRequiredId<KX12M.CmsRole>(r => r.RoleId, sourceCmsUserRole.RoleId, out int targetRoleId))
             {
                 if (target.CmsUserRoles.All(x => x.RoleId != targetRoleId))
                 {

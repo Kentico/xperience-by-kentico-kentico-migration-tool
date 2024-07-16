@@ -1,11 +1,12 @@
-namespace Migration.Toolkit.Source.Handlers;
 
 using MediatR;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Source.Model;
 using Migration.Toolkit.Source.Services;
 
+namespace Migration.Toolkit.Source.Handlers;
 // ReSharper disable once UnusedMember.Global [implicit use]
 public class MigrateAttachmentsCommandHandler(
     ModelFacade modelFacade,
@@ -26,7 +27,9 @@ public class MigrateAttachmentsCommandHandler(
 
             var (_, canContinue, _, _) = attachmentMigrator.MigrateAttachment(ksCmsAttachment);
             if (!canContinue)
+            {
                 break;
+            }
         }
 
         return new GenericCommandResult();

@@ -1,4 +1,3 @@
-namespace Migration.Toolkit.Core.KX12;
 
 using CMS.DataEngine;
 using CMS.FormEngine;
@@ -6,10 +5,14 @@ using CMS.Globalization;
 using CMS.MediaLibrary;
 using CMS.Membership;
 using CMS.Modules;
+
 using Kentico.Xperience.UMT;
+
 using MediatR;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
@@ -17,12 +20,12 @@ using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.Common.Services.BulkCopy;
 using Migration.Toolkit.Core.KX12.Behaviors;
 using Migration.Toolkit.Core.KX12.Contexts;
-using Migration.Toolkit.Core.KX12.Handlers;
 using Migration.Toolkit.Core.KX12.Helpers;
 using Migration.Toolkit.Core.KX12.Mappers;
 using Migration.Toolkit.Core.KX12.Services;
 using Migration.Toolkit.KXP.Models;
 
+namespace Migration.Toolkit.Core.KX12;
 public static class Kx12CoreDiExtensions
 {
     public static IServiceCollection UseKx12ToolkitCore(this IServiceCollection services)

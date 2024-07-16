@@ -1,15 +1,18 @@
-namespace Migration.Toolkit.Core.KX12.Mappers;
 
 using System.Text;
 using System.Xml.Linq;
 using System.Xml.XPath;
+
 using CMS.ContentEngine;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX12.Contexts;
 using Migration.Toolkit.KXP.Models;
 
+namespace Migration.Toolkit.Core.KX12.Mappers;
 public class CmsConsentMapper : EntityMapperBase<KX12M.CmsConsent, CmsConsent>
 {
     public CmsConsentMapper(ILogger<CmsConsentMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : base(logger, pkContext, protocol)
@@ -36,7 +39,11 @@ static file class ConsentContentPatcher
 {
     public static string PatchConsentContent(string content, ContentLanguageInfo defaultContentLanguage)
     {
-        if (string.IsNullOrWhiteSpace(content)) return content;
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return content;
+        }
+
         XDocument doc;
         try
         {

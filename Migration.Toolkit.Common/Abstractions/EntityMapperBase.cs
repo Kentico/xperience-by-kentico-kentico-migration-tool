@@ -1,9 +1,11 @@
-namespace Migration.Toolkit.Common.Abstractions;
 
 using System.Linq.Expressions;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.MigrationProtocol;
 
+namespace Migration.Toolkit.Common.Abstractions;
 public abstract class EntityMapperBase<TSourceEntity, TTargetEntity> : IEntityMapper<TSourceEntity, TTargetEntity>
 {
     private readonly ILogger _logger;
@@ -28,12 +30,12 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity> : IEntityMa
             return HandbookReferences.SourceEntityIsNull<TSourceEntity>().AsFailure<TTargetEntity>().Log(_logger, Protocol);
         }
 
-        var newInstance = false;
+        bool newInstance = false;
         if (target is null)
         {
             _logger.LogTrace("Null target supplied, creating new instance");
             target = CreateNewInstance(source, mappingHelper, failures.Add);
-            if (target == null || object.Equals(target, default) || failures.Count > 0)
+            if (target == null || Equals(target, default) || failures.Count > 0)
             {
                 return new AggregatedResult<TTargetEntity>(failures).Log(_logger, Protocol);
             }
@@ -130,7 +132,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity> : IEntityMa
             translatedId = primaryKeyMappingContext.MapFromSourceOrNull(keyNameSelector, sourceId);
             if (!translatedId.HasValue)
             {
-                var memberName = keyNameSelector.GetMemberName();
+                string memberName = keyNameSelector.GetMemberName();
                 var failure = HandbookReferences
                         .MissingRequiredDependency<TKeyOwner>(memberName, sourceId)
                         .NeedsManualAction()
@@ -162,7 +164,7 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity> : IEntityMa
                 return true;
             }
 
-            var memberName = keyNameSelector.GetMemberName();
+            string memberName = keyNameSelector.GetMemberName();
             var failure = HandbookReferences
                     .MissingRequiredDependency<TKeyOwner>(memberName, sourceId)
                     .NeedsManualAction()

@@ -1,19 +1,20 @@
-namespace Migration.Toolkit.Source.Helpers;
 
 using CMS.DataEngine;
 using CMS.Globalization;
 using CMS.MediaLibrary;
 using CMS.Membership;
 using CMS.Modules;
+
 using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.Source.Model;
 
+namespace Migration.Toolkit.Source.Helpers;
 public class Printer
 {
     public static string PrintKxpModelInfo<T>(T model)
     {
-        var currentTypeName = ReflectionHelper<T>.CurrentType.Name;
+        string currentTypeName = ReflectionHelper<T>.CurrentType.Name;
 
         return model switch
         {
@@ -34,7 +35,7 @@ public class Printer
 
     public static string GetEntityIdentityPrint<T>(T model, bool printType = true)
     {
-        var currentTypeName = ReflectionHelper<T>.CurrentType.Name;
+        string currentTypeName = ReflectionHelper<T>.CurrentType.Name;
 
         string Fallback(object obj) => printType
             ? $"{currentTypeName}({SerializationHelper.SerializeOnlyNonComplexProperties(obj)})"
@@ -88,36 +89,18 @@ public class Printer
         };
     }
 
-    public static string GetEntityIdentityPrints<T>(IEnumerable<T> models, string separator = "|")
-    {
-        return string.Join(separator, models.Select(m => GetEntityIdentityPrint(m, false)));
-    }
+    public static string GetEntityIdentityPrints<T>(IEnumerable<T> models, string separator = "|") => string.Join(separator, models.Select(m => GetEntityIdentityPrint(m, false)));
 
-    public static string PrintEnumValues<TEnum>(string separator) where TEnum : struct, Enum
-    {
-        return string.Join(separator, Enum.GetValues<TEnum>());
-    }
+    public static string PrintEnumValues<TEnum>(string separator) where TEnum : struct, Enum => string.Join(separator, Enum.GetValues<TEnum>());
 }
 
 public class PrintService : IPrintService
 {
-    public string PrintKxpModelInfo<T>(T model)
-    {
-        return Printer.PrintKxpModelInfo(model);
-    }
+    public string PrintKxpModelInfo<T>(T model) => Printer.PrintKxpModelInfo(model);
 
-    public string GetEntityIdentityPrint<T>(T model, bool printType = true)
-    {
-        return Printer.GetEntityIdentityPrint<T>(model, printType);
-    }
+    public string GetEntityIdentityPrint<T>(T model, bool printType = true) => Printer.GetEntityIdentityPrint(model, printType);
 
-    public string GetEntityIdentityPrints<T>(IEnumerable<T> models, string separator = "|")
-    {
-        return Printer.GetEntityIdentityPrints(models, separator);
-    }
+    public string GetEntityIdentityPrints<T>(IEnumerable<T> models, string separator = "|") => Printer.GetEntityIdentityPrints(models, separator);
 
-    public string PrintEnumValues<TEnum>(string separator) where TEnum : struct, Enum
-    {
-        return Printer.PrintEnumValues<TEnum>(separator);
-    }
+    public string PrintEnumValues<TEnum>(string separator) where TEnum : struct, Enum => Printer.PrintEnumValues<TEnum>(separator);
 }

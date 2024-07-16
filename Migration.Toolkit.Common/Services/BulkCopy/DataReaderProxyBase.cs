@@ -1,15 +1,12 @@
-namespace Migration.Toolkit.Common.Services.BulkCopy;
 
 using System.Data;
 
+namespace Migration.Toolkit.Common.Services.BulkCopy;
 public class DataReaderProxyBase : IDataReader
 {
     protected readonly IDataReader _innerReader;
 
-    public DataReaderProxyBase(IDataReader innerReader)
-    {
-        _innerReader = innerReader;
-    }
+    public DataReaderProxyBase(IDataReader innerReader) => _innerReader = innerReader;
 
     public virtual int FieldCount => _innerReader.FieldCount;
     public virtual int Depth => _innerReader.Depth;

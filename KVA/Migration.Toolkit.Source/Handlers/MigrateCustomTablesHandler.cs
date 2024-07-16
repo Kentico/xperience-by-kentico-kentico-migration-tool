@@ -1,12 +1,15 @@
-namespace Migration.Toolkit.Source.Handlers;
 
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Xml.Linq;
+
 using CMS.DataEngine;
 using CMS.Modules;
+
 using MediatR;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Helpers;
@@ -17,6 +20,7 @@ using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Helpers;
 using Migration.Toolkit.Source.Model;
 
+namespace Migration.Toolkit.Source.Handlers;
 public class MigrateCustomTablesHandler(
     ILogger<MigrateCustomTablesHandler> logger,
     ModelFacade modelFacade,
@@ -41,7 +45,10 @@ public class MigrateCustomTablesHandler(
 
     private async Task<ResourceInfo> EnsureCustomTablesResource()
     {
-        if (_customTableResource != null) return _customTableResource;
+        if (_customTableResource != null)
+        {
+            return _customTableResource;
+        }
 
         const string resourceName = "customtables";
         var resourceGuid = GuidV5.NewNameBased(_resourceGuidNamespace, resourceName);

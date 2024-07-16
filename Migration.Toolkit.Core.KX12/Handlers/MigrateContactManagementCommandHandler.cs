@@ -1,11 +1,13 @@
-namespace Migration.Toolkit.Core.KX12.Handlers;
 
 using CMS.Activities;
 using CMS.ContactManagement;
 using CMS.ContentEngine;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
@@ -18,6 +20,7 @@ using Migration.Toolkit.KX12.Models;
 using Migration.Toolkit.KXP.Api;
 using Migration.Toolkit.KXP.Context;
 
+namespace Migration.Toolkit.Core.KX12.Handlers;
 public class MigrateContactManagementCommandHandler(
     ILogger<MigrateContactManagementCommandHandler> logger,
     IDbContextFactory<KxpContext> kxpContextFactory,
@@ -38,8 +41,15 @@ public class MigrateContactManagementCommandHandler(
     {
         countryMigrator.MigrateCountriesAndStates();
 
-        if (MigrateContacts() is { } ccr) return Task.FromResult(ccr);
-        if (MigrateContactActivities() is { } acr) return Task.FromResult(acr);
+        if (MigrateContacts() is { } ccr)
+        {
+            return Task.FromResult(ccr);
+        }
+
+        if (MigrateContactActivities() is { } acr)
+        {
+            return Task.FromResult(acr);
+        }
 
         return Task.FromResult<CommandResult>(new GenericCommandResult());
     }
@@ -117,7 +127,7 @@ public class MigrateContactManagementCommandHandler(
             50000,
             requiredColumnsForContactMigration.Keys.ToList(),
             ContactValueInterceptor,
-            current => { logger.LogError("Contact skipped due error, contact: {Contact}", PrintHelper.PrintDictionary(current)); },
+            current => logger.LogError("Contact skipped due error, contact: {Contact}", PrintHelper.PrintDictionary(current)),
             "ContactID"
         );
 
@@ -159,22 +169,25 @@ public class MigrateContactManagementCommandHandler(
                 case (true, var id):
                     return ValueInterceptorResult.ReplaceValue(id);
                 case { Success: false }:
+                {
+                    // try search member
+                    if (keyMappingContext.MapSourceKey<CmsUser, KXP.Models.CmsMember, int?>(
+                            s => s.UserId,
+                            s => s.UserGuid,
+                            sourceUserId,
+                            t => t.MemberId,
+                            t => t.MemberGuid
+                        ) is { Success: true, Mapped: { } memberId })
                     {
-                        // try search member
-                        if (keyMappingContext.MapSourceKey<CmsUser, KXP.Models.CmsMember, int?>(
-                                s => s.UserId,
-                                s => s.UserGuid,
-                                sourceUserId,
-                                t => t.MemberId,
-                                t => t.MemberGuid
-                            ) is { Success: true, Mapped: { } memberId })
-                        {
-                            return ValueInterceptorResult.ReplaceValue(memberId);
-                        }
-                        protocol.Append(HandbookReferences.MissingRequiredDependency<KXP.Models.CmsUser>(columnName, value)
-                            .WithData(currentRow));
-                        return ValueInterceptorResult.SkipRow;
+                        return ValueInterceptorResult.ReplaceValue(memberId);
                     }
+                    protocol.Append(HandbookReferences.MissingRequiredDependency<KXP.Models.CmsUser>(columnName, value)
+                        .WithData(currentRow));
+                    return ValueInterceptorResult.SkipRow;
+                }
+
+                default:
+                    break;
             }
         }
 
@@ -185,11 +198,14 @@ public class MigrateContactManagementCommandHandler(
                 case (true, var id):
                     return ValueInterceptorResult.ReplaceValue(id);
                 case { Success: false }:
-                    {
-                        protocol.Append(HandbookReferences.MissingRequiredDependency<KXP.Models.CmsState>(columnName, value)
-                            .WithData(currentRow));
-                        return ValueInterceptorResult.SkipRow;
-                    }
+                {
+                    protocol.Append(HandbookReferences.MissingRequiredDependency<KXP.Models.CmsState>(columnName, value)
+                        .WithData(currentRow));
+                    return ValueInterceptorResult.SkipRow;
+                }
+
+                default:
+                    break;
             }
         }
 
@@ -200,11 +216,14 @@ public class MigrateContactManagementCommandHandler(
                 case (true, var id):
                     return ValueInterceptorResult.ReplaceValue(id);
                 case { Success: false }:
-                    {
-                        protocol.Append(HandbookReferences.MissingRequiredDependency<KXP.Models.CmsCountry>(columnName, value)
-                            .WithData(currentRow));
-                        return ValueInterceptorResult.SkipRow;
-                    }
+                {
+                    protocol.Append(HandbookReferences.MissingRequiredDependency<KXP.Models.CmsCountry>(columnName, value)
+                        .WithData(currentRow));
+                    return ValueInterceptorResult.SkipRow;
+                }
+
+                default:
+                    break;
             }
         }
 
@@ -264,7 +283,7 @@ public class MigrateContactManagementCommandHandler(
             50000,
             requiredColumnsForContactMigration,
             ActivityValueInterceptor,
-            current => { logger.LogError("Contact activity skipped due error, activity: {Activity}", PrintHelper.PrintDictionary(current)); },
+            current => logger.LogError("Contact activity skipped due error, activity: {Activity}", PrintHelper.PrintDictionary(current)),
             "ActivityID"
         );
 
@@ -284,10 +303,10 @@ public class MigrateContactManagementCommandHandler(
 
     private ValueInterceptorResult ActivityValueInterceptor(int columnOrdinal, string columnName, object value, Dictionary<string, object?> currentRow)
     {
-        if (columnName.Equals(nameof(KX12M.OmActivity.ActivitySiteId), StringComparison.InvariantCultureIgnoreCase) &&
+        if (columnName.Equals(nameof(OmActivity.ActivitySiteId), StringComparison.InvariantCultureIgnoreCase) &&
             value is int sourceActivitySiteId)
         {
-            var result = keyMappingContext.MapSourceKey<KX12M.CmsSite, Toolkit.KXP.Models.CmsChannel, int?>(
+            var result = keyMappingContext.MapSourceKey<CmsSite, KXP.Models.CmsChannel, int?>(
                 s => s.SiteId,
                 s => s.SiteGuid,
                 sourceActivitySiteId.NullIfZero(),
@@ -299,30 +318,33 @@ public class MigrateContactManagementCommandHandler(
                 case (true, var id):
                     return ValueInterceptorResult.ReplaceValue(id ?? 0);
                 case { Success: false }:
+                {
+                    switch (toolkitConfiguration.UseOmActivitySiteRelationAutofix ?? AutofixEnum.Error)
                     {
-                        switch (toolkitConfiguration.UseOmActivitySiteRelationAutofix ?? AutofixEnum.Error)
-                        {
-                            case AutofixEnum.DiscardData:
-                                logger.LogTrace("Autofix (ActivitySiteId={ActivitySiteId} not exists) => discard data", sourceActivitySiteId);
-                                return ValueInterceptorResult.SkipRow;
-                            case AutofixEnum.AttemptFix:
-                                logger.LogTrace("Autofix (ActivitySiteId={ActivitySiteId} not exists) => ActivityNodeId=0", sourceActivitySiteId);
-                                return ValueInterceptorResult.ReplaceValue(0);
-                            case AutofixEnum.Error:
-                            default: //error
-                                protocol.Append(HandbookReferences
-                                    .MissingRequiredDependency<KXP.Models.CmsChannel>(columnName, value)
-                                    .WithData(currentRow)
-                                );
-                                return ValueInterceptorResult.SkipRow;
-                        }
+                        case AutofixEnum.DiscardData:
+                            logger.LogTrace("Autofix (ActivitySiteId={ActivitySiteId} not exists) => discard data", sourceActivitySiteId);
+                            return ValueInterceptorResult.SkipRow;
+                        case AutofixEnum.AttemptFix:
+                            logger.LogTrace("Autofix (ActivitySiteId={ActivitySiteId} not exists) => ActivityNodeId=0", sourceActivitySiteId);
+                            return ValueInterceptorResult.ReplaceValue(0);
+                        case AutofixEnum.Error:
+                        default: //error
+                            protocol.Append(HandbookReferences
+                                .MissingRequiredDependency<KXP.Models.CmsChannel>(columnName, value)
+                                .WithData(currentRow)
+                            );
+                            return ValueInterceptorResult.SkipRow;
                     }
+                }
+
+                default:
+                    break;
             }
         }
 
         if (columnName.Equals(nameof(OmActivity.ActivityNodeId), StringComparison.InvariantCultureIgnoreCase) && value is int activityNodeId)
         {
-            if (currentRow.TryGetValue(nameof(OmActivity.ActivitySiteId), out var mSiteId) && mSiteId is int siteId)
+            if (currentRow.TryGetValue(nameof(OmActivity.ActivitySiteId), out object? mSiteId) && mSiteId is int siteId)
             {
                 if (spoiledGuidContext.GetNodeGuid(siteId, activityNodeId) is { } nodeGuid)
                 {
@@ -358,8 +380,5 @@ public class MigrateContactManagementCommandHandler(
 
     #endregion
 
-    public void Dispose()
-    {
-        _kxpContext.Dispose();
-    }
+    public void Dispose() => _kxpContext.Dispose();
 }

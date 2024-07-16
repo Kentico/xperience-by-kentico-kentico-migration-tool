@@ -1,8 +1,9 @@
-namespace Migration.Toolkit.Common.MigrationProtocol;
 
 using Microsoft.Data.SqlClient;
+
 using Migration.Toolkit.Common.Helpers;
 
+namespace Migration.Toolkit.Common.MigrationProtocol;
 public static class HandbookReferences
 {
     #region "Warnings - nothing needs to be done"
@@ -23,10 +24,10 @@ public static class HandbookReferences
     public static HandbookReference TemporaryAttachmentMigrationIsNotSupported => new("TemporaryAttachmentMigrationIsNotSupported");
 
     public static HandbookReference LinkedDataAlreadyMaterializedInTargetInstance =>
-        new HandbookReference("LinkedDataAlreadyMaterializedInTargetInstance");
+        new("LinkedDataAlreadyMaterializedInTargetInstance");
 
     public static HandbookReference DataAlreadyExistsInTargetInstance =>
-        new HandbookReference("DataAlreadyExistsInTargetInstance");
+        new("DataAlreadyExistsInTargetInstance");
 
     #endregion
 
@@ -106,7 +107,7 @@ public static class HandbookReferences
         new HandbookReference("NotSupportedSkip").WithData(new { Type = ReflectionHelper<TSource>.CurrentType.Name });
 
     public static HandbookReference NotCurrentlySupportedSkip() =>
-        new HandbookReference("NotCurrentlySupportedSkip");
+        new("NotCurrentlySupportedSkip");
 
     public static HandbookReference InvalidSourceData<TSource>() => new HandbookReference("InvalidSourceData")
         .NeedsManualAction()

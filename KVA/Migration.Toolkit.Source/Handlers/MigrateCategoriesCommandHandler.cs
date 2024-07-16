@@ -1,23 +1,29 @@
-namespace Migration.Toolkit.Source.Handlers;
 
 using System.Collections;
+
 using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
 using CMS.DataEngine;
 using CMS.FormEngine;
+
 using Kentico.Xperience.UMT.Model;
 using Kentico.Xperience.UMT.Services;
+
 using MediatR;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.Source.Mappers;
 using Migration.Toolkit.Source.Model;
 using Migration.Toolkit.Source.Services;
+
 using Newtonsoft.Json;
 
+namespace Migration.Toolkit.Source.Handlers;
 public class MigrateCategoriesCommandHandler(
     ILogger<MigrateCategoriesCommandHandler> logger,
     ModelFacade modelFacade,
@@ -29,7 +35,7 @@ public class MigrateCategoriesCommandHandler(
 {
     public async Task<CommandResult> Handle(MigrateCategoriesCommand request, CancellationToken cancellationToken)
     {
-        var taxonomyName = "Categories";
+        string taxonomyName = "Categories";
         var result = await importer.ImportAsync(new TaxonomyModel
         {
             TaxonomyName = taxonomyName,
@@ -41,7 +47,7 @@ public class MigrateCategoriesCommandHandler(
 
         if (result.Imported is TaxonomyInfo taxonomy)
         {
-            var query = """
+            string query = """
                         SELECT C.ClassName, C.ClassGuid, C.ClassID
                         FROM View_CMS_Tree_Joined [TJ]
                                  JOIN dbo.CMS_DocumentCategory [CDC] on [TJ].DocumentID = [CDC].DocumentID
@@ -58,8 +64,8 @@ public class MigrateCategoriesCommandHandler(
             });
 
             var skippedClasses = new List<int>();
-            Guid schemaGuid = Guid.Empty;
-            var categoryFieldName = "Category_Legacy";
+            var schemaGuid = Guid.Empty;
+            string categoryFieldName = "Category_Legacy";
             foreach (var classWithCategoryUsage in classesWithCategories)
             {
                 var targetDataClass = DataClassInfoProvider.ProviderObject.Get(classWithCategoryUsage.ClassGuid);
@@ -173,9 +179,7 @@ public class MigrateCategoriesCommandHandler(
         return new GenericCommandResult();
     }
 
-    private Guid EnsureReusableFieldSchema(TaxonomyInfo taxonomy, string categoryFieldName, string categoryFieldDisplayName)
-    {
-        return reusableSchemaService.EnsureReusableFieldSchema(
+    private Guid EnsureReusableFieldSchema(TaxonomyInfo taxonomy, string categoryFieldName, string categoryFieldDisplayName) => reusableSchemaService.EnsureReusableFieldSchema(
             "categories_container",
             "Categories container",
             "Container for legacy categories",
@@ -194,5 +198,4 @@ public class MigrateCategoriesCommandHandler(
                     { "TaxonomyGroup", $"[\"{taxonomy.TaxonomyGUID}\"]" }
                 }
             });
-    }
 }

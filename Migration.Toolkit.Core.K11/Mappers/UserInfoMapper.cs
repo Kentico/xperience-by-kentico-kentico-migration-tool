@@ -1,9 +1,11 @@
-namespace Migration.Toolkit.Core.K11.Mappers;
 
 using System.Data;
+
 using CMS.Membership;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
@@ -11,6 +13,7 @@ using Migration.Toolkit.Core.K11.Contexts;
 using Migration.Toolkit.K11.Models;
 using Migration.Toolkit.KXP.Api;
 
+namespace Migration.Toolkit.Core.K11.Mappers;
 public class UserInfoMapper(ILogger<UserInfoMapper> logger,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol,
@@ -52,7 +55,7 @@ public class UserInfoMapper(ILogger<UserInfoMapper> logger,
         {
             try
             {
-                var query =
+                string query =
                     $"SELECT {string.Join(", ", customizedFields.Select(x => x.FieldName))} FROM {UserInfo.TYPEINFO.ClassStructureInfo.TableName} WHERE {UserInfo.TYPEINFO.ClassStructureInfo.IDColumn} = @id";
 
                 using var conn = new SqlConnection(toolkitConfiguration.KxConnectionString);

@@ -1,9 +1,11 @@
-namespace Migration.Toolkit.KXP.Api.Services.CmsClass;
 
 using System.Text.RegularExpressions;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 
+namespace Migration.Toolkit.KXP.Api.Services.CmsClass;
 public class FieldMigrationService // shall be singleton to cache necessary data
 {
     private readonly ILogger<FieldMigrationService> _logger;

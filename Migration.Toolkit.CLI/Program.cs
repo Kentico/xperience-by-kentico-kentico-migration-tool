@@ -1,26 +1,29 @@
 using System.Reflection;
+
 using MediatR;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.CLI;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.Common.Services;
-using Migration.Toolkit.Core;
 using Migration.Toolkit.Core.K11;
+using Migration.Toolkit.Core.KX12;
+using Migration.Toolkit.Core.KX13;
+using Migration.Toolkit.K11;
 using Migration.Toolkit.KX12;
 using Migration.Toolkit.KX13;
 using Migration.Toolkit.KXP;
 using Migration.Toolkit.KXP.Api;
 using Migration.Toolkit.KXP.Context;
-using Migration.Toolkit.Core.KX12;
-using Migration.Toolkit.Core.KX13;
-using Migration.Toolkit.K11;
 using Migration.Toolkit.Source;
+
 using static Migration.Toolkit.Common.Helpers.ConsoleHelper;
 
 EnableVirtualTerminalProcessing();
@@ -35,7 +38,7 @@ var config = new ConfigurationBuilder()
     ;
 
 var validationErrors = ConfigurationValidator.GetValidationErrors(config);
-var anyValidationErrors = false;
+bool anyValidationErrors = false;
 foreach (var (validationMessageType, message, recommendedFix) in validationErrors)
 {
     switch (validationMessageType)
@@ -66,6 +69,8 @@ foreach (var (validationMessageType, message, recommendedFix) in validationError
                 Console.WriteLine();
             }
 
+            break;
+        default:
             break;
     }
 }
@@ -109,37 +114,37 @@ try
     switch (VersionHelper.GetInstanceVersion(conn))
     {
         case { Major: 11 }:
-            {
-                services.UseK11DbContext(settings);
-                services.UseK11ToolkitCore();
-                Console.WriteLine($@"Source instance {Green($"version 11")} detected.");
-                break;
-            }
+        {
+            services.UseK11DbContext(settings);
+            services.UseK11ToolkitCore();
+            Console.WriteLine($@"Source instance {Green($"version 11")} detected.");
+            break;
+        }
         case { Major: 12 }:
-            {
-                services.UseKx12DbContext(settings);
-                services.UseKx12ToolkitCore();
-                Console.WriteLine($@"Source instance {Green($"version 12")} detected");
-                break;
-            }
+        {
+            services.UseKx12DbContext(settings);
+            services.UseKx12ToolkitCore();
+            Console.WriteLine($@"Source instance {Green($"version 12")} detected");
+            break;
+        }
         case { Major: 13 }:
-            {
-                services.UseKx13DbContext(settings);
-                services.UseKx13ToolkitCore();
-                Console.WriteLine($@"Source instance {Green("version 13")} detected");
-                break;
-            }
+        {
+            services.UseKx13DbContext(settings);
+            services.UseKx13ToolkitCore();
+            Console.WriteLine($@"Source instance {Green("version 13")} detected");
+            break;
+        }
         case { Major: { } version }:
-            {
-                Console.WriteLine($@"Source instance {Green($"version {version}")} detected. This instance is not supported");
-                break;
-            }
+        {
+            Console.WriteLine($@"Source instance {Green($"version {version}")} detected. This instance is not supported");
+            break;
+        }
         default:
-            {
-                Console.WriteLine(
-                    $@"{Red("Parsing of source instance version failed")}, please check connection string and if source instance settings key with key name 'CMSDBVersion' is correctly filled.");
-                return;
-            }
+        {
+            Console.WriteLine(
+                $@"{Red("Parsing of source instance version failed")}, please check connection string and if source instance settings key with key name 'CMSDBVersion' is correctly filled.");
+            return;
+        }
     }
 }
 catch (Exception ex)
@@ -169,7 +174,7 @@ var mediatr = scope.ServiceProvider.GetRequiredService<IMediator>();
 var kxpContext = scope.ServiceProvider.GetRequiredService<IDbContextFactory<KxpContext>>().CreateDbContext();
 
 var argsQ = new Queue<string>(args);
-var bypassDependencyCheck = false;
+bool bypassDependencyCheck = false;
 var commands = commandParser.Parse(argsQ, ref bypassDependencyCheck);
 
 kxpContext.Dispose();
@@ -178,7 +183,7 @@ kxpContext.Dispose();
 commands = commands.OrderBy(x => x.Rank).ToList();
 
 var satisfiedDependencies = new HashSet<Type>();
-var dependenciesSatisfied = true;
+bool dependenciesSatisfied = true;
 if (!bypassDependencyCheck)
 {
     foreach (var command in commands)
@@ -189,8 +194,8 @@ if (!bypassDependencyCheck)
         {
             if (!satisfiedDependencies.Contains(commandDependency))
             {
-                var cmdMoniker = commandType.GetProperty("Moniker", BindingFlags.Static | BindingFlags.Public)?.GetValue(null);
-                var cmdMonikerNeeded = commandDependency.GetProperty("Moniker", BindingFlags.Static | BindingFlags.Public)?.GetValue(null);
+                object? cmdMoniker = commandType.GetProperty("Moniker", BindingFlags.Static | BindingFlags.Public)?.GetValue(null);
+                object? cmdMonikerNeeded = commandDependency.GetProperty("Moniker", BindingFlags.Static | BindingFlags.Public)?.GetValue(null);
 
                 dependenciesSatisfied = false;
 

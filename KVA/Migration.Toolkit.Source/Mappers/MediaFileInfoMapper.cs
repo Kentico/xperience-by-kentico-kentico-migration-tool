@@ -1,20 +1,21 @@
-namespace Migration.Toolkit.Source.Mappers;
 
 using System.Data;
+
 using CMS.Base;
 using CMS.MediaLibrary;
-using CMS.Membership;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Api;
-using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Helpers;
 using Migration.Toolkit.Source.Model;
 
+namespace Migration.Toolkit.Source.Mappers;
 public record MediaFileInfoMapperSource(IMediaFile MediaFile, int TargetLibraryId, IUploadedFile? File, string? LibrarySubFolder,
     bool MigrateOnlyMediaFileInfo);
 
@@ -61,7 +62,7 @@ public class MediaFileInfoMapper(
 
         target.FileLibraryID = targetLibraryId;
 
-        var createdByUserId = AdminUserHelper.MapTargetAdminUser(
+        int? createdByUserId = AdminUserHelper.MapTargetAdminUser(
             mediaFile.FileCreatedByUserID,
             CMSActionContext.CurrentUser.UserID,
             () => addFailure(HandbookReferences
@@ -72,7 +73,7 @@ public class MediaFileInfoMapper(
         );
         target.SetValue(nameof(target.FileCreatedByUserID), createdByUserId);
 
-        var modifiedByUserId = AdminUserHelper.MapTargetAdminUser(
+        int? modifiedByUserId = AdminUserHelper.MapTargetAdminUser(
             mediaFile.FileModifiedByUserID,
             CMSActionContext.CurrentUser.UserID,
             () => addFailure(HandbookReferences
@@ -109,11 +110,14 @@ public class MediaFileInfoMapper(
     private void MigrateCustomizedFields(MediaFileInfo target, IMediaFile sourceMediaFile)
     {
         var customizedFields = classFacade.GetCustomizedFieldInfos(MediaFileInfo.TYPEINFO.ObjectClassName).ToList();
-        if (customizedFields.Count <= 0) return;
+        if (customizedFields.Count <= 0)
+        {
+            return;
+        }
 
         try
         {
-            var query =
+            string query =
                 $"SELECT {string.Join(", ", customizedFields.Select(x => x.FieldName))} FROM {MediaFileInfo.TYPEINFO.ClassStructureInfo.TableName} WHERE {MediaFileInfo.TYPEINFO.ClassStructureInfo.IDColumn} = @id";
 
             using var conn = new SqlConnection(toolkitConfiguration.KxConnectionString);

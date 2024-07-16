@@ -1,11 +1,12 @@
-namespace Migration.Toolkit.Core.K11.Mappers;
 
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.K11.Contexts;
 using Migration.Toolkit.KXP.Models;
 
+namespace Migration.Toolkit.Core.K11.Mappers;
 public class OmContactGroupMapper(ILogger<OmContactGroupMapper> logger,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol)

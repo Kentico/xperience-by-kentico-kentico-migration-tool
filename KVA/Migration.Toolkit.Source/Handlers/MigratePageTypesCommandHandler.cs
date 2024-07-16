@@ -1,10 +1,12 @@
-namespace Migration.Toolkit.Source.Handlers;
 
 using CMS.ContentEngine;
 using CMS.DataEngine;
+
 using MediatR;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Helpers;
@@ -16,6 +18,7 @@ using Migration.Toolkit.Source.Helpers;
 using Migration.Toolkit.Source.Model;
 using Migration.Toolkit.Source.Services;
 
+namespace Migration.Toolkit.Source.Handlers;
 public class MigratePageTypesCommandHandler(
     ILogger<MigratePageTypesCommandHandler> logger,
     IEntityMapper<ICmsClass, DataClassInfo> dataClassMapper,

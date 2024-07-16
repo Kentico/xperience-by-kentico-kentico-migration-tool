@@ -1,14 +1,16 @@
-namespace Migration.Toolkit.Core.KX12.Mappers;
 
 using CMS.Base;
 using CMS.MediaLibrary;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX12.Contexts;
 using Migration.Toolkit.Core.KX12.Helpers;
 using Migration.Toolkit.KX12.Models;
 
+namespace Migration.Toolkit.Core.KX12.Mappers;
 public record CmsAttachmentMapperSource(CmsAttachment Attachment, int TargetLibraryId, IUploadedFile File, string LibrarySubFolder,
     CmsDocument? AttachmentDocument);
 
@@ -20,11 +22,9 @@ public class CmsAttachmentMapper : EntityMapperBase<CmsAttachmentMapperSource, M
     {
     }
 
-    protected override MediaFileInfo? CreateNewInstance(CmsAttachmentMapperSource source, MappingHelper mappingHelper, AddFailure addFailure)
-    {
+    protected override MediaFileInfo? CreateNewInstance(CmsAttachmentMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) =>
         // library name is generated with site name in it
-        return new MediaFileInfo(source.File, source.TargetLibraryId, source.LibrarySubFolder, 0, 0, 0);
-    }
+        new MediaFileInfo(source.File, source.TargetLibraryId, source.LibrarySubFolder, 0, 0, 0);
 
     protected override MediaFileInfo MapInternal(CmsAttachmentMapperSource args, MediaFileInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {

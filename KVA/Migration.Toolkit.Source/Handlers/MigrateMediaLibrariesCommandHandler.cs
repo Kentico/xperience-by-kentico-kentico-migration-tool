@@ -1,12 +1,15 @@
-namespace Migration.Toolkit.Source.Handlers;
 
 using System.Collections.Immutable;
+
 using CMS.Base;
 using CMS.MediaLibrary;
+
 using MediatR;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
@@ -18,6 +21,7 @@ using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Mappers;
 using Migration.Toolkit.Source.Model;
 
+namespace Migration.Toolkit.Source.Handlers;
 public class MigrateMediaLibrariesCommandHandler(
     ILogger<MigrateMediaLibrariesCommandHandler> logger,
     IDbContextFactory<KxpContext> kxpContextFactory,
@@ -156,10 +160,10 @@ public class MigrateMediaLibrariesCommandHandler(
             return new LoadMediaFileResult(false, null);
         }
 
-        var filePath = Path.Combine(sourceMediaLibraryPath, relativeFilePath);
+        string filePath = Path.Combine(sourceMediaLibraryPath, relativeFilePath);
         if (File.Exists(filePath))
         {
-            var data = File.ReadAllBytes(filePath);
+            byte[] data = File.ReadAllBytes(filePath);
             var dummyFile = DummyUploadedFile.FromByteArray(data, contentType, data.LongLength, Path.GetFileName(filePath));
             return new LoadMediaFileResult(true, dummyFile);
         }
@@ -175,7 +179,7 @@ public class MigrateMediaLibrariesCommandHandler(
             foreach (var (ksMediaLibrary, ksSite, targetMediaLibrary) in migratedMediaLibraries)
             {
                 string? sourceMediaLibraryPath = null;
-                var loadMediaFileData = false;
+                bool loadMediaFileData = false;
                 if (!toolkitConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(true) &&
                     !string.IsNullOrWhiteSpace(toolkitConfiguration.KxCmsDirPath))
                 {
@@ -200,7 +204,7 @@ public class MigrateMediaLibrariesCommandHandler(
                         }
                     }
 
-                    var librarySubfolder = Path.GetDirectoryName(ksMediaFile.FilePath);
+                    string? librarySubfolder = Path.GetDirectoryName(ksMediaFile.FilePath);
 
                     var kxoMediaFile = mediaFileFacade.GetMediaFile(ksMediaFile.FileGUID);
 
@@ -258,8 +262,5 @@ public class MigrateMediaLibrariesCommandHandler(
         }
     }
 
-    public void Dispose()
-    {
-        _kxpContext.Dispose();
-    }
+    public void Dispose() => _kxpContext.Dispose();
 }

@@ -1,8 +1,9 @@
-namespace Migration.Toolkit.Source;
 
 using System.Data;
+
 using Migration.Toolkit.Common;
 
+namespace Migration.Toolkit.Source;
 public interface ISourceModel<out T>
 {
     static abstract bool IsAvailable(SemanticVersion version);

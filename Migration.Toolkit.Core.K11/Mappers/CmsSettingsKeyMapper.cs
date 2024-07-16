@@ -1,13 +1,16 @@
-namespace Migration.Toolkit.Core.K11.Mappers;
 
 using System.Diagnostics;
+
 using CMS.DataEngine;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.K11.Contexts;
 using Migration.Toolkit.K11.Models;
 
+namespace Migration.Toolkit.Core.K11.Mappers;
 public class CmsSettingsKeyMapper(ILogger<CmsSettingsKeyMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : EntityMapperBase<CmsSettingsKey, SettingsKeyInfo>(logger, pkContext, protocol)
 {
     private const string SOURCE_KEY_NAME = "CMSDefaultUserID";
@@ -44,14 +47,14 @@ public class CmsSettingsKeyMapper(ILogger<CmsSettingsKeyMapper> logger, PrimaryK
         switch (source.KeyName)
         {
             case SOURCE_KEY_NAME:
-                {
-                    target.KeyValue = int.TryParse(source.KeyValue, out var cmsDefaultUserId)
-                        ? mappingHelper.TranslateRequiredId<CmsUser>(u => u.UserId, cmsDefaultUserId, out var targetCmsDefaultUserId)
-                            ? targetCmsDefaultUserId.ToString()
-                            : source.KeyValue
-                        : source.KeyValue;
-                    break;
-                }
+            {
+                target.KeyValue = int.TryParse(source.KeyValue, out int cmsDefaultUserId)
+                    ? mappingHelper.TranslateRequiredId<CmsUser>(u => u.UserId, cmsDefaultUserId, out int targetCmsDefaultUserId)
+                        ? targetCmsDefaultUserId.ToString()
+                        : source.KeyValue
+                    : source.KeyValue;
+                break;
+            }
             default:
                 target.KeyValue = source.KeyValue;
                 break;

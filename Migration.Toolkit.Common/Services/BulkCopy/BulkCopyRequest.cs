@@ -1,7 +1,7 @@
-namespace Migration.Toolkit.Common.Services.BulkCopy;
 
 using System.Data;
 
+namespace Migration.Toolkit.Common.Services.BulkCopy;
 /// <summary>
 /// Request definition for bulk copy service
 /// </summary>

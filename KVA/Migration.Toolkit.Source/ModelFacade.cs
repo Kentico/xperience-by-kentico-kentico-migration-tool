@@ -1,10 +1,11 @@
-namespace Migration.Toolkit.Source;
 
 using System.Runtime.CompilerServices;
-using CMS.DataEngine;
+
 using Microsoft.Data.SqlClient;
+
 using Migration.Toolkit.Common;
 
+namespace Migration.Toolkit.Source;
 public class ModelFacade(ToolkitConfiguration configuration)
 {
     private SemanticVersion? _version;
@@ -95,7 +96,11 @@ public class ModelFacade(ToolkitConfiguration configuration)
 
     public T? SelectById<T>(int? id) where T : ISourceModel<T>
     {
-        if (!id.HasValue) return default;
+        if (!id.HasValue)
+        {
+            return default;
+        }
+
         _version ??= SelectVersion();
         using var conn = GetConnection();
         conn.Open();
@@ -125,7 +130,7 @@ public class ModelFacade(ToolkitConfiguration configuration)
         conn.Open();
         var cmd = conn.CreateCommand();
         cmd.CommandText = $"SELECT {T.GuidColumnName} FROM {T.TableName} WHERE {T.GetPrimaryKeyName(_version)}={id}";
-        var ret = cmd.ExecuteScalar();
+        object ret = cmd.ExecuteScalar();
         if (ret is Guid guid)
         {
             objectGuid = guid;
@@ -150,7 +155,7 @@ public class ModelFacade(ToolkitConfiguration configuration)
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT KeyValue FROM CMS_SettingsKey WHERE KeyName LIKE 'CMSDataVersion'";
 
-        var cmsVersion = "";
+        string cmsVersion = "";
         if (cmd.ExecuteScalar() is string cmsDbVersion)
         {
             cmsVersion += cmsDbVersion;
@@ -176,10 +181,7 @@ public class ModelFacade(ToolkitConfiguration configuration)
             : throw new InvalidOperationException("Unable to determine source instance version");
     }
 
-    private SqlConnection GetConnection()
-    {
-        return new SqlConnection(configuration.KxConnectionString);
-    }
+    private SqlConnection GetConnection() => new SqlConnection(configuration.KxConnectionString);
 
     public string HashPath(string path)
     {

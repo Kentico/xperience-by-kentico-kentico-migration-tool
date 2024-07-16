@@ -1,10 +1,12 @@
-namespace Migration.Toolkit.Core.K11.Services;
 
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.K11;
 
+namespace Migration.Toolkit.Core.K11.Services;
 public class TableReflectionService
 {
     private readonly ILogger<TableReflectionService> _logger;
@@ -29,14 +31,14 @@ public class TableReflectionService
             return lookups;
         });
 
-        this._tableNameLookup = tableNameLookup;
+        _tableNameLookup = tableNameLookup;
     }
 
     public Type GetSourceTableTypeByTableName(string tableName)
     {
         if (!_tableNameLookup.ContainsKey(tableName))
         {
-            var joinedKeys = string.Join(", ", _tableNameLookup.Keys);
+            string joinedKeys = string.Join(", ", _tableNameLookup.Keys);
             _logger.LogError("Invalid table name, use one of following: {TableNames}", joinedKeys);
             throw new KeyNotFoundException($"Invalid table name, use one of following: {joinedKeys}");
         }

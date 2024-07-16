@@ -1,11 +1,11 @@
-namespace Migration.Toolkit.Source.Services;
 
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Common;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Services.Ipc;
 using Migration.Toolkit.Source.Contexts;
 
+namespace Migration.Toolkit.Source.Services;
 public class ModuleLoader(
     IpcService ipc,
     SourceInstanceContext sourceInstanceContext,
@@ -19,7 +19,7 @@ public class ModuleLoader(
         {
             if (sourceInstanceContext.IsQuerySourceInstanceEnabled())
             {
-                var ipcConfigured = await ipc.IsConfiguredAsync();
+                bool ipcConfigured = await ipc.IsConfiguredAsync();
                 if (ipcConfigured)
                 {
                     await sourceInstanceContext.RequestSourceInstanceInfo();

@@ -9,8 +9,8 @@ public static class ReflectionHelper<T>
 
     static ReflectionHelper()
     {
-        var i = 0;
-        PropertyGetterMaps = new Dictionary<string, ObjectPropertyGetterMap>();
+        int i = 0;
+        PropertyGetterMaps = [];
         foreach (var propertyInfo in CurrentType.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly))
         {
             if (PropertyGetterMaps.ContainsKey(propertyInfo.Name))
@@ -26,7 +26,7 @@ public static class ReflectionHelper<T>
             });
         }
 
-        StaticPropertyGetterMaps = new Dictionary<string, ObjectPropertyGetterMap>();
+        StaticPropertyGetterMaps = [];
         foreach (var propertyInfo in CurrentType.GetProperties(BindingFlags.Public | BindingFlags.Static))
         {
             if (StaticPropertyGetterMaps.ContainsKey(propertyInfo.Name))
@@ -78,7 +78,7 @@ public static class ReflectionHelper<T>
 
     public static bool TryGetPropertyValue(T obj, string propertyName, StringComparison propNameComparison, out object? value)
     {
-        var propName = PropertyGetterMaps.Keys.FirstOrDefault(x => x.Equals(propertyName, propNameComparison));
+        string? propName = PropertyGetterMaps.Keys.FirstOrDefault(x => x.Equals(propertyName, propNameComparison));
         if (propName == null || !PropertyGetterMaps.ContainsKey(propName))
         {
             value = null;
@@ -116,10 +116,7 @@ public class ReflectionHelper
 {
     public Type CurrentType { get; }
 
-    public ReflectionHelper(Type type)
-    {
-        CurrentType = type;
-    }
+    public ReflectionHelper(Type type) => CurrentType = type;
 
     public List<TAttribute> GetAttributes<TAttribute>() where TAttribute : Attribute => Attribute
         .GetCustomAttributes(CurrentType).Aggregate(new List<TAttribute>(), (list, attribute) =>

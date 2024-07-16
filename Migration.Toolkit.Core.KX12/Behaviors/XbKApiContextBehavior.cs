@@ -1,13 +1,16 @@
-namespace Migration.Toolkit.Core.KX12.Behaviors;
 
 using CMS.Base;
 using CMS.Membership;
+
 using MediatR;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Api;
 
+namespace Migration.Toolkit.Core.KX12.Behaviors;
 public class XbKApiContextBehavior<TRequest, TResponse>(
     ILogger<XbKApiContextBehavior<TRequest, TResponse>> logger,
     IMigrationProtocol protocol,

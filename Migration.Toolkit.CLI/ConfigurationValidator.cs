@@ -1,12 +1,13 @@
 using System.Diagnostics.Contracts;
+
 using Microsoft.Extensions.Configuration;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Helpers;
 
-namespace Migration.Toolkit.CLI;
-
 using Migration.Toolkit.Core.KX13.Helpers;
 
+namespace Migration.Toolkit.CLI;
 public enum ValidationMessageType
 {
     Error,
@@ -83,7 +84,7 @@ public static class ConfigurationValidator
             var querySourceInstanceApi = optInFeatures?.GetSection(ConfigurationNames.QuerySourceInstanceApi);
             if (querySourceInstanceApi is not null)
             {
-                var qsiEnabled = querySourceInstanceApi.GetValue<bool?>(ConfigurationNames.Enabled);
+                bool? qsiEnabled = querySourceInstanceApi.GetValue<bool?>(ConfigurationNames.Enabled);
                 if (qsiEnabled is true)
                 {
                     var connections = querySourceInstanceApi.GetSection(ConfigurationNames.Connections).GetChildren();
@@ -91,8 +92,8 @@ public static class ConfigurationValidator
                     {
 #warning EXTEND SITENAME
                         // var siteName = connection.GetValue<string>(ConfigurationNames.SiteName);
-                        var siteUri = connection.GetValue<string>(ConfigurationNames.SourceInstanceUri);
-                        var secret = connection.GetValue<string>(ConfigurationNames.Secret);
+                        string? siteUri = connection.GetValue<string>(ConfigurationNames.SourceInstanceUri);
+                        string? secret = connection.GetValue<string>(ConfigurationNames.Secret);
 
                         if (Uri.TryCreate(siteUri, UriKind.Absolute, out var sourceSiteUri))
                         {
@@ -122,17 +123,14 @@ public static class ConfigurationValidator
             var customMigrationModel = optInFeatures?.GetValue<CustomMigrationModel>(ConfigurationNames.CustomMigration);
             if (customMigrationModel is { FieldMigrations.Length: > 0 })
             {
-                ValidationMessage Required(int item, string fieldName)
-                {
-                    return new ValidationMessage(
+                static ValidationMessage Required(int item, string fieldName) => new ValidationMessage(
                         ValidationMessageType.Error,
                         $"Custom DataType migration at index [{item}] is missing value '{fieldName}', supply value or remove whole DataType migration."
                     );
-                }
 
                 var fieldMigrations = customMigrationModel.FieldMigrations;
 
-                for (var i = 0; i < fieldMigrations.Length; i++)
+                for (int i = 0; i < fieldMigrations.Length; i++)
                 {
                     var current = fieldMigrations[i];
                     if (string.IsNullOrWhiteSpace(current.SourceDataType))
@@ -161,16 +159,10 @@ public static class ConfigurationValidator
     #region "Helper methods"
 
     [Pure]
-    private static bool StringIsNullOrFitsOneOf<TEnum>(string? s) where TEnum : Enum
-    {
-        return s is null || Enum.TryParse(ReflectionHelper<TEnum>.CurrentType, s, out var _);
-    }
+    private static bool StringIsNullOrFitsOneOf<TEnum>(string? s) where TEnum : Enum => s is null || Enum.TryParse(ReflectionHelper<TEnum>.CurrentType, s, out object? _);
 
     [Pure]
-    private static bool CheckCfgValue(string? s)
-    {
-        return string.IsNullOrWhiteSpace(s) || s == ConfigurationNames.TodoPlaceholder;
-    }
+    private static bool CheckCfgValue(string? s) => string.IsNullOrWhiteSpace(s) || s == ConfigurationNames.TodoPlaceholder;
 
     #endregion
 }

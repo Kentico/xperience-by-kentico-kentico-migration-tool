@@ -1,12 +1,14 @@
-namespace Migration.Toolkit.Source.Services;
 
 using System.Linq.Expressions;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.KXP.Context;
 using Migration.Toolkit.Source.Model;
 
+namespace Migration.Toolkit.Source.Services;
 public class PrimaryKeyLocatorService(
     ILogger<PrimaryKeyLocatorService> logger,
     IDbContextFactory<KxpContext> kxpContextFactory,
@@ -27,7 +29,7 @@ public class PrimaryKeyLocatorService(
         using var kxpContext = kxpContextFactory.CreateDbContext();
 
         var sourceType = typeof(T);
-        var memberName = keyNameSelector.GetMemberName();
+        string memberName = keyNameSelector.GetMemberName();
 
         logger.LogTrace("Preload of entity {Entity} member {MemberName} mapping requested", sourceType.Name, memberName);
 
@@ -162,21 +164,21 @@ public class PrimaryKeyLocatorService(
 
             if (sourceType == typeof(ICmsState))
             {
-                var sourceName = modelFacade.SelectById<ICmsState>(sourceId)?.StateName;
+                string? sourceName = modelFacade.SelectById<ICmsState>(sourceId)?.StateName;
                 targetId = kxpContext.CmsStates.Where(x => x.StateName == sourceName).Select(x => x.StateId).Single();
                 return true;
             }
 
             if (sourceType == typeof(ICmsCountry))
             {
-                var sourceName = modelFacade.SelectById<ICmsCountry>(sourceId)?.CountryName;
+                string? sourceName = modelFacade.SelectById<ICmsCountry>(sourceId)?.CountryName;
                 targetId = kxpContext.CmsCountries.Where(x => x.CountryName == sourceName).Select(x => x.CountryId).Single();
                 return true;
             }
 
             if (sourceType == typeof(IOmContactStatus))
             {
-                var sourceName = modelFacade.SelectById<IOmContactStatus>(sourceId)?.ContactStatusName;
+                string? sourceName = modelFacade.SelectById<IOmContactStatus>(sourceId)?.ContactStatusName;
                 targetId = kxpContext.OmContactStatuses.Where(x => x.ContactStatusName == sourceName).Select(x => x.ContactStatusId).Single();
                 return true;
             }

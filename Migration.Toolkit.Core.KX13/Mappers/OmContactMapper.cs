@@ -1,11 +1,12 @@
-namespace Migration.Toolkit.Core.KX13.Mappers;
 
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX13.Contexts;
 using Migration.Toolkit.KXP.Models;
 
+namespace Migration.Toolkit.Core.KX13.Mappers;
 public class OmContactMapper : EntityMapperBase<KX13M.OmContact, OmContact>
 {
     private readonly ILogger<OmContactMapper> _logger;
@@ -14,7 +15,7 @@ public class OmContactMapper : EntityMapperBase<KX13M.OmContact, OmContact>
     public OmContactMapper(
         ILogger<OmContactMapper> logger,
         PrimaryKeyMappingContext primaryKeyMappingContext,
-        IEntityMapper<Toolkit.KX13.Models.OmContactStatus, OmContactStatus> contactStatusMapper,
+        IEntityMapper<KX13M.OmContactStatus, OmContactStatus> contactStatusMapper,
         IProtocol protocol
     ) : base(logger, primaryKeyMappingContext, protocol)
     {
@@ -22,9 +23,9 @@ public class OmContactMapper : EntityMapperBase<KX13M.OmContact, OmContact>
         _contactStatusMapper = contactStatusMapper;
     }
 
-    protected override OmContact? CreateNewInstance(Toolkit.KX13.Models.OmContact tSourceEntity, MappingHelper mappingHelper, AddFailure addFailure) => new();
+    protected override OmContact? CreateNewInstance(KX13M.OmContact tSourceEntity, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
-    protected override OmContact MapInternal(Toolkit.KX13.Models.OmContact source, OmContact target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override OmContact MapInternal(KX13M.OmContact source, OmContact target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         if (!newInstance && source.ContactGuid != target.ContactGuid)
         {
@@ -68,15 +69,18 @@ public class OmContactMapper : EntityMapperBase<KX13M.OmContact, OmContact>
             switch (_contactStatusMapper.Map(source.ContactStatus, target.ContactStatus))
             {
                 case { Success: true } result:
-                    {
-                        target.ContactStatus = result.Item;
-                        break;
-                    }
+                {
+                    target.ContactStatus = result.Item;
+                    break;
+                }
                 case { Success: false } result:
-                    {
-                        addFailure(new MapperResultFailure<OmContact>(result?.HandbookReference));
-                        break;
-                    }
+                {
+                    addFailure(new MapperResultFailure<OmContact>(result?.HandbookReference));
+                    break;
+                }
+
+                default:
+                    break;
             }
         }
         else
@@ -85,7 +89,7 @@ public class OmContactMapper : EntityMapperBase<KX13M.OmContact, OmContact>
         }
 
         target.ContactSalesForceLeadId = source.ContactSalesForceLeadId;
-        if (mappingHelper.TranslateIdAllowNulls<KX13M.CmsUser>(u => u.UserId, source.ContactOwnerUserId, out var userId))
+        if (mappingHelper.TranslateIdAllowNulls<KX13M.CmsUser>(u => u.UserId, source.ContactOwnerUserId, out int? userId))
         {
             target.ContactOwnerUserId = userId;
         }

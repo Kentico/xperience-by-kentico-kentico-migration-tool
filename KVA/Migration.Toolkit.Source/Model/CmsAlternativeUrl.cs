@@ -1,45 +1,37 @@
-namespace Migration.Toolkit.Source.Model;
 // ReSharper disable InconsistentNaming
 
 using System.Data;
+
 using Migration.Toolkit.Common;
 
+namespace Migration.Toolkit.Source.Model;
 public interface ICmsAlternativeUrl : ISourceModel<ICmsAlternativeUrl>
 {
 
 
-    static string ISourceModel<ICmsAlternativeUrl>.GetPrimaryKeyName(SemanticVersion version)
+    static string ISourceModel<ICmsAlternativeUrl>.GetPrimaryKeyName(SemanticVersion version) => version switch
     {
-        return version switch
-        {
-            { Major: 11 } => CmsAlternativeUrlK11.GetPrimaryKeyName(version),
-            { Major: 12 } => CmsAlternativeUrlK12.GetPrimaryKeyName(version),
-            { Major: 13 } => CmsAlternativeUrlK13.GetPrimaryKeyName(version),
-            _ => throw new InvalidCastException($"Invalid version {version}")
-        };
-    }
-    static bool ISourceModel<ICmsAlternativeUrl>.IsAvailable(SemanticVersion version)
+        { Major: 11 } => CmsAlternativeUrlK11.GetPrimaryKeyName(version),
+        { Major: 12 } => CmsAlternativeUrlK12.GetPrimaryKeyName(version),
+        { Major: 13 } => CmsAlternativeUrlK13.GetPrimaryKeyName(version),
+        _ => throw new InvalidCastException($"Invalid version {version}")
+    };
+    static bool ISourceModel<ICmsAlternativeUrl>.IsAvailable(SemanticVersion version) => version switch
     {
-        return version switch
-        {
-            { Major: 11 } => CmsAlternativeUrlK11.IsAvailable(version),
-            { Major: 12 } => CmsAlternativeUrlK12.IsAvailable(version),
-            { Major: 13 } => CmsAlternativeUrlK13.IsAvailable(version),
-            _ => throw new InvalidCastException($"Invalid version {version}")
-        };
-    }
+        { Major: 11 } => CmsAlternativeUrlK11.IsAvailable(version),
+        { Major: 12 } => CmsAlternativeUrlK12.IsAvailable(version),
+        { Major: 13 } => CmsAlternativeUrlK13.IsAvailable(version),
+        _ => throw new InvalidCastException($"Invalid version {version}")
+    };
     static string ISourceModel<ICmsAlternativeUrl>.TableName => "CMS_AlternativeUrl";
     static string ISourceModel<ICmsAlternativeUrl>.GuidColumnName => ""; //assumtion, class Guid column doesn't change between versions
-    static ICmsAlternativeUrl ISourceModel<ICmsAlternativeUrl>.FromReader(IDataReader reader, SemanticVersion version)
+    static ICmsAlternativeUrl ISourceModel<ICmsAlternativeUrl>.FromReader(IDataReader reader, SemanticVersion version) => version switch
     {
-        return version switch
-        {
-            { Major: 11 } => CmsAlternativeUrlK11.FromReader(reader, version),
-            { Major: 12 } => CmsAlternativeUrlK12.FromReader(reader, version),
-            { Major: 13 } => CmsAlternativeUrlK13.FromReader(reader, version),
-            _ => throw new InvalidCastException($"Invalid version {version}")
-        };
-    }
+        { Major: 11 } => CmsAlternativeUrlK11.FromReader(reader, version),
+        { Major: 12 } => CmsAlternativeUrlK12.FromReader(reader, version),
+        { Major: 13 } => CmsAlternativeUrlK13.FromReader(reader, version),
+        _ => throw new InvalidCastException($"Invalid version {version}")
+    };
 }
 public partial record CmsAlternativeUrlK11() : ICmsAlternativeUrl, ISourceModel<CmsAlternativeUrlK11>
 {
@@ -47,18 +39,12 @@ public partial record CmsAlternativeUrlK11() : ICmsAlternativeUrl, ISourceModel<
     public static string GetPrimaryKeyName(SemanticVersion version) => "";
     public static string TableName => "CMS_AlternativeUrl";
     public static string GuidColumnName => "";
-    static CmsAlternativeUrlK11 ISourceModel<CmsAlternativeUrlK11>.FromReader(IDataReader reader, SemanticVersion version)
-    {
-        return new CmsAlternativeUrlK11(
+    static CmsAlternativeUrlK11 ISourceModel<CmsAlternativeUrlK11>.FromReader(IDataReader reader, SemanticVersion version) => new CmsAlternativeUrlK11(
 
         );
-    }
-    public static CmsAlternativeUrlK11 FromReader(IDataReader reader, SemanticVersion version)
-    {
-        return new CmsAlternativeUrlK11(
+    public static CmsAlternativeUrlK11 FromReader(IDataReader reader, SemanticVersion version) => new CmsAlternativeUrlK11(
 
         );
-    }
 };
 public partial record CmsAlternativeUrlK12(int AlternativeUrlID, Guid AlternativeUrlGUID, int AlternativeUrlDocumentID, int AlternativeUrlSiteID, string AlternativeUrlUrl, DateTime AlternativeUrlLastModified) : ICmsAlternativeUrl, ISourceModel<CmsAlternativeUrlK12>
 {
@@ -66,18 +52,12 @@ public partial record CmsAlternativeUrlK12(int AlternativeUrlID, Guid Alternativ
     public static string GetPrimaryKeyName(SemanticVersion version) => "AlternativeUrlID";
     public static string TableName => "CMS_AlternativeUrl";
     public static string GuidColumnName => "AlternativeUrlGUID";
-    static CmsAlternativeUrlK12 ISourceModel<CmsAlternativeUrlK12>.FromReader(IDataReader reader, SemanticVersion version)
-    {
-        return new CmsAlternativeUrlK12(
+    static CmsAlternativeUrlK12 ISourceModel<CmsAlternativeUrlK12>.FromReader(IDataReader reader, SemanticVersion version) => new CmsAlternativeUrlK12(
             reader.Unbox<int>("AlternativeUrlID"), reader.Unbox<Guid>("AlternativeUrlGUID"), reader.Unbox<int>("AlternativeUrlDocumentID"), reader.Unbox<int>("AlternativeUrlSiteID"), reader.Unbox<string>("AlternativeUrlUrl"), reader.Unbox<DateTime>("AlternativeUrlLastModified")
         );
-    }
-    public static CmsAlternativeUrlK12 FromReader(IDataReader reader, SemanticVersion version)
-    {
-        return new CmsAlternativeUrlK12(
+    public static CmsAlternativeUrlK12 FromReader(IDataReader reader, SemanticVersion version) => new CmsAlternativeUrlK12(
             reader.Unbox<int>("AlternativeUrlID"), reader.Unbox<Guid>("AlternativeUrlGUID"), reader.Unbox<int>("AlternativeUrlDocumentID"), reader.Unbox<int>("AlternativeUrlSiteID"), reader.Unbox<string>("AlternativeUrlUrl"), reader.Unbox<DateTime>("AlternativeUrlLastModified")
         );
-    }
 };
 public partial record CmsAlternativeUrlK13(int AlternativeUrlID, Guid AlternativeUrlGUID, int AlternativeUrlDocumentID, int AlternativeUrlSiteID, string AlternativeUrlUrl, DateTime AlternativeUrlLastModified) : ICmsAlternativeUrl, ISourceModel<CmsAlternativeUrlK13>
 {
@@ -85,16 +65,10 @@ public partial record CmsAlternativeUrlK13(int AlternativeUrlID, Guid Alternativ
     public static string GetPrimaryKeyName(SemanticVersion version) => "AlternativeUrlID";
     public static string TableName => "CMS_AlternativeUrl";
     public static string GuidColumnName => "AlternativeUrlGUID";
-    static CmsAlternativeUrlK13 ISourceModel<CmsAlternativeUrlK13>.FromReader(IDataReader reader, SemanticVersion version)
-    {
-        return new CmsAlternativeUrlK13(
+    static CmsAlternativeUrlK13 ISourceModel<CmsAlternativeUrlK13>.FromReader(IDataReader reader, SemanticVersion version) => new CmsAlternativeUrlK13(
             reader.Unbox<int>("AlternativeUrlID"), reader.Unbox<Guid>("AlternativeUrlGUID"), reader.Unbox<int>("AlternativeUrlDocumentID"), reader.Unbox<int>("AlternativeUrlSiteID"), reader.Unbox<string>("AlternativeUrlUrl"), reader.Unbox<DateTime>("AlternativeUrlLastModified")
         );
-    }
-    public static CmsAlternativeUrlK13 FromReader(IDataReader reader, SemanticVersion version)
-    {
-        return new CmsAlternativeUrlK13(
+    public static CmsAlternativeUrlK13 FromReader(IDataReader reader, SemanticVersion version) => new CmsAlternativeUrlK13(
             reader.Unbox<int>("AlternativeUrlID"), reader.Unbox<Guid>("AlternativeUrlGUID"), reader.Unbox<int>("AlternativeUrlDocumentID"), reader.Unbox<int>("AlternativeUrlSiteID"), reader.Unbox<string>("AlternativeUrlUrl"), reader.Unbox<DateTime>("AlternativeUrlLastModified")
         );
-    }
 };

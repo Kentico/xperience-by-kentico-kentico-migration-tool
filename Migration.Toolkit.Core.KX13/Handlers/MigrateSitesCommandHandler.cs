@@ -1,13 +1,15 @@
-namespace Migration.Toolkit.Core.KX13.Handlers;
 
 using CMS.ContentEngine;
-using CMS.DataEngine;
 using CMS.Websites;
+
 using Kentico.Xperience.UMT.Model;
 using Kentico.Xperience.UMT.Services;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
@@ -16,6 +18,7 @@ using Migration.Toolkit.KX13;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KX13.Models;
 
+namespace Migration.Toolkit.Core.KX13.Handlers;
 // ReSharper disable once UnusedType.Global
 public class MigrateSitesCommandHandler(
     ILogger<MigrateSitesCommandHandler> logger,
@@ -33,7 +36,7 @@ public class MigrateSitesCommandHandler(
             protocol.FetchedSource(kx13CmsSite);
             logger.LogTrace("Migrating site {SiteName} with SiteGuid {SiteGuid}", kx13CmsSite.SiteName, kx13CmsSite.SiteGuid);
 
-            var defaultCultureCode = GetSiteCulture(kx13CmsSite);
+            string defaultCultureCode = GetSiteCulture(kx13CmsSite);
             var migratedSiteCultures = kx13CmsSite.Cultures.ToList();
             if (!migratedSiteCultures.Any(x => x.CultureCode.Equals(defaultCultureCode, StringComparison.InvariantCultureIgnoreCase)))
             {
@@ -56,7 +59,10 @@ public class MigrateSitesCommandHandler(
                     existing.Update();
                 }
 
-                if (migratedCultureCodes.ContainsKey(cmsCulture.CultureCode)) continue;
+                if (migratedCultureCodes.ContainsKey(cmsCulture.CultureCode))
+                {
+                    continue;
+                }
 
                 var langResult = await importer.ImportAsync(new ContentLanguageModel
                 {
@@ -76,18 +82,18 @@ public class MigrateSitesCommandHandler(
             }
 
 
-            var homePagePath = KenticoHelper.GetSettingsKey(kx13ContextFactory, kx13CmsSite.SiteId, SettingsKeys.CMSHomePagePath);
-            var cookieLevel = KenticoHelper.GetSettingsKey(kx13ContextFactory, kx13CmsSite.SiteId, SettingsKeys.CMSDefaultCookieLevel) switch
+            string? homePagePath = KenticoHelper.GetSettingsKey(kx13ContextFactory, kx13CmsSite.SiteId, SettingsKeys.CMSHomePagePath);
+            int? cookieLevel = KenticoHelper.GetSettingsKey(kx13ContextFactory, kx13CmsSite.SiteId, SettingsKeys.CMSDefaultCookieLevel) switch
             {
                 "all" => CookieLevelConstants.ALL,
                 "visitor" => CookieLevelConstants.VISITOR,
                 "editor" => CookieLevelConstants.EDITOR,
                 "system" => CookieLevelConstants.SYSTEM,
                 "essential" => CookieLevelConstants.ESSENTIAL,
-                _ => (int?)null
+                _ => null
             };
-            var storeFormerUrls = KenticoHelper.GetSettingsKey(kx13ContextFactory, kx13CmsSite.SiteId, "CMSStoreFormerUrls") is string storeFormerUrlsStr
-                ? bool.TryParse(storeFormerUrlsStr, out var sfu) ? (bool?)sfu : null
+            bool? storeFormerUrls = KenticoHelper.GetSettingsKey(kx13ContextFactory, kx13CmsSite.SiteId, "CMSStoreFormerUrls") is string storeFormerUrlsStr
+                ? bool.TryParse(storeFormerUrlsStr, out bool sfu) ? sfu : null
                 : null;
 
             var channelResult = await importer.ImportAsync(new ChannelModel
@@ -127,13 +133,13 @@ public class MigrateSitesCommandHandler(
 
             if (webSiteChannelResult.Imported is WebsiteChannelInfo webSiteChannel)
             {
-                var cmsReCaptchaPublicKey = KenticoHelper.GetSettingsKey(kx13ContextFactory, kx13CmsSite.SiteId, "CMSReCaptchaPublicKey") as string;
-                var cmsReCaptchaPrivateKey = KenticoHelper.GetSettingsKey(kx13ContextFactory, kx13CmsSite.SiteId, "CMSReCaptchaPrivateKey") as string;
+                string? cmsReCaptchaPublicKey = KenticoHelper.GetSettingsKey(kx13ContextFactory, kx13CmsSite.SiteId, "CMSReCaptchaPublicKey");
+                string? cmsReCaptchaPrivateKey = KenticoHelper.GetSettingsKey(kx13ContextFactory, kx13CmsSite.SiteId, "CMSReCaptchaPrivateKey");
 
                 WebsiteCaptchaSettingsInfo? reCaptchaSettings = null;
-                var cmsReCaptchaV3PrivateKey = KenticoHelper.GetSettingsKey(kx13ContextFactory, kx13CmsSite.SiteId, "CMSReCaptchaV3PrivateKey") as string;
-                var cmsRecaptchaV3PublicKey = KenticoHelper.GetSettingsKey(kx13ContextFactory, kx13CmsSite.SiteId, "CMSRecaptchaV3PublicKey") as string;
-                var cmsRecaptchaV3Threshold = KenticoHelper.GetSettingsKey<double>(kx13ContextFactory, kx13CmsSite.SiteId, "CMSRecaptchaV3Threshold");
+                string? cmsReCaptchaV3PrivateKey = KenticoHelper.GetSettingsKey(kx13ContextFactory, kx13CmsSite.SiteId, "CMSReCaptchaV3PrivateKey");
+                string? cmsRecaptchaV3PublicKey = KenticoHelper.GetSettingsKey(kx13ContextFactory, kx13CmsSite.SiteId, "CMSRecaptchaV3PublicKey");
+                double? cmsRecaptchaV3Threshold = KenticoHelper.GetSettingsKey<double>(kx13ContextFactory, kx13CmsSite.SiteId, "CMSRecaptchaV3Threshold");
 
                 if (!string.IsNullOrWhiteSpace(cmsReCaptchaV3PrivateKey) || !string.IsNullOrWhiteSpace(cmsRecaptchaV3PublicKey))
                 {
@@ -182,7 +188,7 @@ public class MigrateSitesCommandHandler(
     {
         // simplified logic from CMS.DocumentEngine.DefaultPreferredCultureEvaluator.Evaluate()
         // domain alias skipped, HttpContext logic skipped
-        var siteCulture = site.SiteDefaultVisitorCulture
+        string? siteCulture = site.SiteDefaultVisitorCulture
                           ?? KenticoHelper.GetSettingsKey(kx13ContextFactory, site.SiteId, SettingsKeys.CMSDefaultCultureCode);
 
         return siteCulture

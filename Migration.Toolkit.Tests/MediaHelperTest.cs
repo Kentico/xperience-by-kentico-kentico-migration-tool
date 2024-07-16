@@ -1,7 +1,7 @@
-namespace Migration.Toolkit.Tests;
 
 using Migration.Toolkit.Common.Helpers;
 
+namespace Migration.Toolkit.Tests;
 public class UnitTest1
 {
     [Theory()]

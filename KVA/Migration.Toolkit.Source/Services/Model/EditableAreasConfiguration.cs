@@ -1,9 +1,10 @@
-namespace Migration.Toolkit.Source.Services.Model;
 
 using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+namespace Migration.Toolkit.Source.Services.Model;
 #region Copied from Kentico assembly
 
 [DataContract(Name = "Configuration", Namespace = "")]
@@ -17,7 +18,7 @@ public sealed class EditableAreasConfiguration
     /// <summary>
     /// Creates an instance of <see cref="T:Kentico.PageBuilder.Web.Mvc.EditableAreasConfiguration" /> class.
     /// </summary>
-    public EditableAreasConfiguration() => this.EditableAreas = new List<EditableAreaConfiguration>();
+    public EditableAreasConfiguration() => EditableAreas = [];
 }
 
 /// <summary>
@@ -59,7 +60,7 @@ public sealed class EditableAreaConfiguration
     /// <summary>
     /// Creates an instance of <see cref="T:Kentico.PageBuilder.Web.Mvc.EditableAreasConfiguration" /> class.
     /// </summary>
-    public EditableAreaConfiguration() => this.Sections = new List<SectionConfiguration>();
+    public EditableAreaConfiguration() => Sections = [];
 }
 
 /// <summary>
@@ -92,7 +93,7 @@ public sealed class SectionConfiguration
     /// <summary>
     /// Creates an instance of <see cref="T:Kentico.PageBuilder.Web.Mvc.EditableAreasConfiguration" /> class.
     /// </summary>
-    public SectionConfiguration() => this.Zones = new List<ZoneConfiguration>();
+    public SectionConfiguration() => Zones = [];
 }
 
 /// <summary>
@@ -119,7 +120,7 @@ public sealed class ZoneConfiguration
     /// <summary>
     /// Creates an instance of <see cref="T:Kentico.PageBuilder.Web.Mvc.ZoneConfiguration" /> class.
     /// </summary>
-    public ZoneConfiguration() => this.Widgets = new List<WidgetConfiguration>();
+    public ZoneConfiguration() => Widgets = [];
 }
 
 /// <summary>
@@ -151,7 +152,7 @@ public sealed class WidgetConfiguration
     /// <summary>
     /// Creates an instance of <see cref="T:Kentico.PageBuilder.Web.Mvc.WidgetConfiguration" /> class.
     /// </summary>
-    public WidgetConfiguration() => this.Variants = new List<WidgetVariantConfiguration>();
+    public WidgetConfiguration() => Variants = [];
 }
 
 /// <summary>

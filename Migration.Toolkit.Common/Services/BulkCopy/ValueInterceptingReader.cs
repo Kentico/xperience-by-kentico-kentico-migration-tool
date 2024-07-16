@@ -1,12 +1,12 @@
-namespace Migration.Toolkit.Common.Services.BulkCopy;
 
 using System.Data;
 
+namespace Migration.Toolkit.Common.Services.BulkCopy;
 public record ValueInterceptorResult(object? Value = null, bool OverwriteValue = false, bool SkipDataRow = false)
 {
-    public static ValueInterceptorResult DoNothing => new ValueInterceptorResult();
-    public static ValueInterceptorResult SkipRow => new ValueInterceptorResult(null, false, true);
-    public static ValueInterceptorResult ReplaceValue(object? value) => new ValueInterceptorResult(value, true, false);
+    public static ValueInterceptorResult DoNothing => new();
+    public static ValueInterceptorResult SkipRow => new(null, false, true);
+    public static ValueInterceptorResult ReplaceValue(object? value) => new(value, true, false);
 };
 public delegate ValueInterceptorResult ValueInterceptor(int columnOrdinal, string columnName, object value, Dictionary<string, object?> currentRow);
 public delegate void ValueInterceptingReaderSkippedRow(Dictionary<string, object?> current);
@@ -17,7 +17,7 @@ public class ValueInterceptingReader : DataReaderProxyBase
     private readonly ValueInterceptingReaderSkippedRow? _skippedValueCallback;
     private readonly Dictionary<int, string> _columnOrdinals;
 
-    private Dictionary<int, object?> _overwrittenValues = new Dictionary<int, object?>();
+    private Dictionary<int, object?> _overwrittenValues = [];
 
     public ValueInterceptingReader(IDataReader innerReader, ValueInterceptor valueInterceptor, SqlColumn[] columnOrdinals, ValueInterceptingReaderSkippedRow? skippedValueCallback) : base(innerReader)
     {
@@ -32,11 +32,11 @@ public class ValueInterceptingReader : DataReaderProxyBase
     {
         while (base.Read())
         {
-            _overwrittenValues = new Dictionary<int, object?>();
+            _overwrittenValues = [];
 
-            var skipCurrentDataRow = false;
+            bool skipCurrentDataRow = false;
             var currentRow = _columnOrdinals.ToDictionary(k => k.Value, v => base.GetValue(v.Key));
-            foreach (var (columnOrdinal, columnName) in this._columnOrdinals)
+            foreach (var (columnOrdinal, columnName) in _columnOrdinals)
             {
 
                 var (newValue, overwriteValue, skipDataRow) = _valueInterceptor.Invoke(columnOrdinal, columnName, base.GetValue(columnOrdinal), currentRow);

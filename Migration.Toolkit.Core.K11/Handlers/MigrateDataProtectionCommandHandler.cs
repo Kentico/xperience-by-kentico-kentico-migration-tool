@@ -1,10 +1,12 @@
-namespace Migration.Toolkit.Core.K11.Handlers;
 
 using CMS.DataProtection;
+
 using MediatR;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
@@ -13,6 +15,7 @@ using Migration.Toolkit.K11;
 using Migration.Toolkit.K11.Models;
 using Migration.Toolkit.KXP.Context;
 
+namespace Migration.Toolkit.Core.K11.Handlers;
 public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataProtectionCommand, CommandResult>, IDisposable
 {
     private readonly ILogger<MigrateDataProtectionCommandHandler> _logger;
@@ -52,7 +55,7 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
 
     public async Task<CommandResult> Handle(MigrateDataProtectionCommand request, CancellationToken cancellationToken)
     {
-        var batchSize = _batchSize;
+        int batchSize = _batchSize;
 
         await MigrateConsent(cancellationToken);
         await MigrateConsentArchive(cancellationToken);
@@ -175,11 +178,11 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
     private async Task<CommandResult> MigrateConsentAgreement(CancellationToken cancellationToken, int batchSize)
     {
         await using var k11Context = await _k11ContextFactory.CreateDbContextAsync(cancellationToken);
-        var index = 0;
-        var indexFull = 0;
+        int index = 0;
+        int indexFull = 0;
         var consentAgreementUpdates = new List<KXP.Models.CmsConsentAgreement>();
         var consentAgreementNews = new List<KXP.Models.CmsConsentAgreement>();
-        var itemsCount = k11Context.CmsConsentAgreements.Count();
+        int itemsCount = k11Context.CmsConsentAgreements.Count();
 
         foreach (var k11ConsentAgreement in k11Context.CmsConsentAgreements)
         {
@@ -268,8 +271,8 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
                 finally
                 {
                     index = 0;
-                    consentAgreementUpdates = new List<KXP.Models.CmsConsentAgreement>();
-                    consentAgreementNews = new List<KXP.Models.CmsConsentAgreement>();
+                    consentAgreementUpdates = [];
+                    consentAgreementNews = [];
                 }
             }
         }
@@ -277,8 +280,5 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
         return new GenericCommandResult();
     }
 
-    public void Dispose()
-    {
-        _kxpContext.Dispose();
-    }
+    public void Dispose() => _kxpContext.Dispose();
 }

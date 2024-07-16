@@ -1,23 +1,24 @@
-namespace Migration.Toolkit.Source.Helpers;
 
 using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.Source.Services.Model;
+
 using Newtonsoft.Json.Linq;
 
+namespace Migration.Toolkit.Source.Helpers;
 public static class PageBuilderWidgetsPatcher
 {
     public static EditableAreasConfiguration DeferredPatchConfiguration(EditableAreasConfiguration configuration, TreePathConvertor convertor, out bool anythingChanged)
     {
         anythingChanged = false;
-        foreach (var configurationEditableArea in configuration.EditableAreas ?? new())
+        foreach (var configurationEditableArea in configuration.EditableAreas ?? [])
         {
-            foreach (var sectionConfiguration in configurationEditableArea.Sections ?? new())
+            foreach (var sectionConfiguration in configurationEditableArea.Sections ?? [])
             {
-                foreach (var sectionConfigurationZone in sectionConfiguration.Zones ?? new())
+                foreach (var sectionConfigurationZone in sectionConfiguration.Zones ?? [])
                 {
-                    foreach (var configurationZoneWidget in sectionConfigurationZone.Widgets ?? new())
+                    foreach (var configurationZoneWidget in sectionConfigurationZone.Widgets ?? [])
                     {
-                        DeferredPatchWidget(configurationZoneWidget, convertor, out var anythingChangedTmp);
+                        DeferredPatchWidget(configurationZoneWidget, convertor, out bool anythingChangedTmp);
                         anythingChanged = anythingChanged || anythingChangedTmp;
                     }
                 }
@@ -30,13 +31,16 @@ public static class PageBuilderWidgetsPatcher
     private static void DeferredPatchWidget(WidgetConfiguration configurationZoneWidget, TreePathConvertor convertor, out bool anythingChanged)
     {
         anythingChanged = false;
-        if (configurationZoneWidget == null) return;
+        if (configurationZoneWidget == null)
+        {
+            return;
+        }
 
-        var list = configurationZoneWidget.Variants ?? new();
-        for (var i = 0; i < list.Count; i++)
+        var list = configurationZoneWidget.Variants ?? [];
+        for (int i = 0; i < list.Count; i++)
         {
             var variant = JObject.FromObject(list[i]);
-            DeferredPatchProperties(variant, convertor, out var anythingChangedTmp);
+            DeferredPatchProperties(variant, convertor, out bool anythingChangedTmp);
 
             list[i] = variant.ToObject<WidgetVariantConfiguration>();
             anythingChanged = anythingChanged || anythingChangedTmp;
@@ -53,16 +57,19 @@ public static class PageBuilderWidgetsPatcher
                 switch (key)
                 {
                     case "TreePath":
+                    {
+                        string? nodeAliasPath = value?.Value<string>();
+                        string treePath = convertor.GetConvertedOrUnchangedAssumingChannel(nodeAliasPath);
+                        if (!TreePathConvertor.TreePathComparer.Equals(nodeAliasPath, treePath))
                         {
-                            var nodeAliasPath = value?.Value<string>();
-                            var treePath = convertor.GetConvertedOrUnchangedAssumingChannel(nodeAliasPath);
-                            if (!TreePathConvertor.TreePathComparer.Equals(nodeAliasPath, treePath))
-                            {
-                                properties["TreePath"] = JToken.FromObject(treePath);
-                                anythingChanged = true;
-                            }
-                            break;
+                            properties["TreePath"] = JToken.FromObject(treePath);
+                            anythingChanged = true;
                         }
+                        break;
+                    }
+
+                    default:
+                        break;
                 }
             }
         }

@@ -1,11 +1,12 @@
-namespace Migration.Toolkit.Core.KX12.Mappers;
 
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX12.Contexts;
 using Migration.Toolkit.KXP.Models;
 
+namespace Migration.Toolkit.Core.KX12.Mappers;
 public class OmContactMapper : EntityMapperBase<KX12M.OmContact, OmContact>
 {
     private readonly ILogger<OmContactMapper> _logger;
@@ -68,15 +69,18 @@ public class OmContactMapper : EntityMapperBase<KX12M.OmContact, OmContact>
             switch (_contactStatusMapper.Map(source.ContactStatus, target.ContactStatus))
             {
                 case { Success: true } result:
-                    {
-                        target.ContactStatus = result.Item;
-                        break;
-                    }
+                {
+                    target.ContactStatus = result.Item;
+                    break;
+                }
                 case { Success: false } result:
-                    {
-                        addFailure(new MapperResultFailure<OmContact>(result?.HandbookReference));
-                        break;
-                    }
+                {
+                    addFailure(new MapperResultFailure<OmContact>(result?.HandbookReference));
+                    break;
+                }
+
+                default:
+                    break;
             }
         }
         else
@@ -85,7 +89,7 @@ public class OmContactMapper : EntityMapperBase<KX12M.OmContact, OmContact>
         }
 
         target.ContactSalesForceLeadId = source.ContactSalesForceLeadId;
-        if (mappingHelper.TranslateIdAllowNulls<KX12M.CmsUser>(u => u.UserId, source.ContactOwnerUserId, out var userId))
+        if (mappingHelper.TranslateIdAllowNulls<KX12M.CmsUser>(u => u.UserId, source.ContactOwnerUserId, out int? userId))
         {
             target.ContactOwnerUserId = userId;
         }

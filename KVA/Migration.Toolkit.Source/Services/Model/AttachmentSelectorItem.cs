@@ -1,7 +1,7 @@
-namespace Migration.Toolkit.Source.Services.Model;
 
 using Newtonsoft.Json;
 
+namespace Migration.Toolkit.Source.Services.Model;
 /// <summary>Represents an item for the attachment selector.</summary>
 public class AttachmentSelectorItem
 {

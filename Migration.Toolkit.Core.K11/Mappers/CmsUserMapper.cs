@@ -1,11 +1,12 @@
-namespace Migration.Toolkit.Core.K11.Mappers;
 
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.K11.Contexts;
 using Migration.Toolkit.KXP.Models;
 
+namespace Migration.Toolkit.Core.K11.Mappers;
 public class CmsUserMapper(ILogger<CmsUserMapper> logger,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol)
@@ -40,7 +41,7 @@ public class CmsUserMapper(ILogger<CmsUserMapper> logger,
 
         foreach (var sourceCmsUserRole in source.CmsUserRoles)
         {
-            if (mappingHelper.TranslateRequiredId<Toolkit.K11.Models.CmsRole>(r => r.RoleId, sourceCmsUserRole.RoleId, out var targetRoleId))
+            if (mappingHelper.TranslateRequiredId<Toolkit.K11.Models.CmsRole>(r => r.RoleId, sourceCmsUserRole.RoleId, out int targetRoleId))
             {
                 if (target.CmsUserRoles.All(x => x.RoleId != targetRoleId))
                 {

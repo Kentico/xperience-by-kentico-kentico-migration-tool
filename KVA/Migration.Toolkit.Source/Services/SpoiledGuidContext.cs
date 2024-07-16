@@ -1,14 +1,16 @@
-namespace Migration.Toolkit.Source.Services;
 
 using System.Collections.Frozen;
 using System.Collections.Immutable;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.Source.Model;
 
+namespace Migration.Toolkit.Source.Services;
 /// <summary>
 /// in cases where consumer exported site with documents and created new site with that particular export, GUID conflicts will probably happen. This class aims to query and solve those conflicts
 /// </summary>
@@ -31,7 +33,7 @@ public class SpoiledGuidContext(ModelFacade modelFacade, ILogger<SpoiledGuidCont
                 x => x.DocumentGUID,
                 x => x.Info.Split('|').Select(i =>
                 {
-                    var spl = i.Split('-');
+                    string[] spl = i.Split('-');
 
                     return new SpoiledDocumentGuidInfo(int.Parse(spl[0]), int.Parse(spl[1]));
                 }).ToImmutableList()
@@ -52,7 +54,7 @@ public class SpoiledGuidContext(ModelFacade modelFacade, ILogger<SpoiledGuidCont
                 x => x.DocumentGUID,
                 x => x.Info.Split('|').Select(i =>
                 {
-                    var spl = i.Split('-');
+                    string[] spl = i.Split('-');
 
                     return new SpoiledNodeGuidInfo(int.Parse(spl[0]));
                 }).ToImmutableList()
@@ -60,7 +62,11 @@ public class SpoiledGuidContext(ModelFacade modelFacade, ILogger<SpoiledGuidCont
 
     public Guid EnsureDocumentGuid(Guid documentGuid, int siteId, int nodeId, int documentId)
     {
-        if (!SpoiledDocumentGuids.TryGetValue(documentGuid, out _)) return documentGuid;
+        if (!SpoiledDocumentGuids.TryGetValue(documentGuid, out _))
+        {
+            return documentGuid;
+        }
+
         var newGuid = GuidHelper.CreateDocumentGuid($"{documentId}|{nodeId}|{siteId}");
         logger.LogTrace("Spoiled document guid encountered '{OriginalGuid}', replaced by {NewGuid} {Details}", documentGuid, newGuid, new { siteId, nodeId, documentId });
         return newGuid;
@@ -68,7 +74,11 @@ public class SpoiledGuidContext(ModelFacade modelFacade, ILogger<SpoiledGuidCont
 
     public Guid EnsureNodeGuid(Guid nodeGuid, int siteId, int nodeId)
     {
-        if (!SpoiledNodeGuids.TryGetValue(nodeGuid, out _)) return nodeGuid;
+        if (!SpoiledNodeGuids.TryGetValue(nodeGuid, out _))
+        {
+            return nodeGuid;
+        }
+
         var newGuid = GuidHelper.CreateNodeGuid($"{nodeId}|{siteId}");
         logger.LogTrace("Spoiled node guid encountered '{OriginalGuid}', replaced by {NewGuid} {Details}", nodeGuid, newGuid, new { siteId, nodeId });
         return newGuid;
@@ -76,9 +86,12 @@ public class SpoiledGuidContext(ModelFacade modelFacade, ILogger<SpoiledGuidCont
 
     public Guid EnsureNodeGuid(Guid nodeGuid, int siteId)
     {
-        if (!SpoiledNodeGuids.TryGetValue(nodeGuid, out _)) return nodeGuid;
+        if (!SpoiledNodeGuids.TryGetValue(nodeGuid, out _))
+        {
+            return nodeGuid;
+        }
 
-        var nodeId = modelFacade.Select("""
+        int nodeId = modelFacade.Select("""
                                         SELECT NodeID FROM CMS_Tree WHERE NodeSiteID = @siteId AND NodeGUID = @nodeGuid
                                         """, (reader, version) => reader.Unbox<int>("NodeID"),
             new SqlParameter("siteId", siteId), new SqlParameter("nodeGuid", nodeGuid)
@@ -97,8 +110,15 @@ public class SpoiledGuidContext(ModelFacade modelFacade, ILogger<SpoiledGuidCont
             new SqlParameter("siteId", siteId), new SqlParameter("nodeId", nodeId)
         ).FirstOrDefault();
 
-        if (nodeGuid is not { } sNodeGuid) return null;
-        if (!SpoiledNodeGuids.TryGetValue(sNodeGuid, out _)) return sNodeGuid;
+        if (nodeGuid is not { } sNodeGuid)
+        {
+            return null;
+        }
+
+        if (!SpoiledNodeGuids.TryGetValue(sNodeGuid, out _))
+        {
+            return sNodeGuid;
+        }
 
         var newGuid = GuidHelper.CreateNodeGuid($"{nodeId}|{siteId}");
         logger.LogTrace("Spoiled node guid encountered '{OriginalGuid}', replaced by {NewGuid} {Details}", nodeGuid, newGuid, new { siteId, nodeId });

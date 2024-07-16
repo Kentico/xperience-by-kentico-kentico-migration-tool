@@ -1,4 +1,3 @@
-namespace Migration.Toolkit.Core.K11;
 
 using CMS.DataEngine;
 using CMS.FormEngine;
@@ -6,26 +5,27 @@ using CMS.Globalization;
 using CMS.MediaLibrary;
 using CMS.Membership;
 using CMS.Modules;
-using CMS.OnlineForms;
-using CMS.Websites;
+
 using Kentico.Xperience.UMT;
+
 using MediatR;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.Common.Services.BulkCopy;
-using Migration.Toolkit.Common.Services.Ipc;
 using Migration.Toolkit.Core.K11.Behaviors;
 using Migration.Toolkit.Core.K11.Contexts;
-using Migration.Toolkit.Core.K11.Handlers;
 using Migration.Toolkit.Core.K11.Helpers;
 using Migration.Toolkit.Core.K11.Mappers;
 using Migration.Toolkit.Core.K11.Services;
 using Migration.Toolkit.KXP.Models;
 
+namespace Migration.Toolkit.Core.K11;
 public static class K11CoreDiExtensions
 {
     public static IServiceCollection UseK11ToolkitCore(this IServiceCollection services)

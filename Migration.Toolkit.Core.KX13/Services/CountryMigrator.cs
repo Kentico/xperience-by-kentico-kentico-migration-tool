@@ -1,8 +1,9 @@
-namespace Migration.Toolkit.Core.KX13.Services;
 
 using CMS.Globalization;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
@@ -11,6 +12,7 @@ using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KX13.Models;
 using Migration.Toolkit.KXP.Api;
 
+namespace Migration.Toolkit.Core.KX13.Services;
 public class CountryMigrator
 {
     private readonly ILogger<CountryMigrator> _logger;
@@ -23,12 +25,12 @@ public class CountryMigrator
 
     public CountryMigrator(
         ILogger<CountryMigrator> logger,
-        IDbContextFactory<Toolkit.KX13.Context.KX13Context> kx13ContextFactory,
+        IDbContextFactory<KX13Context> kx13ContextFactory,
         ToolkitConfiguration toolkitConfiguration,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol,
-        IEntityMapper<KX13M.CmsCountry, CountryInfo> countryMapper,
-        IEntityMapper<KX13M.CmsState, StateInfo> stateMapper,
+        IEntityMapper<CmsCountry, CountryInfo> countryMapper,
+        IEntityMapper<CmsState, StateInfo> stateMapper,
         KxpApiInitializer kxpApiInitializer
     )
     {
@@ -72,7 +74,7 @@ public class CountryMigrator
                     _protocol.Success(kx13CmsCountry, countryInfo, mapped);
                     _logger.LogEntitySetAction(newInstance, countryInfo);
 
-                    _primaryKeyMappingContext.SetMapping<KX13M.CmsCountry>(r => r.CountryId, kx13CmsCountry.CountryId, countryInfo.CountryID);
+                    _primaryKeyMappingContext.SetMapping<CmsCountry>(r => r.CountryId, kx13CmsCountry.CountryId, countryInfo.CountryID);
                 }
                 catch (Exception exception)
                 {
@@ -108,7 +110,7 @@ public class CountryMigrator
                     _protocol.Success(kx13CmsState, stateInfo, mapped);
                     _logger.LogEntitySetAction(newInstance, stateInfo);
 
-                    _primaryKeyMappingContext.SetMapping<KX13M.CmsState>(r => r.StateId, kx13CmsState.StateId, stateInfo.StateID);
+                    _primaryKeyMappingContext.SetMapping<CmsState>(r => r.StateId, kx13CmsState.StateId, stateInfo.StateID);
                 }
                 catch (Exception exception)
                 {

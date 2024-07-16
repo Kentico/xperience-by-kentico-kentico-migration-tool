@@ -1,8 +1,9 @@
-namespace Migration.Toolkit.KXP.Api;
 
 using CMS.DataEngine;
+
 using Microsoft.Extensions.Logging;
 
+namespace Migration.Toolkit.KXP.Api;
 public class KxpApiInitializer(ILogger<KxpApiInitializer> logger)
 {
     private bool _apiInitializationCalled = false;

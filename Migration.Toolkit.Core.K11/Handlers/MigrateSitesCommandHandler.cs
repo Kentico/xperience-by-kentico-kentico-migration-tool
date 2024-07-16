@@ -1,13 +1,15 @@
-namespace Migration.Toolkit.Core.K11.Handlers;
 
 using CMS.ContentEngine;
 using CMS.Websites;
+
 using Kentico.Xperience.UMT.Model;
 using Kentico.Xperience.UMT.Services;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Helpers;
@@ -16,6 +18,7 @@ using Migration.Toolkit.Core.K11.Helpers;
 using Migration.Toolkit.K11;
 using Migration.Toolkit.K11.Models;
 
+namespace Migration.Toolkit.Core.K11.Handlers;
 // ReSharper disable once UnusedType.Global
 public class MigrateSitesCommandHandler(ILogger<MigrateSitesCommandHandler> logger,
         IDbContextFactory<K11Context> k11ContextFactory,
@@ -27,7 +30,7 @@ public class MigrateSitesCommandHandler(ILogger<MigrateSitesCommandHandler> logg
     {
         await using var k11Context = await k11ContextFactory.CreateDbContextAsync(cancellationToken);
         var migratedCultureCodes = new Dictionary<string, ContentLanguageInfo>(StringComparer.CurrentCultureIgnoreCase);
-        var fallbackDomainPort = 5000;
+        int fallbackDomainPort = 5000;
         var migratedDomains = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase);
 
         foreach (var k11CmsSite in k11Context.CmsSites.Include(s => s.Cultures).Include(cmsSite => cmsSite.CmsSiteDomainAliases))
@@ -35,7 +38,7 @@ public class MigrateSitesCommandHandler(ILogger<MigrateSitesCommandHandler> logg
             protocol.FetchedSource(k11CmsSite);
             logger.LogTrace("Migrating site {SiteName} with SiteGuid {SiteGuid}", k11CmsSite.SiteName, k11CmsSite.SiteGuid);
 
-            var defaultCultureCode = GetSiteCulture(k11CmsSite);
+            string defaultCultureCode = GetSiteCulture(k11CmsSite);
             var migratedSiteCultures = k11CmsSite.Cultures.ToList();
             if (!migratedSiteCultures.Any(x => x.CultureCode.Equals(defaultCultureCode, StringComparison.InvariantCultureIgnoreCase)))
             {
@@ -58,7 +61,11 @@ public class MigrateSitesCommandHandler(ILogger<MigrateSitesCommandHandler> logg
                     existing.Update();
                 }
 
-                if (migratedCultureCodes.ContainsKey(cmsCulture.CultureCode)) continue;
+                if (migratedCultureCodes.ContainsKey(cmsCulture.CultureCode))
+                {
+                    continue;
+                }
+
                 var langResult = await importer.ImportAsync(new ContentLanguageModel
                 {
                     ContentLanguageGUID = cmsCulture.CultureGuid,
@@ -77,8 +84,8 @@ public class MigrateSitesCommandHandler(ILogger<MigrateSitesCommandHandler> logg
             }
 
             // TODO tomas.krch 2024-02-23: treepath migration when upgrade to recent XbyK occurs
-            var homePageNodeAliasPath = KenticoHelper.GetSettingsKey(k11ContextFactory, k11CmsSite.SiteId, SettingsKeys.CMSDefaultAliasPath);
-            var cookieLevel = KenticoHelper.GetSettingsKey(k11ContextFactory, k11CmsSite.SiteId, SettingsKeys.CMSDefaultCookieLevel) switch
+            string? homePageNodeAliasPath = KenticoHelper.GetSettingsKey(k11ContextFactory, k11CmsSite.SiteId, SettingsKeys.CMSDefaultAliasPath);
+            int? cookieLevel = KenticoHelper.GetSettingsKey(k11ContextFactory, k11CmsSite.SiteId, SettingsKeys.CMSDefaultCookieLevel) switch
             {
                 "all" => CookieLevelConstants.ALL,
                 "visitor" => CookieLevelConstants.VISITOR,
@@ -87,8 +94,8 @@ public class MigrateSitesCommandHandler(ILogger<MigrateSitesCommandHandler> logg
                 "essential" => CookieLevelConstants.ESSENTIAL,
                 _ => (int?)null
             };
-            var storeFormerUrls = KenticoHelper.GetSettingsKey(k11ContextFactory, k11CmsSite.SiteId, "CMSStoreFormerUrls") is { } storeFormerUrlsStr
-                ? bool.TryParse(storeFormerUrlsStr, out var sfu) ? (bool?)sfu : null
+            bool? storeFormerUrls = KenticoHelper.GetSettingsKey(k11ContextFactory, k11CmsSite.SiteId, "CMSStoreFormerUrls") is { } storeFormerUrlsStr
+                ? bool.TryParse(storeFormerUrlsStr, out bool sfu) ? (bool?)sfu : null
                 : true;
 
             var result = UriHelperXbyk.GetUniqueDomainCandidate(
@@ -101,36 +108,36 @@ public class MigrateSitesCommandHandler(ILogger<MigrateSitesCommandHandler> logg
             switch (result)
             {
                 case (true, false, var candidate, null):
-                    {
-                        webSiteChannelDomain = candidate;
-                        break;
-                    }
+                {
+                    webSiteChannelDomain = candidate;
+                    break;
+                }
                 case (true, true, var candidate, null):
-                    {
-                        webSiteChannelDomain = candidate;
-                        logger.LogWarning("Domain '{Domain}' of site '{SiteName}' is not unique. '{Fallback}' is used instead", k11CmsSite.SiteDomainName, k11CmsSite.SiteName, candidate);
-                        protocol.Warning(HandbookReferences
-                            .InvalidSourceData<CmsSite>()
-                            .WithMessage($"Domain '{k11CmsSite.SiteDomainName}' of site '{k11CmsSite.SiteName}' is not unique. '{candidate}' is used instead"), k11CmsSite);
-                        break;
-                    }
+                {
+                    webSiteChannelDomain = candidate;
+                    logger.LogWarning("Domain '{Domain}' of site '{SiteName}' is not unique. '{Fallback}' is used instead", k11CmsSite.SiteDomainName, k11CmsSite.SiteName, candidate);
+                    protocol.Warning(HandbookReferences
+                        .InvalidSourceData<CmsSite>()
+                        .WithMessage($"Domain '{k11CmsSite.SiteDomainName}' of site '{k11CmsSite.SiteName}' is not unique. '{candidate}' is used instead"), k11CmsSite);
+                    break;
+                }
                 case { Success: false, Fallback: { } fallback }:
-                    {
-                        webSiteChannelDomain = fallback;
-                        logger.LogWarning("Unable to use domain '{Domain}' of site '{SiteName}' as channel domain. Fallback '{Fallback}' is used", k11CmsSite.SiteDomainName, k11CmsSite.SiteName, fallback);
-                        protocol.Warning(HandbookReferences
-                            .InvalidSourceData<CmsSite>()
-                            .WithMessage($"Non-unique domain name '{k11CmsSite.SiteDomainName}', fallback '{fallback}' used"), k11CmsSite);
-                        break;
-                    }
+                {
+                    webSiteChannelDomain = fallback;
+                    logger.LogWarning("Unable to use domain '{Domain}' of site '{SiteName}' as channel domain. Fallback '{Fallback}' is used", k11CmsSite.SiteDomainName, k11CmsSite.SiteName, fallback);
+                    protocol.Warning(HandbookReferences
+                        .InvalidSourceData<CmsSite>()
+                        .WithMessage($"Non-unique domain name '{k11CmsSite.SiteDomainName}', fallback '{fallback}' used"), k11CmsSite);
+                    break;
+                }
                 default:
-                    {
-                        logger.LogError("Unable to use domain '{Domain}' of site '{SiteName}' as channel domain. No fallback available, skipping site", k11CmsSite.SiteDomainName, k11CmsSite.SiteName);
-                        protocol.Warning(HandbookReferences
-                            .InvalidSourceData<CmsSite>()
-                            .WithMessage($"Invalid domain name for migration '{k11CmsSite.SiteDomainName}'"), k11CmsSite);
-                        continue;
-                    }
+                {
+                    logger.LogError("Unable to use domain '{Domain}' of site '{SiteName}' as channel domain. No fallback available, skipping site", k11CmsSite.SiteDomainName, k11CmsSite.SiteName);
+                    protocol.Warning(HandbookReferences
+                        .InvalidSourceData<CmsSite>()
+                        .WithMessage($"Invalid domain name for migration '{k11CmsSite.SiteDomainName}'"), k11CmsSite);
+                    continue;
+                }
             }
 
             await importer.ImportAsync(new ChannelModel
@@ -172,13 +179,13 @@ public class MigrateSitesCommandHandler(ILogger<MigrateSitesCommandHandler> logg
             {
                 migratedDomains.Add(webSiteChannelDomain);
 
-                var cmsReCaptchaPublicKey = KenticoHelper.GetSettingsKey(k11ContextFactory, k11CmsSite.SiteId, "CMSReCaptchaPublicKey");
-                var cmsReCaptchaPrivateKey = KenticoHelper.GetSettingsKey(k11ContextFactory, k11CmsSite.SiteId, "CMSReCaptchaPrivateKey");
+                string? cmsReCaptchaPublicKey = KenticoHelper.GetSettingsKey(k11ContextFactory, k11CmsSite.SiteId, "CMSReCaptchaPublicKey");
+                string? cmsReCaptchaPrivateKey = KenticoHelper.GetSettingsKey(k11ContextFactory, k11CmsSite.SiteId, "CMSReCaptchaPrivateKey");
 
                 WebsiteCaptchaSettingsInfo? reCaptchaSettings = null;
-                var cmsReCaptchaV3PrivateKey = KenticoHelper.GetSettingsKey(k11ContextFactory, k11CmsSite.SiteId, "CMSReCaptchaV3PrivateKey");
-                var cmsRecaptchaV3PublicKey = KenticoHelper.GetSettingsKey(k11ContextFactory, k11CmsSite.SiteId, "CMSRecaptchaV3PublicKey");
-                var cmsRecaptchaV3Threshold = KenticoHelper.GetSettingsKey<double>(k11ContextFactory, k11CmsSite.SiteId, "CMSRecaptchaV3Threshold");
+                string? cmsReCaptchaV3PrivateKey = KenticoHelper.GetSettingsKey(k11ContextFactory, k11CmsSite.SiteId, "CMSReCaptchaV3PrivateKey");
+                string? cmsRecaptchaV3PublicKey = KenticoHelper.GetSettingsKey(k11ContextFactory, k11CmsSite.SiteId, "CMSRecaptchaV3PublicKey");
+                double? cmsRecaptchaV3Threshold = KenticoHelper.GetSettingsKey<double>(k11ContextFactory, k11CmsSite.SiteId, "CMSRecaptchaV3Threshold");
 
                 if (!string.IsNullOrWhiteSpace(cmsReCaptchaV3PrivateKey) || !string.IsNullOrWhiteSpace(cmsRecaptchaV3PublicKey))
                 {
@@ -227,7 +234,7 @@ public class MigrateSitesCommandHandler(ILogger<MigrateSitesCommandHandler> logg
     {
         // simplified logic from CMS.DocumentEngine.DefaultPreferredCultureEvaluator.Evaluate()
         // domain alias skipped, HttpContext logic skipped
-        var siteCulture = site.SiteDefaultVisitorCulture.NullIf(string.Empty)
+        string? siteCulture = site.SiteDefaultVisitorCulture.NullIf(string.Empty)
                           ?? KenticoHelper.GetSettingsKey(k11ContextFactory, site.SiteId, SettingsKeys.CMSDefaultCultureCode);
 
         return siteCulture

@@ -1,15 +1,17 @@
-namespace Migration.Toolkit.Core.KX13.Behaviors;
 
 using MediatR;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KX13;
 using Migration.Toolkit.KX13.Context;
 
+namespace Migration.Toolkit.Core.KX13.Behaviors;
 public class CommandConstraintBehavior<TRequest, TResponse>(
     ILogger<CommandConstraintBehavior<TRequest, TResponse>> logger,
     IMigrationProtocol protocol,
@@ -25,7 +27,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
         {
             var kx13Context = await kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
-            var criticalCheckPassed = PerformChecks(request, kx13Context);
+            bool criticalCheckPassed = PerformChecks(request, kx13Context);
             if (!criticalCheckPassed)
             {
                 return (TResponse)(CommandResult)new CommandCheckFailedResult(criticalCheckPassed);
@@ -43,7 +45,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
 
     private bool PerformChecks(TRequest request, KX13Context kx13Context)
     {
-        var criticalCheckPassed = true;
+        bool criticalCheckPassed = true;
         // const string supportedVersion = "13.0.64";
         const string supportedVersion = "13.0.0";
         if (SemanticVersion.TryParse(supportedVersion, out var minimalVersion))
@@ -73,7 +75,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
 
     private bool CheckVersion(KX13Context kx13Context, SemanticVersion minimalVersion)
     {
-        var criticalCheckPassed = true;
+        bool criticalCheckPassed = true;
 
         #region Check conclusion methods
 
@@ -165,7 +167,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
 
         if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == SettingsKeys.CMSHotfixDataVersion) is { } cmsHotfixDataVersion)
         {
-            if (int.TryParse(cmsHotfixDataVersion.KeyValue, out var version))
+            if (int.TryParse(cmsHotfixDataVersion.KeyValue, out int version))
             {
                 if (version < minimalVersion.Hotfix)
                 {
@@ -184,7 +186,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
 
         if (kx13Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == SettingsKeys.CMSHotfixVersion) is { } cmsHotfixVersion)
         {
-            if (int.TryParse(cmsHotfixVersion.KeyValue, out var version))
+            if (int.TryParse(cmsHotfixVersion.KeyValue, out int version))
             {
                 if (version < minimalVersion.Hotfix)
                 {
@@ -206,7 +208,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
 
     private bool CheckSite(List<KX13M.CmsSite> sourceSites, int sourceSiteId)
     {
-        var criticalCheckPassed = true;
+        bool criticalCheckPassed = true;
         if (sourceSites.All(s => s.SiteId != sourceSiteId))
         {
             var supportedSites = sourceSites.Select(x => new
@@ -214,7 +216,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
                 x.SiteName,
                 x.SiteId
             }).ToArray();
-            var supportedSitesStr = string.Join(", ", supportedSites.Select(x => x.ToString()));
+            string supportedSitesStr = string.Join(", ", supportedSites.Select(x => x.ToString()));
             logger.LogCritical("Unable to find site with ID '{SourceSiteId}'. Check --siteId parameter. Supported sites: {SupportedSites}", sourceSiteId,
                 supportedSitesStr);
             protocol.Append(HandbookReferences.CommandConstraintBroken("Site exists")
@@ -232,8 +234,8 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
 
     private bool CheckCulture(ICultureReliantCommand cultureReliantCommand, List<KX13M.CmsSite> sourceSites)
     {
-        var criticalCheckPassed = true;
-        var cultureCode = cultureReliantCommand.CultureCode;
+        bool criticalCheckPassed = true;
+        string cultureCode = cultureReliantCommand.CultureCode;
         var siteCultureLookup = sourceSites
             .ToDictionary(x => x.SiteId, x => x.Cultures.Select(s => s.CultureCode.ToLowerInvariant()));
 
@@ -241,10 +243,10 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
         {
             if (siteCultureLookup.TryGetValue(site.SiteId, out var value))
             {
-                var siteCultures = value.ToArray();
+                string[] siteCultures = value.ToArray();
                 if (!siteCultures.Contains(cultureCode.ToLowerInvariant()))
                 {
-                    var supportedCultures = string.Join(", ", siteCultures);
+                    string supportedCultures = string.Join(", ", siteCultures);
                     logger.LogCritical("Unable to find culture '{Culture}' mapping to site '{SiteId}'. Check --culture parameter. Supported cultures for site: {SupportedCultures}", cultureCode, site.SiteId, supportedCultures);
                     protocol.Append(HandbookReferences.CommandConstraintBroken("Culture is mapped to site")
                         .WithMessage("Check program argument '--culture'")
@@ -260,20 +262,6 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
         }
 
         return criticalCheckPassed;
-    }
-
-    // TODO tk: 2022-11-02 create global rule
-    private bool CheckDbCollations()
-    {
-        var kxCollation = GetDbCollationName(toolkitConfiguration.KxConnectionString ?? throw new InvalidOperationException("KxConnectionString is required"));
-        var xbkCollation = GetDbCollationName(toolkitConfiguration.XbKConnectionString ?? throw new InvalidOperationException("XbKConnectionString is required"));
-        var collationAreSame = kxCollation == xbkCollation;
-        if (!collationAreSame)
-        {
-            logger.LogCritical("Source db collation '{SourceDbCollation}' is not same as target db collation {TargetDbCollation} => same collations are required", kxCollation, xbkCollation);
-        }
-
-        return collationAreSame;
     }
 
     private string? GetDbCollationName(string connectionString)

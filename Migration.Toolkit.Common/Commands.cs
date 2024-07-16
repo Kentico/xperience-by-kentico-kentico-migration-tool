@@ -1,8 +1,9 @@
-namespace Migration.Toolkit.Common;
 
 using MediatR;
+
 using Migration.Toolkit.Common.Abstractions;
 
+namespace Migration.Toolkit.Common;
 public record MigrateSitesCommand : IRequest<CommandResult>, ICommand
 {
     public static readonly int Rank = 1;

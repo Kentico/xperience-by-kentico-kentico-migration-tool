@@ -1,15 +1,18 @@
-namespace Migration.Toolkit.Core.KX12.Handlers;
 
 using CMS.DataEngine;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KX12.Context;
 using Migration.Toolkit.KX12.Models;
 
+namespace Migration.Toolkit.Core.KX12.Handlers;
 public class MigrateSettingKeysCommandHandler : IRequestHandler<MigrateSettingKeysCommand, CommandResult>
 {
     private readonly ILogger<MigrateSettingKeysCommandHandler> _logger;
@@ -51,7 +54,7 @@ public class MigrateSettingKeysCommandHandler : IRequestHandler<MigrateSettingKe
 
             var kxoGlobalSettingsKey = GetKxoSettingsKey(k12CmsSettingsKey);
 
-            var canBeMigrated = !kxoGlobalSettingsKey?.KeyIsHidden ?? false;
+            bool canBeMigrated = !kxoGlobalSettingsKey?.KeyIsHidden ?? false;
             var kxoCmsSettingsKey = k12CmsSettingsKey.SiteId is null ? kxoGlobalSettingsKey : GetKxoSettingsKey(k12CmsSettingsKey);
 
             if (!canBeMigrated)
@@ -98,8 +101,5 @@ public class MigrateSettingKeysCommandHandler : IRequestHandler<MigrateSettingKe
         return new GenericCommandResult();
     }
 
-    private SettingsKeyInfo? GetKxoSettingsKey(CmsSettingsKey k12CmsSettingsKey)
-    {
-        return SettingsKeyInfoProvider.ProviderObject.Get(k12CmsSettingsKey.KeyName);
-    }
+    private SettingsKeyInfo? GetKxoSettingsKey(CmsSettingsKey k12CmsSettingsKey) => SettingsKeyInfoProvider.ProviderObject.Get(k12CmsSettingsKey.KeyName);
 }

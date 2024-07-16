@@ -1,11 +1,12 @@
-namespace Migration.Toolkit.Core.KX12.Mappers;
 
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX12.Contexts;
 using Migration.Toolkit.KXP.Models;
 
+namespace Migration.Toolkit.Core.KX12.Mappers;
 public class CmsSettingsCategoryMapper : EntityMapperBase<KX12M.CmsSettingsCategory,
     CmsSettingsCategory>
 {
@@ -54,19 +55,22 @@ public class CmsSettingsCategoryMapper : EntityMapperBase<KX12M.CmsSettingsCateg
                 switch (_cmsResourceMapper.Map(source.CategoryResource, target.CategoryResource))
                 {
                     case { Success: true } result:
-                        {
-                            target.CategoryResource = result.Item;
-                            break;
-                        }
+                    {
+                        target.CategoryResource = result.Item;
+                        break;
+                    }
                     case { Success: false } result:
-                        {
-                            addFailure(new MapperResultFailure<CmsSettingsCategory>(result.HandbookReference));
-                            break;
-                        }
+                    {
+                        addFailure(new MapperResultFailure<CmsSettingsCategory>(result.HandbookReference));
+                        break;
+                    }
+
+                    default:
+                        break;
                 }
             }
         }
-        else if (mappingHelper.TranslateIdAllowNulls<KX12M.CmsResource>(r => r.ResourceId, source.CategoryResourceId, out var categoryResourceId))
+        else if (mappingHelper.TranslateIdAllowNulls<KX12M.CmsResource>(r => r.ResourceId, source.CategoryResourceId, out int? categoryResourceId))
         {
             target.CategoryResourceId = categoryResourceId;
         }
@@ -76,18 +80,21 @@ public class CmsSettingsCategoryMapper : EntityMapperBase<KX12M.CmsSettingsCateg
             switch (Map(source.CategoryParent, target.CategoryParent))
             {
                 case { Success: true } result:
-                    {
-                        target.CategoryParent = result.Item;
-                        break;
-                    }
+                {
+                    target.CategoryParent = result.Item;
+                    break;
+                }
                 case { Success: false } result:
-                    {
-                        addFailure(new MapperResultFailure<CmsSettingsCategory>(result.HandbookReference));
-                        break;
-                    }
+                {
+                    addFailure(new MapperResultFailure<CmsSettingsCategory>(result.HandbookReference));
+                    break;
+                }
+
+                default:
+                    break;
             }
         }
-        else if (mappingHelper.TranslateIdAllowNulls<KX12M.CmsCategory>(c => c.CategoryId, source.CategoryParentId, out var categoryParentId))
+        else if (mappingHelper.TranslateIdAllowNulls<KX12M.CmsCategory>(c => c.CategoryId, source.CategoryParentId, out int? categoryParentId))
         {
             target.CategoryParentId = categoryParentId;
         }

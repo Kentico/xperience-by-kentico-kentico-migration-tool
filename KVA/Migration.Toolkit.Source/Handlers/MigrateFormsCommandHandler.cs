@@ -1,14 +1,17 @@
-namespace Migration.Toolkit.Source.Handlers;
 
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Xml.Linq;
+
 using CMS.Base;
 using CMS.DataEngine;
+
 using MediatR;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
@@ -19,11 +22,12 @@ using Migration.Toolkit.KXP.Models;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Model;
 
+namespace Migration.Toolkit.Source.Handlers;
 public class MigrateFormsCommandHandler(
     ILogger<MigrateFormsCommandHandler> logger,
     IDbContextFactory<KxpContext> kxpContextFactory,
     IEntityMapper<ICmsClass, DataClassInfo> dataClassMapper,
-    IEntityMapper<ICmsForm, KXP.Models.CmsForm> cmsFormMapper,
+    IEntityMapper<ICmsForm, CmsForm> cmsFormMapper,
     KxpClassFacade kxpClassFacade,
     BulkDataCopyService bulkDataCopyService,
     PrimaryKeyMappingContext primaryKeyMappingContext,
@@ -45,7 +49,7 @@ public class MigrateFormsCommandHandler(
             var kxoDataClass = kxpClassFacade.GetClass(ksClass.ClassGUID);
             protocol.FetchedTarget(kxoDataClass);
 
-            var classSuccessFullySaved = MapAndSaveUsingKxoApi(ksClass, kxoDataClass);
+            bool classSuccessFullySaved = MapAndSaveUsingKxoApi(ksClass, kxoDataClass);
             if (!classSuccessFullySaved)
             {
                 continue;
@@ -95,7 +99,7 @@ public class MigrateFormsCommandHandler(
                         _kxpContext = await kxpContextFactory.CreateDbContextAsync(cancellationToken);
 
                         protocol.Append(HandbookReferences
-                            .ErrorCreatingTargetInstance<KXP.Models.CmsForm>(ex)
+                            .ErrorCreatingTargetInstance<CmsForm>(ex)
                             .NeedsManualAction()
                             .WithIdentityPrint(cmsForm)
                         );
@@ -153,8 +157,8 @@ public class MigrateFormsCommandHandler(
     {
         foreach (var cmsSite in modelFacade.SelectAll<ICmsSite>())
         {
-            var globalBizformFiles = CMS.IO.Path.Combine(SystemContext.WebApplicationPhysicalPath, "BizFormFiles");
-            var siteBizFormFiles = CMS.IO.Path.Combine(configuration.KxCmsDirPath, cmsSite.SiteName, "bizformfiles");
+            string globalBizformFiles = CMS.IO.Path.Combine(SystemContext.WebApplicationPhysicalPath, "BizFormFiles");
+            string siteBizFormFiles = CMS.IO.Path.Combine(configuration.KxCmsDirPath, cmsSite.SiteName, "bizformfiles");
             if (CMS.IO.Directory.Exists(siteBizFormFiles))
             {
                 Debug.WriteLine($"Copying site bizformfiles from '{siteBizFormFiles}' to global bizformfiles '{globalBizformFiles}'");
@@ -256,8 +260,5 @@ public class MigrateFormsCommandHandler(
         return false;
     }
 
-    public void Dispose()
-    {
-        _kxpContext.Dispose();
-    }
+    public void Dispose() => _kxpContext.Dispose();
 }

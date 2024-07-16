@@ -1,11 +1,13 @@
-namespace Migration.Toolkit.KXP;
 
 using System.Diagnostics;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.KXP.Context;
 
+namespace Migration.Toolkit.KXP;
 public static class DependencyInjectionExtensions
 {
     public static IServiceCollection UseKxpDbContext(this IServiceCollection services, ToolkitConfiguration toolkitConfiguration)

@@ -1,14 +1,16 @@
-namespace Migration.Toolkit.Core.K11.Mappers;
 
 using CMS.FormEngine;
 using CMS.OnlineForms;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.K11.Contexts;
 using Migration.Toolkit.KXP.Models;
 
+namespace Migration.Toolkit.Core.K11.Mappers;
 public class CmsFormMapper(ILogger<CmsFormMapper> logger,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol)
@@ -34,7 +36,7 @@ public class CmsFormMapper(ILogger<CmsFormMapper> logger,
         target.FormLogActivity = source.FormLogActivity.UseKenticoDefault();
         // target.FormBuilderLayout = source.FormBuilderLayout;
 
-        if (mappingHelper.TranslateRequiredId<Toolkit.K11.Models.CmsClass>(c => c.ClassId, source.FormClassId, out var formClassId))
+        if (mappingHelper.TranslateRequiredId<Toolkit.K11.Models.CmsClass>(c => c.ClassId, source.FormClassId, out int formClassId))
         {
             target.FormClassID = formClassId;
         }
@@ -43,7 +45,7 @@ public class CmsFormMapper(ILogger<CmsFormMapper> logger,
     }
 }
 
-public class CmsFormMapperEf(ILogger<CmsFormMapperEf> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : EntityMapperBase<Toolkit.K11.Models.CmsForm, Migration.Toolkit.KXP.Models.CmsForm>(logger, pkContext, protocol)
+public class CmsFormMapperEf(ILogger<CmsFormMapperEf> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : EntityMapperBase<Toolkit.K11.Models.CmsForm, CmsForm>(logger, pkContext, protocol)
 {
     protected override CmsForm? CreateNewInstance(Toolkit.K11.Models.CmsForm source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
@@ -70,7 +72,7 @@ public class CmsFormMapperEf(ILogger<CmsFormMapperEf> logger, PrimaryKeyMappingC
         target.FormLogActivity = source.FormLogActivity ?? false;
         // target.FormBuilderLayout = source.FormBuilderLayout;
 
-        if (mappingHelper.TranslateRequiredId<Toolkit.K11.Models.CmsClass>(c => c.ClassId, source.FormClassId, out var classId))
+        if (mappingHelper.TranslateRequiredId<Toolkit.K11.Models.CmsClass>(c => c.ClassId, source.FormClassId, out int classId))
         {
             target.FormClassId = classId;
         }

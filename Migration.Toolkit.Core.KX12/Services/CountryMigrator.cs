@@ -1,8 +1,9 @@
-namespace Migration.Toolkit.Core.KX12.Services;
 
 using CMS.Globalization;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
@@ -11,6 +12,7 @@ using Migration.Toolkit.KX12.Context;
 using Migration.Toolkit.KX12.Models;
 using Migration.Toolkit.KXP.Api;
 
+namespace Migration.Toolkit.Core.KX12.Services;
 public class CountryMigrator
 {
     private readonly ILogger<CountryMigrator> _logger;
@@ -26,8 +28,8 @@ public class CountryMigrator
         IDbContextFactory<KX12Context> kx12ContextFactory,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol,
-        IEntityMapper<KX12M.CmsCountry, CountryInfo> countryMapper,
-        IEntityMapper<KX12M.CmsState, StateInfo> stateMapper,
+        IEntityMapper<CmsCountry, CountryInfo> countryMapper,
+        IEntityMapper<CmsState, StateInfo> stateMapper,
         KxpApiInitializer kxpApiInitializer
     )
     {
@@ -71,7 +73,7 @@ public class CountryMigrator
                     _protocol.Success(k12CmsCountry, countryInfo, mapped);
                     _logger.LogEntitySetAction(newInstance, countryInfo);
 
-                    _primaryKeyMappingContext.SetMapping<KX12M.CmsCountry>(r => r.CountryId, k12CmsCountry.CountryId, countryInfo.CountryID);
+                    _primaryKeyMappingContext.SetMapping<CmsCountry>(r => r.CountryId, k12CmsCountry.CountryId, countryInfo.CountryID);
                 }
                 catch (Exception exception)
                 {
@@ -107,7 +109,7 @@ public class CountryMigrator
                     _protocol.Success(k12CmsState, stateInfo, mapped);
                     _logger.LogEntitySetAction(newInstance, stateInfo);
 
-                    _primaryKeyMappingContext.SetMapping<KX12M.CmsState>(r => r.StateId, k12CmsState.StateId, stateInfo.StateID);
+                    _primaryKeyMappingContext.SetMapping<CmsState>(r => r.StateId, k12CmsState.StateId, stateInfo.StateID);
                 }
                 catch (Exception exception)
                 {

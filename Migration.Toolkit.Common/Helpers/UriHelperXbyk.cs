@@ -1,7 +1,7 @@
-namespace Migration.Toolkit.Common.Helpers;
 
 using System.Text;
 
+namespace Migration.Toolkit.Common.Helpers;
 public static class UriHelperXbyk
 {
     public static string BuildXbyKDomainString(Uri uri, int expectedSize)
@@ -26,7 +26,7 @@ public static class UriHelperXbyk
     public static UniqueDomainResult GetUniqueDomainCandidate(string input, ref int startPort, Func<string, bool> checkIsUnique, int maxAttempts = 100)
     {
         bool useFallback = false;
-        var initial = input;
+        string initial = input;
         if (string.IsNullOrWhiteSpace(input))
         {
             initial = "https://localhost";
@@ -46,8 +46,8 @@ public static class UriHelperXbyk
 
         var uri = uriTmp ?? new Uri("https://localhost");
 
-        var changed = false;
-        var candidate = BuildXbyKDomainString(uri, initial.Length + 20);
+        bool changed = false;
+        string candidate = BuildXbyKDomainString(uri, initial.Length + 20);
         while (!checkIsUnique(candidate) && --maxAttempts > 0)
         {
             var builder = new UriBuilder(uri)

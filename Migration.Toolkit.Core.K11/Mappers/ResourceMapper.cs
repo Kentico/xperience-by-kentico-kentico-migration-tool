@@ -1,13 +1,15 @@
-namespace Migration.Toolkit.Core.K11.Mappers;
 
 using CMS.Modules;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Enumerations;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.K11.Contexts;
 using Migration.Toolkit.K11.Models;
 
+namespace Migration.Toolkit.Core.K11.Mappers;
 public class ResourceMapper(ILogger<ResourceMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : EntityMapperBase<CmsResource, ResourceInfo>(logger, pkContext, protocol)
 {
     protected override ResourceInfo? CreateNewInstance(CmsResource source, MappingHelper mappingHelper, AddFailure addFailure)
@@ -34,7 +36,7 @@ public class ResourceMapper(ILogger<ResourceMapper> logger, PrimaryKeyMappingCon
 
             if (target.ResourceName.StartsWith("CMS.", StringComparison.InvariantCultureIgnoreCase))
             {
-                var targetResourceNamePatched = target.ResourceName.Substring(4, target.ResourceName.Length - 4);
+                string targetResourceNamePatched = target.ResourceName[4..];
                 logger.LogInformation("Patching CMS Resource '{ResourceName}': name changed to '{ResourceNamePatched}'", target.ResourceName, targetResourceNamePatched);
                 target.ResourceName = targetResourceNamePatched;
             }

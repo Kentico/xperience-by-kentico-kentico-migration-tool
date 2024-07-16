@@ -1,10 +1,12 @@
-namespace Migration.Toolkit.Core.K11.Handlers;
 
 using CMS.Membership;
+
 using MediatR;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
@@ -14,6 +16,7 @@ using Migration.Toolkit.K11.Models;
 using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Api.Enums;
 
+namespace Migration.Toolkit.Core.K11.Handlers;
 public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logger,
         IDbContextFactory<K11Context> k11ContextFactory,
         IEntityMapper<CmsUser, UserInfo> userInfoMapper,
@@ -156,7 +159,10 @@ public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logg
 
         await foreach (var k11CmsRole in k11CmsRoles.WithCancellation(cancellationToken))
         {
-            if (skippedRoles.Contains(k11CmsRole.RoleGuid)) continue;
+            if (skippedRoles.Contains(k11CmsRole.RoleGuid))
+            {
+                continue;
+            }
 
             protocol.FetchedSource(k11CmsRole);
 
@@ -213,7 +219,7 @@ public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logg
         await foreach (var k11UserRole in k11UserRoles)
         {
             protocol.FetchedSource(k11UserRole);
-            if (!primaryKeyMappingContext.TryRequireMapFromSource<CmsRole>(u => u.RoleId, k11RoleId, out var xbkRoleId))
+            if (!primaryKeyMappingContext.TryRequireMapFromSource<CmsRole>(u => u.RoleId, k11RoleId, out int xbkRoleId))
             {
                 var handbookRef = HandbookReferences
                     .MissingRequiredDependency<KXP.Models.CmsRole>(nameof(UserRoleInfo.RoleID), k11UserRole.RoleId)
@@ -224,7 +230,7 @@ public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logg
                 continue;
             }
 
-            if (!primaryKeyMappingContext.TryRequireMapFromSource<CmsUser>(u => u.UserId, k11UserRole.UserId, out var xbkUserId))
+            if (!primaryKeyMappingContext.TryRequireMapFromSource<CmsUser>(u => u.UserId, k11UserRole.UserId, out int xbkUserId))
             {
                 continue;
             }

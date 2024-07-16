@@ -1,13 +1,14 @@
-namespace Migration.Toolkit.Core.KX12.Services;
 
 using System.Linq.Expressions;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
-using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.KX12.Context;
 using Migration.Toolkit.KXP.Context;
 
+namespace Migration.Toolkit.Core.KX12.Services;
 public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
 {
     private readonly ILogger<PrimaryKeyLocatorService> _logger;
@@ -29,10 +30,7 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
     {
         private readonly Func<T?, T?, bool> _equalityComparer;
 
-        public KeyEqualityComparerWithLambda(Func<T?, T?, bool> equalityComparer)
-        {
-            _equalityComparer = equalityComparer;
-        }
+        public KeyEqualityComparerWithLambda(Func<T?, T?, bool> equalityComparer) => _equalityComparer = equalityComparer;
 
         public bool Equals(T? x, T? y) => _equalityComparer.Invoke(x, y);
 
@@ -47,7 +45,7 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
         using var kx12Context = _kx12ContextFactory.CreateDbContext();
 
         var sourceType = typeof(T);
-        var memberName = keyNameSelector.GetMemberName();
+        string memberName = keyNameSelector.GetMemberName();
 
         _logger.LogTrace("Preload of entity {Entity} member {MemberName} mapping requested", sourceType.Name, memberName);
 
@@ -183,21 +181,21 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
 
             if (sourceType == typeof(KX12M.CmsState))
             {
-                var k12CodeName = KX12Context.CmsStates.Where(c => c.StateId == sourceId).Select(x => x.StateName).Single();
+                string k12CodeName = KX12Context.CmsStates.Where(c => c.StateId == sourceId).Select(x => x.StateName).Single();
                 targetId = kxpContext.CmsStates.Where(x => x.StateName == k12CodeName).Select(x => x.StateId).Single();
                 return true;
             }
 
             if (sourceType == typeof(KX12M.CmsCountry))
             {
-                var k12CodeName = KX12Context.CmsCountries.Where(c => c.CountryId == sourceId).Select(x => x.CountryName).Single();
+                string k12CodeName = KX12Context.CmsCountries.Where(c => c.CountryId == sourceId).Select(x => x.CountryName).Single();
                 targetId = kxpContext.CmsCountries.Where(x => x.CountryName == k12CodeName).Select(x => x.CountryId).Single();
                 return true;
             }
 
             if (sourceType == typeof(KX12M.OmContactStatus))
             {
-                var k12Guid = KX12Context.OmContactStatuses.Where(c => c.ContactStatusId == sourceId).Select(x => x.ContactStatusName).Single();
+                string k12Guid = KX12Context.OmContactStatuses.Where(c => c.ContactStatusId == sourceId).Select(x => x.ContactStatusName).Single();
                 targetId = kxpContext.OmContactStatuses.Where(x => x.ContactStatusName == k12Guid).Select(x => x.ContactStatusId).Single();
                 return true;
             }

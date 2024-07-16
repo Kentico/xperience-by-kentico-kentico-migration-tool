@@ -1,12 +1,14 @@
-namespace Migration.Toolkit.Core.KX13.Services;
 
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KXP.Context;
 
+namespace Migration.Toolkit.Core.KX13.Services;
 public class KeyLocatorService
 {
     private readonly ILogger<KeyLocatorService> _logger;
@@ -16,7 +18,7 @@ public class KeyLocatorService
     public KeyLocatorService(
         ILogger<KeyLocatorService> logger,
         IDbContextFactory<KxpContext> kxpContextFactory,
-        IDbContextFactory<Toolkit.KX13.Context.KX13Context> kx13ContextFactory
+        IDbContextFactory<KX13Context> kx13ContextFactory
     )
     {
         _logger = logger;
@@ -53,11 +55,7 @@ public class KeyLocatorService
             var kx13Guid = kx13Context.Set<TSource>().Where(sourcePredicate).Select(sourceGuidSelector).Single();
 
             var param = Expression.Parameter(typeof(TTarget), "t");
-            var member = targetGuidSelector.Body as MemberExpression;
-            if (member == null)
-            {
-                throw new InvalidOperationException($"Expression SHALL NOT be other than member expression, expression: {targetGuidSelector}");
-            }
+            var member = targetGuidSelector.Body as MemberExpression ?? throw new InvalidOperationException($"Expression SHALL NOT be other than member expression, expression: {targetGuidSelector}");
             var targetEquals = Expression.Equal(
                 Expression.MakeMemberAccess(param, member.Member),
                 Expression.Constant(kx13Guid, typeof(Guid))

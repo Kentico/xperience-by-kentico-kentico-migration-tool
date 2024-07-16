@@ -44,8 +44,5 @@ public class DeferrableItemEnumerableWrapper<T>(IEnumerable<T> innerEnumerable, 
         }
     }
 
-    public void Dispose()
-    {
-        _innerEnumerator.Dispose();
-    }
+    public void Dispose() => _innerEnumerator.Dispose();
 }

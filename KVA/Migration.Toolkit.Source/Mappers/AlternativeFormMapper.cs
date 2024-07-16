@@ -1,16 +1,17 @@
-namespace Migration.Toolkit.Source.Mappers;
 
 using CMS.DataEngine;
 using CMS.FormEngine;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Enumerations;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Api.Services.CmsClass;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Model;
-using Migration.Toolkit.Source.Services;
 
+namespace Migration.Toolkit.Source.Mappers;
 public record AlternativeFormMapperSource(ICmsAlternativeForm AlternativeForm, DataClassInfo XbkFormClass);
 
 public class AlternativeFormMapper(
@@ -29,23 +30,23 @@ public class AlternativeFormMapper(
     {
         var (source, xbkFormClass) = sourceObj;
 
-        target.FormClassID = mappingHelper.TranslateIdAllowNulls<ICmsClass>(c => c.ClassID, source.FormClassID, out var classId)
+        target.FormClassID = mappingHelper.TranslateIdAllowNulls<ICmsClass>(c => c.ClassID, source.FormClassID, out int? classId)
             ? classId ?? 0
             : 0;
-        target.FormCoupledClassID = mappingHelper.TranslateIdAllowNulls<ICmsClass>(c => c.ClassID, source.FormCoupledClassID, out var coupledClassId)
+        target.FormCoupledClassID = mappingHelper.TranslateIdAllowNulls<ICmsClass>(c => c.ClassID, source.FormCoupledClassID, out int? coupledClassId)
             ? coupledClassId ?? 0
             : 0;
 
         var formCoupledClass = modelFacade.SelectById<ICmsClass>(source.FormCoupledClassID);
         var formClass = modelFacade.SelectById<ICmsClass>(source.FormClassID);
 
-        var coupledClassIsDeprecated =
+        bool coupledClassIsDeprecated =
             formCoupledClass?.ClassName is { } coupledClassName &&
             K12SystemClass.NoLongerSupported.Contains(coupledClassName);
 
-        var classIsSysInternal = K12SystemClass.All.Contains(formClass.ClassName);
+        bool classIsSysInternal = K12SystemClass.All.Contains(formClass.ClassName);
 
-        var mergedDefinition = formClass.ClassFormDefinition;
+        string mergedDefinition = formClass.ClassFormDefinition;
         if (formCoupledClass != null)
         {
             logger.LogDebug("Merging coupled class ('{FormCoupledClassName}') form definition with form definition ('{FormClassName}')", formCoupledClass.ClassName, formClass.ClassName);
@@ -81,9 +82,9 @@ public class AlternativeFormMapper(
             logger.LogDebug("Fields ({Count}) after deprecated removal: {Fields}", fileNamesAfterDeprecatedRemoval.Count, string.Join(",", fileNamesAfterDeprecatedRemoval));
         }
 
-        var result = new FormInfo(patcher.GetPatched()).GetXmlDefinition();
+        string result = new FormInfo(patcher.GetPatched()).GetXmlDefinition();
 
-        var formDefinitionDifference = FormHelper.GetFormDefinitionDifference(xbkFormClass.ClassFormDefinition, result, true);
+        string formDefinitionDifference = FormHelper.GetFormDefinitionDifference(xbkFormClass.ClassFormDefinition, result, true);
 
         target.FormDefinition = formDefinitionDifference;
 

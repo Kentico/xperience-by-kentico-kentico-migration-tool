@@ -1,10 +1,12 @@
-namespace Migration.Toolkit.KXP.Api.Services.CmsClass;
 
 using System.Xml.Linq;
 using System.Xml.XPath;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 
+namespace Migration.Toolkit.KXP.Api.Services.CmsClass;
 public class FormDefinitionPatcher
 {
     private const string CATEGORY_ELEM = "category";
@@ -83,17 +85,14 @@ public class FormDefinitionPatcher
         _xDoc = XDocument.Parse(_formDefinitionXml);
     }
 
-    public IEnumerable<string?> GetFieldNames()
-    {
-        return _xDoc.XPathSelectElements($"//{FIELD_ELEM}").Select(x => x.Attribute(FIELD_ATTR_COLUMN)?.Value);
-    }
+    public IEnumerable<string?> GetFieldNames() => _xDoc.XPathSelectElements($"//{FIELD_ELEM}").Select(x => x.Attribute(FIELD_ATTR_COLUMN)?.Value);
 
     public void RemoveCategories()
     {
         var categories = (_xDoc.Root?.XPathSelectElements($"//{CATEGORY_ELEM}") ?? Enumerable.Empty<XElement>()).ToList();
         foreach (var xElement in categories)
         {
-            var elementDescriptor = xElement.ToString();
+            string elementDescriptor = xElement.ToString();
             if (xElement.Attribute(FIELD_ATTR_NAME)?.Value is { } name)
             {
                 elementDescriptor = name;
@@ -111,7 +110,7 @@ public class FormDefinitionPatcher
         if (otherDoc.Root?.Elements() is { } elements)
         {
             var elementList = elements.ToList();
-            foreach (XElement field in elementList)
+            foreach (var field in elementList)
             {
                 if (field.Attribute(FIELD_ATTR_COLUMN)?.Value is { } fieldToRemoveName)
                 {
@@ -160,10 +159,7 @@ public class FormDefinitionPatcher
         }
     }
 
-    public string? GetPatched()
-    {
-        return _xDoc.Root?.ToString();
-    }
+    public string? GetPatched() => _xDoc.Root?.ToString();
 
     private void PatchField(XElement field)
     {
@@ -175,15 +171,15 @@ public class FormDefinitionPatcher
         var enabledAttr = field.Attribute(FIELD_ATTR_ENABLED);
         var guidAttr = field.Attribute(FIELD_ATTR_GUID);
 
-        var isPk = bool.TryParse(isPkAttr?.Value, out var isPkParsed) && isPkParsed;
-        var system = bool.TryParse(systemAttr?.Value, out var sysParsed) && sysParsed;
+        bool isPk = bool.TryParse(isPkAttr?.Value, out bool isPkParsed) && isPkParsed;
+        bool system = bool.TryParse(systemAttr?.Value, out bool sysParsed) && sysParsed;
 
-        var fieldDescriptor = (columnAttr ?? guidAttr)?.Value ?? "<no guid or column>";
+        string fieldDescriptor = (columnAttr ?? guidAttr)?.Value ?? "<no guid or column>";
 
         // cleanup of no longer supported fields
         foreach (var a in field.Attributes())
         {
-            var an = a.Name.ToString();
+            string an = a.Name.ToString();
             if (!_allowedFieldAttributes.Contains(an))
             {
                 a.Remove();
@@ -198,10 +194,13 @@ public class FormDefinitionPatcher
             return;
         }
 
-        var columnType = columnTypeAttr?.Value;
+        string? columnType = columnTypeAttr?.Value;
         if (columnType == null)
         {
-            if (isPk) return;
+            if (isPk)
+            {
+                return;
+            }
 
             _logger.LogError("Field ('{Field}') 'columnType' attribute is required", fieldDescriptor);
             return;
@@ -209,7 +208,7 @@ public class FormDefinitionPatcher
 
 
         var controlNameElem = field.XPathSelectElement($"{FIELD_ELEM_SETTINGS}/{SETTINGS_ELEM_CONTROLNAME}");
-        var controlName = controlNameElem?.Value;
+        string? controlName = controlNameElem?.Value;
 
         if (_fieldMigrationService.GetFieldMigration(columnType, controlName, columnAttr?.Value) is var (sourceDataType, targetDataType, sourceFormControl, targetFormComponent, actions, fieldNameRegex))
         {
@@ -233,19 +232,19 @@ public class FormDefinitionPatcher
                     PerformActionsOnField(field, fieldDescriptor, actions);
                     break;
                 default:
-                    {
-                        _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:NONE => from control '{ControlName}' => {TargetFormComponent}", fieldDescriptor, controlName, targetFormComponent);
-                        controlNameElem?.SetValue(targetFormComponent);
-                        PerformActionsOnField(field, fieldDescriptor, actions);
-                        break;
-                    }
+                {
+                    _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:NONE => from control '{ControlName}' => {TargetFormComponent}", fieldDescriptor, controlName, targetFormComponent);
+                    controlNameElem?.SetValue(targetFormComponent);
+                    PerformActionsOnField(field, fieldDescriptor, actions);
+                    break;
+                }
             }
         }
 
 
         if (!_classIsForm && !_classIsDocumentType)
         {
-            var hasVisibleAttribute = visibleAttr != null;
+            bool hasVisibleAttribute = visibleAttr != null;
             if (enabledAttr is { } enabled)
             {
                 enabled.Remove();
@@ -279,29 +278,29 @@ public class FormDefinitionPatcher
                 switch (fieldChildNode.Name.ToString())
                 {
                     case FIELD_ELEM_PROPERTIES:
-                        {
-                            PatchProperties(fieldChildNode);
-                            break;
-                        }
+                    {
+                        PatchProperties(fieldChildNode);
+                        break;
+                    }
                     case FIELD_ELEM_SETTINGS:
+                    {
+                        if (_altForm)
                         {
-                            if (_altForm)
-                            {
-                                PatchSettings(fieldChildNode);
-                            }
-                            else
-                            {
-                                // XbK Resource / Module class no longer supports visual representation
-                                ClearSettings(fieldChildNode);
-                            }
-                            break;
+                            PatchSettings(fieldChildNode);
                         }
+                        else
+                        {
+                            // XbK Resource / Module class no longer supports visual representation
+                            ClearSettings(fieldChildNode);
+                        }
+                        break;
+                    }
                     default:
-                        {
-                            _logger.LogDebug("Removing field element '{ElementName}'", fieldChildNode.Name);
-                            fieldChildNode.Remove();
-                            break;
-                        }
+                    {
+                        _logger.LogDebug("Removing field element '{ElementName}'", fieldChildNode.Name);
+                        fieldChildNode.Remove();
+                        break;
+                    }
                 }
             }
         }
@@ -371,47 +370,53 @@ public class FormDefinitionPatcher
 
     private void PerformActionsOnField(XElement field, string fieldDescriptor, string[]? actions)
     {
-        if (actions == null) return;
+        if (actions == null)
+        {
+            return;
+        }
 
-        foreach (var action in actions)
+        foreach (string action in actions)
         {
             _logger.LogDebug("Field {FieldDescriptor} Action: {Action}", fieldDescriptor, action);
             switch (action)
             {
                 case TcaDirective.ClearSettings:
-                    {
-                        field.Element(FIELD_ELEM_SETTINGS)?.Remove();
-                        break;
-                    }
+                {
+                    field.Element(FIELD_ELEM_SETTINGS)?.Remove();
+                    break;
+                }
                 case TcaDirective.ClearMacroTable:
-                    {
-                        // TODO tk: 2022-10-11 really needed?
-                        break;
-                    }
+                {
+                    // TODO tk: 2022-10-11 really needed?
+                    break;
+                }
                 case TcaDirective.ConvertToAsset:
-                    {
-                        field
-                            .EnsureElement(FIELD_ELEM_SETTINGS)
-                            .EnsureElement(SETTINGS_MAXIMUMASSETS, maxAssets => maxAssets.Value = SETTINGS_MAXIMUMASSETS_FALLBACK);
-                        break;
-                    }
+                {
+                    field
+                        .EnsureElement(FIELD_ELEM_SETTINGS)
+                        .EnsureElement(SETTINGS_MAXIMUMASSETS, maxAssets => maxAssets.Value = SETTINGS_MAXIMUMASSETS_FALLBACK);
+                    break;
+                }
                 case TcaDirective.ConvertToPages:
-                    {
-                        field
-                            .EnsureElement(FIELD_ELEM_SETTINGS, settings =>
-                            {
-                                settings.EnsureElement(SETTINGS_MAXIMUMPAGES, maxAssets => maxAssets.Value = SETTINGS_MAXIMUMPAGES_FALLBACK);
-                                settings.EnsureElement(SETTINGS_ROOTPATH, maxAssets => maxAssets.Value = SETTINGS_ROOTPATH_FALLBACK); // TODO tk: 2022-08-31 describe why?
-                            });
+                {
+                    field
+                        .EnsureElement(FIELD_ELEM_SETTINGS, settings =>
+                        {
+                            settings.EnsureElement(SETTINGS_MAXIMUMPAGES, maxAssets => maxAssets.Value = SETTINGS_MAXIMUMPAGES_FALLBACK);
+                            settings.EnsureElement(SETTINGS_ROOTPATH, maxAssets => maxAssets.Value = SETTINGS_ROOTPATH_FALLBACK); // TODO tk: 2022-08-31 describe why?
+                        });
 
-                        field.SetAttributeValue(FIELD_ATTR_SIZE, FIELD_ATTR_SIZE_ZERO); // TODO tk: 2022-08-31 describe why?
+                    field.SetAttributeValue(FIELD_ATTR_SIZE, FIELD_ATTR_SIZE_ZERO); // TODO tk: 2022-08-31 describe why?
 
-                        var settings = field.EnsureElement(FIELD_ELEM_SETTINGS);
-                        settings.EnsureElement("TreePath", element => element.Value = settings.Element("RootPath")?.Value ?? "");
-                        settings.EnsureElement("RootPath").Remove();
+                    var settings = field.EnsureElement(FIELD_ELEM_SETTINGS);
+                    settings.EnsureElement("TreePath", element => element.Value = settings.Element("RootPath")?.Value ?? "");
+                    settings.EnsureElement("RootPath").Remove();
 
-                        break;
-                    }
+                    break;
+                }
+
+                default:
+                    break;
             }
         }
     }

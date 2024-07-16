@@ -1,11 +1,9 @@
-using System;
-using System.IO;
-using System.Linq;
 using System.Reflection;
+
 using CMS;
-using CMS.Core;
 using CMS.Base;
 using CMS.Base.Routing;
+using CMS.Core;
 using CMS.Helpers;
 using CMS.MediaLibrary;
 using CMS.Routing.Web;
@@ -54,12 +52,12 @@ public class AttachmentsService : ActionResultServiceBase
 
     protected override CMSActionResult GetActionResultInternal()
     {
-        var pathAndFileName = QueryHelper.GetString("pathandfilename", null);
+        string pathAndFileName = QueryHelper.GetString("pathandfilename", null);
         if (pathAndFileName != null)
         {
             pathAndFileName = pathAndFileName.TrimEnd('/');
-            var dir = System.IO.Path.GetDirectoryName(pathAndFileName)?.Replace("\\", "/");
-            var fileName = System.IO.Path.GetFileNameWithoutExtension(pathAndFileName);
+            string dir = System.IO.Path.GetDirectoryName(pathAndFileName)?.Replace("\\", "/");
+            string fileName = System.IO.Path.GetFileNameWithoutExtension(pathAndFileName);
 
             var mediaFiles = MediaFileInfoProvider.ProviderObject.Get()
                 .Columns(
@@ -87,7 +85,7 @@ public class AttachmentsService : ActionResultServiceBase
                 mediaFile = mediaFiles.FirstOrDefault();
             }
 
-            var mediaPath = MediaFileInfoProvider.GetMediaFilePath(mediaFile.FilePath, mediaFile.FileLibraryID, SystemContext.WebApplicationPhysicalPath);
+            string mediaPath = MediaFileInfoProvider.GetMediaFilePath(mediaFile.FilePath, mediaFile.FileLibraryID, SystemContext.WebApplicationPhysicalPath);
             var result = new CMSPhysicalFileResult(mediaPath)
             {
                 ContentType = mediaFile.FileMimeType,

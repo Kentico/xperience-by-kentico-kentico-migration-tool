@@ -1,9 +1,10 @@
-namespace Migration.Toolkit.Common.MigrationProtocol;
 
 using System.Reflection;
 using System.Text;
+
 using Migration.Toolkit.Common.Services;
 
+namespace Migration.Toolkit.Common.MigrationProtocol;
 public class HandbookReference
 {
     public static IPrintService PrintService = default;
@@ -12,10 +13,13 @@ public class HandbookReference
     {
         var sb = new StringBuilder();
         sb.Append($"NeedManualAction: {NeedManualAction}, ReferenceName: {ReferenceName}, AdditionalInfo: {AdditionalInfo}");
-        if (this.Data == null) return sb.ToString();
+        if (Data == null)
+        {
+            return sb.ToString();
+        }
 
-        var arr = this.Data.ToArray();
-        for (var i = 0; i < arr.Length; i++)
+        var arr = Data.ToArray();
+        for (int i = 0; i < arr.Length; i++)
         {
             var (key, value) = arr[i];
             sb.Append($"{key}: {value}");
@@ -40,8 +44,8 @@ public class HandbookReference
     /// <param name="referenceName">Use common identifier characters to describe handbook reference (consider usage in HTML, JSON, DB, C#, href attribute in HTML)</param>
     public HandbookReference(string referenceName, string? additionalInfo = null)
     {
-        this.ReferenceName = referenceName;
-        this.AdditionalInfo = additionalInfo;
+        ReferenceName = referenceName;
+        AdditionalInfo = additionalInfo;
     }
 
     /// <summary>
@@ -49,7 +53,7 @@ public class HandbookReference
     /// </summary>
     public HandbookReference WithId(string idName, object idValue)
     {
-        this.WithData(idName, idValue);
+        WithData(idName, idValue);
         return this;
     }
 
@@ -58,16 +62,16 @@ public class HandbookReference
     /// </summary>
     public HandbookReference WithMessage(string message)
     {
-        this.Data ??= new();
+        Data ??= [];
 
-        var msgNum = 0;
+        int msgNum = 0;
         string msgKey;
         do
         {
             msgKey = $"Message#{msgNum++}";
-        } while (this.Data.ContainsKey(msgKey));
+        } while (Data.ContainsKey(msgKey));
 
-        this.WithData(msgKey, message);
+        WithData(msgKey, message);
 
         return this;
     }
@@ -77,8 +81,8 @@ public class HandbookReference
     /// </summary>
     public HandbookReference WithData(string key, object value)
     {
-        this.Data ??= new();
-        this.Data.Add(key, value);
+        Data ??= [];
+        Data.Add(key, value);
 
         return this;
     }
@@ -88,10 +92,10 @@ public class HandbookReference
     /// </summary>
     public HandbookReference WithData<TValue>(Dictionary<string, TValue> data)
     {
-        this.Data ??= new();
+        Data ??= [];
         foreach (var (key, value) in data)
         {
-            this.Data.Add(key, value);
+            Data.Add(key, value);
         }
 
         return this;
@@ -103,14 +107,14 @@ public class HandbookReference
     /// <param name="data">All public instance properties of object are written to dictionary for user to see. Anonymous object can be used</param>
     public HandbookReference WithData(object data)
     {
-        this.Data ??= new();
+        Data ??= [];
         var dataUpdate = data.GetType()
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .ToDictionary(p => p.Name, p => p.GetMethod.Invoke(data, Array.Empty<object>())
             );
         foreach (var (key, value) in dataUpdate)
         {
-            this.Data.Add(key, value);
+            Data.Add(key, value);
         }
 
         return this;
@@ -123,8 +127,8 @@ public class HandbookReference
     /// <typeparam name="T">Type of model to print - type must be supported for print in method 'GetEntityIdentityPrint' in class <see cref="Printer"/></typeparam>
     public HandbookReference WithIdentityPrint<T>(T model)
     {
-        this.Data ??= new();
-        this.Data.Add("Entity", PrintService.GetEntityIdentityPrint(model));
+        Data ??= [];
+        Data.Add("Entity", PrintService.GetEntityIdentityPrint(model));
         return this;
     }
 
@@ -135,8 +139,8 @@ public class HandbookReference
     /// <typeparam name="T">Type of model to print - type must be supported for print in method 'GetEntityIdentityPrint' in class <see cref="Printer"/></typeparam>
     public HandbookReference WithIdentityPrints<T>(IEnumerable<T> models)
     {
-        this.Data ??= new();
-        this.Data.Add("Entity", PrintService.GetEntityIdentityPrint(models));
+        Data ??= [];
+        Data.Add("Entity", PrintService.GetEntityIdentityPrint(models));
         return this;
     }
 
@@ -145,7 +149,7 @@ public class HandbookReference
     /// </summary>
     public HandbookReference NeedsManualAction()
     {
-        this.NeedManualAction = true;
+        NeedManualAction = true;
         return this;
     }
 }

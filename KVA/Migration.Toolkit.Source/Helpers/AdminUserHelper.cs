@@ -1,11 +1,13 @@
-namespace Migration.Toolkit.Source.Helpers;
 
 using CMS.Base;
+
 using Microsoft.Extensions.DependencyInjection;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.Source.Model;
 
+namespace Migration.Toolkit.Source.Helpers;
 public class AdminUserHelper
 {
     /// <summary>
@@ -17,7 +19,10 @@ public class AdminUserHelper
     /// <returns>Target admin user ID</returns>
     public static int? MapTargetAdminUser(int? sourceUserId, int memberFallbackTargetUserId, Action? onAdminNotFound = null)
     {
-        if (sourceUserId is null) return null;
+        if (sourceUserId is null)
+        {
+            return null;
+        }
 
         var modelFacade = KsCoreDiExtensions.ServiceProvider.GetRequiredService<ModelFacade>();
         if (modelFacade.SelectById<ICmsUser>(sourceUserId) is { } modifiedByUser)
@@ -30,10 +35,10 @@ public class AdminUserHelper
                     case { Success: true, MappedId: { } targetUserId }:
                         return targetUserId;
                     default:
-                        {
-                            onAdminNotFound?.Invoke();
-                            return null;
-                        }
+                    {
+                        onAdminNotFound?.Invoke();
+                        return null;
+                    }
                 }
             }
             return CMSActionContext.CurrentUser.UserID;

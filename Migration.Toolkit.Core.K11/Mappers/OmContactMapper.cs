@@ -1,11 +1,12 @@
-namespace Migration.Toolkit.Core.K11.Mappers;
 
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.K11.Contexts;
 using Migration.Toolkit.KXP.Models;
 
+namespace Migration.Toolkit.Core.K11.Mappers;
 public class OmContactMapper(ILogger<OmContactMapper> logger,
         PrimaryKeyMappingContext primaryKeyMappingContext,
         IEntityMapper<Toolkit.K11.Models.OmContactStatus, OmContactStatus> contactStatusMapper,
@@ -58,15 +59,18 @@ public class OmContactMapper(ILogger<OmContactMapper> logger,
             switch (contactStatusMapper.Map(source.ContactStatus, target.ContactStatus))
             {
                 case { Success: true } result:
-                    {
-                        target.ContactStatus = result.Item;
-                        break;
-                    }
+                {
+                    target.ContactStatus = result.Item;
+                    break;
+                }
                 case { Success: false } result:
-                    {
-                        addFailure(new MapperResultFailure<OmContact>(result?.HandbookReference));
-                        break;
-                    }
+                {
+                    addFailure(new MapperResultFailure<OmContact>(result?.HandbookReference));
+                    break;
+                }
+
+                default:
+                    break;
             }
         }
         else
@@ -75,7 +79,7 @@ public class OmContactMapper(ILogger<OmContactMapper> logger,
         }
 
         target.ContactSalesForceLeadId = source.ContactSalesForceLeadId;
-        if (mappingHelper.TranslateIdAllowNulls<Toolkit.K11.Models.CmsUser>(u => u.UserId, source.ContactOwnerUserId, out var userId))
+        if (mappingHelper.TranslateIdAllowNulls<Toolkit.K11.Models.CmsUser>(u => u.UserId, source.ContactOwnerUserId, out int? userId))
         {
             target.ContactOwnerUserId = userId;
         }

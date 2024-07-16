@@ -1,11 +1,14 @@
-namespace Migration.Toolkit.Core.KX12.Handlers;
 
 using System.Diagnostics;
+
 using CMS.Membership;
+
 using MediatR;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
@@ -15,6 +18,7 @@ using Migration.Toolkit.KX12.Context;
 using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Api.Enums;
 
+namespace Migration.Toolkit.Core.KX12.Handlers;
 public class MigrateMembersCommandHandler(
     ILogger<MigrateMembersCommandHandler> logger,
     IDbContextFactory<KX12Context> kx12ContextFactory,

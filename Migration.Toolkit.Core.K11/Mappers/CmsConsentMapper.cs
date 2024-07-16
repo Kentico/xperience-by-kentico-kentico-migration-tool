@@ -1,15 +1,18 @@
-namespace Migration.Toolkit.Core.K11.Mappers;
 
 using System.Text;
 using System.Xml.Linq;
 using System.Xml.XPath;
+
 using CMS.ContentEngine;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.K11.Contexts;
 using Migration.Toolkit.KXP.Models;
 
+namespace Migration.Toolkit.Core.K11.Mappers;
 public class CmsConsentMapper(ILogger<CmsConsentMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : EntityMapperBase<Toolkit.K11.Models.CmsConsent, CmsConsent>(logger, pkContext, protocol)
 {
     protected override CmsConsent? CreateNewInstance(Toolkit.K11.Models.CmsConsent source, MappingHelper mappingHelper, AddFailure addFailure) => new();
@@ -32,7 +35,11 @@ static file class ConsentContentPatcher
 {
     public static string PatchConsentContent(string content, ContentLanguageInfo defaultContentLanguage)
     {
-        if (string.IsNullOrWhiteSpace(content)) return content;
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return content;
+        }
+
         XDocument doc;
         try
         {

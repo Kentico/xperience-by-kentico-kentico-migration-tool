@@ -1,10 +1,12 @@
-namespace Migration.Toolkit.Source.Mappers;
 
 using Kentico.Xperience.UMT.Model;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Source.Model;
 
+namespace Migration.Toolkit.Source.Mappers;
 public record TagModelSource(Guid TaxonomyGuid, ICmsCategory CmsCategory, Dictionary<int, Guid> CategoryId2Guid);
 public class TagMapper(ILogger<TagMapper> logger) : UmtMapperBase<TagModelSource>
 {
@@ -19,7 +21,7 @@ public class TagMapper(ILogger<TagMapper> logger) : UmtMapperBase<TagModelSource
             TagGUID = cmsCategory.CategoryGUID,
             TagTaxonomyGUID = taxonomyGuid,
             TagOrder = 0,
-            TagTranslations = new Dictionary<Guid, TagTranslationModel>(),
+            TagTranslations = [],
         };
 
         if (cmsCategory.CategoryParentID is { } categoryParentId)

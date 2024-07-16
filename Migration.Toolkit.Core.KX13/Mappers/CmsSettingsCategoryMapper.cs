@@ -1,17 +1,18 @@
-namespace Migration.Toolkit.Core.KX13.Mappers;
 
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX13.Contexts;
 using Migration.Toolkit.KXP.Models;
 
-public class CmsSettingsCategoryMapper : EntityMapperBase<Migration.Toolkit.KX13.Models.CmsSettingsCategory,
+namespace Migration.Toolkit.Core.KX13.Mappers;
+public class CmsSettingsCategoryMapper : EntityMapperBase<KX13M.CmsSettingsCategory,
     CmsSettingsCategory>
 {
     private readonly ILogger<CmsSettingsCategoryMapper> _logger;
     private readonly PrimaryKeyMappingContext _pkContext;
-    private readonly IEntityMapper<Toolkit.KX13.Models.CmsResource, CmsResource> _cmsResourceMapper;
+    private readonly IEntityMapper<KX13M.CmsResource, CmsResource> _cmsResourceMapper;
 
     public CmsSettingsCategoryMapper(ILogger<CmsSettingsCategoryMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol,
         IEntityMapper<KX13M.CmsResource, CmsResource> cmsResourceMapper) : base(logger, pkContext, protocol)
@@ -21,11 +22,11 @@ public class CmsSettingsCategoryMapper : EntityMapperBase<Migration.Toolkit.KX13
         _cmsResourceMapper = cmsResourceMapper;
     }
 
-    protected override CmsSettingsCategory? CreateNewInstance(Toolkit.KX13.Models.CmsSettingsCategory source, MappingHelper mappingHelper,
+    protected override CmsSettingsCategory? CreateNewInstance(KX13M.CmsSettingsCategory source, MappingHelper mappingHelper,
         AddFailure addFailure) => new();
 
 
-    protected override CmsSettingsCategory MapInternal(Toolkit.KX13.Models.CmsSettingsCategory source, CmsSettingsCategory target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override CmsSettingsCategory MapInternal(KX13M.CmsSettingsCategory source, CmsSettingsCategory target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         // no category guid to match on...
         if (newInstance)
@@ -47,26 +48,29 @@ public class CmsSettingsCategoryMapper : EntityMapperBase<Migration.Toolkit.KX13
             {
                 // skip if target is present
                 _logger.LogTrace("Skipping category resource '{ResourceGuid}', already present in target instance", target.CategoryResource.ResourceGuid);
-                _pkContext.SetMapping<Toolkit.KX13.Models.CmsResource>(r => r.ResourceId, source.CategoryResourceId.Value, target.CategoryResourceId.Value);
+                _pkContext.SetMapping<KX13M.CmsResource>(r => r.ResourceId, source.CategoryResourceId.Value, target.CategoryResourceId.Value);
             }
             else
             {
                 switch (_cmsResourceMapper.Map(source.CategoryResource, target.CategoryResource))
                 {
                     case { Success: true } result:
-                        {
-                            target.CategoryResource = result.Item;
-                            break;
-                        }
+                    {
+                        target.CategoryResource = result.Item;
+                        break;
+                    }
                     case { Success: false } result:
-                        {
-                            addFailure(new MapperResultFailure<CmsSettingsCategory>(result.HandbookReference));
-                            break;
-                        }
+                    {
+                        addFailure(new MapperResultFailure<CmsSettingsCategory>(result.HandbookReference));
+                        break;
+                    }
+
+                    default:
+                        break;
                 }
             }
         }
-        else if (mappingHelper.TranslateIdAllowNulls<Toolkit.KX13.Models.CmsResource>(r => r.ResourceId, source.CategoryResourceId, out var categoryResourceId))
+        else if (mappingHelper.TranslateIdAllowNulls<KX13M.CmsResource>(r => r.ResourceId, source.CategoryResourceId, out int? categoryResourceId))
         {
             target.CategoryResourceId = categoryResourceId;
         }
@@ -76,18 +80,21 @@ public class CmsSettingsCategoryMapper : EntityMapperBase<Migration.Toolkit.KX13
             switch (Map(source.CategoryParent, target.CategoryParent))
             {
                 case { Success: true } result:
-                    {
-                        target.CategoryParent = result.Item;
-                        break;
-                    }
+                {
+                    target.CategoryParent = result.Item;
+                    break;
+                }
                 case { Success: false } result:
-                    {
-                        addFailure(new MapperResultFailure<CmsSettingsCategory>(result.HandbookReference));
-                        break;
-                    }
+                {
+                    addFailure(new MapperResultFailure<CmsSettingsCategory>(result.HandbookReference));
+                    break;
+                }
+
+                default:
+                    break;
             }
         }
-        else if (mappingHelper.TranslateIdAllowNulls<KX13M.CmsCategory>(c => c.CategoryId, source.CategoryParentId, out var categoryParentId))
+        else if (mappingHelper.TranslateIdAllowNulls<KX13M.CmsCategory>(c => c.CategoryId, source.CategoryParentId, out int? categoryParentId))
         {
             target.CategoryParentId = categoryParentId;
         }

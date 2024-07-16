@@ -1,14 +1,11 @@
-namespace Migration.Toolkit.Source.Providers;
 
 using CMS.ContentEngine.Internal;
 
+namespace Migration.Toolkit.Source.Providers;
 internal class ContentItemNameValidator : IContentItemNameValidator
 {
     ///<inheritdoc/>
-    public bool IsUnique(string name)
-    {
-        return IsUnique(0, name);
-    }
+    public bool IsUnique(string name) => IsUnique(0, name);
 
 
     ///<inheritdoc/>

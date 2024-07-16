@@ -1,7 +1,7 @@
-namespace Migration.Toolkit.Core.K11.Services.CmsClass;
 
 using Newtonsoft.Json;
 
+namespace Migration.Toolkit.Core.K11.Services.CmsClass;
 /// <summary>Represents an item for the attachment selector.</summary>
 public class AttachmentSelectorItem
 {

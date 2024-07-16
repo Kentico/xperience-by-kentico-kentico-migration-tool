@@ -1,21 +1,20 @@
-namespace Migration.Toolkit.Core.KX13.Mappers;
 
 using CMS.Modules;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Enumerations;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX13.Contexts;
 using Migration.Toolkit.KX13.Models;
 
-public class ResourceMapper : EntityMapperBase<KX13M.CmsResource, ResourceInfo>
+namespace Migration.Toolkit.Core.KX13.Mappers;
+public class ResourceMapper : EntityMapperBase<CmsResource, ResourceInfo>
 {
     private readonly ILogger<ResourceMapper> _logger;
 
-    public ResourceMapper(ILogger<ResourceMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : base(logger, pkContext, protocol)
-    {
-        _logger = logger;
-    }
+    public ResourceMapper(ILogger<ResourceMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : base(logger, pkContext, protocol) => _logger = logger;
 
     protected override ResourceInfo? CreateNewInstance(CmsResource source, MappingHelper mappingHelper, AddFailure addFailure)
         => ResourceInfo.New();
@@ -41,7 +40,7 @@ public class ResourceMapper : EntityMapperBase<KX13M.CmsResource, ResourceInfo>
 
             if (target.ResourceName.StartsWith("CMS.", StringComparison.InvariantCultureIgnoreCase))
             {
-                var targetResourceNamePatched = target.ResourceName.Substring(4, target.ResourceName.Length - 4);
+                string targetResourceNamePatched = target.ResourceName[4..];
                 _logger.LogInformation("Patching CMS Resource '{ResourceName}': name changed to '{ResourceNamePatched}'", target.ResourceName, targetResourceNamePatched);
                 target.ResourceName = targetResourceNamePatched;
             }

@@ -24,19 +24,22 @@ public class MediaHelper
 
     public static MatchMediaLinkResult MatchMediaLink(string? linkStr)
     {
-        if (linkStr == null) return MatchMediaLinkResult.None;
+        if (linkStr == null)
+        {
+            return MatchMediaLinkResult.None;
+        }
 
-        var link = linkStr.TrimStart(new[] { '~' });
+        string link = linkStr.TrimStart(new[] { '~' });
 
 
         Guid? mediaId = null;
         var mediaLinkKind = MediaLinkKind.None;
         var mediaKind = MediaKind.None;
         var mediaPathResult = new List<string>();
-        var copyPath = false;
-        var inspectNext = false;
+        bool copyPath = false;
+        bool inspectNext = false;
 
-        var path = "";
+        string path = "";
         if (Uri.IsWellFormedUriString(link, UriKind.Absolute))
         {
             path = new Uri(link, UriKind.Absolute).LocalPath;
@@ -54,11 +57,11 @@ public class MediaHelper
             }
         }
 
-        var spl = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        string[] spl = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
 
-        for (var i = 0; i < spl.Length; i++)
+        for (int i = 0; i < spl.Length; i++)
         {
-            var cs = spl[i];
+            string cs = spl[i];
             if (cs.Equals("getattachment", StringComparison.InvariantCultureIgnoreCase))
             {
                 mediaKind = MediaKind.Attachment;
@@ -85,10 +88,10 @@ public class MediaHelper
             {
                 inspectNext = false;
                 // now lets look forward
-                var nsi = i + 1;
+                int nsi = i + 1;
                 if (nsi < spl.Length)
                 {
-                    var nextSegment = spl[nsi];
+                    string nextSegment = spl[nsi];
                     if (Guid.TryParse(nextSegment, out var mid))
                     {
                         mediaId = mid;

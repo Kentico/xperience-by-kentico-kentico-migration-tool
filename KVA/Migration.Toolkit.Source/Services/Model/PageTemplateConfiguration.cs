@@ -1,9 +1,10 @@
-namespace Migration.Toolkit.Source.Services.Model;
 
 using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+namespace Migration.Toolkit.Source.Services.Model;
 /// <summary>
 /// Page template configuration for the <see cref="T:CMS.DocumentEngine.TreeNode" /> instance.
 /// </summary>

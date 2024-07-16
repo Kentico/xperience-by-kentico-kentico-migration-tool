@@ -1,6 +1,5 @@
-using System;
-using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+
 using Migration.Toolkit.KXP.Models;
 
 namespace Migration.Toolkit.KXP.Context;
@@ -314,10 +313,7 @@ public partial class KxpContext : DbContext
                 .HasConstraintName("FK_CMS_AutomationState_StateWorkflowID");
         });
 
-        modelBuilder.Entity<CmsAutomationTemplate>(entity =>
-        {
-            entity.Property(e => e.TemplateDisplayName).HasDefaultValue("");
-        });
+        modelBuilder.Entity<CmsAutomationTemplate>(entity => entity.Property(e => e.TemplateDisplayName).HasDefaultValue(""));
 
         modelBuilder.Entity<CmsChannel>(entity =>
         {
@@ -437,12 +433,9 @@ public partial class KxpContext : DbContext
                 .HasConstraintName("FK_CMS_ContentItemReference_ContentItemReferenceTargetItemID_CMS_ContentItem");
         });
 
-        modelBuilder.Entity<CmsContentItemTag>(entity =>
-        {
-            entity.HasOne(d => d.ContentItemTagContentItemLanguageMetadata).WithMany(p => p.CmsContentItemTags)
+        modelBuilder.Entity<CmsContentItemTag>(entity => entity.HasOne(d => d.ContentItemTagContentItemLanguageMetadata).WithMany(p => p.CmsContentItemTags)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_CMS_ContentItemTag_ContentItemTagContentItemLanguageMetadataID_CMS_ContentItemLanguageMetadata");
-        });
+                .HasConstraintName("FK_CMS_ContentItemTag_ContentItemTagContentItemLanguageMetadataID_CMS_ContentItemLanguageMetadata"));
 
         modelBuilder.Entity<CmsContentLanguage>(entity =>
         {
@@ -863,10 +856,7 @@ public partial class KxpContext : DbContext
             entity.Property(e => e.ServerName).HasDefaultValue("");
         });
 
-        modelBuilder.Entity<CmsWebFarmServerLog>(entity =>
-        {
-            entity.Property(e => e.LogCode).HasDefaultValue("");
-        });
+        modelBuilder.Entity<CmsWebFarmServerLog>(entity => entity.Property(e => e.LogCode).HasDefaultValue(""));
 
         modelBuilder.Entity<CmsWebFarmServerTask>(entity =>
         {
@@ -1063,12 +1053,9 @@ public partial class KxpContext : DbContext
                 .HasConstraintName("FK_EmailLibrary_EmailMarketingRecipient_EmailMarketingRecipientEmailConfigurationID_EmailLibrary_EmailConfiguration");
         });
 
-        modelBuilder.Entity<EmailLibraryEmailStatistic>(entity =>
-        {
-            entity.HasOne(d => d.EmailStatisticsEmailConfiguration).WithMany(p => p.EmailLibraryEmailStatistics)
+        modelBuilder.Entity<EmailLibraryEmailStatistic>(entity => entity.HasOne(d => d.EmailStatisticsEmailConfiguration).WithMany(p => p.EmailLibraryEmailStatistics)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_EmailLibrary_EmailStatistics_EmailStatisticsEmailConfigurationID_EmailLibrary_EmailConfiguration");
-        });
+                .HasConstraintName("FK_EmailLibrary_EmailStatistics_EmailStatisticsEmailConfigurationID_EmailLibrary_EmailConfiguration"));
 
         modelBuilder.Entity<EmailLibraryEmailStatisticsHit>(entity =>
         {
@@ -1108,12 +1095,9 @@ public partial class KxpContext : DbContext
                 .HasConstraintName("FK_EmailLibrary_EmailTemplateContentType_EmailTemplateContentTypeEmailTemplateID_EmailLibrary_EmailTemplate");
         });
 
-        modelBuilder.Entity<EmailLibraryRecipientListSetting>(entity =>
-        {
-            entity.HasOne(d => d.RecipientListSettingsRecipientList).WithMany(p => p.EmailLibraryRecipientListSettings)
+        modelBuilder.Entity<EmailLibraryRecipientListSetting>(entity => entity.HasOne(d => d.RecipientListSettingsRecipientList).WithMany(p => p.EmailLibraryRecipientListSettings)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_EmailLibrary_RecipientListSettings_RecipientListSettingsRecipientListID_OM_ContactGroup");
-        });
+                .HasConstraintName("FK_EmailLibrary_RecipientListSettings_RecipientListSettingsRecipientListID_OM_ContactGroup"));
 
         modelBuilder.Entity<EmailLibrarySendConfiguration>(entity =>
         {
@@ -1251,12 +1235,9 @@ public partial class KxpContext : DbContext
             entity.Property(e => e.TrackedWebsiteUrl).HasDefaultValue("");
         });
 
-        modelBuilder.Entity<OmVisitorToContact>(entity =>
-        {
-            entity.HasOne(d => d.VisitorToContactContact).WithMany(p => p.OmVisitorToContacts)
+        modelBuilder.Entity<OmVisitorToContact>(entity => entity.HasOne(d => d.VisitorToContactContact).WithMany(p => p.OmVisitorToContacts)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_OM_VisitorToContact_OM_Contact_Cascade");
-        });
+                .HasConstraintName("FK_OM_VisitorToContact_OM_Contact_Cascade"));
 
         modelBuilder.Entity<TempFile>(entity =>
         {
@@ -1267,35 +1248,17 @@ public partial class KxpContext : DbContext
             entity.Property(e => e.FileName).HasDefaultValue("");
         });
 
-        modelBuilder.Entity<ViewCmsResourceStringJoined>(entity =>
-        {
-            entity.ToView("View_CMS_ResourceString_Joined");
-        });
+        modelBuilder.Entity<ViewCmsResourceStringJoined>(entity => entity.ToView("View_CMS_ResourceString_Joined"));
 
-        modelBuilder.Entity<ViewCmsResourceTranslatedJoined>(entity =>
-        {
-            entity.ToView("View_CMS_ResourceTranslated_Joined");
-        });
+        modelBuilder.Entity<ViewCmsResourceTranslatedJoined>(entity => entity.ToView("View_CMS_ResourceTranslated_Joined"));
 
-        modelBuilder.Entity<ViewOmAccountContactAccountJoined>(entity =>
-        {
-            entity.ToView("View_OM_AccountContact_AccountJoined");
-        });
+        modelBuilder.Entity<ViewOmAccountContactAccountJoined>(entity => entity.ToView("View_OM_AccountContact_AccountJoined"));
 
-        modelBuilder.Entity<ViewOmAccountContactContactJoined>(entity =>
-        {
-            entity.ToView("View_OM_AccountContact_ContactJoined");
-        });
+        modelBuilder.Entity<ViewOmAccountContactContactJoined>(entity => entity.ToView("View_OM_AccountContact_ContactJoined"));
 
-        modelBuilder.Entity<ViewOmAccountJoined>(entity =>
-        {
-            entity.ToView("View_OM_Account_Joined");
-        });
+        modelBuilder.Entity<ViewOmAccountJoined>(entity => entity.ToView("View_OM_Account_Joined"));
 
-        modelBuilder.Entity<ViewOmContactGroupMemberAccountJoined>(entity =>
-        {
-            entity.ToView("View_OM_ContactGroupMember_AccountJoined");
-        });
+        modelBuilder.Entity<ViewOmContactGroupMemberAccountJoined>(entity => entity.ToView("View_OM_ContactGroupMember_AccountJoined"));
 
         OnModelCreatingPartial(modelBuilder);
     }

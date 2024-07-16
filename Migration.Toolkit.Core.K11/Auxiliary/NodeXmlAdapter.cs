@@ -1,10 +1,9 @@
-namespace Migration.Toolkit.Core.K11.Auxiliary;
-
-using System;
 using System.Xml.Linq;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Enumerations;
 
+namespace Migration.Toolkit.Core.K11.Auxiliary;
 internal class NodeXmlAdapter
 {
     private readonly XElement _xClass;
@@ -26,15 +25,9 @@ internal class NodeXmlAdapter
         }
     }
 
-    public string? GetValue(string columnName)
-    {
-        return _xClass.Element(columnName)?.Value;
-    }
+    public string? GetValue(string columnName) => _xClass.Element(columnName)?.Value;
 
-    public bool HasValueSet(string columnName)
-    {
-        return _xClass.Element(columnName) != null;
-    }
+    public bool HasValueSet(string columnName) => _xClass.Element(columnName) != null;
 
     public int? NodeID => _xClass.Element(NodeXmlColumns.NODE_ID)?.Value<int>();
     public string? NodeAliasPath => _xClass.Element(NodeXmlColumns.NODE_ALIAS_PATH)?.Value;

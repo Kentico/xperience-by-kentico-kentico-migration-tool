@@ -1,14 +1,16 @@
-namespace Migration.Toolkit.Source.Services;
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+
 using CMS.Base;
 using CMS.Helpers;
 using CMS.MediaLibrary;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
@@ -18,6 +20,7 @@ using Migration.Toolkit.KXP.Context;
 using Migration.Toolkit.Source.Mappers;
 using Migration.Toolkit.Source.Model;
 
+namespace Migration.Toolkit.Source.Services;
 public class AttachmentMigrator(
     ILogger<AttachmentMigrator> logger,
     KxpMediaFileFacade mediaFileFacade,
@@ -35,7 +38,11 @@ public class AttachmentMigrator(
 
     public MigrateAttachmentResult TryMigrateAttachmentByPath(string documentPath, string additionalPath)
     {
-        if (string.IsNullOrWhiteSpace(documentPath)) return new MigrateAttachmentResult(false, false);
+        if (string.IsNullOrWhiteSpace(documentPath))
+        {
+            return new MigrateAttachmentResult(false, false);
+        }
+
         documentPath = $"/{documentPath.Trim('/')}";
 
         var attachments =
@@ -118,7 +125,7 @@ public class AttachmentMigrator(
             : null;
 
         var site = modelFacade.SelectById<ICmsSite>(ksAttachment.AttachmentSiteID) ?? throw new InvalidOperationException("Site not exists!");
-        if (!TryEnsureTargetLibraryExists(ksAttachment.AttachmentSiteID, site.SiteName, out var targetMediaLibraryId))
+        if (!TryEnsureTargetLibraryExists(ksAttachment.AttachmentSiteID, site.SiteName, out int targetMediaLibraryId))
         {
             return new(false, false);
         }
@@ -138,7 +145,7 @@ public class AttachmentMigrator(
 
         protocol.FetchedTarget(mediaFile);
 
-        var librarySubFolder = "";
+        string librarySubFolder = "";
 
         if (ksNode != null)
         {
@@ -147,7 +154,7 @@ public class AttachmentMigrator(
 
         if (!string.IsNullOrWhiteSpace(additionalMediaPath) && (ksAttachment.AttachmentIsUnsorted != true || ksAttachment.AttachmentGroupGUID != null))
         {
-            librarySubFolder = System.IO.Path.Combine(librarySubFolder, additionalMediaPath);
+            librarySubFolder = Path.Combine(librarySubFolder, additionalMediaPath);
         }
 
         var mapped = attachmentMapper.Map(new CmsAttachmentMapperSource(ksAttachment, targetMediaLibraryId, uploadedFile, librarySubFolder, ksNode), mediaFile);
@@ -207,8 +214,8 @@ public class AttachmentMigrator(
 
     private bool TryEnsureTargetLibraryExists(int targetSiteId, string targetSiteName, out int targetLibraryId)
     {
-        var targetLibraryCodeName = $"AttachmentsForSite{targetSiteName}";
-        var targetLibraryDisplayName = $"Attachments for site {targetSiteName}";
+        string targetLibraryCodeName = $"AttachmentsForSite{targetSiteName}";
+        string targetLibraryDisplayName = $"Attachments for site {targetSiteName}";
         using var dbContext = kxpContextFactory.CreateDbContext();
         try
         {
@@ -245,7 +252,7 @@ public class AttachmentMigrator(
         // TODO tomas.krch: 2023-11-02 libraries now globalized, where do i put conflicting directories?
         var tml = context.DbContext.MediaLibraries.SingleOrDefault(ml => ml.LibraryName == libraryName);
 
-        var libraryDirectory = context.TargetLibraryCodeName;
+        string libraryDirectory = context.TargetLibraryCodeName;
         if (!LibraryPathValidationRegex.IsMatch(libraryDirectory))
         {
             libraryDirectory = SanitizationRegex.Replace(libraryDirectory, "_");

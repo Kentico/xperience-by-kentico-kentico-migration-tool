@@ -1,11 +1,12 @@
-namespace Migration.Toolkit.Core.K11.Mappers;
 
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.K11.Contexts;
 using Migration.Toolkit.KXP.Models;
 
+namespace Migration.Toolkit.Core.K11.Mappers;
 public class CmsConsentArchiveMapper(ILogger<CmsConsentArchiveMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext,
         IProtocol protocol)
     : EntityMapperBase<Toolkit.K11.Models.CmsConsentArchive, CmsConsentArchive>(logger, primaryKeyMappingContext, protocol)
@@ -20,7 +21,7 @@ public class CmsConsentArchiveMapper(ILogger<CmsConsentArchiveMapper> logger, Pr
         target.ConsentArchiveLastModified = source.ConsentArchiveLastModified;
         target.ConsentArchiveHash = source.ConsentArchiveHash;
 
-        if (mappingHelper.TranslateRequiredId<Toolkit.K11.Models.CmsConsent>(r => r.ConsentId, source.ConsentArchiveConsentId, out var consentId))
+        if (mappingHelper.TranslateRequiredId<Toolkit.K11.Models.CmsConsent>(r => r.ConsentId, source.ConsentArchiveConsentId, out int consentId))
         {
             target.ConsentArchiveConsentId = consentId;
         }

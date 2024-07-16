@@ -1,10 +1,12 @@
-namespace Migration.Toolkit.Core.KX12.Handlers;
 
 using CMS.Membership;
+
 using MediatR;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
@@ -13,6 +15,7 @@ using Migration.Toolkit.KX12.Context;
 using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Api.Enums;
 
+namespace Migration.Toolkit.Core.KX12.Handlers;
 public class MigrateUsersCommandHandler(
     ILogger<MigrateUsersCommandHandler> logger,
     IDbContextFactory<KX12Context> kx12ContextFactory,
@@ -178,7 +181,7 @@ public class MigrateUsersCommandHandler(
         await foreach (var k12UserRole in k12UserRoles)
         {
             protocol.FetchedSource(k12UserRole);
-            if (!primaryKeyMappingContext.TryRequireMapFromSource<KX12M.CmsRole>(u => u.RoleId, k12RoleId, out var xbkRoleId))
+            if (!primaryKeyMappingContext.TryRequireMapFromSource<KX12M.CmsRole>(u => u.RoleId, k12RoleId, out int xbkRoleId))
             {
                 var handbookRef = HandbookReferences
                     .MissingRequiredDependency<KXP.Models.CmsRole>(nameof(UserRoleInfo.RoleID), k12UserRole.RoleId)
@@ -189,7 +192,7 @@ public class MigrateUsersCommandHandler(
                 continue;
             }
 
-            if (!primaryKeyMappingContext.TryRequireMapFromSource<KX12M.CmsUser>(u => u.UserId, k12UserRole.UserId, out var xbkUserId))
+            if (!primaryKeyMappingContext.TryRequireMapFromSource<KX12M.CmsUser>(u => u.UserId, k12UserRole.UserId, out int xbkUserId))
             {
                 continue;
             }
