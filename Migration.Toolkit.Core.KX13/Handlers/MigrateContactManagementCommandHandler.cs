@@ -310,6 +310,7 @@ public class MigrateContactManagementCommandHandler(
                             case AutofixEnum.Error:
                             default: //error
                                 protocol.Append(HandbookReferences
+                                    .MissingRequiredDependency<KXP.Models.CmsChannel>(columnName, value)
                                     .WithData(currentRow)
                                 );
                                 return ValueInterceptorResult.SkipRow;
