@@ -50,7 +50,7 @@ public class MigrateMediaLibrariesCommandHandler(
                                GROUP BY LibraryName
                                HAVING COUNT(*) > 1
                                """,
-                (reader, _) => new { LibraryName = reader.Unbox<int>("LibraryName"), LibraryGuids = reader.Unbox<string?>("LibraryGUIDs")?.Split('|').Select(Guid.Parse).ToImmutableList() ?? [] });
+                (reader, _) => new { LibraryName = reader.Unbox<string>("LibraryName"), LibraryGuids = reader.Unbox<string?>("LibraryGUIDs")?.Split('|').Select(Guid.Parse).ToImmutableList() ?? [] });
 
         foreach (var mlg in unsuitableMediaLibraries)
         {

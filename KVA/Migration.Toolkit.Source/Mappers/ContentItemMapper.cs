@@ -2,6 +2,8 @@ using System.Diagnostics;
 
 using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
+using CMS.Core;
+using CMS.Core.Internal;
 using CMS.FormEngine;
 using CMS.MediaLibrary;
 using CMS.Websites;
@@ -125,12 +127,41 @@ public class ContentItemMapper(
 
             var versionStatus = cmsDocument switch
             {
-                { DocumentIsArchived: true } => VersionStatus.Archived,
+                { DocumentIsArchived: true } => VersionStatus.Unpublished,
                 { DocumentPublishedVersionHistoryID: null, DocumentCheckedOutVersionHistoryID: null } => VersionStatus.Published,
                 { DocumentPublishedVersionHistoryID: { } pubId, DocumentCheckedOutVersionHistoryID: { } chId } when pubId <= chId => VersionStatus.Published,
                 { DocumentPublishedVersionHistoryID: null, DocumentCheckedOutVersionHistoryID: not null } => VersionStatus.InitialDraft,
                 _ => draftMigrated ? VersionStatus.Published : VersionStatus.InitialDraft
             };
+
+            DateTime? scheduledPublishWhen = null;
+            DateTime? scheduleUnpublishWhen = null;
+            
+            if (cmsDocument.DocumentPublishFrom is { } publishFrom)
+            {
+                var now = Service.Resolve<IDateTimeNowService>().GetDateTimeNow();
+                if (publishFrom > now)
+                {
+                    versionStatus = VersionStatus.Unpublished;    
+                }
+                else
+                {
+                    scheduledPublishWhen = publishFrom;
+                }
+            }
+
+            if (cmsDocument.DocumentPublishTo is { } publishTo)
+            {
+                var now = Service.Resolve<IDateTimeNowService>().GetDateTimeNow();
+                if (publishTo < now)
+                {
+                    versionStatus = VersionStatus.Unpublished;    
+                }
+                else
+                {
+                    scheduleUnpublishWhen = publishTo;
+                }
+            }
 
             string? contentItemCommonDataPageBuilderWidgets = null;
             string? contentItemCommonDataPageTemplateConfiguration = null;
@@ -171,7 +202,7 @@ public class ContentItemMapper(
                 ContentItemCommonDataVersionStatus = versionStatus,
                 ContentItemCommonDataIsLatest = !draftMigrated, // Flag for latest record to know what to retrieve for the UI
                 ContentItemCommonDataPageBuilderWidgets = contentItemCommonDataPageBuilderWidgets,
-                ContentItemCommonDataPageTemplateConfiguration = contentItemCommonDataPageTemplateConfiguration
+                ContentItemCommonDataPageTemplateConfiguration = contentItemCommonDataPageTemplateConfiguration,
             };
 
             if (ndp)
@@ -275,7 +306,9 @@ public class ContentItemMapper(
                 // logic inaccessible, not supported
                 // ContentItemLanguageMetadataHasImageAsset = ContentItemAssetHasImageArbiter.HasImage(contentItemDataInfo), // This is for admin UI optimization - set to true if latest version contains a field with an image asset
                 ContentItemLanguageMetadataHasImageAsset = false,
-                ContentItemLanguageMetadataContentLanguageGuid = languageGuid // DocumentCulture -> language entity needs to be created and its ID used here
+                ContentItemLanguageMetadataContentLanguageGuid = languageGuid, // DocumentCulture -> language entity needs to be created and its ID used here
+                ContentItemLanguageMetadataScheduledPublishWhen = scheduledPublishWhen,
+                ContentItemLanguageMetadataScheduledUnpublishWhen = scheduleUnpublishWhen 
             };
             yield return languageMetadataInfo;
         }
