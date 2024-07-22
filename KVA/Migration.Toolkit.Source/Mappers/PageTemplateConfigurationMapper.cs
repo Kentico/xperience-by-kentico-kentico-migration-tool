@@ -204,6 +204,9 @@ public class PageTemplateConfigurationMapper(
                             // TODO tomas.krch 2024-03-27: implement!
                             break;
                         }
+
+                        default:
+                            break;
                     }
                 }
                 else if (FieldMappingInstance.BuiltInModel.SupportedInKxpLegacyMode.Contains(editingFcm.FormComponentIdentifier))

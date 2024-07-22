@@ -6,38 +6,29 @@ using Migration.Toolkit.Common.MigrationProtocol;
 
 namespace Migration.Toolkit.Common.Abstractions;
 
-public abstract class EntityMapperBase<TSourceEntity, TTargetEntity> : IEntityMapper<TSourceEntity, TTargetEntity>
+public abstract class EntityMapperBase<TSourceEntity, TTargetEntity>(ILogger logger, IPrimaryKeyMappingContext pkContext, IProtocol protocol) : IEntityMapper<TSourceEntity, TTargetEntity>
 {
-    private readonly ILogger _logger;
-    private readonly IPrimaryKeyMappingContext _pkContext;
-    protected readonly IProtocol Protocol;
-
-    protected EntityMapperBase(ILogger logger, IPrimaryKeyMappingContext pkContext, IProtocol protocol)
-    {
-        _logger = logger;
-        _pkContext = pkContext;
-        Protocol = protocol;
-    }
+    protected readonly IProtocol Protocol = protocol;
 
     public virtual IModelMappingResult<TTargetEntity> Map(TSourceEntity? source, TTargetEntity? target)
     {
         var failures = new List<IModelMappingResult<TTargetEntity>>();
-        var mappingHelper = new MappingHelper(_pkContext, failures.Add);
+        var mappingHelper = new MappingHelper(pkContext, failures.Add);
 
         if (source is null)
         {
-            _logger.LogTrace("Source entity is not defined");
-            return HandbookReferences.SourceEntityIsNull<TSourceEntity>().AsFailure<TTargetEntity>().Log(_logger, Protocol);
+            logger.LogTrace("Source entity is not defined");
+            return HandbookReferences.SourceEntityIsNull<TSourceEntity>().AsFailure<TTargetEntity>().Log(logger, Protocol);
         }
 
         bool newInstance = false;
         if (target is null)
         {
-            _logger.LogTrace("Null target supplied, creating new instance");
+            logger.LogTrace("Null target supplied, creating new instance");
             target = CreateNewInstance(source, mappingHelper, failures.Add);
             if (target == null || Equals(target, default) || failures.Count > 0)
             {
-                return new AggregatedResult<TTargetEntity>(failures).Log(_logger, Protocol);
+                return new AggregatedResult<TTargetEntity>(failures).Log(logger, Protocol);
             }
 
             newInstance = true;
@@ -46,8 +37,8 @@ public abstract class EntityMapperBase<TSourceEntity, TTargetEntity> : IEntityMa
         var mappedResult = MapInternal(source, target, newInstance, mappingHelper, failures.Add);
 
         return failures.Count > 0
-            ? new AggregatedResult<TTargetEntity>(failures).Log(_logger, Protocol)
-            : new MapperResultSuccess<TTargetEntity>(mappedResult, newInstance).Log(_logger, Protocol);
+            ? new AggregatedResult<TTargetEntity>(failures).Log(logger, Protocol)
+            : new MapperResultSuccess<TTargetEntity>(mappedResult, newInstance).Log(logger, Protocol);
     }
 
     protected abstract TTargetEntity? CreateNewInstance(TSourceEntity source, MappingHelper mappingHelper, AddFailure addFailure);

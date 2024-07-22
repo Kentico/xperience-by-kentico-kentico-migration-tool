@@ -9,9 +9,9 @@ namespace Migration.Toolkit.Source.Services;
 
 public class ClassService(ILogger<ClassService> logger, ModelFacade modelFacade)
 {
-    private readonly ConcurrentDictionary<string, ICmsFormUserControl?> _userControlsCache = new(StringComparer.InvariantCultureIgnoreCase);
+    private readonly ConcurrentDictionary<string, ICmsFormUserControl?> userControlsCache = new(StringComparer.InvariantCultureIgnoreCase);
 
-    public ICmsFormUserControl? GetFormControlDefinition(string userControlCodeName) => _userControlsCache.GetOrAdd(userControlCodeName, s =>
+    public ICmsFormUserControl? GetFormControlDefinition(string userControlCodeName) => userControlsCache.GetOrAdd(userControlCodeName, s =>
     {
         try
         {

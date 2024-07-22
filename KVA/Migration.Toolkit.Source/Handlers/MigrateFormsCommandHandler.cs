@@ -37,9 +37,9 @@ public class MigrateFormsCommandHandler(
 )
     : IRequestHandler<MigrateFormsCommand, CommandResult>, IDisposable
 {
-    private KxpContext _kxpContext = kxpContextFactory.CreateDbContext();
+    private KxpContext kxpContext = kxpContextFactory.CreateDbContext();
 
-    public void Dispose() => _kxpContext.Dispose();
+    public void Dispose() => kxpContext.Dispose();
 
     public async Task<CommandResult> Handle(MigrateFormsCommand request, CancellationToken cancellationToken)
     {
@@ -63,7 +63,7 @@ public class MigrateFormsCommandHandler(
             {
                 protocol.FetchedSource(ksCmsForm);
 
-                var kxoCmsForm = _kxpContext.CmsForms.FirstOrDefault(f => f.FormGuid == ksCmsForm.FormGUID);
+                var kxoCmsForm = kxpContext.CmsForms.FirstOrDefault(f => f.FormGuid == ksCmsForm.FormGUID);
 
                 protocol.FetchedTarget(kxoCmsForm);
 
@@ -79,14 +79,14 @@ public class MigrateFormsCommandHandler(
                     {
                         if (newInstance)
                         {
-                            _kxpContext.CmsForms.Add(cmsForm);
+                            kxpContext.CmsForms.Add(cmsForm);
                         }
                         else
                         {
-                            _kxpContext.CmsForms.Update(cmsForm);
+                            kxpContext.CmsForms.Update(cmsForm);
                         }
 
-                        await _kxpContext.SaveChangesAsync(cancellationToken);
+                        await kxpContext.SaveChangesAsync(cancellationToken);
                         logger.LogEntitySetAction(newInstance, cmsForm);
 
                         primaryKeyMappingContext.SetMapping<CmsForm>(
@@ -97,8 +97,8 @@ public class MigrateFormsCommandHandler(
                     }
                     catch (Exception ex)
                     {
-                        await _kxpContext.DisposeAsync(); // reset context errors
-                        _kxpContext = await kxpContextFactory.CreateDbContextAsync(cancellationToken);
+                        await kxpContext.DisposeAsync(); // reset context errors
+                        kxpContext = await kxpContextFactory.CreateDbContextAsync(cancellationToken);
 
                         protocol.Append(HandbookReferences
                             .ErrorCreatingTargetInstance<CmsForm>(ex)

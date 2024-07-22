@@ -35,9 +35,9 @@ public class MigrateContactManagementCommandHandler(
     IProtocol protocol)
     : IRequestHandler<MigrateContactManagementCommand, CommandResult>, IDisposable
 {
-    private readonly KxpContext _kxpContext = kxpContextFactory.CreateDbContext();
+    private readonly KxpContext kxpContext = kxpContextFactory.CreateDbContext();
 
-    public void Dispose() => _kxpContext.Dispose();
+    public void Dispose() => kxpContext.Dispose();
 
     public Task<CommandResult> Handle(MigrateContactManagementCommand request, CancellationToken cancellationToken)
     {
@@ -195,6 +195,9 @@ public class MigrateContactManagementCommandHandler(
                         .WithData(currentRow));
                     return ValueInterceptorResult.SkipRow;
                 }
+
+                default:
+                    break;
             }
         }
 
@@ -210,6 +213,9 @@ public class MigrateContactManagementCommandHandler(
                         .WithData(currentRow));
                     return ValueInterceptorResult.SkipRow;
                 }
+
+                default:
+                    break;
             }
         }
 
@@ -225,6 +231,9 @@ public class MigrateContactManagementCommandHandler(
                         .WithData(currentRow));
                     return ValueInterceptorResult.SkipRow;
                 }
+
+                default:
+                    break;
             }
         }
 
@@ -333,6 +342,9 @@ public class MigrateContactManagementCommandHandler(
                             return ValueInterceptorResult.SkipRow;
                     }
                 }
+
+                default:
+                    break;
             }
         }
 

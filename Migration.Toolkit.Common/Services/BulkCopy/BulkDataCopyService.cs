@@ -56,6 +56,8 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
                     logger.LogError("Table {Table} pairing source({SourceColumnName}) <> target({TargetColumnName}) has failed", tableName, result?.A, result?.B);
                     anyFailedColumnCheck = true;
                     break;
+                default:
+                    break;
             }
         }
 
@@ -174,7 +176,7 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
         selectBuilder.Append("SELECT ");
         for (int i = 0; i < sourceColumns.Length; i++)
         {
-            (string columnName, int ordinalPosition) = sourceColumns[i];
+            (string columnName, int _) = sourceColumns[i];
             selectBuilder.Append($"[{columnName}]");
             if (i < sourceColumns.Length - 1)
             {

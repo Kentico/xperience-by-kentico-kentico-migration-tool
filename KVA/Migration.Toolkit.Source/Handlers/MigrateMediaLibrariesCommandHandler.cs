@@ -34,11 +34,11 @@ public class MigrateMediaLibrariesCommandHandler(
     IProtocol protocol)
     : IRequestHandler<MigrateMediaLibrariesCommand, CommandResult>, IDisposable
 {
-    private const string DIR_MEDIA = "media";
+    private const string DirMedia = "media";
 
-    private KxpContext _kxpContext = kxpContextFactory.CreateDbContext();
+    private KxpContext kxpContext = kxpContextFactory.CreateDbContext();
 
-    public void Dispose() => _kxpContext.Dispose();
+    public void Dispose() => kxpContext.Dispose();
 
     public async Task<CommandResult> Handle(MigrateMediaLibrariesCommand request, CancellationToken cancellationToken)
     {
@@ -123,8 +123,8 @@ public class MigrateMediaLibrariesCommandHandler(
                 }
                 catch (Exception ex)
                 {
-                    await _kxpContext.DisposeAsync(); // reset context errors
-                    _kxpContext = await kxpContextFactory.CreateDbContextAsync(cancellationToken);
+                    await kxpContext.DisposeAsync(); // reset context errors
+                    kxpContext = await kxpContextFactory.CreateDbContextAsync(cancellationToken);
 
                     protocol.Append(HandbookReferences
                         .ErrorCreatingTargetInstance<MediaLibraryInfo>(ex)
@@ -180,7 +180,7 @@ public class MigrateMediaLibrariesCommandHandler(
                 if (!toolkitConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(true) &&
                     !string.IsNullOrWhiteSpace(toolkitConfiguration.KxCmsDirPath))
                 {
-                    sourceMediaLibraryPath = Path.Combine(toolkitConfiguration.KxCmsDirPath, ksSite.SiteName, DIR_MEDIA, ksMediaLibrary.LibraryFolder);
+                    sourceMediaLibraryPath = Path.Combine(toolkitConfiguration.KxCmsDirPath, ksSite.SiteName, DirMedia, ksMediaLibrary.LibraryFolder);
                     loadMediaFileData = true;
                 }
 
@@ -197,7 +197,7 @@ public class MigrateMediaLibrariesCommandHandler(
                         (found, uploadedFile) = LoadMediaFileBinary(sourceMediaLibraryPath, ksMediaFile.FilePath, ksMediaFile.FileMimeType);
                         if (!found)
                         {
-                            // TODO tk: 2022-07-07 report missing file (currently reported in mapper)
+                            // report missing file (currently reported in mapper)
                         }
                     }
 
@@ -225,7 +225,7 @@ public class MigrateMediaLibrariesCommandHandler(
                             }
 
                             mediaFileFacade.SetMediaFile(mf, newInstance);
-                            await _kxpContext.SaveChangesAsync(cancellationToken);
+                            await kxpContext.SaveChangesAsync(cancellationToken);
 
                             protocol.Success(ksMediaFile, mf, mapped);
                             logger.LogEntitySetAction(newInstance, mf);

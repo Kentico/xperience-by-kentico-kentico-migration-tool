@@ -29,19 +29,6 @@ public class MemberInfoMapper(
     IDbContextFactory<KX12Context> k12DbContextFactory)
     : EntityMapperBase<MemberInfoMapperSource, MemberInfo>(logger, primaryKeyMappingContext, protocol)
 {
-    public static IReadOnlyList<string> MigratedUserFields = new List<string>
-    {
-        nameof(KX12M.CmsUser.UserGuid),
-        nameof(KX12M.CmsUser.UserName),
-        nameof(KX12M.CmsUser.Email),
-        // nameof(KX12M.CmsUser.UserPassword),
-        nameof(KX12M.CmsUser.UserEnabled),
-        nameof(KX12M.CmsUser.UserCreated),
-        nameof(KX12M.CmsUser.UserSecurityStamp)
-    };
-
-    private readonly KxpClassFacade _kxpClassFacade = kxpClassFacade;
-
     protected override MemberInfo CreateNewInstance(MemberInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
     protected override MemberInfo MapInternal(MemberInfoMapperSource source, MemberInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
@@ -87,7 +74,7 @@ public class MemberInfoMapper(
         // OBSOLETE: target.UserRegistrationLinkExpiration = DateTime.Now.AddDays(365);
 
         // TODO tomas.krch: 2023-04-11 migrate customized fields
-        var customized = _kxpClassFacade.GetCustomizedFieldInfosAll(MemberInfo.TYPEINFO.ObjectClassName);
+        var customized = kxpClassFacade.GetCustomizedFieldInfosAll(MemberInfo.TYPEINFO.ObjectClassName);
         foreach (var customizedFieldInfo in customized)
         {
             string fieldName = customizedFieldInfo.FieldName;
@@ -146,7 +133,7 @@ public class MemberInfoMapper(
         var usDci = kx12Context.CmsClasses.Select(x => new { x.ClassFormDefinition, x.ClassName, x.ClassTableName }).FirstOrDefault(x => x.ClassName == K12SystemClass.cms_usersettings);
         if (usDci != null)
         {
-            var userSettingsCustomizedFields = _kxpClassFacade.GetCustomizedFieldInfos(new FormInfo(usDci?.ClassFormDefinition)).ToList();
+            var userSettingsCustomizedFields = kxpClassFacade.GetCustomizedFieldInfos(new FormInfo(usDci?.ClassFormDefinition)).ToList();
             if (userSettingsCustomizedFields.Count > 0)
             {
                 try

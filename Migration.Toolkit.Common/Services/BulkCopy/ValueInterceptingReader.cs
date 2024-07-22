@@ -15,32 +15,32 @@ public delegate void ValueInterceptingReaderSkippedRow(Dictionary<string, object
 
 public class ValueInterceptingReader : DataReaderProxyBase
 {
-    private readonly Dictionary<int, string> _columnOrdinals;
-    private readonly ValueInterceptingReaderSkippedRow? _skippedValueCallback;
-    private readonly ValueInterceptor _valueInterceptor;
+    private readonly Dictionary<int, string> columnOrdinals;
+    private readonly ValueInterceptingReaderSkippedRow? skippedValueCallback;
+    private readonly ValueInterceptor valueInterceptor;
 
-    private Dictionary<int, object?> _overwrittenValues = [];
+    private Dictionary<int, object?> overwrittenValues = [];
 
     public ValueInterceptingReader(IDataReader innerReader, ValueInterceptor valueInterceptor, SqlColumn[] columnOrdinals, ValueInterceptingReaderSkippedRow? skippedValueCallback) : base(innerReader)
     {
-        _valueInterceptor = valueInterceptor;
-        _skippedValueCallback = skippedValueCallback;
-        _columnOrdinals = columnOrdinals.ToDictionary(x => x.OrdinalPosition, x => x.ColumnName);
+        this.valueInterceptor = valueInterceptor;
+        this.skippedValueCallback = skippedValueCallback;
+        this.columnOrdinals = columnOrdinals.ToDictionary(x => x.OrdinalPosition, x => x.ColumnName);
     }
 
-    public override object? GetValue(int i) => _overwrittenValues.ContainsKey(i) ? _overwrittenValues[i] : base.GetValue(i);
+    public override object? GetValue(int i) => overwrittenValues.ContainsKey(i) ? overwrittenValues[i] : base.GetValue(i);
 
     public override bool Read()
     {
         while (base.Read())
         {
-            _overwrittenValues = [];
+            overwrittenValues = [];
 
             bool skipCurrentDataRow = false;
-            var currentRow = _columnOrdinals.ToDictionary(k => k.Value, v => base.GetValue(v.Key));
-            foreach ((int columnOrdinal, string columnName) in _columnOrdinals)
+            var currentRow = columnOrdinals.ToDictionary(k => k.Value, v => base.GetValue(v.Key));
+            foreach ((int columnOrdinal, string columnName) in columnOrdinals)
             {
-                (object? newValue, bool overwriteValue, bool skipDataRow) = _valueInterceptor.Invoke(columnOrdinal, columnName, base.GetValue(columnOrdinal), currentRow);
+                (object? newValue, bool overwriteValue, bool skipDataRow) = valueInterceptor.Invoke(columnOrdinal, columnName, base.GetValue(columnOrdinal), currentRow);
                 if (skipDataRow)
                 {
                     skipCurrentDataRow = true;
@@ -49,13 +49,13 @@ public class ValueInterceptingReader : DataReaderProxyBase
 
                 if (overwriteValue)
                 {
-                    _overwrittenValues[columnOrdinal] = newValue;
+                    overwrittenValues[columnOrdinal] = newValue;
                 }
             }
 
             if (skipCurrentDataRow)
             {
-                _skippedValueCallback?.Invoke(currentRow);
+                skippedValueCallback?.Invoke(currentRow);
                 continue;
             }
 

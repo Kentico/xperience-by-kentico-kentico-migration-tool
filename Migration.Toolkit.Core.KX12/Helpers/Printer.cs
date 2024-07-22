@@ -38,19 +38,13 @@ public class Printer
     {
         string currentTypeName = ReflectionHelper<T>.CurrentType.Name;
 
-        string Fallback(object obj)
-        {
-            return printType
+        string Fallback(object obj) => printType
                 ? $"{currentTypeName}({SerializationHelper.SerializeOnlyNonComplexProperties(obj)})"
                 : $"{SerializationHelper.SerializeOnlyNonComplexProperties(obj)}";
-        }
 
-        string FormatModel(string inner)
-        {
-            return printType
+        string FormatModel(string inner) => printType
                 ? $"{currentTypeName}({inner})"
                 : $"{inner}";
-        }
 
         return model switch
         {

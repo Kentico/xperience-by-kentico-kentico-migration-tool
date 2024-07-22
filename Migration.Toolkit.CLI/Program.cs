@@ -70,6 +70,8 @@ foreach ((var validationMessageType, string message, string? recommendedFix) in 
             }
 
             break;
+        default:
+            break;
     }
 }
 

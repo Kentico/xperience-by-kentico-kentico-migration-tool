@@ -3,15 +3,11 @@ using CMS.FormEngine;
 using CMS.Globalization;
 using CMS.MediaLibrary;
 using CMS.Membership;
-using CMS.Modules;
-
 using Kentico.Xperience.UMT;
 
 using MediatR;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
@@ -44,8 +40,6 @@ public static class K11CoreDiExtensions
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CommandConstraintBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(XbKApiContextBehavior<,>));
 
-        services.AddSingleton(s => new TableReflectionService(s.GetRequiredService<ILogger<TableReflectionService>>()));
-
         services.AddScoped<PrimaryKeyMappingContext>();
         services.AddSingleton<KeyMappingContext>();
         services.AddScoped<IPrimaryKeyLocatorService, PrimaryKeyLocatorService>();
@@ -56,7 +50,6 @@ public static class K11CoreDiExtensions
         services.AddTransient<IEntityMapper<CmsConsent, KXP.Models.CmsConsent>, CmsConsentMapper>();
         services.AddTransient<IEntityMapper<CmsConsentAgreement, KXP.Models.CmsConsentAgreement>, CmsConsentAgreementMapper>();
         services.AddTransient<IEntityMapper<CmsConsentArchive, KXP.Models.CmsConsentArchive>, CmsConsentArchiveMapper>();
-        services.AddTransient<IEntityMapper<CmsResource, ResourceInfo>, ResourceMapper>();
         services.AddTransient<IEntityMapper<AlternativeFormMapperSource, AlternativeFormInfo>, AlternativeFormMapper>();
         services.AddTransient<IEntityMapper<CmsRole, RoleInfo>, RoleInfoMapper>();
         services.AddTransient<IEntityMapper<CmsSettingsCategory, KXP.Models.CmsSettingsCategory>, CmsSettingsCategoryMapper>();
@@ -64,7 +57,6 @@ public static class K11CoreDiExtensions
         services.AddTransient<IEntityMapper<CmsUser, UserInfo>, UserInfoMapper>();
         services.AddTransient<IEntityMapper<MemberInfoMapperSource, MemberInfo>, MemberInfoMapper>();
         services.AddTransient<IEntityMapper<CmsUserRole, UserRoleInfo>, UserRoleInfoMapper>();
-        services.AddTransient<IEntityMapper<OmContact, KXP.Models.OmContact>, OmContactMapper>();
         services.AddTransient<IEntityMapper<OmContactGroup, KXP.Models.OmContactGroup>, OmContactGroupMapper>();
         services.AddTransient<IEntityMapper<OmContactStatus, KXP.Models.OmContactStatus>, OmContactStatusMapper>();
         services.AddTransient<IEntityMapper<CmsCountry, CountryInfo>, CountryInfoMapper>();

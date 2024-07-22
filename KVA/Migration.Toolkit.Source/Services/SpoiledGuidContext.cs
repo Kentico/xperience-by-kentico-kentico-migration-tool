@@ -19,12 +19,11 @@ namespace Migration.Toolkit.Source.Services;
 /// <param name="logger"></param>
 public class SpoiledGuidContext(ModelFacade modelFacade, ILogger<SpoiledGuidContext> logger) : ISpoiledGuidContext
 {
-    private IDictionary<Guid, ImmutableList<SpoiledDocumentGuidInfo>>? _spoiledDocumentGuids;
-
-    private IDictionary<Guid, ImmutableList<SpoiledNodeGuidInfo>>? _spoiledNodeGuids;
+    private IDictionary<Guid, ImmutableList<SpoiledDocumentGuidInfo>>? spoiledDocumentGuids;
+    private IDictionary<Guid, ImmutableList<SpoiledNodeGuidInfo>>? spoiledNodeGuids;
 
     internal IDictionary<Guid, ImmutableList<SpoiledDocumentGuidInfo>> SpoiledDocumentGuids =>
-        _spoiledDocumentGuids ??= modelFacade.Select("""
+        spoiledDocumentGuids ??= modelFacade.Select("""
                                                      SELECT DocumentGUID, STRING_AGG(CONCAT(NodeSiteID, '-', NodeID), '|') [SiteID-NodeID]
                                                      FROM View_CMS_Tree_Joined TJ
                                                      GROUP BY DocumentGUID
@@ -42,7 +41,7 @@ public class SpoiledGuidContext(ModelFacade modelFacade, ILogger<SpoiledGuidCont
             );
 
     internal IDictionary<Guid, ImmutableList<SpoiledNodeGuidInfo>> SpoiledNodeGuids =>
-        _spoiledNodeGuids ??= modelFacade.Select("""
+        spoiledNodeGuids ??= modelFacade.Select("""
                                                  SELECT NodeGUID, STRING_AGG(NodeSiteID, '|') [SiteID]
                                                  FROM View_CMS_Tree_Joined TJ
                                                  GROUP BY NodeGUID

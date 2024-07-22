@@ -53,6 +53,9 @@ public record SemanticVersion(int Major, int? Minor, int? Hotfix) //, string? Bu
                     semVer = new SemanticVersion(major, minor, hotfix);
                     return true;
                 }
+
+                default:
+                    break;
             }
         }
 

@@ -7,16 +7,11 @@ using Migration.Toolkit.KXP.Models;
 
 namespace Migration.Toolkit.Core.KX12.Mappers;
 
-public class CmsUserMapper : EntityMapperBase<KX12M.CmsUser, CmsUser>
+public class CmsUserMapper(
+    ILogger<CmsUserMapper> logger,
+    PrimaryKeyMappingContext primaryKeyMappingContext,
+    IProtocol protocol) : EntityMapperBase<KX12M.CmsUser, CmsUser>(logger, primaryKeyMappingContext, protocol)
 {
-    private readonly ILogger<CmsUserMapper> _logger;
-
-    public CmsUserMapper(
-        ILogger<CmsUserMapper> logger,
-        PrimaryKeyMappingContext primaryKeyMappingContext,
-        IProtocol protocol
-    ) : base(logger, primaryKeyMappingContext, protocol) => _logger = logger;
-
     protected override CmsUser CreateNewInstance(KX12M.CmsUser tSourceEntity, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
     protected override CmsUser MapInternal(KX12M.CmsUser source, CmsUser target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
@@ -24,7 +19,7 @@ public class CmsUserMapper : EntityMapperBase<KX12M.CmsUser, CmsUser>
         if (!newInstance && source.UserGuid != target.UserGuid)
         {
             // assertion failed
-            _logger.LogTrace("Assertion failed, entity key mismatch");
+            logger.LogTrace("Assertion failed, entity key mismatch");
             throw new InvalidOperationException("Assertion failed, entity key mismatch.");
         }
 

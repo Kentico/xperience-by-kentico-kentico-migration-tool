@@ -121,6 +121,9 @@ public class CmsClassMapper(
             {
                 break;
             }
+
+            default:
+                break;
         }
 
         switch (source)
@@ -143,12 +146,12 @@ public class CmsClassMapper(
 
             // Target Form,null
             case
-                {
-                    ClassIsDocumentType: false,
-                    ClassIsCoupledClass: true,
-                    ClassIsForm: true
-                    // ClassIsPage: false
-                }
+            {
+                ClassIsDocumentType: false,
+                ClassIsCoupledClass: true,
+                ClassIsForm: true
+                // ClassIsPage: false
+            }
                 :
             {
                 target.ClassType = ClassType.FORM;
@@ -189,6 +192,9 @@ public class CmsClassMapper(
                 target = PatchDataClassInfo(target, out string? oldPrimaryKeyName, out string? documentNameField);
                 break;
             }
+
+            default:
+                break;
         }
 
         return target;

@@ -12,34 +12,34 @@ public class SourceInstanceContext(
     ToolkitConfiguration configuration,
     ModelFacade modelFacade)
 {
-    private readonly Dictionary<string, SourceInstanceDiscoveredInfo> _cachedInfos = new(StringComparer.InvariantCultureIgnoreCase);
+    private readonly Dictionary<string, SourceInstanceDiscoveredInfo> cachedInfos = new(StringComparer.InvariantCultureIgnoreCase);
 
-    private bool _sourceInfoLoaded;
+    private bool sourceInfoLoaded;
 
-    public bool HasInfo => _cachedInfos.Count > 0 && _sourceInfoLoaded;
+    public bool HasInfo => cachedInfos.Count > 0 && sourceInfoLoaded;
 
     public bool IsQuerySourceInstanceEnabled() => configuration.OptInFeatures?.QuerySourceInstanceApi?.Enabled ?? false;
 
     public async Task<bool> RequestSourceInstanceInfo()
     {
-        if (!_sourceInfoLoaded)
+        if (!sourceInfoLoaded)
         {
             var result = await ipcService.GetSourceInstanceDiscoveredInfos();
             foreach ((string key, var value) in result)
             {
-                _cachedInfos.Add(key, value);
+                cachedInfos.Add(key, value);
                 logger.LogInformation("Source instance info loaded for site '{SiteName}' successfully", key);
             }
 
-            _sourceInfoLoaded = true;
+            sourceInfoLoaded = true;
         }
 
-        return _sourceInfoLoaded;
+        return sourceInfoLoaded;
     }
 
     public List<EditingFormControlModel>? GetWidgetPropertyFormComponents(string siteName, string widgetIdentifier)
     {
-        if (_cachedInfos.TryGetValue(siteName, out var info))
+        if (cachedInfos.TryGetValue(siteName, out var info))
         {
             return info.WidgetProperties != null && info.WidgetProperties.TryGetValue(widgetIdentifier, out var widgetProperties)
                 ? widgetProperties
@@ -51,7 +51,7 @@ public class SourceInstanceContext(
 
     public List<EditingFormControlModel>? GetPageTemplateFormComponents(string siteName, string pageTemplateIdentifier)
     {
-        if (_cachedInfos.TryGetValue(siteName, out var info))
+        if (cachedInfos.TryGetValue(siteName, out var info))
         {
             return info.PageTemplateProperties != null && info.PageTemplateProperties.TryGetValue(pageTemplateIdentifier, out var pageTemplate)
                 ? pageTemplate
@@ -85,7 +85,7 @@ public class SourceInstanceContext(
             modelFacade.SelectById<ICmsSite>(siteId)?.SiteName
             ?? throw new InvalidOperationException($"Source site with SiteID '{siteId}' not exists");
 
-        if (_cachedInfos.TryGetValue(siteName, out var info))
+        if (cachedInfos.TryGetValue(siteName, out var info))
         {
             return info.SectionProperties != null && info.SectionProperties.TryGetValue(sectionIdentifier, out var sectionFcs)
                 ? sectionFcs

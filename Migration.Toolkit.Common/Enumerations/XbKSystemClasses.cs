@@ -1,7 +1,7 @@
 // ReSharper disable InconsistentNaming
 
 namespace Migration.Toolkit.Common.Enumerations;
-
+#pragma warning disable IDE1006
 public class XbKSystemClasses
 {
     public const string cms_culture = "cms.culture";
@@ -108,3 +108,4 @@ public class XbKSystemClasses
             CMS_MacroRuleCategory, CMS_MacroRuleMacroRuleCategory, cms_contentrelationship, cms_contentrelationshipitem
         }, StringComparer.InvariantCultureIgnoreCase);
 }
+#pragma warning enable IDE1006

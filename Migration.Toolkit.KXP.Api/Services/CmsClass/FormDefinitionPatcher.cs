@@ -9,31 +9,31 @@ namespace Migration.Toolkit.KXP.Api.Services.CmsClass;
 
 public class FormDefinitionPatcher
 {
-    private const string CATEGORY_ELEM = "category";
-    private const string CATEGORY_ATTR_NAME = FIELD_ATTR_NAME;
-    private const string FIELD_ATTR_COLUMN = "column";
-    private const string FIELD_ATTR_COLUMNTYPE = "columntype";
-    private const string FIELD_ATTR_ENABLED = "enabled";
-    private const string FIELD_ATTR_GUID = "guid";
-    private const string FIELD_ATTR_ISPK = "isPK";
-    private const string FIELD_ATTR_NAME = "name";
-    private const string FIELD_ATTR_SIZE = "size";
-    private const int FIELD_ATTR_SIZE_ZERO = 0;
-    private const string FIELD_ATTR_SYSTEM = "system";
-    private const string FIELD_ATTR_VISIBLE = "visible";
-    private const string FIELD_ELEM = "field";
-    private const string FIELD_ELEM_PROPERTIES = "properties";
-    private const string FIELD_ELEM_SETTINGS = "settings";
-    private const string PROPERTIES_ELEM_DEFAULTVALUE = "defaultvalue";
-    private const string SETTINGS_ELEM_CONTROLNAME = "controlname";
-    private const string SETTINGS_MAXIMUMASSETS = "MaximumAssets";
-    private const string SETTINGS_MAXIMUMASSETS_FALLBACK = "99";
-    private const string SETTINGS_MAXIMUMPAGES = "MaximumPages";
-    private const string SETTINGS_MAXIMUMPAGES_FALLBACK = "99";
-    private const string SETTINGS_ROOTPATH = "RootPath";
-    private const string SETTINGS_ROOTPATH_FALLBACK = "/";
+    private const string CategoryElem = "category";
+    private const string CategoryAttrName = FieldAttrName;
+    private const string FieldAttrColumn = "column";
+    private const string FieldAttrColumntype = "columntype";
+    private const string FieldAttrEnabled = "enabled";
+    private const string FieldAttrGuid = "guid";
+    private const string FieldAttrIspk = "isPK";
+    private const string FieldAttrName = "name";
+    private const string FieldAttrSize = "size";
+    private const int FieldAttrSizeZero = 0;
+    private const string FieldAttrSystem = "system";
+    private const string FieldAttrVisible = "visible";
+    private const string FieldElem = "field";
+    private const string FieldElemProperties = "properties";
+    private const string FieldElemSettings = "settings";
+    private const string PropertiesElemDefaultvalue = "defaultvalue";
+    private const string SettingsElemControlname = "controlname";
+    private const string SettingsMaximumassets = "MaximumAssets";
+    private const string SettingsMaximumassetsFallback = "99";
+    private const string SettingsMaximumpages = "MaximumPages";
+    private const string SettingsMaximumpagesFallback = "99";
+    private const string SettingsRootpath = "RootPath";
+    private const string SettingsRootpathFallback = "/";
 
-    private readonly IReadOnlySet<string> _allowedFieldAttributes = new HashSet<string>([
+    private readonly IReadOnlySet<string> allowedFieldAttributes = new HashSet<string>([
         // taken from FormFieldInfo.GetAttributes() method
         "column",
         "visible",
@@ -55,16 +55,16 @@ public class FormDefinitionPatcher
         "resolvedefaultvalue"
     ], StringComparer.InvariantCultureIgnoreCase);
 
-    private readonly bool _altForm;
-    private readonly bool _classIsCustom;
-    private readonly bool _classIsDocumentType;
-    private readonly bool _classIsForm;
-    private readonly bool _discardSysFields;
-    private readonly FieldMigrationService _fieldMigrationService;
-    private readonly string _formDefinitionXml;
+    private readonly bool altForm;
+    private readonly bool classIsCustom;
+    private readonly bool classIsDocumentType;
+    private readonly bool classIsForm;
+    private readonly bool discardSysFields;
+    private readonly FieldMigrationService fieldMigrationService;
+    private readonly string formDefinitionXml;
 
-    private readonly ILogger _logger;
-    private readonly XDocument _xDoc;
+    private readonly ILogger logger;
+    private readonly XDocument xDoc;
 
     public FormDefinitionPatcher(ILogger logger,
         string formDefinitionXml,
@@ -75,31 +75,31 @@ public class FormDefinitionPatcher
         bool classIsCustom,
         bool altForm = false)
     {
-        _logger = logger;
-        _formDefinitionXml = formDefinitionXml;
-        _fieldMigrationService = fieldMigrationService;
-        _classIsForm = classIsForm;
-        _classIsDocumentType = classIsDocumentType;
-        _discardSysFields = discardSysFields;
-        _classIsCustom = classIsCustom;
-        _altForm = altForm;
-        _xDoc = XDocument.Parse(_formDefinitionXml);
+        this.logger = logger;
+        this.formDefinitionXml = formDefinitionXml;
+        this.fieldMigrationService = fieldMigrationService;
+        this.classIsForm = classIsForm;
+        this.classIsDocumentType = classIsDocumentType;
+        this.discardSysFields = discardSysFields;
+        this.classIsCustom = classIsCustom;
+        this.altForm = altForm;
+        xDoc = XDocument.Parse(this.formDefinitionXml);
     }
 
-    public IEnumerable<string?> GetFieldNames() => _xDoc.XPathSelectElements($"//{FIELD_ELEM}").Select(x => x.Attribute(FIELD_ATTR_COLUMN)?.Value);
+    public IEnumerable<string?> GetFieldNames() => xDoc.XPathSelectElements($"//{FieldElem}").Select(x => x.Attribute(FieldAttrColumn)?.Value);
 
     public void RemoveCategories()
     {
-        var categories = (_xDoc.Root?.XPathSelectElements($"//{CATEGORY_ELEM}") ?? Enumerable.Empty<XElement>()).ToList();
+        var categories = (xDoc.Root?.XPathSelectElements($"//{CategoryElem}") ?? Enumerable.Empty<XElement>()).ToList();
         foreach (var xElement in categories)
         {
             string elementDescriptor = xElement.ToString();
-            if (xElement.Attribute(FIELD_ATTR_NAME)?.Value is { } name)
+            if (xElement.Attribute(FieldAttrName)?.Value is { } name)
             {
                 elementDescriptor = name;
             }
 
-            _logger.LogDebug("Removing category '{CategoryDescriptor}'", elementDescriptor);
+            logger.LogDebug("Removing category '{CategoryDescriptor}'", elementDescriptor);
             xElement.Remove();
         }
     }
@@ -113,64 +113,64 @@ public class FormDefinitionPatcher
             var elementList = elements.ToList();
             foreach (var field in elementList)
             {
-                if (field.Attribute(FIELD_ATTR_COLUMN)?.Value is { } fieldToRemoveName)
+                if (field.Attribute(FieldAttrColumn)?.Value is { } fieldToRemoveName)
                 {
-                    if (_xDoc.XPathSelectElements($"//{FIELD_ELEM}[@column={fieldToRemoveName}]") is { } fieldToRemove)
+                    if (xDoc.XPathSelectElements($"//{FieldElem}[@column={fieldToRemoveName}]") is { } fieldToRemove)
                     {
-                        _logger.LogDebug("Field {FieldName} removed from definition", fieldToRemoveName);
+                        logger.LogDebug("Field {FieldName} removed from definition", fieldToRemoveName);
                         fieldToRemove.Remove();
                     }
                     else
                     {
-                        _logger.LogDebug("Field {FieldName} not found, cannot remove from definition", fieldToRemoveName);
+                        logger.LogDebug("Field {FieldName} not found, cannot remove from definition", fieldToRemoveName);
                     }
                 }
             }
         }
         else
         {
-            _logger.LogError("Unable to parse form definition: {FormDefinition}", diffAgainstDefinition);
+            logger.LogError("Unable to parse form definition: {FormDefinition}", diffAgainstDefinition);
         }
     }
 
     public void PatchFields()
     {
-        if (_xDoc.Root?.Elements() is { } elements)
+        if (xDoc.Root?.Elements() is { } elements)
         {
             var elementList = elements.ToList();
             foreach (var fieldOrCategory in elementList)
             {
-                if (fieldOrCategory.Name == FIELD_ELEM)
+                if (fieldOrCategory.Name == FieldElem)
                 {
                     PatchField(fieldOrCategory);
                 }
-                else if (fieldOrCategory.Name == CATEGORY_ELEM)
+                else if (fieldOrCategory.Name == CategoryElem)
                 {
-                    _logger.LogDebug("Category '{Category}' skipped", fieldOrCategory.Attribute(CATEGORY_ATTR_NAME)?.Value ?? "<no category name>");
+                    logger.LogDebug("Category '{Category}' skipped", fieldOrCategory.Attribute(CategoryAttrName)?.Value ?? "<no category name>");
                 }
                 else
                 {
-                    _logger.LogWarning("Unknown element '{Element}'", fieldOrCategory.Name);
+                    logger.LogWarning("Unknown element '{Element}'", fieldOrCategory.Name);
                 }
             }
         }
         else
         {
-            _logger.LogError("Unable to parse form definition: {FormDefinition}", _formDefinitionXml);
+            logger.LogError("Unable to parse form definition: {FormDefinition}", formDefinitionXml);
         }
     }
 
-    public string? GetPatched() => _xDoc.Root?.ToString();
+    public string? GetPatched() => xDoc.Root?.ToString();
 
     private void PatchField(XElement field)
     {
-        var columnAttr = field.Attribute(FIELD_ATTR_COLUMN);
-        var systemAttr = field.Attribute(FIELD_ATTR_SYSTEM);
-        var isPkAttr = field.Attribute(FIELD_ATTR_ISPK);
-        var columnTypeAttr = field.Attribute(FIELD_ATTR_COLUMNTYPE);
-        var visibleAttr = field.Attribute(FIELD_ATTR_VISIBLE);
-        var enabledAttr = field.Attribute(FIELD_ATTR_ENABLED);
-        var guidAttr = field.Attribute(FIELD_ATTR_GUID);
+        var columnAttr = field.Attribute(FieldAttrColumn);
+        var systemAttr = field.Attribute(FieldAttrSystem);
+        var isPkAttr = field.Attribute(FieldAttrIspk);
+        var columnTypeAttr = field.Attribute(FieldAttrColumntype);
+        var visibleAttr = field.Attribute(FieldAttrVisible);
+        var enabledAttr = field.Attribute(FieldAttrEnabled);
+        var guidAttr = field.Attribute(FieldAttrGuid);
 
         bool isPk = bool.TryParse(isPkAttr?.Value, out bool isPkParsed) && isPkParsed;
         bool system = bool.TryParse(systemAttr?.Value, out bool sysParsed) && sysParsed;
@@ -181,16 +181,16 @@ public class FormDefinitionPatcher
         foreach (var a in field.Attributes())
         {
             string an = a.Name.ToString();
-            if (!_allowedFieldAttributes.Contains(an))
+            if (!allowedFieldAttributes.Contains(an))
             {
                 a.Remove();
-                _logger.LogTrace("Removing attribute '{AttributeName}'='{Value}' from field with column '{ColumnName}'", an, a.Value, columnAttr?.Value);
+                logger.LogTrace("Removing attribute '{AttributeName}'='{Value}' from field with column '{ColumnName}'", an, a.Value, columnAttr?.Value);
             }
         }
 
-        if (_discardSysFields && (system || isPk))
+        if (discardSysFields && (system || isPk))
         {
-            _logger.LogDebug("Discard sys filed == true => Removing field sys '{Field}'", fieldDescriptor);
+            logger.LogDebug("Discard sys filed == true => Removing field sys '{Field}'", fieldDescriptor);
             field.Remove();
             return;
         }
@@ -203,38 +203,38 @@ public class FormDefinitionPatcher
                 return;
             }
 
-            _logger.LogError("Field ('{Field}') 'columnType' attribute is required", fieldDescriptor);
+            logger.LogError("Field ('{Field}') 'columnType' attribute is required", fieldDescriptor);
             return;
         }
 
 
-        var controlNameElem = field.XPathSelectElement($"{FIELD_ELEM_SETTINGS}/{SETTINGS_ELEM_CONTROLNAME}");
+        var controlNameElem = field.XPathSelectElement($"{FieldElemSettings}/{SettingsElemControlname}");
         string? controlName = controlNameElem?.Value;
 
-        if (_fieldMigrationService.GetFieldMigration(columnType, controlName, columnAttr?.Value) is var (sourceDataType, targetDataType, sourceFormControl, targetFormComponent, actions, fieldNameRegex))
+        if (fieldMigrationService.GetFieldMigration(columnType, controlName, columnAttr?.Value) is var (_, targetDataType, _, targetFormComponent, actions, _))
         {
-            _logger.LogDebug("Field {FieldDescriptor} DataType: {SourceDataType} => {TargetDataType}", fieldDescriptor, columnType, targetDataType);
+            logger.LogDebug("Field {FieldDescriptor} DataType: {SourceDataType} => {TargetDataType}", fieldDescriptor, columnType, targetDataType);
             columnTypeAttr?.SetValue(targetDataType);
             switch (targetFormComponent)
             {
                 case TfcDirective.DoNothing:
-                    _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective}", fieldDescriptor, targetFormComponent);
+                    logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective}", fieldDescriptor, targetFormComponent);
                     PerformActionsOnField(field, fieldDescriptor, actions);
                     break;
                 case TfcDirective.Clear:
-                    _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective}", fieldDescriptor, targetFormComponent);
+                    logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective}", fieldDescriptor, targetFormComponent);
                     field.RemoveNodes();
                     visibleAttr?.SetValue(false);
                     break;
                 case TfcDirective.CopySourceControl:
                     // TODO tk: 2022-10-06 support only for custom controls
-                    _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective} => {ControlName}", fieldDescriptor, targetFormComponent, controlName);
+                    logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective} => {ControlName}", fieldDescriptor, targetFormComponent, controlName);
                     controlNameElem?.SetValue(controlName);
                     PerformActionsOnField(field, fieldDescriptor, actions);
                     break;
                 default:
                 {
-                    _logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:NONE => from control '{ControlName}' => {TargetFormComponent}", fieldDescriptor, controlName, targetFormComponent);
+                    logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:NONE => from control '{ControlName}' => {TargetFormComponent}", fieldDescriptor, controlName, targetFormComponent);
                     controlNameElem?.SetValue(targetFormComponent);
                     PerformActionsOnField(field, fieldDescriptor, actions);
                     break;
@@ -243,49 +243,49 @@ public class FormDefinitionPatcher
         }
 
 
-        if (!_classIsForm && !_classIsDocumentType)
+        if (!classIsForm && !classIsDocumentType)
         {
             bool hasVisibleAttribute = visibleAttr != null;
             if (enabledAttr is { } enabled)
             {
                 enabled.Remove();
-                _logger.LogDebug("Removing field '{Field}' attribute '{Attribute}'", fieldDescriptor, FIELD_ATTR_ENABLED);
+                logger.LogDebug("Removing field '{Field}' attribute '{Attribute}'", fieldDescriptor, FieldAttrEnabled);
             }
 
-            if (system && _classIsCustom)
+            if (system && classIsCustom)
             {
                 systemAttr?.Remove();
-                _logger.LogDebug("Removing field '{Field}' attribute '{Attribute}'", fieldDescriptor, systemAttr?.Name);
+                logger.LogDebug("Removing field '{Field}' attribute '{Attribute}'", fieldDescriptor, systemAttr?.Name);
             }
 
             if (hasVisibleAttribute && visibleAttr?.Value is { } visibleValue)
             {
-                field.Add(new XAttribute(FIELD_ATTR_ENABLED, visibleValue));
-                _logger.LogDebug("Set field '{Field}' attribute '{Attribute}' to value '{Value}' from attribute '{SourceAttribute}'", fieldDescriptor, FIELD_ATTR_ENABLED, visibleValue, FIELD_ATTR_VISIBLE);
+                field.Add(new XAttribute(FieldAttrEnabled, visibleValue));
+                logger.LogDebug("Set field '{Field}' attribute '{Attribute}' to value '{Value}' from attribute '{SourceAttribute}'", fieldDescriptor, FieldAttrEnabled, visibleValue, FieldAttrVisible);
             }
 
-            if (!_altForm)
+            if (!altForm)
             {
                 if (hasVisibleAttribute)
                 {
                     visibleAttr?.Remove();
-                    _logger.LogDebug("Removing field '{Field}' attribute '{Attribute}'", fieldDescriptor, FIELD_ATTR_VISIBLE);
+                    logger.LogDebug("Removing field '{Field}' attribute '{Attribute}'", fieldDescriptor, FieldAttrVisible);
                 }
             }
 
             foreach (var fieldChildNode in field.Elements().ToList())
             {
-                _logger.LogDebug("Patching filed child '{FieldChildName}'", fieldChildNode.Name);
+                logger.LogDebug("Patching filed child '{FieldChildName}'", fieldChildNode.Name);
                 switch (fieldChildNode.Name.ToString())
                 {
-                    case FIELD_ELEM_PROPERTIES:
+                    case FieldElemProperties:
                     {
                         PatchProperties(fieldChildNode);
                         break;
                     }
-                    case FIELD_ELEM_SETTINGS:
+                    case FieldElemSettings:
                     {
-                        if (_altForm)
+                        if (altForm)
                         {
                             PatchSettings(fieldChildNode);
                         }
@@ -299,7 +299,7 @@ public class FormDefinitionPatcher
                     }
                     default:
                     {
-                        _logger.LogDebug("Removing field element '{ElementName}'", fieldChildNode.Name);
+                        logger.LogDebug("Removing field element '{ElementName}'", fieldChildNode.Name);
                         fieldChildNode.Remove();
                         break;
                     }
@@ -307,12 +307,12 @@ public class FormDefinitionPatcher
             }
         }
 
-        if (_classIsForm || _classIsDocumentType)
+        if (classIsForm || classIsDocumentType)
         {
-            if (field.Attribute(FIELD_ATTR_VISIBLE) is { } visible)
+            if (field.Attribute(FieldAttrVisible) is { } visible)
             {
-                field.Add(new XAttribute(FIELD_ATTR_ENABLED, visible.Value));
-                _logger.LogDebug("Set field '{Field}' attribute '{Attribute}' to value '{Value}' from attribute '{SourceAttribute}'", fieldDescriptor, FIELD_ATTR_ENABLED, visible, FIELD_ATTR_VISIBLE);
+                field.Add(new XAttribute(FieldAttrEnabled, visible.Value));
+                logger.LogDebug("Set field '{Field}' attribute '{Attribute}' to value '{Value}' from attribute '{SourceAttribute}'", fieldDescriptor, FieldAttrEnabled, visible, FieldAttrVisible);
             }
         }
     }
@@ -322,7 +322,7 @@ public class FormDefinitionPatcher
         var elementsToRemove = settingsElem.Elements().ToList();
         foreach (var element in elementsToRemove)
         {
-            _logger.LogDebug("Removing settings element '{ElementName}'", element.Name);
+            logger.LogDebug("Removing settings element '{ElementName}'", element.Name);
             element.Remove();
         }
 
@@ -335,12 +335,12 @@ public class FormDefinitionPatcher
     private void PatchSettings(XElement settingsElem)
     {
         var elementsToRemove = settingsElem.Elements()
-            .Where(element => element.Name != SETTINGS_ELEM_CONTROLNAME)
+            .Where(element => element.Name != SettingsElemControlname)
             .ToList();
 
         foreach (var element in elementsToRemove)
         {
-            _logger.LogDebug("Removing settings element '{ElementName}'", element.Name);
+            logger.LogDebug("Removing settings element '{ElementName}'", element.Name);
             element.Remove();
         }
 
@@ -354,18 +354,18 @@ public class FormDefinitionPatcher
     private void PatchProperties(XElement properties)
     {
         var elementsToRemove = properties.Elements()
-            .Where(element => element.Name != PROPERTIES_ELEM_DEFAULTVALUE)
+            .Where(element => element.Name != PropertiesElemDefaultvalue)
             .ToList();
 
         foreach (var element in elementsToRemove)
         {
-            _logger.LogDebug("Removing properties element '{ElementName}'", element.Name);
+            logger.LogDebug("Removing properties element '{ElementName}'", element.Name);
             element.Remove();
         }
 
         if (!properties.Elements().Any())
         {
-            _logger.LogDebug("Properties element is empty => removing");
+            logger.LogDebug("Properties element is empty => removing");
             properties.Remove();
         }
     }
@@ -379,12 +379,12 @@ public class FormDefinitionPatcher
 
         foreach (string action in actions)
         {
-            _logger.LogDebug("Field {FieldDescriptor} Action: {Action}", fieldDescriptor, action);
+            logger.LogDebug("Field {FieldDescriptor} Action: {Action}", fieldDescriptor, action);
             switch (action)
             {
                 case TcaDirective.ClearSettings:
                 {
-                    field.Element(FIELD_ELEM_SETTINGS)?.Remove();
+                    field.Element(FieldElemSettings)?.Remove();
                     break;
                 }
                 case TcaDirective.ClearMacroTable:
@@ -395,27 +395,30 @@ public class FormDefinitionPatcher
                 case TcaDirective.ConvertToAsset:
                 {
                     field
-                        .EnsureElement(FIELD_ELEM_SETTINGS)
-                        .EnsureElement(SETTINGS_MAXIMUMASSETS, maxAssets => maxAssets.Value = SETTINGS_MAXIMUMASSETS_FALLBACK);
+                        .EnsureElement(FieldElemSettings)
+                        .EnsureElement(SettingsMaximumassets, maxAssets => maxAssets.Value = SettingsMaximumassetsFallback);
                     break;
                 }
                 case TcaDirective.ConvertToPages:
                 {
                     field
-                        .EnsureElement(FIELD_ELEM_SETTINGS, settings =>
+                        .EnsureElement(FieldElemSettings, settings =>
                         {
-                            settings.EnsureElement(SETTINGS_MAXIMUMPAGES, maxAssets => maxAssets.Value = SETTINGS_MAXIMUMPAGES_FALLBACK);
-                            settings.EnsureElement(SETTINGS_ROOTPATH, maxAssets => maxAssets.Value = SETTINGS_ROOTPATH_FALLBACK); // TODO tk: 2022-08-31 describe why?
+                            settings.EnsureElement(SettingsMaximumpages, maxAssets => maxAssets.Value = SettingsMaximumpagesFallback);
+                            settings.EnsureElement(SettingsRootpath, maxAssets => maxAssets.Value = SettingsRootpathFallback); // TODO tk: 2022-08-31 describe why?
                         });
 
-                    field.SetAttributeValue(FIELD_ATTR_SIZE, FIELD_ATTR_SIZE_ZERO); // TODO tk: 2022-08-31 describe why?
+                    field.SetAttributeValue(FieldAttrSize, FieldAttrSizeZero); // TODO tk: 2022-08-31 describe why?
 
-                    var settings = field.EnsureElement(FIELD_ELEM_SETTINGS);
+                    var settings = field.EnsureElement(FieldElemSettings);
                     settings.EnsureElement("TreePath", element => element.Value = settings.Element("RootPath")?.Value ?? "");
                     settings.EnsureElement("RootPath").Remove();
 
                     break;
                 }
+
+                default:
+                    break;
             }
         }
     }

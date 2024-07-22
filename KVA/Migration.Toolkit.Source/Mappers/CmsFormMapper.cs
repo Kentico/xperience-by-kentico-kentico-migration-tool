@@ -54,6 +54,9 @@ public class CmsFormMapper(
                 target.FormBuilderLayout = s.FormBuilderLayout;
                 break;
             }
+
+            default:
+                break;
         }
 
         if (mappingHelper.TranslateRequiredId<ICmsClass>(c => c.ClassID, source.FormClassID, out int formClassId))
@@ -112,6 +115,9 @@ public class CmsFormMapperEf : EntityMapperBase<ICmsForm, CmsForm>
                 target.FormBuilderLayout = s.FormBuilderLayout;
                 break;
             }
+
+            default:
+                break;
         }
 
         // TODO tk: 2022-05-20 new deduce: target.FormAfterSubmitMode = source.FormAfterSubmitMode;

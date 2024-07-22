@@ -9,32 +9,21 @@ using Migration.Toolkit.KXP.Context;
 
 namespace Migration.Toolkit.Core.KX12.Services;
 
-public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
+public class PrimaryKeyLocatorService(
+    ILogger<PrimaryKeyLocatorService> logger,
+    IDbContextFactory<KxpContext> kxpContextFactory,
+    IDbContextFactory<KX12Context> kx12ContextFactory)
+    : IPrimaryKeyLocatorService
 {
-    private readonly IDbContextFactory<KX12Context> _kx12ContextFactory;
-    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
-    private readonly ILogger<PrimaryKeyLocatorService> _logger;
-
-    public PrimaryKeyLocatorService(
-        ILogger<PrimaryKeyLocatorService> logger,
-        IDbContextFactory<KxpContext> kxpContextFactory,
-        IDbContextFactory<KX12Context> kx12ContextFactory
-    )
-    {
-        _logger = logger;
-        _kxpContextFactory = kxpContextFactory;
-        _kx12ContextFactory = kx12ContextFactory;
-    }
-
     public IEnumerable<SourceTargetKeyMapping> SelectAll<T>(Expression<Func<T, object>> keyNameSelector)
     {
-        using var kxpContext = _kxpContextFactory.CreateDbContext();
-        using var kx12Context = _kx12ContextFactory.CreateDbContext();
+        using var kxpContext = kxpContextFactory.CreateDbContext();
+        using var kx12Context = kx12ContextFactory.CreateDbContext();
 
         var sourceType = typeof(T);
         string memberName = keyNameSelector.GetMemberName();
 
-        _logger.LogTrace("Preload of entity {Entity} member {MemberName} mapping requested", sourceType.Name, memberName);
+        logger.LogTrace("Preload of entity {Entity} member {MemberName} mapping requested", sourceType.Name, memberName);
 
         if (sourceType == typeof(KX12M.CmsUser) && memberName == nameof(KX12M.CmsUser.UserId))
         {
@@ -123,8 +112,8 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
 
     public bool TryLocate<T>(Expression<Func<T, object>> keyNameSelector, int sourceId, out int targetId)
     {
-        using var kxpContext = _kxpContextFactory.CreateDbContext();
-        using var KX12Context = _kx12ContextFactory.CreateDbContext();
+        using var kxpContext = kxpContextFactory.CreateDbContext();
+        using var KX12Context = kx12ContextFactory.CreateDbContext();
 
         var sourceType = typeof(T);
         targetId = -1;
@@ -197,11 +186,11 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
         {
             if (ioex.Message.StartsWith("Sequence contains no elements"))
             {
-                _logger.LogDebug("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
+                logger.LogDebug("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
             }
             else
             {
-                _logger.LogWarning("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
+                logger.LogWarning("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
             }
 
             return false;
@@ -210,22 +199,18 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
         {
             if (targetId != -1)
             {
-                _logger.LogTrace("Mapping {SourceFullType} primary key: {SourceId} to {TargetId}", sourceType.FullName, sourceId, targetId);
+                logger.LogTrace("Mapping {SourceFullType} primary key: {SourceId} to {TargetId}", sourceType.FullName, sourceId, targetId);
             }
         }
 
-        _logger.LogError("Mapping {SourceFullType} primary key is not supported", sourceType.FullName);
+        logger.LogError("Mapping {SourceFullType} primary key is not supported", sourceType.FullName);
         targetId = -1;
         return false;
     }
 
-    private class KeyEqualityComparerWithLambda<T> : IEqualityComparer<T>
+    private class KeyEqualityComparerWithLambda<T>(Func<T?, T?, bool> equalityComparer) : IEqualityComparer<T>
     {
-        private readonly Func<T?, T?, bool> _equalityComparer;
-
-        public KeyEqualityComparerWithLambda(Func<T?, T?, bool> equalityComparer) => _equalityComparer = equalityComparer;
-
-        public bool Equals(T? x, T? y) => _equalityComparer.Invoke(x, y);
+        public bool Equals(T? x, T? y) => equalityComparer.Invoke(x, y);
 
         public int GetHashCode(T obj) => obj?.GetHashCode() ?? 0;
     }

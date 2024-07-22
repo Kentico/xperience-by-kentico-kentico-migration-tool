@@ -6,25 +6,25 @@ namespace Migration.Toolkit.Common.Helpers;
 
 public class TreePathConvertor(int webSiteChannel)
 {
-    private static readonly IDictionary<int, TreePathConvertor> SiteToConverter = new Dictionary<int, TreePathConvertor>();
+    private static readonly IDictionary<int, TreePathConvertor> siteToConverter = new Dictionary<int, TreePathConvertor>();
 
     public static readonly StringComparer TreePathComparer = StringComparer.InvariantCultureIgnoreCase;
 
-    private readonly IDictionary<string, string> _nodeAliasPathToTreePath = new Dictionary<string, string>(TreePathComparer);
+    private readonly IDictionary<string, string> nodeAliasPathToTreePath = new Dictionary<string, string>(TreePathComparer);
 
     public static TreePathConvertor GetSiteConverter(int webSiteId)
     {
-        if (SiteToConverter.TryGetValue(webSiteId, out var converter))
+        if (siteToConverter.TryGetValue(webSiteId, out var converter))
         {
             return converter;
         }
 
         converter = new TreePathConvertor(webSiteId);
-        SiteToConverter.Add(webSiteId, converter);
+        siteToConverter.Add(webSiteId, converter);
         return converter;
     }
 
-    public string GetConvertedOrUnchangedAssumingChannel(string nodeAliasPath) => _nodeAliasPathToTreePath.TryGetValue(nodeAliasPath, out string? converted)
+    public string GetConvertedOrUnchangedAssumingChannel(string nodeAliasPath) => nodeAliasPathToTreePath.TryGetValue(nodeAliasPath, out string? converted)
         ? converted
         : nodeAliasPath;
 
@@ -42,7 +42,7 @@ public class TreePathConvertor(int webSiteChannel)
             case "#":
             {
                 result = new TreePathConversionResult(false, nodeAliasPath);
-                _nodeAliasPathToTreePath.Add(nodeAliasPath, nodeAliasPath);
+                nodeAliasPathToTreePath.Add(nodeAliasPath, nodeAliasPath);
                 break;
             }
             default:
@@ -53,7 +53,7 @@ public class TreePathConvertor(int webSiteChannel)
                 string uniqueTreePath = await new UniqueTreePathProvider(webSiteChannel, treePathValidator).GetUniqueValue(normalized);
                 bool anythingChanged = !TreePathComparer.Equals(nodeAliasPath, uniqueTreePath);
                 result = new TreePathConversionResult(anythingChanged, uniqueTreePath);
-                _nodeAliasPathToTreePath.Add(nodeAliasPath, uniqueTreePath);
+                nodeAliasPathToTreePath.Add(nodeAliasPath, uniqueTreePath);
                 break;
             }
         }

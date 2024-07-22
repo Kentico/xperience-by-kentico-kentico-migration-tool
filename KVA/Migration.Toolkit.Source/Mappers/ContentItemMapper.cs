@@ -136,13 +136,13 @@ public class ContentItemMapper(
 
             DateTime? scheduledPublishWhen = null;
             DateTime? scheduleUnpublishWhen = null;
-            
+
             if (cmsDocument.DocumentPublishFrom is { } publishFrom)
             {
                 var now = Service.Resolve<IDateTimeNowService>().GetDateTimeNow();
                 if (publishFrom > now)
                 {
-                    versionStatus = VersionStatus.Unpublished;    
+                    versionStatus = VersionStatus.Unpublished;
                 }
                 else
                 {
@@ -155,7 +155,7 @@ public class ContentItemMapper(
                 var now = Service.Resolve<IDateTimeNowService>().GetDateTimeNow();
                 if (publishTo < now)
                 {
-                    versionStatus = VersionStatus.Unpublished;    
+                    versionStatus = VersionStatus.Unpublished;
                 }
                 else
                 {
@@ -183,6 +183,9 @@ public class ContentItemMapper(
                     contentItemCommonDataPageTemplateConfiguration = doc.DocumentPageTemplateConfiguration;
                     break;
                 }
+
+                default:
+                    break;
             }
 
             PatchJsonDefinitions(source.CmsTree.NodeSiteID, ref contentItemCommonDataPageTemplateConfiguration, ref contentItemCommonDataPageBuilderWidgets, out bool ndp);
@@ -308,7 +311,7 @@ public class ContentItemMapper(
                 ContentItemLanguageMetadataHasImageAsset = false,
                 ContentItemLanguageMetadataContentLanguageGuid = languageGuid, // DocumentCulture -> language entity needs to be created and its ID used here
                 ContentItemLanguageMetadataScheduledPublishWhen = scheduledPublishWhen,
-                ContentItemLanguageMetadataScheduledUnpublishWhen = scheduleUnpublishWhen 
+                ContentItemLanguageMetadataScheduledUnpublishWhen = scheduleUnpublishWhen
             };
             yield return languageMetadataInfo;
         }
@@ -650,6 +653,9 @@ public class ContentItemMapper(
 
                             break;
                         }
+
+                        default:
+                            break;
                     }
                 }
                 else
@@ -848,6 +854,9 @@ public class ContentItemMapper(
                             logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
                             break;
                         }
+
+                        default:
+                            break;
                     }
                 }
                 else if (FieldMappingInstance.BuiltInModel.SupportedInKxpLegacyMode.Contains(editingFcm.FormComponentIdentifier))

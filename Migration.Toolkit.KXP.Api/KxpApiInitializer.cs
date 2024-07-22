@@ -6,11 +6,11 @@ namespace Migration.Toolkit.KXP.Api;
 
 public class KxpApiInitializer(ILogger<KxpApiInitializer> logger)
 {
-    private bool _apiInitializationCalled;
+    private bool apiInitializationCalled;
 
     public bool EnsureApiIsInitialized()
     {
-        if (!_apiInitializationCalled)
+        if (!apiInitializationCalled)
         {
             logger.LogTrace("Kxp api initialization called");
             if (!CMSApplication.Init())
@@ -19,7 +19,7 @@ public class KxpApiInitializer(ILogger<KxpApiInitializer> logger)
                 return false;
             }
 
-            _apiInitializationCalled = true;
+            apiInitializationCalled = true;
             logger.LogInformation("Kxp api initialization finished");
         }
         else

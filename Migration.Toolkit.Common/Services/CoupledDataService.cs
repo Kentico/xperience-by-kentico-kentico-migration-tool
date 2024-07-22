@@ -2,19 +2,15 @@ using Microsoft.Data.SqlClient;
 
 namespace Migration.Toolkit.Common.Services;
 
-public class CoupledDataService
+public class CoupledDataService(ToolkitConfiguration configuration)
 {
-    private readonly ToolkitConfiguration _configuration;
-
-    public CoupledDataService(ToolkitConfiguration configuration) => _configuration = configuration;
-
     public Dictionary<string, object>? GetSourceCoupledDataRow(string tableName, string primaryKeyColumn, int? coupledDataId)
     {
         ArgumentNullException.ThrowIfNull(tableName);
         ArgumentNullException.ThrowIfNull(primaryKeyColumn);
         ArgumentNullException.ThrowIfNull(coupledDataId);
 
-        using var targetConnection = new SqlConnection(_configuration.KxConnectionString);
+        using var targetConnection = new SqlConnection(configuration.KxConnectionString);
         using var command = targetConnection.CreateCommand();
         string query = $"SELECT * FROM {tableName} WHERE {primaryKeyColumn} = @{primaryKeyColumn}";
         command.CommandText = query;

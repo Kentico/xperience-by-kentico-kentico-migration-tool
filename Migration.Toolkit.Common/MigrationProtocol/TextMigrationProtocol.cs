@@ -9,14 +9,12 @@ namespace Migration.Toolkit.Common.MigrationProtocol;
 
 public class TextMigrationProtocol : IMigrationProtocol, IDisposable
 {
-    private readonly ToolkitConfiguration _configuration;
-    private readonly IPrintService _printService;
-    private readonly StreamWriter _streamWriter;
+    private readonly IPrintService printService;
+    private readonly StreamWriter streamWriter;
 
     public TextMigrationProtocol(ToolkitConfiguration configuration, IPrintService printService)
     {
-        _configuration = configuration;
-        _printService = printService;
+        this.printService = printService;
 
         var nowStartDate = DateTime.Now;
         if (string.IsNullOrWhiteSpace(configuration.MigrationProtocolPath) && Process.GetCurrentProcess().MainModule?.FileName is { } programPath)
@@ -24,7 +22,7 @@ public class TextMigrationProtocol : IMigrationProtocol, IDisposable
             string? processDir = Path.GetDirectoryName(programPath);
             if (processDir != null)
             {
-                _streamWriter = new StreamWriter(Path.Combine(processDir, $"MigrationProtocol_{nowStartDate:yyyyMMdd_hhmm}.html"));
+                streamWriter = new StreamWriter(Path.Combine(processDir, $"MigrationProtocol_{nowStartDate:yyyyMMdd_hhmm}.html"));
             }
         }
         else
@@ -35,19 +33,19 @@ public class TextMigrationProtocol : IMigrationProtocol, IDisposable
                 Directory.CreateDirectory(directoryName);
                 string? nameWithoutExtension = Path.GetFileNameWithoutExtension(configuration.MigrationProtocolPath);
                 string? extension = Path.GetExtension(configuration.MigrationProtocolPath);
-                _streamWriter = new StreamWriter(Path.Combine(directoryName, $"{nameWithoutExtension}{nowStartDate:yyyyMMdd_hhmm}{extension}"));
+                streamWriter = new StreamWriter(Path.Combine(directoryName, $"{nameWithoutExtension}{nowStartDate:yyyyMMdd_hhmm}{extension}"));
             }
         }
 
-        if (_streamWriter == null)
+        if (streamWriter == null)
         {
             throw new InvalidOperationException("Unable to get path for migration protocol initialization - configure settings in path 'Settings.MigrationProtocolPath'");
         }
 
-        _streamWriter.AutoFlush = true;
+        streamWriter.AutoFlush = true;
     }
 
-    public void Dispose() => _streamWriter.Dispose();
+    public void Dispose() => streamWriter.Dispose();
 
     public void MappedTarget<TTarget>(IModelMappingResult<TTarget> mapped)
     {
@@ -61,7 +59,7 @@ public class TextMigrationProtocol : IMigrationProtocol, IDisposable
     {
     }
 
-    public void Success<TSource, TTarget>(TSource source, TTarget target, IModelMappingResult<TTarget>? mapped) => WriteLine($"Success: {_printService.GetEntityIdentityPrint(target)}");
+    public void Success<TSource, TTarget>(TSource source, TTarget target, IModelMappingResult<TTarget>? mapped) => WriteLine($"Success: {printService.GetEntityIdentityPrint(target)}");
 
     public void Warning<T>(HandbookReference handbookRef, T? entity) => WriteLine($"{handbookRef}");
 
@@ -73,7 +71,5 @@ public class TextMigrationProtocol : IMigrationProtocol, IDisposable
 
     public void Append(HandbookReference? handbookReference) => WriteLine($"{handbookReference}");
 
-    private void WriteLine(string line) => _streamWriter.WriteLine($"{DateTime.Now:yyyyMMdd_hhmmss}: {line}");
-
-    public void Warning<TSource, TTarget>(HandbookReference handbookRef, TSource? source, TTarget? target) => WriteLine($"{handbookRef}");
+    private void WriteLine(string line) => streamWriter.WriteLine($"{DateTime.Now:yyyyMMdd_hhmmss}: {line}");
 }

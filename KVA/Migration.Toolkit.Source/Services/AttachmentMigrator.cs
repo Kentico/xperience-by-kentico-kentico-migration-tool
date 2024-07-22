@@ -30,14 +30,14 @@ public class AttachmentMigrator(
     ModelFacade modelFacade
 )
 {
-    private static readonly Regex SanitizationRegex =
+    private static readonly Regex sanitizationRegex =
         RegexHelper.GetRegex("[^-_a-z0-9]", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
-    private static readonly Regex LibraryPathValidationRegex =
+    private static readonly Regex libraryPathValidationRegex =
         RegexHelper.GetRegex("^[-_a-z0-9]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.CultureInvariant);
 
 
-    private readonly ConcurrentDictionary<(string libraryName, int siteId), int> _mediaLibraryIdCache = new();
+    private readonly ConcurrentDictionary<(string libraryName, int siteId), int> mediaLibraryIdCache = new();
 
     public MigrateAttachmentResult TryMigrateAttachmentByPath(string documentPath, string additionalPath)
     {
@@ -207,7 +207,7 @@ public class AttachmentMigrator(
         using var dbContext = kxpContextFactory.CreateDbContext();
         try
         {
-            targetLibraryId = _mediaLibraryIdCache.GetOrAdd((targetLibraryCodeName, targetSiteId), static (arg, context) => MediaLibraryFactory(arg, context),
+            targetLibraryId = mediaLibraryIdCache.GetOrAdd((targetLibraryCodeName, targetSiteId), static (arg, context) => MediaLibraryFactory(arg, context),
                 new MediaLibraryFactoryContext(mediaFileFacade, targetLibraryCodeName, targetLibraryDisplayName, dbContext));
 
             return true;
@@ -233,9 +233,9 @@ public class AttachmentMigrator(
         var tml = context.DbContext.MediaLibraries.SingleOrDefault(ml => ml.LibraryName == libraryName);
 
         string libraryDirectory = context.TargetLibraryCodeName;
-        if (!LibraryPathValidationRegex.IsMatch(libraryDirectory))
+        if (!libraryPathValidationRegex.IsMatch(libraryDirectory))
         {
-            libraryDirectory = SanitizationRegex.Replace(libraryDirectory, "_");
+            libraryDirectory = sanitizationRegex.Replace(libraryDirectory, "_");
         }
 
         return tml?.LibraryId ?? context.MediaFileFacade

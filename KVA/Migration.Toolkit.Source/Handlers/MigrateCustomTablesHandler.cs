@@ -29,12 +29,12 @@ public class MigrateCustomTablesHandler(
     BulkDataCopyService bulkDataCopyService,
     IEntityMapper<ICmsClass, DataClassInfo> dataClassMapper,
     PrimaryKeyMappingContext primaryKeyMappingContext
-    // ReusableSchemaService reusableSchemaService
+// ReusableSchemaService reusableSchemaService
 )
     : IRequestHandler<MigrateCustomTablesCommand, CommandResult>
 {
-    private readonly Guid _resourceGuidNamespace = new("C4E3F5FD-9220-4300-91CE-8EB565D3235E");
-    private ResourceInfo? _customTableResource;
+    private readonly Guid resourceGuidNamespace = new("C4E3F5FD-9220-4300-91CE-8EB565D3235E");
+    private ResourceInfo? customTableResource;
 
     public async Task<CommandResult> Handle(MigrateCustomTablesCommand request, CancellationToken cancellationToken)
     {
@@ -45,13 +45,13 @@ public class MigrateCustomTablesHandler(
 
     private async Task<ResourceInfo> EnsureCustomTablesResource()
     {
-        if (_customTableResource != null)
+        if (customTableResource != null)
         {
-            return _customTableResource;
+            return customTableResource;
         }
 
         const string resourceName = "customtables";
-        var resourceGuid = GuidV5.NewNameBased(_resourceGuidNamespace, resourceName);
+        var resourceGuid = GuidV5.NewNameBased(resourceGuidNamespace, resourceName);
         var resourceInfo = await ResourceInfoProvider.ProviderObject.GetAsync(resourceGuid);
         if (resourceInfo == null)
         {
@@ -67,7 +67,7 @@ public class MigrateCustomTablesHandler(
             ResourceInfoProvider.ProviderObject.Set(resourceInfo);
         }
 
-        _customTableResource = resourceInfo;
+        customTableResource = resourceInfo;
         return resourceInfo;
     }
 

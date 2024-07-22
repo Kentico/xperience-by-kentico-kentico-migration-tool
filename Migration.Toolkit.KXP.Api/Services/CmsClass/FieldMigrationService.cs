@@ -8,12 +8,12 @@ namespace Migration.Toolkit.KXP.Api.Services.CmsClass;
 
 public class FieldMigrationService // shall be singleton to cache necessary data
 {
-    private readonly ILogger<FieldMigrationService> _logger;
-    private readonly FieldMigration[] _userDefinedMigrations;
+    private readonly ILogger<FieldMigrationService> logger;
+    private readonly FieldMigration[] userDefinedMigrations;
 
     public FieldMigrationService(ToolkitConfiguration configuration, ILogger<FieldMigrationService> logger)
     {
-        _logger = logger;
+        this.logger = logger;
 
         var allUserDefinedMigrations = configuration.OptInFeatures?.CustomMigration?.FieldMigrations?.Select(fm =>
             new FieldMigration(
@@ -25,28 +25,28 @@ public class FieldMigrationService // shall be singleton to cache necessary data
                 fm.FieldNameRegex != null ? new Regex(fm.FieldNameRegex, RegexOptions.Compiled | RegexOptions.IgnoreCase) : null
             )
         ).ToArray() ?? Array.Empty<FieldMigration>();
-        _userDefinedMigrations = allUserDefinedMigrations;
+        userDefinedMigrations = allUserDefinedMigrations;
     }
 
     public FieldMigration? GetFieldMigration(string sourceDataType, string? sourceFormControl, string? fieldName)
     {
         if (sourceFormControl == null)
         {
-            _logger.LogDebug("Source field has no control defined '{SourceDataType}', field '{FieldName}'", sourceDataType, fieldName);
+            logger.LogDebug("Source field has no control defined '{SourceDataType}', field '{FieldName}'", sourceDataType, fieldName);
             return null;
         }
 
-        var userDefined = GetFieldMigrationInternal(_userDefinedMigrations, sourceDataType, sourceFormControl, fieldName);
+        var userDefined = GetFieldMigrationInternal(userDefinedMigrations, sourceDataType, sourceFormControl, fieldName);
         if (userDefined is not null)
         {
-            _logger.LogDebug("Field migration matched: '{MatchType}', {Migration}", "UserDefined", userDefined);
+            logger.LogDebug("Field migration matched: '{MatchType}', {Migration}", "UserDefined", userDefined);
             return userDefined;
         }
 
         var preDefined = GetFieldMigrationInternal(FieldMappingInstance.BuiltInFieldMigrations, sourceDataType, sourceFormControl, fieldName);
         if (preDefined is not null)
         {
-            _logger.LogDebug("Field migration matched: '{MatchType}', {Migration}", "BuiltIn", preDefined);
+            logger.LogDebug("Field migration matched: '{MatchType}', {Migration}", "BuiltIn", preDefined);
             return preDefined;
         }
 

@@ -17,4 +17,7 @@
         <PackageReference Include="MediatR" Version="12.3.0"/>
     </ItemGroup>
 
+    <PropertyGroup>
+        <NoWarn>IDE0060</NoWarn>
+    </PropertyGroup>
 </Project>

@@ -5,8 +5,8 @@ namespace Migration.Toolkit.Common.Helpers;
 
 public static class GuidV5
 {
-    private static readonly UuidV5Generator V5Generator = new();
-    public static Guid NewNameBased(Guid namespaceId, string name) => V5Generator.New(namespaceId, name);
+    private static readonly UuidV5Generator v5Generator = new();
+    public static Guid NewNameBased(Guid namespaceId, string name) => v5Generator.New(namespaceId, name);
 }
 
 internal class UuidV5Generator
@@ -54,12 +54,12 @@ internal class UuidV5Generator
         hashAlgorithm.TryComputeHash(bytesToHash, hash, out int _);
 
         var bigEndianBytes = hash[..16];
-        const int VERSION_BYTE = 6;
-        bigEndianBytes[VERSION_BYTE] &= 0b0000_1111;
-        bigEndianBytes[VERSION_BYTE] |= 5 << 4;
-        const int VARIANT_BYTE = 8;
-        bigEndianBytes[VARIANT_BYTE] &= 0b0011_1111;
-        bigEndianBytes[VARIANT_BYTE] |= 0b1000_0000;
+        const int versionByte = 6;
+        bigEndianBytes[versionByte] &= 0b0000_1111;
+        bigEndianBytes[versionByte] |= 5 << 4;
+        const int variantByte = 8;
+        bigEndianBytes[variantByte] &= 0b0011_1111;
+        bigEndianBytes[variantByte] |= 0b1000_0000;
 
         Span<byte> localBytes = stackalloc byte[bigEndianBytes.Length];
         bigEndianBytes.CopyTo(localBytes);

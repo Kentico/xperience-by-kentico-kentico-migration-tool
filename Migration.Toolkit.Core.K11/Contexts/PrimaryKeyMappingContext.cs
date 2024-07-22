@@ -15,7 +15,7 @@ public class PrimaryKeyMappingContext(
     ToolkitConfiguration toolkitConfiguration)
     : IPrimaryKeyMappingContext
 {
-    private readonly Dictionary<string, int> _mappings = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, int> mappingCache = new(StringComparer.OrdinalIgnoreCase);
 
     public void SetMapping(Type type, string keyName, int sourceId, int targetId)
     {
@@ -29,14 +29,14 @@ public class PrimaryKeyMappingContext(
 
         string fullKeyName = $"{type.FullName}.{foundProp.Name}.{sourceId}";
 
-        _mappings[fullKeyName] = targetId;
+        mappingCache[fullKeyName] = targetId;
         logger.LogTrace("Primary key for {FullKeyName} stored. {SourceId} maps to {TargetId}", fullKeyName, sourceId, targetId);
     }
 
     public void SetMapping<T>(Expression<Func<T, object>> keyNameSelector, int sourceId, int targetId)
     {
         string fullKeyName = CreateKey(keyNameSelector, sourceId);
-        _mappings[fullKeyName] = targetId;
+        mappingCache[fullKeyName] = targetId;
         logger.LogTrace("{Key}: {SourceValue}=>{TargetValue}", fullKeyName, sourceId, targetId);
     }
 
@@ -55,7 +55,7 @@ public class PrimaryKeyMappingContext(
             return explicitlyMappedId;
         }
 
-        if (_mappings.TryGetValue(fullKeyName, out int resultId))
+        if (mappingCache.TryGetValue(fullKeyName, out int resultId))
         {
             logger.LogTrace("{Key} resolved as {Value}", fullKeyName, resultId);
             return resultId;
@@ -94,7 +94,7 @@ public class PrimaryKeyMappingContext(
             return true;
         }
 
-        if (_mappings.TryGetValue(fullKeyName, out int resultId))
+        if (mappingCache.TryGetValue(fullKeyName, out int resultId))
         {
             logger.LogTrace("{Key} resolved as {Value}", fullKeyName, resultId);
             targetIdResult = resultId;
@@ -134,7 +134,7 @@ public class PrimaryKeyMappingContext(
             return explicitlyMappedId;
         }
 
-        if (_mappings.TryGetValue(fullKeyName, out int resultId))
+        if (mappingCache.TryGetValue(fullKeyName, out int resultId))
         {
             logger.LogTrace("{Key} resolved as {Value}", fullKeyName, resultId);
             return resultId;
@@ -172,7 +172,7 @@ public class PrimaryKeyMappingContext(
             return explicitlyMappedId;
         }
 
-        if (_mappings.TryGetValue(fullKeyName, out int resultId))
+        if (mappingCache.TryGetValue(fullKeyName, out int resultId))
         {
             logger.LogTrace("{Key} resolved as {Value}", fullKeyName, resultId);
             return resultId;
@@ -210,7 +210,7 @@ public class PrimaryKeyMappingContext(
             return new MapSourceIdResult(true, explicitlyMappedId);
         }
 
-        if (_mappings.TryGetValue(fullKeyName, out int resultId))
+        if (mappingCache.TryGetValue(fullKeyName, out int resultId))
         {
             logger.LogTrace("{Key} resolved as {Value}", fullKeyName, resultId);
             return new MapSourceIdResult(true, resultId);
@@ -254,7 +254,7 @@ public class PrimaryKeyMappingContext(
             return true;
         }
 
-        if (_mappings.TryGetValue(fullKeyName, out _))
+        if (mappingCache.TryGetValue(fullKeyName, out _))
         {
             return true;
         }

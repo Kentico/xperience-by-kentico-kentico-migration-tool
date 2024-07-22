@@ -44,7 +44,7 @@ public class ToolkitConfiguration
     public string? CreateReusableFieldSchemaForClasses { get; set; }
 
 
-    public IReadOnlySet<string> ClassNamesCreateReusableSchema => _classNamesCreateReusableSchema ??= new HashSet<string>(
+    public IReadOnlySet<string> ClassNamesCreateReusableSchema => classNamesCreateReusableSchema ??= new HashSet<string>(
         (CreateReusableFieldSchemaForClasses?.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries) ?? []).Select(x => x.Trim()),
         StringComparer.InvariantCultureIgnoreCase
     );
@@ -58,13 +58,13 @@ public class ToolkitConfiguration
 
     #region Connection string of source instance
 
-    private string? _kxConnectionString;
+    private string? kxConnectionString;
 
     [ConfigurationKeyName(ConfigurationNames.KxConnectionString)]
     public string KxConnectionString
     {
-        get => _kxConnectionString!;
-        set => _kxConnectionString = value;
+        get => kxConnectionString!;
+        set => kxConnectionString = value;
     }
 
     #endregion
@@ -74,15 +74,15 @@ public class ToolkitConfiguration
     [ConfigurationKeyName(ConfigurationNames.XbKConnectionString)]
     public string XbKConnectionString
     {
-        get => _xbKConnectionString!;
-        set => _xbKConnectionString = value;
+        get => xbKConnectionString!;
+        set => xbKConnectionString = value;
     }
 
     public void SetXbKConnectionStringIfNotEmpty(string? connectionString)
     {
         if (!string.IsNullOrWhiteSpace(connectionString))
         {
-            _xbKConnectionString = connectionString;
+            xbKConnectionString = connectionString;
         }
     }
 
@@ -90,8 +90,8 @@ public class ToolkitConfiguration
 
     #region Path to root directory of target instance
 
-    private HashSet<string>? _classNamesCreateReusableSchema;
-    private string? _xbKConnectionString;
+    private HashSet<string>? classNamesCreateReusableSchema;
+    private string? xbKConnectionString;
 
     [ConfigurationKeyName(ConfigurationNames.XbKDirPath)]
     public string? XbKDirPath { get; set; } = null;

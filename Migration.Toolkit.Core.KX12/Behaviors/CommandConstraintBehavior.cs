@@ -41,16 +41,16 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
         return await next();
     }
 
-    private bool PerformChecks(TRequest request, KX12Context KX12Context)
+    private bool PerformChecks(TRequest request, KX12Context kx12Context)
     {
         bool criticalCheckPassed = true;
         const string supportedVersion = "12.0.20";
         if (SemanticVersion.TryParse(supportedVersion, out var minimalVersion))
         {
-            criticalCheckPassed &= CheckVersion(KX12Context, minimalVersion);
+            criticalCheckPassed &= CheckVersion(kx12Context, minimalVersion);
         }
 
-        var sourceSites = KX12Context.CmsSites
+        var sourceSites = kx12Context.CmsSites
             .Include(s => s.Cultures)
             .ToList();
 
@@ -67,7 +67,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
         return criticalCheckPassed;
     }
 
-    private bool CheckVersion(KX12Context KX12Context, SemanticVersion minimalVersion)
+    private bool CheckVersion(KX12Context kx12Context, SemanticVersion minimalVersion)
     {
         bool criticalCheckPassed = true;
 
@@ -103,7 +103,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
 
         #endregion
 
-        if (KX12Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == SettingsKeys.CMSDataVersion) is { } cmsDataVersion)
+        if (kx12Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == SettingsKeys.CMSDataVersion) is { } cmsDataVersion)
         {
             if (SemanticVersion.TryParse(cmsDataVersion.KeyValue, out var cmsDataVer))
             {
@@ -122,7 +122,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
             VersionKeyNotFound(SettingsKeys.CMSDataVersion);
         }
 
-        if (KX12Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == SettingsKeys.CMSDBVersion) is { } cmsDbVersion)
+        if (kx12Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == SettingsKeys.CMSDBVersion) is { } cmsDbVersion)
         {
             if (SemanticVersion.TryParse(cmsDbVersion.KeyValue, out var cmsDataVer))
             {
@@ -141,7 +141,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
             VersionKeyNotFound(SettingsKeys.CMSDBVersion);
         }
 
-        if (KX12Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == SettingsKeys.CMSHotfixDataVersion) is { } cmsHotfixDataVersion)
+        if (kx12Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == SettingsKeys.CMSHotfixDataVersion) is { } cmsHotfixDataVersion)
         {
             if (int.TryParse(cmsHotfixDataVersion.KeyValue, out int version))
             {
@@ -160,7 +160,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
             VersionKeyNotFound(SettingsKeys.CMSHotfixDataVersion);
         }
 
-        if (KX12Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == SettingsKeys.CMSHotfixVersion) is { } cmsHotfixVersion)
+        if (kx12Context.CmsSettingsKeys.FirstOrDefault(s => s.KeyName == SettingsKeys.CMSHotfixVersion) is { } cmsHotfixVersion)
         {
             if (int.TryParse(cmsHotfixVersion.KeyValue, out int version))
             {

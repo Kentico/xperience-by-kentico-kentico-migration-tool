@@ -1,7 +1,7 @@
 // ReSharper disable InconsistentNaming
 
 namespace Migration.Toolkit.Common.Enumerations;
-
+#pragma warning disable IDE1006
 public class K12SystemClass
 {
     public const string CMS_Root = "CMS.Root";
@@ -479,3 +479,4 @@ public class K12SystemClass
     public static HashSet<string> Customizable = new(new[] { cms_user, media_file, OM_Account, OM_Contact }, StringComparer.InvariantCultureIgnoreCase);
     public static HashSet<string> NoLongerSupported = new(new[] { cms_usersettings }, StringComparer.InvariantCultureIgnoreCase);
 }
+#pragma warning enable IDE1006

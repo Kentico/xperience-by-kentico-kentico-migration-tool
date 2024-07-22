@@ -9,23 +9,11 @@ using Migration.Toolkit.KXP.Context;
 
 namespace Migration.Toolkit.Core.KX12.Services;
 
-public class KeyLocatorService
+public class KeyLocatorService(
+    ILogger<KeyLocatorService> logger,
+    IDbContextFactory<KxpContext> kxpContextFactory,
+    IDbContextFactory<KX12Context> kx12ContextFactory)
 {
-    private readonly IDbContextFactory<KX12Context> _kx12ContextFactory;
-    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
-    private readonly ILogger<KeyLocatorService> _logger;
-
-    public KeyLocatorService(
-        ILogger<KeyLocatorService> logger,
-        IDbContextFactory<KxpContext> kxpContextFactory,
-        IDbContextFactory<KX12Context> kx12ContextFactory
-    )
-    {
-        _logger = logger;
-        _kxpContextFactory = kxpContextFactory;
-        _kx12ContextFactory = kx12ContextFactory;
-    }
-
     public bool TryLocate<TSource, TTarget, TTargetKey>(
         Expression<Func<TSource, object>> sourceKeySelector,
         Expression<Func<TTarget, TTargetKey>> targetKeySelector,
@@ -34,8 +22,8 @@ public class KeyLocatorService
         object? sourceKey, out TTargetKey targetId
     ) where TSource : class where TTarget : class
     {
-        using var kxpContext = _kxpContextFactory.CreateDbContext();
-        using var kx12Context = _kx12ContextFactory.CreateDbContext();
+        using var kxpContext = kxpContextFactory.CreateDbContext();
+        using var kx12Context = kx12ContextFactory.CreateDbContext();
 
         var sourceType = typeof(TSource);
         Unsafe.SkipInit(out targetId);
@@ -69,14 +57,14 @@ public class KeyLocatorService
         }
         catch (InvalidOperationException ioex)
         {
-            _logger.LogWarning("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceKey, ioex.Message);
+            logger.LogWarning("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceKey, ioex.Message);
             return false;
         }
         finally
         {
             if (!targetId?.Equals(default) ?? false)
             {
-                _logger.LogTrace("Mapping {SourceFullType} primary key: {SourceId} to {TargetId}", sourceType.FullName, sourceKey, targetId);
+                logger.LogTrace("Mapping {SourceFullType} primary key: {SourceId} to {TargetId}", sourceType.FullName, sourceKey, targetId);
             }
         }
     }
@@ -84,7 +72,7 @@ public class KeyLocatorService
     public bool TryGetSourceGuid<T>(Expression<Func<T, object>> keySelector, Expression<Func<T, Guid>> guidSelector, object? key, out Guid? guid)
         where T : class
     {
-        using var KX12Context = _kx12ContextFactory.CreateDbContext();
+        using var kx12Context = kx12ContextFactory.CreateDbContext();
 
         var type = typeof(T);
         Unsafe.SkipInit(out guid);
@@ -101,19 +89,19 @@ public class KeyLocatorService
                 Expression.Convert(Expression.Constant(key, key.GetType()), typeof(object))
             );
             var sourcePredicate = Expression.Lambda<Func<T, bool>>(sourceEquals, keySelector.Parameters[0]);
-            guid = KX12Context.Set<T>().Where(sourcePredicate).Select(guidSelector).Single();
+            guid = kx12Context.Set<T>().Where(sourcePredicate).Select(guidSelector).Single();
             return true;
         }
         catch (InvalidOperationException ioex)
         {
-            _logger.LogWarning("Guid locator {SourceFullType} primary key: {Key} failed, {Message}", type.FullName, key, ioex.Message);
+            logger.LogWarning("Guid locator {SourceFullType} primary key: {Key} failed, {Message}", type.FullName, key, ioex.Message);
             return false;
         }
         finally
         {
             if (!guid?.Equals(default) ?? false)
             {
-                _logger.LogTrace("Guid locator {SourceFullType} primary key: {Key} located {Guid}", type.FullName, key, guid);
+                logger.LogTrace("Guid locator {SourceFullType} primary key: {Key} located {Guid}", type.FullName, key, guid);
             }
         }
     }

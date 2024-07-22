@@ -12,17 +12,17 @@ namespace Migration.Toolkit.Source.Services;
 
 public class ReusableSchemaService(ILogger<ReusableSchemaService> logger, ToolkitConfiguration configuration)
 {
-    private readonly IReusableFieldSchemaManager _reusableFieldSchemaManager = Service.Resolve<IReusableFieldSchemaManager>();
+    private readonly IReusableFieldSchemaManager reusableFieldSchemaManager = Service.Resolve<IReusableFieldSchemaManager>();
 
     public bool IsConversionToReusableFieldSchemaRequested(string className) => configuration.ClassNamesCreateReusableSchema.Contains(className);
 
     public DataClassInfo ConvertToReusableSchema(DataClassInfo kxoDataClass)
     {
         var reusableSchemaGuid = GuidHelper.CreateReusableSchemaGuid($"{kxoDataClass.ClassName}|{kxoDataClass.ClassGUID}");
-        var schema = _reusableFieldSchemaManager.Get(reusableSchemaGuid);
+        var schema = reusableFieldSchemaManager.Get(reusableSchemaGuid);
         if (schema == null)
         {
-            _reusableFieldSchemaManager.CreateSchema(new CreateReusableFieldSchemaParameters(kxoDataClass.ClassName, kxoDataClass.ClassDisplayName) { Guid = reusableSchemaGuid });
+            reusableFieldSchemaManager.CreateSchema(new CreateReusableFieldSchemaParameters(kxoDataClass.ClassName, kxoDataClass.ClassDisplayName) { Guid = reusableSchemaGuid });
         }
 
         var formInfo = new FormInfo(kxoDataClass.ClassFormDefinition);
@@ -37,7 +37,7 @@ public class ReusableSchemaService(ILogger<ReusableSchemaService> logger, Toolki
                     try
                     {
                         formFieldInfo.Name = GetUniqueFieldName(kxoDataClass.ClassName, formFieldInfo.Name);
-                        _reusableFieldSchemaManager.AddField(kxoDataClass.ClassName, formFieldInfo);
+                        reusableFieldSchemaManager.AddField(kxoDataClass.ClassName, formFieldInfo);
                         success = true;
                     }
                     catch (InvalidOperationException ioex) when (ioex.Message.Contains("already exist on reusable field schema"))
@@ -87,10 +87,10 @@ public class ReusableSchemaService(ILogger<ReusableSchemaService> logger, Toolki
     public Guid EnsureReusableFieldSchema(string name, string displayName, string description, params FormFieldInfo[] fields)
     {
         var reusableSchemaGuid = GuidHelper.CreateReusableSchemaGuid($"{name}|{displayName}");
-        var schema = _reusableFieldSchemaManager.Get(reusableSchemaGuid);
+        var schema = reusableFieldSchemaManager.Get(reusableSchemaGuid);
         if (schema == null)
         {
-            _reusableFieldSchemaManager.CreateSchema(new CreateReusableFieldSchemaParameters(name, displayName, description) { Guid = reusableSchemaGuid });
+            reusableFieldSchemaManager.CreateSchema(new CreateReusableFieldSchemaParameters(name, displayName, description) { Guid = reusableSchemaGuid });
         }
 
         foreach (var formFieldInfo in fields)
@@ -101,7 +101,7 @@ public class ReusableSchemaService(ILogger<ReusableSchemaService> logger, Toolki
                 {
                     try
                     {
-                        _reusableFieldSchemaManager.AddField(name, formFieldInfo);
+                        reusableFieldSchemaManager.AddField(name, formFieldInfo);
                     }
                     catch (InvalidOperationException ioex) when (ioex.Message.Contains("already exist on reusable field schema"))
                     {

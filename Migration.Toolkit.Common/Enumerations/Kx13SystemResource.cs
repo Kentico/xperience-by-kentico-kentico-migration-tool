@@ -1,7 +1,7 @@
 // ReSharper disable InconsistentNaming
 
 namespace Migration.Toolkit.Common.Enumerations;
-
+#pragma warning disable IDE1006
 public static class Kx13SystemResource
 {
     public const string CMS = "CMS";
@@ -71,3 +71,4 @@ public static class Kx13SystemResource
 
     public static HashSet<string> ConvertToNonSysResource = new(new[] { cms_customsystemmodule }, StringComparer.CurrentCultureIgnoreCase);
 }
+#pragma warning enable IDE1006

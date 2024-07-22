@@ -46,11 +46,11 @@ public class MigratePagesCommandHandler(
 )
     : IRequestHandler<MigratePagesCommand, CommandResult>
 {
-    private const string CLASS_CMS_ROOT = "CMS.Root";
+    private const string ClassCmsRoot = "CMS.Root";
 
-    private readonly ContentItemNameProvider _contentItemNameProvider = new(new ContentItemNameValidator());
+    private readonly ContentItemNameProvider contentItemNameProvider = new(new ContentItemNameValidator());
 
-    private readonly ConcurrentDictionary<string, ContentLanguageInfo> _languages = new(StringComparer.InvariantCultureIgnoreCase);
+    private readonly ConcurrentDictionary<string, ContentLanguageInfo> languages = new(StringComparer.InvariantCultureIgnoreCase);
 
     public async Task<CommandResult> Handle(MigratePagesCommand request, CancellationToken cancellationToken)
     {
@@ -165,7 +165,7 @@ public class MigratePagesCommandHandler(
                     continue;
                 }
 
-                if (nodeClassClassName == CLASS_CMS_ROOT)
+                if (nodeClassClassName == ClassCmsRoot)
                 {
                     logger.LogInformation("Root node skipped, V27 has no support for root nodes");
                     continue;
@@ -183,7 +183,7 @@ public class MigratePagesCommandHandler(
                     );
                 }
 
-                string safeNodeName = await _contentItemNameProvider.Get(ksNode.NodeName);
+                string safeNodeName = await contentItemNameProvider.Get(ksNode.NodeName);
                 var ksNodeParent = modelFacade.SelectById<ICmsTree>(ksNode.NodeParentID);
                 var nodeParentGuid = ksNodeParent?.NodeAliasPath == "/" || ksNodeParent == null
                     ? (Guid?)null
@@ -231,6 +231,9 @@ public class MigratePagesCommandHandler(
                                 webPageItemInfo = wp;
                                 break;
                             }
+
+                            default:
+                                break;
                         }
                     }
 
@@ -397,6 +400,9 @@ public class MigratePagesCommandHandler(
 
                                 break;
                             }
+
+                            default:
+                                break;
                         }
                     }
                 }
@@ -465,6 +471,9 @@ public class MigratePagesCommandHandler(
 
                             break;
                         }
+
+                        default:
+                            break;
                     }
                 }
             }
@@ -526,6 +535,9 @@ public class MigratePagesCommandHandler(
 
                         break;
                     }
+
+                    default:
+                        break;
                 }
             }
         }
@@ -557,7 +569,7 @@ public class MigratePagesCommandHandler(
                     {
                         try
                         {
-                            var languageInfo = _languages.GetOrAdd(
+                            var languageInfo = languages.GetOrAdd(
                                 pfup.PageFormerUrlPathCulture,
                                 s => ContentLanguageInfoProvider.ProviderObject.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageName), s).SingleOrDefault() ?? throw new InvalidOperationException($"Missing content language '{s}'")
                             );

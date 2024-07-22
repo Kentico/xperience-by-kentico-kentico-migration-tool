@@ -57,6 +57,9 @@ public class CmsSettingsCategoryMapper(
                         addFailure(new MapperResultFailure<KXP.Models.CmsSettingsCategory>(result.HandbookReference));
                         break;
                     }
+
+                    default:
+                        break;
                 }
             }
         }
@@ -79,6 +82,9 @@ public class CmsSettingsCategoryMapper(
                     addFailure(new MapperResultFailure<KXP.Models.CmsSettingsCategory>(result.HandbookReference));
                     break;
                 }
+
+                default:
+                    break;
             }
         }
         else if (mappingHelper.TranslateIdAllowNulls<CmsCategory>(c => c.CategoryId, source.CategoryParentId, out int? categoryParentId))

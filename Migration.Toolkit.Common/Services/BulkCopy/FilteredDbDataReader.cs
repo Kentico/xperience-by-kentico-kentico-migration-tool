@@ -15,7 +15,7 @@ public class FilteredDbDataReader<TReader>(IDataReader innerReader, Func<IDataRe
             if (base.Read())
             {
                 TotalItems++;
-                if (!includePredicate(_innerReader))
+                if (!includePredicate(InnerReader))
                 {
                     continue;
                 }

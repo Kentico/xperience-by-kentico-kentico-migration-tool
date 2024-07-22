@@ -12,36 +12,21 @@ using Migration.Toolkit.KX13.Context;
 
 namespace Migration.Toolkit.Core.KX13.Handlers;
 
-public class MigrateSettingKeysCommandHandler : IRequestHandler<MigrateSettingKeysCommand, CommandResult>
+public class MigrateSettingKeysCommandHandler(
+    ILogger<MigrateSettingKeysCommandHandler> logger,
+    IEntityMapper<KX13M.CmsSettingsKey, SettingsKeyInfo> mapper,
+    IDbContextFactory<KX13Context> kx13ContextFactory,
+    ToolkitConfiguration toolkitConfiguration,
+    IProtocol protocol)
+    : IRequestHandler<MigrateSettingKeysCommand, CommandResult>
 {
-    private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
-    private readonly ILogger<MigrateSettingKeysCommandHandler> _logger;
-    private readonly IEntityMapper<KX13M.CmsSettingsKey, SettingsKeyInfo> _mapper;
-    private readonly IProtocol _protocol;
-    private readonly ToolkitConfiguration _toolkitConfiguration;
-
-    public MigrateSettingKeysCommandHandler(
-        ILogger<MigrateSettingKeysCommandHandler> logger,
-        IEntityMapper<KX13M.CmsSettingsKey, SettingsKeyInfo> mapper,
-        IDbContextFactory<KX13Context> kx13ContextFactory,
-        ToolkitConfiguration toolkitConfiguration,
-        IProtocol protocol
-    )
-    {
-        _logger = logger;
-        _mapper = mapper;
-        _kx13ContextFactory = kx13ContextFactory;
-        _toolkitConfiguration = toolkitConfiguration;
-        _protocol = protocol;
-    }
-
     public async Task<CommandResult> Handle(MigrateSettingKeysCommand request, CancellationToken cancellationToken)
     {
-        var entityConfiguration = _toolkitConfiguration.EntityConfigurations.GetEntityConfiguration<KX13M.CmsSettingsKey>();
+        var entityConfiguration = toolkitConfiguration.EntityConfigurations.GetEntityConfiguration<KX13M.CmsSettingsKey>();
 
-        await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
+        await using var kx13Context = await kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
-        _logger.LogInformation("CmsSettingsKey synchronization starting");
+        logger.LogInformation("CmsSettingsKey synchronization starting");
         var cmsSettingsKeys = kx13Context.CmsSettingsKeys
                 .Where(csk => csk.SiteId == null)
                 .AsNoTrackingWithIdentityResolution()
@@ -49,7 +34,7 @@ public class MigrateSettingKeysCommandHandler : IRequestHandler<MigrateSettingKe
 
         foreach (var kx13CmsSettingsKey in cmsSettingsKeys)
         {
-            _protocol.FetchedSource(kx13CmsSettingsKey);
+            protocol.FetchedSource(kx13CmsSettingsKey);
 
             var kxoGlobalSettingsKey = GetKxoSettingsKey(kx13CmsSettingsKey);
 
@@ -58,8 +43,8 @@ public class MigrateSettingKeysCommandHandler : IRequestHandler<MigrateSettingKe
 
             if (!canBeMigrated)
             {
-                _logger.LogInformation("Setting with key '{KeyName}' is currently not supported for migration", kx13CmsSettingsKey.KeyName);
-                _protocol.Append(
+                logger.LogInformation("Setting with key '{KeyName}' is currently not supported for migration", kx13CmsSettingsKey.KeyName);
+                protocol.Append(
                     HandbookReferences
                         .NotCurrentlySupportedSkip<SettingsKeyInfo>()
                         .WithId(nameof(kx13CmsSettingsKey.KeyId), kx13CmsSettingsKey.KeyId)
@@ -69,17 +54,17 @@ public class MigrateSettingKeysCommandHandler : IRequestHandler<MigrateSettingKe
                 continue;
             }
 
-            _protocol.FetchedTarget(kxoCmsSettingsKey);
+            protocol.FetchedTarget(kxoCmsSettingsKey);
 
             if (entityConfiguration.ExcludeCodeNames.Contains(kx13CmsSettingsKey.KeyName))
             {
-                _protocol.Warning(HandbookReferences.CmsSettingsKeyExclusionListSkip, kx13CmsSettingsKey);
-                _logger.LogWarning("KeyName {KeyName} is excluded => skipping", kx13CmsSettingsKey.KeyName);
+                protocol.Warning(HandbookReferences.CmsSettingsKeyExclusionListSkip, kx13CmsSettingsKey);
+                logger.LogWarning("KeyName {KeyName} is excluded => skipping", kx13CmsSettingsKey.KeyName);
                 continue;
             }
 
-            var mapped = _mapper.Map(kx13CmsSettingsKey, kxoCmsSettingsKey);
-            _protocol.MappedTarget(mapped);
+            var mapped = mapper.Map(kx13CmsSettingsKey, kxoCmsSettingsKey);
+            protocol.MappedTarget(mapped);
 
             if (mapped is { Success: true } result)
             {
@@ -87,8 +72,8 @@ public class MigrateSettingKeysCommandHandler : IRequestHandler<MigrateSettingKe
 
                 SettingsKeyInfoProvider.ProviderObject.Set(result.Item);
 
-                _protocol.Success(kx13CmsSettingsKey, kxoCmsSettingsKey, mapped);
-                _logger.LogEntitySetAction(result.NewInstance, result.Item);
+                protocol.Success(kx13CmsSettingsKey, kxoCmsSettingsKey, mapped);
+                logger.LogEntitySetAction(result.NewInstance, result.Item);
             }
         }
 

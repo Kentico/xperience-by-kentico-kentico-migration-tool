@@ -123,13 +123,10 @@ public static class ConfigurationValidator
             var customMigrationModel = optInFeatures?.GetValue<CustomMigrationModel>(ConfigurationNames.CustomMigration);
             if (customMigrationModel is { FieldMigrations.Length: > 0 })
             {
-                static ValidationMessage Required(int item, string fieldName)
-                {
-                    return new ValidationMessage(
+                static ValidationMessage Required(int item, string fieldName) => new(
                         ValidationMessageType.Error,
                         $"Custom DataType migration at index [{item}] is missing value '{fieldName}', supply value or remove whole DataType migration."
                     );
-                }
 
                 var fieldMigrations = customMigrationModel.FieldMigrations;
 

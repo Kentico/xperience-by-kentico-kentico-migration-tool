@@ -68,6 +68,9 @@ public static class PageBuilderWidgetsPatcher
 
                         break;
                     }
+
+                    default:
+                        break;
                 }
             }
         }

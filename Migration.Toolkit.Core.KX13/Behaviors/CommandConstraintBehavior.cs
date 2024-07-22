@@ -1,6 +1,4 @@
 using MediatR;
-
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -53,7 +51,6 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
             criticalCheckPassed &= CheckVersion(kx13Context, minimalVersion);
         }
 
-        // var sites = _toolkitConfiguration.RequireExplicitMapping<KX13M.CmsSite>(s => s.SiteId);
         var sourceSites = kx13Context.CmsSites
             .Include(s => s.Cultures)
             .ToList();
@@ -231,15 +228,5 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
         }
 
         return criticalCheckPassed;
-    }
-
-    private string? GetDbCollationName(string connectionString)
-    {
-        using var sqlConnection = new SqlConnection(connectionString);
-        using var sqlCommand = sqlConnection.CreateCommand();
-        sqlCommand.CommandText = "SELECT DATABASEPROPERTYEX(DB_NAME(), 'Collation')";
-
-        sqlConnection.Open();
-        return sqlCommand.ExecuteScalar() as string;
     }
 }
