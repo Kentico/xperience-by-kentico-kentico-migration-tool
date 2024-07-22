@@ -136,6 +136,7 @@ public class ContentItemMapper(
 
             DateTime? scheduledPublishWhen = null;
             DateTime? scheduleUnpublishWhen = null;
+            
             if (cmsDocument.DocumentPublishFrom is { } publishFrom)
             {
                 var now = Service.Resolve<IDateTimeNowService>().GetDateTimeNow();
@@ -291,7 +292,7 @@ public class ContentItemMapper(
             {
                 documentModifiedByUserGuid = modifiedByUserGuid;
             }
-            
+
             var languageMetadataInfo = new ContentItemLanguageMetadataModel
             {
                 ContentItemLanguageMetadataGUID = documentGuid,
