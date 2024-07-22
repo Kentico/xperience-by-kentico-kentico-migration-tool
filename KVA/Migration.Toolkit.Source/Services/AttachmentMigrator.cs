@@ -87,23 +87,33 @@ public class AttachmentMigrator(
 
     public MigrateAttachmentResult MigrateAttachment(Guid ksAttachmentGuid, string additionalPath)
     {
-        var attachment = modelFacade
+        var attachments = modelFacade
             .SelectWhere<ICmsAttachment>("AttachmentGuid = @attachmentGuid", new SqlParameter("attachmentGuid", ksAttachmentGuid))
-            .SingleOrDefault();
+            .ToList();
 
-        if (attachment == null)
+        switch (attachments)
         {
-            logger.LogWarning("Attachment '{AttachmentGuid}' not found! => skipping", ksAttachmentGuid);
-            protocol.Append(HandbookReferences.TemporaryAttachmentMigrationIsNotSupported.WithData(new { AttachmentGuid = ksAttachmentGuid }));
-            return new MigrateAttachmentResult(false, true);
+            case { Count: 0 }:
+            {
+                logger.LogWarning("Attachment '{AttachmentGuid}' not found! => skipping", ksAttachmentGuid);
+                protocol.Append(HandbookReferences.TemporaryAttachmentMigrationIsNotSupported.WithData(new { AttachmentGuid = ksAttachmentGuid }));
+                return new MigrateAttachmentResult(false, true);
+            }
+            case [var attachment]:
+            {
+                return MigrateAttachment(attachment, additionalPath);
+            }
+            default:
+            {
+                logger.LogWarning("Attachment '{AttachmentGuid}' found multiple times! => skipping", ksAttachmentGuid);
+                protocol.Append(HandbookReferences.NonUniqueEntityGuid.WithData(new { AttachmentGuid = ksAttachmentGuid, AttachmentIds = attachments.Select(a => a.AttachmentID) }));
+                return new MigrateAttachmentResult(false, true);
+            }
         }
-
-        return MigrateAttachment(attachment, additionalPath);
     }
 
     public MigrateAttachmentResult MigrateAttachment(ICmsAttachment ksAttachment, string? additionalMediaPath = null)
     {
-        // TODO tomas.krch: 2022-08-18 directory validation only -_ replace!
         protocol.FetchedSource(ksAttachment);
 
         if (ksAttachment.AttachmentFormGUID != null)

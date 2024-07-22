@@ -22,6 +22,7 @@ public static class HandbookReferences
     public static HandbookReference CmsTreeTreeIsLinkFromDifferentSite => new("CmsTree_TreeIsLinkFromDifferentSite");
 
     public static HandbookReference TemporaryAttachmentMigrationIsNotSupported => new("TemporaryAttachmentMigrationIsNotSupported");
+    public static HandbookReference NonUniqueEntityGuid => new("NonUniqueEntityGuid");
 
     public static HandbookReference LinkedDataAlreadyMaterializedInTargetInstance =>
         new("LinkedDataAlreadyMaterializedInTargetInstance");
