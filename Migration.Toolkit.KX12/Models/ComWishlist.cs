@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -10,7 +9,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("COM_Wishlist")]
 [Index("Skuid", Name = "IX_COM_Wishlist_SKUID")]
 [Index("SiteId", "UserId", Name = "IX_COM_Wishlist_SiteID_UserID")]
-public partial class ComWishlist
+public class ComWishlist
 {
     [Key]
     [Column("UserID")]

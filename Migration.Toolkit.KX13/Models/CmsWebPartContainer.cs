@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("CMS_WebPartContainer")]
 [Index("ContainerName", Name = "IX_CMS_WebPartContainer_ContainerName")]
-public partial class CmsWebPartContainer
+public class CmsWebPartContainer
 {
     [Key]
     [Column("ContainerID")]

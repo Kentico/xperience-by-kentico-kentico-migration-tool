@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("STORECONTENT_Book")]
-public partial class StorecontentBook
+public class StorecontentBook
 {
     [Key]
     [Column("BookID")]

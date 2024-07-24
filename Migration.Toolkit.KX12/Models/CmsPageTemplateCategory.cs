@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("CMS_PageTemplateCategory")]
 [Index("CategoryLevel", Name = "IX_CMS_PageTemplateCategory_CategoryLevel")]
 [Index("CategoryParentId", Name = "IX_CMS_PageTemplateCategory_CategoryParentID")]
-public partial class CmsPageTemplateCategory
+public class CmsPageTemplateCategory
 {
     [Key]
     [Column("CategoryID")]

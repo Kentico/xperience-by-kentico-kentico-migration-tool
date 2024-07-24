@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("CMS_Workflow")]
-public partial class CmsWorkflow
+public class CmsWorkflow
 {
     [Key]
     [Column("WorkflowID")]

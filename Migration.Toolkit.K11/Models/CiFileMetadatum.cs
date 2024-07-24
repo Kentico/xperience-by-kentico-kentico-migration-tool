@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("CI_FileMetadata")]
 [Index("FileLocation", Name = "UQ_CI_FileMetadata_FileLocation", IsUnique = true)]
-public partial class CiFileMetadatum
+public class CiFileMetadatum
 {
     [Key]
     [Column("FileMetadataID")]

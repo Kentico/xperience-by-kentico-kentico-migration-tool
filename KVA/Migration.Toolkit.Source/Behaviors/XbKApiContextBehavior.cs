@@ -1,12 +1,15 @@
-namespace Migration.Toolkit.Source.Behaviors;
-
 using CMS.Base;
 using CMS.Membership;
+
 using MediatR;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Api;
+
+namespace Migration.Toolkit.Source.Behaviors;
 
 public class XbKApiContextBehavior<TRequest, TResponse>(
     ILogger<XbKApiContextBehavior<TRequest, TResponse>> logger,
@@ -16,7 +19,7 @@ public class XbKApiContextBehavior<TRequest, TResponse>(
     where TRequest : IRequest<TResponse>
     where TResponse : CommandResult
 {
-    public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
+    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
         initializer.EnsureApiIsInitialized();
 

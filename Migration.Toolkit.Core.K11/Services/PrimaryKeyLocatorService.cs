@@ -1,35 +1,28 @@
-namespace Migration.Toolkit.Core.K11.Services;
-
 using System.Linq.Expressions;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
-using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.K11;
 using Migration.Toolkit.K11.Models;
 using Migration.Toolkit.KXP.Context;
 
-public class PrimaryKeyLocatorService(ILogger<PrimaryKeyLocatorService> logger,
-        IDbContextFactory<KxpContext> kxpContextFactory,
-        IDbContextFactory<K11Context> k11ContextFactory)
+namespace Migration.Toolkit.Core.K11.Services;
+
+public class PrimaryKeyLocatorService(
+    ILogger<PrimaryKeyLocatorService> logger,
+    IDbContextFactory<KxpContext> kxpContextFactory,
+    IDbContextFactory<K11Context> k11ContextFactory)
     : IPrimaryKeyLocatorService
 {
-    private class KeyEqualityComparerWithLambda<T>(Func<T?, T?, bool> equalityComparer) : IEqualityComparer<T>
-    {
-        public bool Equals(T? x, T? y) => equalityComparer.Invoke(x, y);
-
-        public int GetHashCode(T obj) => obj?.GetHashCode() ?? 0;
-    }
-
-    private record CmsUserKey(Guid UserGuid, string UserName);
-
     public IEnumerable<SourceTargetKeyMapping> SelectAll<T>(Expression<Func<T, object>> keyNameSelector)
     {
         using var kxpContext = kxpContextFactory.CreateDbContext();
         using var k11Context = k11ContextFactory.CreateDbContext();
 
         var sourceType = typeof(T);
-        var memberName = keyNameSelector.GetMemberName();
+        string memberName = keyNameSelector.GetMemberName();
 
         logger.LogTrace("Preload of entity {Entity} member {MemberName} mapping requested", sourceType.Name, memberName);
 
@@ -66,25 +59,6 @@ public class PrimaryKeyLocatorService(ILogger<PrimaryKeyLocatorService> logger,
                 a => a.ContactGuid,
                 b => b.ContactGuid,
                 (a, b) => new SourceTargetKeyMapping(a.ContactId, b.ContactId)
-            );
-
-            foreach (var resultingMapping in result)
-            {
-                yield return resultingMapping;
-            }
-
-            yield break;
-        }
-
-        if (sourceType == typeof(CmsTree) && memberName == nameof(CmsTree.NodeId))
-        {
-            var source = k11Context.CmsTrees.Select(x => new { x.NodeId, x.NodeGuid }).ToList();
-            var target = kxpContext.CmsChannels.Select(x => new { x.ChannelId, x.ChannelGuid }).ToList();
-
-            var result = source.Join(target,
-                a => a.NodeGuid,
-                b => b.ChannelGuid,
-                (a, b) => new SourceTargetKeyMapping(a.NodeId, b.ChannelId)
             );
 
             foreach (var resultingMapping in result)
@@ -132,7 +106,6 @@ public class PrimaryKeyLocatorService(ILogger<PrimaryKeyLocatorService> logger,
 
             yield break;
         }
-
 
 
         throw new NotImplementedException();
@@ -184,21 +157,21 @@ public class PrimaryKeyLocatorService(ILogger<PrimaryKeyLocatorService> logger,
 
             if (sourceType == typeof(CmsState))
             {
-                var k11CodeName = KX12Context.CmsStates.Where(c => c.StateId == sourceId).Select(x => x.StateName).Single();
+                string k11CodeName = KX12Context.CmsStates.Where(c => c.StateId == sourceId).Select(x => x.StateName).Single();
                 targetId = kxpContext.CmsStates.Where(x => x.StateName == k11CodeName).Select(x => x.StateId).Single();
                 return true;
             }
 
             if (sourceType == typeof(CmsCountry))
             {
-                var k11CodeName = KX12Context.CmsCountries.Where(c => c.CountryId == sourceId).Select(x => x.CountryName).Single();
+                string k11CodeName = KX12Context.CmsCountries.Where(c => c.CountryId == sourceId).Select(x => x.CountryName).Single();
                 targetId = kxpContext.CmsCountries.Where(x => x.CountryName == k11CodeName).Select(x => x.CountryId).Single();
                 return true;
             }
 
             if (sourceType == typeof(OmContactStatus))
             {
-                var k11Guid = KX12Context.OmContactStatuses.Where(c => c.ContactStatusId == sourceId).Select(x => x.ContactStatusName).Single();
+                string k11Guid = KX12Context.OmContactStatuses.Where(c => c.ContactStatusId == sourceId).Select(x => x.ContactStatusName).Single();
                 targetId = kxpContext.OmContactStatuses.Where(x => x.ContactStatusName == k11Guid).Select(x => x.ContactStatusId).Single();
                 return true;
             }
@@ -207,14 +180,6 @@ public class PrimaryKeyLocatorService(ILogger<PrimaryKeyLocatorService> logger,
             {
                 var k11Guid = KX12Context.OmContacts.Where(c => c.ContactId == sourceId).Select(x => x.ContactGuid).Single();
                 targetId = kxpContext.OmContacts.Where(x => x.ContactGuid == k11Guid).Select(x => x.ContactId).Single();
-                return true;
-            }
-
-            if (sourceType == typeof(CmsTree))
-            {
-                // careful - cms.root will have different guid
-                var k11Guid = KX12Context.CmsTrees.Where(c => c.NodeId == sourceId).Select(x => x.NodeGuid).Single();
-                targetId = kxpContext.CmsChannels.Where(x => x.ChannelGuid == k11Guid).Select(x => x.ChannelId).Single();
                 return true;
             }
         }
@@ -228,6 +193,7 @@ public class PrimaryKeyLocatorService(ILogger<PrimaryKeyLocatorService> logger,
             {
                 logger.LogWarning("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
             }
+
             return false;
         }
         finally
@@ -242,4 +208,13 @@ public class PrimaryKeyLocatorService(ILogger<PrimaryKeyLocatorService> logger,
         targetId = -1;
         return false;
     }
+
+    private class KeyEqualityComparerWithLambda<T>(Func<T?, T?, bool> equalityComparer) : IEqualityComparer<T>
+    {
+        public bool Equals(T? x, T? y) => equalityComparer.Invoke(x, y);
+
+        public int GetHashCode(T obj) => obj?.GetHashCode() ?? 0;
+    }
+
+    private record CmsUserKey(Guid UserGuid, string UserName);
 }

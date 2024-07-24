@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("staging_TaskGroupTask")]
 [Index("TaskGroupId", Name = "IX_Staging_TaskGroupTask_TaskGroupID")]
 [Index("TaskId", Name = "IX_Staging_TaskGroupTask_TaskID")]
-public partial class StagingTaskGroupTask
+public class StagingTaskGroupTask
 {
     [Key]
     [Column("TaskGroupTaskID")]

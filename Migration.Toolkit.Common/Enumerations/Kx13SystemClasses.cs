@@ -1,7 +1,7 @@
 // ReSharper disable InconsistentNaming
 
 namespace Migration.Toolkit.Common.Enumerations;
-
+#pragma warning disable IDE1006
 public static class Kx13SystemClass
 {
     public const string cms_culture = "cms.culture";
@@ -161,18 +161,17 @@ public static class Kx13SystemClass
     public static HashSet<string> All = new(
         new[]
         {
-            cms_culture, cms_site, cms_Role, cms_user, cms_UserRole, cms_emailtemplate, cms_permission, cms_resource, CMS_EventLog, cms_tree, cms_document, cms_class, cms_pagetemplate, cms_query,
-            cms_transformation, cms_workflow, cms_workflowstep, cms_workflowscope, cms_versionhistory, cms_acl, cms_pagetemplatecategory, cms_layout, cms_webpartcategory, cms_webpart,
-            cms_attachment, cms_attachmenthistory, cms_relationshipname, CMS_RelationshipNameSite, CMS_Relationship, cms_sitedomainalias, cms_form, cms_WebPartContainer, cms_LicenseKey,
-            cms_WebFarmServer, cms_country, cms_state, cms_WebPartLayout, CMS_SettingsKey, CMS_ResourceSite, CMS_CultureSite, CMS_UserSite, CMS_WorkflowStepRole, CMS_ClassSite, cms_FormRole,
-            CMS_AllowedChildClass, cms_rolepermission, cms_settingscategory, CMS_VersionAttachment, CMS_WebPartContainerSite, cms_category, cms_documentcategory, cms_AlternativeForm, cms_timezone,
-            cms_avatar, cms_usersettings, cms_email, cms_attachmentforemail, CMS_EmailUser, cms_SearchIndex, cms_SearchIndexSite, cms_SearchIndexCulture, CMS_SearchTask, cms_userculture,
-            CMS_UIElement, CMS_RoleUIElement, cms_Widget, CMS_WidgetCategory, CMS_WidgetRole, CMS_Membership, CMS_SMTPServer, CMS_SMTPServerSite, CMS_MembershipRole, CMS_MembershipUser,
-            CMS_WorkflowTransition, CMS_MacroRule, CMS_WorkflowStepUser, CMS_WorkflowUser, cms_aclitem, CMS_TranslationService, CMS_TranslationSubmission, cms_workflowaction,
-            cms_webfarmservertask, CMS_DocumentTypeScope, CMS_DocumentTypeScopeClass, CMS_ModuleLicenseKey, CMS_ModuleUsageCounter, CMS_MacroIdentity, CMS_UserMacroIdentity, CMS_SearchTaskAzure,
-            CMS_Consent, CMS_ConsentAgreement, CMS_ConsentArchive, CMS_AlternativeUrl, CMS_PageTemplateConfiguration, CMS_AutomationTemplate, CMS_PageUrlPath, CMS_PageFormerUrlPath,
+            cms_culture, cms_site, cms_Role, cms_user, cms_UserRole, cms_emailtemplate, cms_permission, cms_resource, CMS_EventLog, cms_tree, cms_document, cms_class, cms_pagetemplate, cms_query, cms_transformation, cms_workflow,
+            cms_workflowstep, cms_workflowscope, cms_versionhistory, cms_acl, cms_pagetemplatecategory, cms_layout, cms_webpartcategory, cms_webpart, cms_attachment, cms_attachmenthistory, cms_relationshipname, CMS_RelationshipNameSite,
+            CMS_Relationship, cms_sitedomainalias, cms_form, cms_WebPartContainer, cms_LicenseKey, cms_WebFarmServer, cms_country, cms_state, cms_WebPartLayout, CMS_SettingsKey, CMS_ResourceSite, CMS_CultureSite, CMS_UserSite,
+            CMS_WorkflowStepRole, CMS_ClassSite, cms_FormRole, CMS_AllowedChildClass, cms_rolepermission, cms_settingscategory, CMS_VersionAttachment, CMS_WebPartContainerSite, cms_category, cms_documentcategory, cms_AlternativeForm,
+            cms_timezone, cms_avatar, cms_usersettings, cms_email, cms_attachmentforemail, CMS_EmailUser, cms_SearchIndex, cms_SearchIndexSite, cms_SearchIndexCulture, CMS_SearchTask, cms_userculture, CMS_UIElement, CMS_RoleUIElement, cms_Widget,
+            CMS_WidgetCategory, CMS_WidgetRole, CMS_Membership, CMS_SMTPServer, CMS_SMTPServerSite, CMS_MembershipRole, CMS_MembershipUser, CMS_WorkflowTransition, CMS_MacroRule, CMS_WorkflowStepUser, CMS_WorkflowUser, cms_aclitem,
+            CMS_TranslationService, CMS_TranslationSubmission, cms_workflowaction, cms_webfarmservertask, CMS_DocumentTypeScope, CMS_DocumentTypeScopeClass, CMS_ModuleLicenseKey, CMS_ModuleUsageCounter, CMS_MacroIdentity, CMS_UserMacroIdentity,
+            CMS_SearchTaskAzure, CMS_Consent, CMS_ConsentAgreement, CMS_ConsentArchive, CMS_AlternativeUrl, CMS_PageTemplateConfiguration, CMS_AutomationTemplate, CMS_PageUrlPath, CMS_PageFormerUrlPath
         }, StringComparer.InvariantCultureIgnoreCase);
 
     public static HashSet<string> Customizable = new(new[] { cms_user, cms_usersettings, media_file, OM_Account, OM_Contact }, StringComparer.InvariantCultureIgnoreCase);
     public static HashSet<string> NoLongerSupported = new(new[] { cms_usersettings }, StringComparer.InvariantCultureIgnoreCase);
 }
+#pragma warning enable IDE1006

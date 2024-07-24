@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("CMS_ResourceTranslation")]
 [Index("TranslationCultureId", Name = "IX_CMS_ResourceTranslation_TranslationCultureID")]
 [Index("TranslationStringId", Name = "IX_CMS_ResourceTranslation_TranslationStringID")]
-public partial class CmsResourceTranslation
+public class CmsResourceTranslation
 {
     [Key]
     [Column("TranslationID")]

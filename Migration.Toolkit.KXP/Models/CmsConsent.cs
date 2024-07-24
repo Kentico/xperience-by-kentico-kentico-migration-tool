@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_Consent")]
-public partial class CmsConsent
+public class CmsConsent
 {
     [Key]
     [Column("ConsentID")]

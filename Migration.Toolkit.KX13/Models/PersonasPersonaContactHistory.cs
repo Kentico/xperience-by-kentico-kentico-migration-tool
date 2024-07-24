@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("Personas_PersonaContactHistory")]
 [Index("PersonaContactHistoryPersonaId", Name = "IX_Personas_PersonaContactHistoryPersonaID")]
-public partial class PersonasPersonaContactHistory
+public class PersonasPersonaContactHistory
 {
     [Key]
     [Column("PersonaContactHistoryID")]

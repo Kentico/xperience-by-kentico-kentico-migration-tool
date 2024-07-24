@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("CMS_HeadlessChannel")]
 [Index("HeadlessChannelChannelId", Name = "IX_CMS_HeadlessChannel_HeadlessChannelChannelID")]
 [Index("HeadlessChannelPrimaryContentLanguageId", Name = "IX_CMS_HeadlessChannel_HeadlessChannelPrimaryContentLanguageID")]
-public partial class CmsHeadlessChannel
+public class CmsHeadlessChannel
 {
     [Key]
     [Column("HeadlessChannelID")]

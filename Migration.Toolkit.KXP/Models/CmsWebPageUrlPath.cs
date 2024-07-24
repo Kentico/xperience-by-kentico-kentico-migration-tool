@@ -1,17 +1,17 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_WebPageUrlPath")]
 [Index("WebPageUrlPathContentLanguageId", Name = "IX_CMS_WebPageUrlPath_WebPageUrlPathContentLanguageID")]
-[Index("WebPageUrlPathHash", "WebPageUrlPathWebsiteChannelId", "WebPageUrlPathContentLanguageId", "WebPageUrlPathIsDraft", Name = "IX_CMS_WebPageUrlPath_WebPageUrlPathHash_WebPageUrlPathWebsiteChannelID_WebPageUrlPathContentLanguageID_WebPageUrlPathIsDraft", IsUnique = true)]
+[Index("WebPageUrlPathHash", "WebPageUrlPathWebsiteChannelId", "WebPageUrlPathContentLanguageId", "WebPageUrlPathIsDraft",
+    Name = "IX_CMS_WebPageUrlPath_WebPageUrlPathHash_WebPageUrlPathWebsiteChannelID_WebPageUrlPathContentLanguageID_WebPageUrlPathIsDraft", IsUnique = true)]
 [Index("WebPageUrlPathWebPageItemId", Name = "IX_CMS_WebPageUrlPath_WebPageUrlPathWebPageItemID")]
 [Index("WebPageUrlPathWebsiteChannelId", Name = "IX_CMS_WebPageUrlPath_WebPageUrlPathWebsiteChannelID")]
-public partial class CmsWebPageUrlPath
+public class CmsWebPageUrlPath
 {
     [Key]
     [Column("WebPageUrlPathID")]
@@ -26,8 +26,7 @@ public partial class CmsWebPageUrlPath
     [Column("WebPageUrlPathWebPageItemID")]
     public int WebPageUrlPathWebPageItemId { get; set; }
 
-    [Required]
-    public bool? WebPageUrlPathIsLatest { get; set; }
+    public bool WebPageUrlPathIsLatest { get; set; }
 
     [Column("WebPageUrlPathGUID")]
     public Guid WebPageUrlPathGuid { get; set; }

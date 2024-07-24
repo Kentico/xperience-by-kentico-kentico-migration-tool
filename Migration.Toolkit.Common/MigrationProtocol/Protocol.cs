@@ -1,20 +1,14 @@
-namespace Migration.Toolkit.Common.MigrationProtocol;
-
 using MediatR;
+
 using Migration.Toolkit.Common.Abstractions;
 
-public class Protocol : IProtocol
+namespace Migration.Toolkit.Common.MigrationProtocol;
+
+public class Protocol(IEnumerable<IMigrationProtocol> protocols) : IProtocol
 {
-    private readonly IEnumerable<IMigrationProtocol> _protocols;
-
-    public Protocol(IEnumerable<IMigrationProtocol> protocols)
-    {
-        _protocols = protocols;
-    }
-
     public void MappedTarget<TTarget>(IModelMappingResult<TTarget> mapped)
     {
-        foreach (var protocol in _protocols)
+        foreach (var protocol in protocols)
         {
             protocol.MappedTarget(mapped);
         }
@@ -22,7 +16,7 @@ public class Protocol : IProtocol
 
     public void FetchedTarget<TTarget>(TTarget? target)
     {
-        foreach (var protocol in _protocols)
+        foreach (var protocol in protocols)
         {
             protocol.FetchedTarget(target);
         }
@@ -30,7 +24,7 @@ public class Protocol : IProtocol
 
     public void FetchedSource<TSource>(TSource? source)
     {
-        foreach (var protocol in _protocols)
+        foreach (var protocol in protocols)
         {
             protocol.FetchedSource(source);
         }
@@ -38,7 +32,7 @@ public class Protocol : IProtocol
 
     public void Success<TSource, TTarget>(TSource source, TTarget target, IModelMappingResult<TTarget>? mapped)
     {
-        foreach (var protocol in _protocols)
+        foreach (var protocol in protocols)
         {
             protocol.Success(source, target, mapped);
         }
@@ -46,7 +40,7 @@ public class Protocol : IProtocol
 
     public void Warning<T>(HandbookReference handbookRef, T? entity)
     {
-        foreach (var protocol in _protocols)
+        foreach (var protocol in protocols)
         {
             protocol.Warning(handbookRef, entity);
         }
@@ -54,7 +48,7 @@ public class Protocol : IProtocol
 
     public void CommandRequest<TRequest, TResponse>(TRequest request) where TRequest : IRequest<TResponse>
     {
-        foreach (var protocol in _protocols)
+        foreach (var protocol in protocols)
         {
             protocol.CommandRequest<TRequest, TResponse>(request);
         }
@@ -62,7 +56,7 @@ public class Protocol : IProtocol
 
     public void CommandFinished<TRequest, TResponse>(TRequest request, TResponse response) where TRequest : IRequest<TResponse> where TResponse : CommandResult
     {
-        foreach (var protocol in _protocols)
+        foreach (var protocol in protocols)
         {
             protocol.CommandFinished(request, response);
         }
@@ -70,7 +64,7 @@ public class Protocol : IProtocol
 
     public void CommandError<TRequest, TResponse>(Exception exception, TRequest request) where TRequest : IRequest<TResponse>
     {
-        foreach (var protocol in _protocols)
+        foreach (var protocol in protocols)
         {
             protocol.CommandError<TRequest, TResponse>(exception, request);
         }
@@ -78,7 +72,7 @@ public class Protocol : IProtocol
 
     public void Append(HandbookReference? handbookReference)
     {
-        foreach (var protocol in _protocols)
+        foreach (var protocol in protocols)
         {
             protocol.Append(handbookReference);
         }

@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("CONTENT_BlogMonth")]
-public partial class ContentBlogMonth
+public class ContentBlogMonth
 {
     [Key]
     [Column("BlogMonthID")]

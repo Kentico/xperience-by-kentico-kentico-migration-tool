@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("CMS_User")]
 [Index("UserGuid", Name = "IX_CMS_User_UserGUID", IsUnique = true)]
 [Index("UserName", Name = "IX_CMS_User_UserName", IsUnique = true)]
-public partial class CmsUser
+public class CmsUser
 {
     [Key]
     [Column("UserID")]
@@ -86,6 +85,12 @@ public partial class CmsUser
 
     [InverseProperty("TaskUser")]
     public virtual ICollection<CmsScheduledTask> CmsScheduledTasks { get; set; } = new List<CmsScheduledTask>();
+
+    [InverseProperty("SmartFolderCreatedByUser")]
+    public virtual ICollection<CmsSmartFolder> CmsSmartFolderSmartFolderCreatedByUsers { get; set; } = new List<CmsSmartFolder>();
+
+    [InverseProperty("SmartFolderModifiedByUser")]
+    public virtual ICollection<CmsSmartFolder> CmsSmartFolderSmartFolderModifiedByUsers { get; set; } = new List<CmsSmartFolder>();
 
     [InverseProperty("UserMacroIdentityUser")]
     public virtual CmsUserMacroIdentity? CmsUserMacroIdentity { get; set; }

@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("CMS_Banner")]
 [Index("BannerCategoryId", Name = "IX_CMS_Banner_BannerCategoryID")]
 [Index("BannerSiteId", Name = "IX_CMS_Banner_BannerSiteID")]
-public partial class CmsBanner
+public class CmsBanner
 {
     [Key]
     [Column("BannerID")]

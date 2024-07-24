@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -11,7 +10,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("WidgetIsEnabled", "WidgetForGroup", "WidgetForEditor", "WidgetForUser", Name = "IX_CMS_Widget_WidgetIsEnabled_WidgetForGroup_WidgetForEditor_WidgetForUser")]
 [Index("WidgetLayoutId", Name = "IX_CMS_Widget_WidgetLayoutID")]
 [Index("WidgetWebPartId", Name = "IX_CMS_Widget_WidgetWebPartID")]
-public partial class CmsWidget
+public class CmsWidget
 {
     [Key]
     [Column("WidgetID")]

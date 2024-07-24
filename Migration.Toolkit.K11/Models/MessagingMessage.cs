@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("Messaging_Message")]
 [Index("MessageSenderUserId", "MessageSent", "MessageSenderDeleted", Name = "IX_Messaging_Message_MessageSenderUserID_MessageSent_MessageSenderDeleted")]
-public partial class MessagingMessage
+public class MessagingMessage
 {
     [Key]
     [Column("MessageID")]

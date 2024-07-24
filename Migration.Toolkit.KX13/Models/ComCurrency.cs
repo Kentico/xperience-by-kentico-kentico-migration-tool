@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("COM_Currency")]
 [Index("CurrencyDisplayName", Name = "IX_COM_Currency_CurrencyDisplayName")]
 [Index("CurrencySiteId", Name = "IX_COM_Currency_CurrencySiteID")]
-public partial class ComCurrency
+public class ComCurrency
 {
     [Key]
     [Column("CurrencyID")]

@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("CMS_Site")]
 [Index("SiteDomainName", "SiteStatus", Name = "IX_CMS_Site_SiteDomainName_SiteStatus")]
 [Index("SiteName", Name = "IX_CMS_Site_SiteName")]
-public partial class CmsSite
+public class CmsSite
 {
     [Key]
     [Column("SiteID")]

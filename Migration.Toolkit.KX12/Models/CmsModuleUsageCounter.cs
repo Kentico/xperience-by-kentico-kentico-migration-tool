@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
 
 [Keyless]
 [Table("CMS_ModuleUsageCounter")]
-public partial class CmsModuleUsageCounter
+public class CmsModuleUsageCounter
 {
     [Column("ModuleUsageCounterID")]
     public int ModuleUsageCounterId { get; set; }

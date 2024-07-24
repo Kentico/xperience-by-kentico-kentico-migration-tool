@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_FormFeaturedField")]
-public partial class CmsFormFeaturedField
+public class CmsFormFeaturedField
 {
     [Key]
     [Column("FormFeaturedFieldID")]
@@ -35,6 +32,5 @@ public partial class CmsFormFeaturedField
     [StringLength(200)]
     public string FormFeaturedFieldIconClass { get; set; } = null!;
 
-    [Required]
-    public bool? FormFeaturedFieldEnabled { get; set; }
+    public bool FormFeaturedFieldEnabled { get; set; }
 }

@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("Newsletter_Subscriber")]
 [Index("SubscriberEmail", Name = "IX_Newsletter_Subscriber_SubscriberEmail")]
 [Index("SubscriberType", "SubscriberRelatedId", Name = "IX_Newsletter_Subscriber_SubscriberType_SubscriberRelatedID")]
-public partial class NewsletterSubscriber
+public class NewsletterSubscriber
 {
     [Key]
     [Column("SubscriberID")]

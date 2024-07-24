@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("Temp_PageBuilderWidgets")]
-public partial class TempPageBuilderWidget
+public class TempPageBuilderWidget
 {
     [Key]
     [Column("PageBuilderWidgetsID")]

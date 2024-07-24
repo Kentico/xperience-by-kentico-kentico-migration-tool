@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("Reporting_SavedReport")]
 [Index("SavedReportCreatedByUserId", Name = "IX_Reporting_SavedReport_SavedReportCreatedByUserID")]
-public partial class ReportingSavedReport
+public class ReportingSavedReport
 {
     [Key]
     [Column("SavedReportID")]

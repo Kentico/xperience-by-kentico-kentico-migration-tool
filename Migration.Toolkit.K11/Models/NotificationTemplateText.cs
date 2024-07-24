@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("Notification_TemplateText")]
 [Index("GatewayId", Name = "IX_Notification_TemplateText_GatewayID")]
 [Index("TemplateId", Name = "IX_Notification_TemplateText_TemplateID")]
-public partial class NotificationTemplateText
+public class NotificationTemplateText
 {
     [Key]
     [Column("TemplateTextID")]

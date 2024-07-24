@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("CMS_Avatar")]
 [Index("AvatarGuid", Name = "IX_CMS_Avatar_AvatarGUID")]
-public partial class CmsAvatar
+public class CmsAvatar
 {
     [Key]
     [Column("AvatarID")]

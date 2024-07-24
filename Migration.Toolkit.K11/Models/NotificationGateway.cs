@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("Notification_Gateway")]
-public partial class NotificationGateway
+public class NotificationGateway
 {
     [Key]
     [Column("GatewayID")]

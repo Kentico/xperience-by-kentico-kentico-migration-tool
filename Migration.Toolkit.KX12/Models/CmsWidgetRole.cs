@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -10,7 +9,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("CMS_WidgetRole")]
 [Index("PermissionId", Name = "IX_CMS_WidgetRole_PermissionID")]
 [Index("RoleId", Name = "IX_CMS_WidgetRole_RoleID")]
-public partial class CmsWidgetRole
+public class CmsWidgetRole
 {
     [Key]
     [Column("WidgetID")]

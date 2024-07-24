@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -10,7 +9,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("ShippingOptionCarrierId", Name = "IX_COM_ShippingOption_ShippingOptionCarrierID")]
 [Index("ShippingOptionSiteId", Name = "IX_COM_ShippingOption_ShippingOptionSiteID_ShippingOptionDisplayName_ShippingOptionEnabled")]
 [Index("ShippingOptionTaxClassId", Name = "IX_COM_ShippingOption_ShippingOptionTaxClassID")]
-public partial class ComShippingOption
+public class ComShippingOption
 {
     [Key]
     [Column("ShippingOptionID")]

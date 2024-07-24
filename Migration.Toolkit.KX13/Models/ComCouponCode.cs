@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("COM_CouponCode")]
 [Index("CouponCodeDiscountId", Name = "IX_COM_CouponCode_CouponCodeDiscountID")]
-public partial class ComCouponCode
+public class ComCouponCode
 {
     [Key]
     [Column("CouponCodeID")]

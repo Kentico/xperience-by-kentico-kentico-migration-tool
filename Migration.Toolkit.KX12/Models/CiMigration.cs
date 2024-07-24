@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("CI_Migration")]
 [Index("MigrationName", Name = "IX_CI_Migration_MigrationName", IsUnique = true)]
-public partial class CiMigration
+public class CiMigration
 {
     [Key]
     [Column("MigrationID")]

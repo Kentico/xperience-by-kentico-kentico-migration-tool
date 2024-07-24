@@ -1,6 +1,7 @@
 // ReSharper disable InconsistentNaming
-namespace Migration.Toolkit.Common.Enumerations;
 
+namespace Migration.Toolkit.Common.Enumerations;
+#pragma warning disable IDE1006
 public class Kx13FormControls
 {
     public class UserControlForText
@@ -263,3 +264,4 @@ public class Kx13FormComponents
     public const string Kentico_PathSelector = "Kentico.PathSelector";
     public const string Kentico_UrlSelector = "Kentico.UrlSelector";
 }
+#pragma warning enable IDE1006

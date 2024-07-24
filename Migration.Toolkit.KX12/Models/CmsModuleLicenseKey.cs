@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("CMS_ModuleLicenseKey")]
 [Index("ModuleLicenseKeyResourceId", Name = "IX_CMS_ModuleLicenseKey_ModuleLicenseKeyResourceID")]
-public partial class CmsModuleLicenseKey
+public class CmsModuleLicenseKey
 {
     [Key]
     [Column("ModuleLicenseKeyID")]

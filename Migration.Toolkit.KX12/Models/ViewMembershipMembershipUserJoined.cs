@@ -1,13 +1,12 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
 
 [Keyless]
-public partial class ViewMembershipMembershipUserJoined
+public class ViewMembershipMembershipUserJoined
 {
     [StringLength(200)]
     public string MembershipDisplayName { get; set; } = null!;

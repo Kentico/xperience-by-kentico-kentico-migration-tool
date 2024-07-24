@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("EmailLibrary_EmailTemplate")]
-public partial class EmailLibraryEmailTemplate
+public class EmailLibraryEmailTemplate
 {
     [Key]
     [Column("EmailTemplateID")]

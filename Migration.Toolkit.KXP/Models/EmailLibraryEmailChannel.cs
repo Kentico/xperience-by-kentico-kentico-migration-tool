@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("EmailLibrary_EmailChannel")]
 [Index("EmailChannelChannelId", Name = "IX_EmailLibrary_EmailChannel_EmailChannelChannelID")]
-public partial class EmailLibraryEmailChannel
+public class EmailLibraryEmailChannel
 {
     [Key]
     [Column("EmailChannelID")]

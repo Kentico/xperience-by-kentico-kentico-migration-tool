@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("Analytics_CampaignObjective")]
 [Index("CampaignObjectiveCampaignId", Name = "CK_Analytics_CampaignObjective_CampaignObjectiveCampaignID", IsUnique = true)]
 [Index("CampaignObjectiveCampaignConversionId", Name = "IX_Analytics_CampaignObjective_CampaignObjectiveCampaignConversionID")]
-public partial class AnalyticsCampaignObjective
+public class AnalyticsCampaignObjective
 {
     [Key]
     [Column("CampaignObjectiveID")]

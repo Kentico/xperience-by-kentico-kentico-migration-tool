@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("Media_Library")]
 [Index("LibraryGroupId", Name = "IX_Media_Library_LibraryGroupID")]
 [Index("LibrarySiteId", "LibraryName", "LibraryGuid", Name = "IX_Media_Library_LibrarySiteID_LibraryName_LibraryGUID", IsUnique = true)]
-public partial class MediaLibrary
+public class MediaLibrary
 {
     [Key]
     [Column("LibraryID")]

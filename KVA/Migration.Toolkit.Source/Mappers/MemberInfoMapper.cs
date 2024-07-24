@@ -1,10 +1,11 @@
-namespace Migration.Toolkit.Source.Mappers;
-
 using System.Data;
+
 using CMS.FormEngine;
 using CMS.Membership;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Enumerations;
@@ -13,6 +14,8 @@ using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Api;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Model;
+
+namespace Migration.Toolkit.Source.Mappers;
 
 public record MemberInfoMapperSource(ICmsUser User, ICmsUserSetting UserSetting);
 
@@ -23,11 +26,9 @@ public class MemberInfoMapper(
     KxpClassFacade kxpClassFacade,
     ToolkitConfiguration toolkitConfiguration,
     ModelFacade modelFacade
-    )
+)
     : EntityMapperBase<MemberInfoMapperSource, MemberInfo>(logger, primaryKeyMappingContext, protocol)
 {
-    protected override MemberInfo CreateNewInstance(MemberInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) => new();
-
     public static IReadOnlyList<string> MigratedUserFields = new List<string>
     {
         nameof(ICmsUser.UserGUID),
@@ -36,8 +37,10 @@ public class MemberInfoMapper(
         // nameof(ICmsUser.UserPassword),
         nameof(ICmsUser.UserEnabled),
         nameof(ICmsUser.UserCreated),
-        nameof(ICmsUser.UserSecurityStamp),
+        nameof(ICmsUser.UserSecurityStamp)
     };
+
+    protected override MemberInfo CreateNewInstance(MemberInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
     protected override MemberInfo MapInternal(MemberInfoMapperSource source, MemberInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
@@ -76,9 +79,9 @@ public class MemberInfoMapper(
         var customized = kxpClassFacade.GetCustomizedFieldInfosAll(MemberInfo.TYPEINFO.ObjectClassName);
         foreach (var customizedFieldInfo in customized)
         {
-            var fieldName = customizedFieldInfo.FieldName;
+            string fieldName = customizedFieldInfo.FieldName;
 
-            if (ReflectionHelper<ICmsUser>.TryGetPropertyValue(user, fieldName, StringComparison.InvariantCultureIgnoreCase, out var value) ||
+            if (ReflectionHelper<ICmsUser>.TryGetPropertyValue(user, fieldName, StringComparison.InvariantCultureIgnoreCase, out object? value) ||
                 ReflectionHelper<ICmsUserSetting>.TryGetPropertyValue(userSetting, fieldName, StringComparison.InvariantCultureIgnoreCase, out value))
             {
                 target.SetValue(fieldName, value);
@@ -90,7 +93,7 @@ public class MemberInfoMapper(
         {
             try
             {
-                var query =
+                string query =
                     $"SELECT {string.Join(", ", userCustomizedFields.Select(x => x.FieldName))} FROM {UserInfo.TYPEINFO.ClassStructureInfo.TableName} WHERE {UserInfo.TYPEINFO.ClassStructureInfo.IDColumn} = @id";
 
                 using var conn = new SqlConnection(toolkitConfiguration.KxConnectionString);
@@ -136,7 +139,7 @@ public class MemberInfoMapper(
             {
                 try
                 {
-                    var query =
+                    string query =
                         $"SELECT {string.Join(", ", userSettingsCustomizedFields.Select(x => x.FieldName))} FROM {usDci.ClassTableName} WHERE UserSettingsID = @id";
 
                     using var conn = new SqlConnection(toolkitConfiguration.KxConnectionString);

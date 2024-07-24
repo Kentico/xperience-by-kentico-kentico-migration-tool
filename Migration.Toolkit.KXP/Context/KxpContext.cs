@@ -1,6 +1,5 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+
 using Migration.Toolkit.KXP.Models;
 
 namespace Migration.Toolkit.KXP.Context;
@@ -122,6 +121,8 @@ public partial class KxpContext : DbContext
 
     public virtual DbSet<CmsSettingsKey> CmsSettingsKeys { get; set; }
 
+    public virtual DbSet<CmsSmartFolder> CmsSmartFolders { get; set; }
+
     public virtual DbSet<CmsState> CmsStates { get; set; }
 
     public virtual DbSet<CmsTag> CmsTags { get; set; }
@@ -241,24 +242,26 @@ public partial class KxpContext : DbContext
         modelBuilder.Entity<CdMigration>(entity =>
         {
             entity.Property(e => e.DateApplied).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.RowsAffected).HasDefaultValueSql("(NULL)");
         });
 
         modelBuilder.Entity<CiFileMetadatum>(entity =>
         {
-            entity.Property(e => e.FileHash).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.FileLocation).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.FileHash).HasDefaultValue("");
+            entity.Property(e => e.FileLocation).HasDefaultValue("");
         });
 
         modelBuilder.Entity<CiMigration>(entity =>
         {
             entity.Property(e => e.DateApplied).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.RowsAffected).HasDefaultValueSql("(NULL)");
         });
 
         modelBuilder.Entity<CmsAlternativeForm>(entity =>
         {
-            entity.Property(e => e.FormDisplayName).HasDefaultValueSql("('')");
-            entity.Property(e => e.FormIsCustom).HasDefaultValueSql("((0))");
-            entity.Property(e => e.FormName).HasDefaultValueSql("('')");
+            entity.Property(e => e.FormDisplayName).HasDefaultValue("");
+            entity.Property(e => e.FormIsCustom).HasDefaultValue(false);
+            entity.Property(e => e.FormName).HasDefaultValue("");
 
             entity.HasOne(d => d.FormClass).WithMany(p => p.CmsAlternativeFormFormClasses)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -269,8 +272,8 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsApplicationPermission>(entity =>
         {
-            entity.Property(e => e.ApplicationName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.PermissionName).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.ApplicationName).HasDefaultValue("");
+            entity.Property(e => e.PermissionName).HasDefaultValue("");
 
             entity.HasOne(d => d.Role).WithMany(p => p.CmsApplicationPermissions)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -279,8 +282,8 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsAutomationHistory>(entity =>
         {
-            entity.Property(e => e.HistoryRejected).HasDefaultValueSql("((0))");
-            entity.Property(e => e.HistoryStepDisplayName).HasDefaultValueSql("('')");
+            entity.Property(e => e.HistoryRejected).HasDefaultValue(false);
+            entity.Property(e => e.HistoryStepDisplayName).HasDefaultValue("");
 
             entity.HasOne(d => d.HistoryApprovedByUser).WithMany(p => p.CmsAutomationHistories).HasConstraintName("FK_CMS_AutomationHistory_HistoryApprovedByUserID");
 
@@ -310,17 +313,14 @@ public partial class KxpContext : DbContext
                 .HasConstraintName("FK_CMS_AutomationState_StateWorkflowID");
         });
 
-        modelBuilder.Entity<CmsAutomationTemplate>(entity =>
-        {
-            entity.Property(e => e.TemplateDisplayName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.TemplateLastModified).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-        });
+        modelBuilder.Entity<CmsAutomationTemplate>(entity => entity.Property(e => e.TemplateDisplayName).HasDefaultValue(""));
 
         modelBuilder.Entity<CmsChannel>(entity =>
         {
-            entity.Property(e => e.ChannelDisplayName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.ChannelName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.ChannelType).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.ChannelDisplayName).HasDefaultValue("");
+            entity.Property(e => e.ChannelName).HasDefaultValue("");
+            entity.Property(e => e.ChannelSize).HasDefaultValue("Standard");
+            entity.Property(e => e.ChannelType).HasDefaultValue("");
         });
 
         modelBuilder.Entity<CmsClass>(entity =>
@@ -333,24 +333,21 @@ public partial class KxpContext : DbContext
                 .IsUnique()
                 .HasFilter("([ClassShortName] IS NOT NULL)");
 
-            entity.Property(e => e.ClassType).HasDefaultValueSql("('Other')");
+            entity.Property(e => e.ClassType).HasDefaultValue("Other");
 
             entity.HasOne(d => d.ClassResource).WithMany(p => p.CmsClasses).HasConstraintName("FK_CMS_Class_ClassResourceID_CMS_Resource");
         });
 
         modelBuilder.Entity<CmsConsent>(entity =>
         {
-            entity.Property(e => e.ConsentContent).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.ConsentDisplayName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.ConsentHash).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.ConsentLastModified).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-            entity.Property(e => e.ConsentName).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.ConsentContent).HasDefaultValue("");
+            entity.Property(e => e.ConsentDisplayName).HasDefaultValue("");
+            entity.Property(e => e.ConsentHash).HasDefaultValue("");
+            entity.Property(e => e.ConsentName).HasDefaultValue("");
         });
 
         modelBuilder.Entity<CmsConsentAgreement>(entity =>
         {
-            entity.Property(e => e.ConsentAgreementTime).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-
             entity.HasOne(d => d.ConsentAgreementConsent).WithMany(p => p.CmsConsentAgreements)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CMS_ConsentAgreement_ConsentAgreementConsentID_CMS_Consent");
@@ -362,9 +359,8 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsConsentArchive>(entity =>
         {
-            entity.Property(e => e.ConsentArchiveContent).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.ConsentArchiveHash).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.ConsentArchiveLastModified).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
+            entity.Property(e => e.ConsentArchiveContent).HasDefaultValue("");
+            entity.Property(e => e.ConsentArchiveHash).HasDefaultValue("");
 
             entity.HasOne(d => d.ConsentArchiveConsent).WithMany(p => p.CmsConsentArchives)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -373,10 +369,8 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsContentFolder>(entity =>
         {
-            entity.Property(e => e.ContentFolderCreatedWhen).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-            entity.Property(e => e.ContentFolderDisplayName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.ContentFolderModifiedWhen).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-            entity.Property(e => e.ContentFolderName).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.ContentFolderDisplayName).HasDefaultValue("");
+            entity.Property(e => e.ContentFolderName).HasDefaultValue("");
 
             entity.HasOne(d => d.ContentFolderCreatedByUser).WithMany(p => p.CmsContentFolderContentFolderCreatedByUsers).HasConstraintName("FK_CMS_ContentFolder_ContentFolderCreatedByUserID_CMS_User");
 
@@ -389,7 +383,7 @@ public partial class KxpContext : DbContext
         {
             entity.HasIndex(e => e.ContentItemChannelId, "IX_CMS_ContentItem_ContentItemChannelID").HasFilter("([ContentItemChannelID] IS NOT NULL)");
 
-            entity.Property(e => e.ContentItemName).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.ContentItemName).HasDefaultValue("");
 
             entity.HasOne(d => d.ContentItemChannel).WithMany(p => p.CmsContentItems).HasConstraintName("FK_CMS_ContentItem_ContentItemChannelID");
 
@@ -411,9 +405,7 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsContentItemLanguageMetadatum>(entity =>
         {
-            entity.Property(e => e.ContentItemLanguageMetadataCreatedWhen).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-            entity.Property(e => e.ContentItemLanguageMetadataDisplayName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.ContentItemLanguageMetadataModifiedWhen).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
+            entity.Property(e => e.ContentItemLanguageMetadataDisplayName).HasDefaultValue("");
 
             entity.HasOne(d => d.ContentItemLanguageMetadataContentItem).WithMany(p => p.CmsContentItemLanguageMetadata)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -423,11 +415,14 @@ public partial class KxpContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CMS_ContentItemLanguageMetadata_ContentItemLanguageMetadataContentLanguageID_CMS_ContentLanguage");
 
-            entity.HasOne(d => d.ContentItemLanguageMetadataContentWorkflowStep).WithMany(p => p.CmsContentItemLanguageMetadata).HasConstraintName("FK_CMS_ContentItemLanguageMetadata_ContentItemLanguageMetadataContentWorkflowStepID_CMS_ContentWorkflowStep");
+            entity.HasOne(d => d.ContentItemLanguageMetadataContentWorkflowStep).WithMany(p => p.CmsContentItemLanguageMetadata)
+                .HasConstraintName("FK_CMS_ContentItemLanguageMetadata_ContentItemLanguageMetadataContentWorkflowStepID_CMS_ContentWorkflowStep");
 
-            entity.HasOne(d => d.ContentItemLanguageMetadataCreatedByUser).WithMany(p => p.CmsContentItemLanguageMetadatumContentItemLanguageMetadataCreatedByUsers).HasConstraintName("FK_CMS_ContentItemLanguageMetadata_CMS_ContentItemLanguageMetadataCreatedByUserID_CMS_User");
+            entity.HasOne(d => d.ContentItemLanguageMetadataCreatedByUser).WithMany(p => p.CmsContentItemLanguageMetadatumContentItemLanguageMetadataCreatedByUsers)
+                .HasConstraintName("FK_CMS_ContentItemLanguageMetadata_CMS_ContentItemLanguageMetadataCreatedByUserID_CMS_User");
 
-            entity.HasOne(d => d.ContentItemLanguageMetadataModifiedByUser).WithMany(p => p.CmsContentItemLanguageMetadatumContentItemLanguageMetadataModifiedByUsers).HasConstraintName("FK_CMS_ContentItemLanguageMetadata_CMS_ContentItemLanguageMetadataModifiedByUserID_CMS_User");
+            entity.HasOne(d => d.ContentItemLanguageMetadataModifiedByUser).WithMany(p => p.CmsContentItemLanguageMetadatumContentItemLanguageMetadataModifiedByUsers)
+                .HasConstraintName("FK_CMS_ContentItemLanguageMetadata_CMS_ContentItemLanguageMetadataModifiedByUserID_CMS_User");
         });
 
         modelBuilder.Entity<CmsContentItemReference>(entity =>
@@ -441,18 +436,15 @@ public partial class KxpContext : DbContext
                 .HasConstraintName("FK_CMS_ContentItemReference_ContentItemReferenceTargetItemID_CMS_ContentItem");
         });
 
-        modelBuilder.Entity<CmsContentItemTag>(entity =>
-        {
-            entity.HasOne(d => d.ContentItemTagContentItemLanguageMetadata).WithMany(p => p.CmsContentItemTags)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_CMS_ContentItemTag_ContentItemTagContentItemLanguageMetadataID_CMS_ContentItemLanguageMetadata");
-        });
+        modelBuilder.Entity<CmsContentItemTag>(entity => entity.HasOne(d => d.ContentItemTagContentItemLanguageMetadata).WithMany(p => p.CmsContentItemTags)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_CMS_ContentItemTag_ContentItemTagContentItemLanguageMetadataID_CMS_ContentItemLanguageMetadata"));
 
         modelBuilder.Entity<CmsContentLanguage>(entity =>
         {
-            entity.Property(e => e.ContentLanguageCultureFormat).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.ContentLanguageDisplayName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.ContentLanguageName).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.ContentLanguageCultureFormat).HasDefaultValue("");
+            entity.Property(e => e.ContentLanguageDisplayName).HasDefaultValue("");
+            entity.Property(e => e.ContentLanguageName).HasDefaultValue("");
         });
 
         modelBuilder.Entity<CmsContentTypeChannel>(entity =>
@@ -468,9 +460,8 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsContentWorkflow>(entity =>
         {
-            entity.Property(e => e.ContentWorkflowDisplayName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.ContentWorkflowLastModified).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-            entity.Property(e => e.ContentWorkflowName).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.ContentWorkflowDisplayName).HasDefaultValue("");
+            entity.Property(e => e.ContentWorkflowName).HasDefaultValue("");
         });
 
         modelBuilder.Entity<CmsContentWorkflowContentType>(entity =>
@@ -486,10 +477,9 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsContentWorkflowStep>(entity =>
         {
-            entity.Property(e => e.ContentWorkflowStepDisplayName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.ContentWorkflowStepIconClass).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.ContentWorkflowStepLastModified).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-            entity.Property(e => e.ContentWorkflowStepName).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.ContentWorkflowStepDisplayName).HasDefaultValue("");
+            entity.Property(e => e.ContentWorkflowStepIconClass).HasDefaultValue("");
+            entity.Property(e => e.ContentWorkflowStepName).HasDefaultValue("");
 
             entity.HasOne(d => d.ContentWorkflowStepWorkflow).WithMany(p => p.CmsContentWorkflowSteps)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -513,9 +503,9 @@ public partial class KxpContext : DbContext
 
             entity.HasIndex(e => e.CountryDisplayName, "IX_CMS_Country_CountryDisplayName").IsClustered();
 
-            entity.Property(e => e.CountryDisplayName).HasDefaultValueSql("('')");
+            entity.Property(e => e.CountryDisplayName).HasDefaultValue("");
             entity.Property(e => e.CountryLastModified).HasDefaultValueSql("('11/14/2013 1:43:04 PM')");
-            entity.Property(e => e.CountryName).HasDefaultValueSql("('')");
+            entity.Property(e => e.CountryName).HasDefaultValue("");
         });
 
         modelBuilder.Entity<CmsCulture>(entity =>
@@ -524,13 +514,13 @@ public partial class KxpContext : DbContext
 
             entity.HasIndex(e => e.CultureName, "IX_CMS_Culture_CultureName").IsClustered();
 
-            entity.Property(e => e.CultureIsUiculture).HasDefaultValueSql("((0))");
+            entity.Property(e => e.CultureIsUiculture).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<CmsEmail>(entity =>
         {
-            entity.Property(e => e.EmailFrom).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.EmailSubject).HasDefaultValueSql("('')");
+            entity.Property(e => e.EmailFrom).HasDefaultValue("");
+            entity.Property(e => e.EmailSubject).HasDefaultValue("");
 
             entity.HasOne(d => d.EmailEmailConfiguration).WithMany(p => p.CmsEmails).HasConstraintName("FK_CMS_Email_EmailEmailConfigurationID_EmailLibrary_EmailConfiguration");
 
@@ -557,20 +547,20 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsEventLog>(entity =>
         {
-            entity.Property(e => e.EventCode).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.EventMachineName).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.EventCode).HasDefaultValue("");
+            entity.Property(e => e.EventMachineName).HasDefaultValue("");
             entity.Property(e => e.EventTime).HasDefaultValueSql("('4/21/2015 8:21:43 AM')");
-            entity.Property(e => e.EventType).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.EventUrl).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.EventUrlReferrer).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.Ipaddress).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.Source).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.EventType).HasDefaultValue("");
+            entity.Property(e => e.EventUrl).HasDefaultValue("");
+            entity.Property(e => e.EventUrlReferrer).HasDefaultValue("");
+            entity.Property(e => e.Ipaddress).HasDefaultValue("");
+            entity.Property(e => e.Source).HasDefaultValue("");
         });
 
         modelBuilder.Entity<CmsExternalLogin>(entity =>
         {
-            entity.Property(e => e.IdentityKey).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.LoginProvider).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.IdentityKey).HasDefaultValue("");
+            entity.Property(e => e.LoginProvider).HasDefaultValue("");
 
             entity.HasOne(d => d.User).WithMany(p => p.CmsExternalLogins)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -583,11 +573,11 @@ public partial class KxpContext : DbContext
 
             entity.HasIndex(e => e.FormDisplayName, "IX_CMS_Form_FormDisplayName").IsClustered();
 
-            entity.Property(e => e.FormDisplayName).HasDefaultValueSql("('')");
+            entity.Property(e => e.FormDisplayName).HasDefaultValue("");
             entity.Property(e => e.FormLastModified).HasDefaultValueSql("('9/17/2012 1:37:08 PM')");
-            entity.Property(e => e.FormLogActivity).HasDefaultValueSql("((1))");
-            entity.Property(e => e.FormName).HasDefaultValueSql("('')");
-            entity.Property(e => e.FormSubmitButtonText).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.FormLogActivity).HasDefaultValue(true);
+            entity.Property(e => e.FormName).HasDefaultValue("");
+            entity.Property(e => e.FormSubmitButtonText).HasDefaultValue("");
 
             entity.HasOne(d => d.FormClass).WithMany(p => p.CmsForms)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -616,8 +606,8 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsFormFeaturedField>(entity =>
         {
-            entity.Property(e => e.FormFeaturedFieldEnabled).HasDefaultValueSql("((1))");
-            entity.Property(e => e.FormFeaturedFieldMapping).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.FormFeaturedFieldEnabled).HasDefaultValue(true);
+            entity.Property(e => e.FormFeaturedFieldMapping).HasDefaultValue("");
         });
 
         modelBuilder.Entity<CmsHeadlessChannel>(entity =>
@@ -633,7 +623,7 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsHeadlessItem>(entity =>
         {
-            entity.Property(e => e.HeadlessItemName).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.HeadlessItemName).HasDefaultValue("");
 
             entity.HasOne(d => d.HeadlessItemContentItem).WithMany(p => p.CmsHeadlessItems)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -646,12 +636,10 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsHeadlessToken>(entity =>
         {
-            entity.Property(e => e.HeadlessTokenAccessType).HasDefaultValueSql("(N'Published')");
-            entity.Property(e => e.HeadlessTokenCreatedWhen).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-            entity.Property(e => e.HeadlessTokenDisplayName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.HeadlessTokenEnabled).HasDefaultValueSql("((1))");
-            entity.Property(e => e.HeadlessTokenHash).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.HeadlessTokenModifiedWhen).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
+            entity.Property(e => e.HeadlessTokenAccessType).HasDefaultValue("Published");
+            entity.Property(e => e.HeadlessTokenDisplayName).HasDefaultValue("");
+            entity.Property(e => e.HeadlessTokenEnabled).HasDefaultValue(true);
+            entity.Property(e => e.HeadlessTokenHash).HasDefaultValue("");
 
             entity.HasOne(d => d.HeadlessTokenCreatedByUser).WithMany(p => p.CmsHeadlessTokenHeadlessTokenCreatedByUsers).HasConstraintName("FK_CMS_HeadlessToken_HeadlessTokenCreatedByUserID_CMS_User");
 
@@ -671,19 +659,18 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsMacroIdentity>(entity =>
         {
-            entity.Property(e => e.MacroIdentityLastModified).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-            entity.Property(e => e.MacroIdentityName).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.MacroIdentityName).HasDefaultValue("");
 
             entity.HasOne(d => d.MacroIdentityEffectiveUser).WithMany(p => p.CmsMacroIdentities).HasConstraintName("FK_CMS_MacroIdentity_MacroIdentityEffectiveUserID_CMS_User");
         });
 
         modelBuilder.Entity<CmsMacroRule>(entity =>
         {
-            entity.Property(e => e.MacroRuleCondition).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.MacroRuleDisplayName).HasDefaultValueSql("('')");
-            entity.Property(e => e.MacroRuleEnabled).HasDefaultValueSql("((1))");
-            entity.Property(e => e.MacroRuleIsCustom).HasDefaultValueSql("((0))");
-            entity.Property(e => e.MacroRuleLastModified).HasDefaultValueSql("('5/1/2012 8:46:33 AM')");
+            entity.Property(e => e.MacroRuleCondition).HasDefaultValue("");
+            entity.Property(e => e.MacroRuleDisplayName).HasDefaultValue("");
+            entity.Property(e => e.MacroRuleEnabled).HasDefaultValue(true);
+            entity.Property(e => e.MacroRuleIsCustom).HasDefaultValue(false);
+            entity.Property(e => e.MacroRuleLastModified).HasDefaultValue(new DateTime(2012, 1, 5, 8, 46, 33, 0, DateTimeKind.Unspecified));
         });
 
         modelBuilder.Entity<CmsMacroRuleMacroRuleCategory>(entity =>
@@ -706,20 +693,18 @@ public partial class KxpContext : DbContext
             entity.HasIndex(e => e.MemberName, "IX_CMS_Member_MemberName")
                 .IsUnique()
                 .HasFilter("([MemberName] IS NOT NULL AND [MemberName]<>'')");
-
-            entity.Property(e => e.MemberCreated).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
         });
 
         modelBuilder.Entity<CmsMemberExternalLogin>(entity =>
         {
-            entity.Property(e => e.MemberExternalLoginIdentityKey).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.MemberExternalLoginLoginProvider).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.MemberExternalLoginIdentityKey).HasDefaultValue("");
+            entity.Property(e => e.MemberExternalLoginLoginProvider).HasDefaultValue("");
         });
 
         modelBuilder.Entity<CmsObjectWorkflowTrigger>(entity =>
         {
-            entity.Property(e => e.TriggerDisplayName).HasDefaultValueSql("('')");
-            entity.Property(e => e.TriggerObjectType).HasDefaultValueSql("('')");
+            entity.Property(e => e.TriggerDisplayName).HasDefaultValue("");
+            entity.Property(e => e.TriggerObjectType).HasDefaultValue("");
 
             entity.HasOne(d => d.TriggerWorkflow).WithMany(p => p.CmsObjectWorkflowTriggers)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -728,16 +713,15 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsPageTemplateConfiguration>(entity =>
         {
-            entity.Property(e => e.PageTemplateConfigurationIcon).HasDefaultValueSql("(N'xp-layout')");
-            entity.Property(e => e.PageTemplateConfigurationLastModified).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-            entity.Property(e => e.PageTemplateConfigurationName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.PageTemplateConfigurationTemplate).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.PageTemplateConfigurationIcon).HasDefaultValue("xp-layout");
+            entity.Property(e => e.PageTemplateConfigurationName).HasDefaultValue("");
+            entity.Property(e => e.PageTemplateConfigurationTemplate).HasDefaultValue("");
         });
 
         modelBuilder.Entity<CmsQuery>(entity =>
         {
-            entity.Property(e => e.QueryIsCustom).HasDefaultValueSql("((0))");
-            entity.Property(e => e.QueryName).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.QueryIsCustom).HasDefaultValue(false);
+            entity.Property(e => e.QueryName).HasDefaultValue("");
 
             entity.HasOne(d => d.Class).WithMany(p => p.CmsQueries).HasConstraintName("FK_CMS_Query_ClassID_CMS_Class");
         });
@@ -762,8 +746,8 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsScheduledTask>(entity =>
         {
-            entity.Property(e => e.TaskExecutingServerName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.TaskInterval).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.TaskExecutingServerName).HasDefaultValue("");
+            entity.Property(e => e.TaskInterval).HasDefaultValue("");
 
             entity.HasOne(d => d.TaskUser).WithMany(p => p.CmsScheduledTasks).HasConstraintName("FK_CMS_ScheduledTask_TaskUserID_CMS_User");
         });
@@ -774,9 +758,9 @@ public partial class KxpContext : DbContext
 
             entity.HasIndex(e => e.CategoryOrder, "IX_CMS_SettingsCategory_CategoryOrder").IsClustered();
 
-            entity.Property(e => e.CategoryDisplayName).HasDefaultValueSql("('')");
-            entity.Property(e => e.CategoryIsCustom).HasDefaultValueSql("((0))");
-            entity.Property(e => e.CategoryIsGroup).HasDefaultValueSql("((0))");
+            entity.Property(e => e.CategoryDisplayName).HasDefaultValue("");
+            entity.Property(e => e.CategoryIsCustom).HasDefaultValue(false);
+            entity.Property(e => e.CategoryIsGroup).HasDefaultValue(false);
 
             entity.HasOne(d => d.CategoryParent).WithMany(p => p.InverseCategoryParent).HasConstraintName("FK_CMS_SettingsCategory_CMS_SettingsCategory1");
 
@@ -785,14 +769,25 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsSettingsKey>(entity =>
         {
-            entity.Property(e => e.KeyDisplayName).HasDefaultValueSql("('')");
-            entity.Property(e => e.KeyExplanationText).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.KeyIsCustom).HasDefaultValueSql("((0))");
-            entity.Property(e => e.KeyIsHidden).HasDefaultValueSql("((0))");
-            entity.Property(e => e.KeyName).HasDefaultValueSql("('')");
-            entity.Property(e => e.KeyType).HasDefaultValueSql("('')");
+            entity.Property(e => e.KeyDisplayName).HasDefaultValue("");
+            entity.Property(e => e.KeyExplanationText).HasDefaultValue("");
+            entity.Property(e => e.KeyIsCustom).HasDefaultValue(false);
+            entity.Property(e => e.KeyIsHidden).HasDefaultValue(false);
+            entity.Property(e => e.KeyName).HasDefaultValue("");
+            entity.Property(e => e.KeyType).HasDefaultValue("");
 
             entity.HasOne(d => d.KeyCategory).WithMany(p => p.CmsSettingsKeys).HasConstraintName("FK_CMS_SettingsKey_KeyCategoryID_CMS_SettingsCategory");
+        });
+
+        modelBuilder.Entity<CmsSmartFolder>(entity =>
+        {
+            entity.Property(e => e.SmartFolderDisplayName).HasDefaultValue("");
+            entity.Property(e => e.SmartFolderFilter).HasDefaultValue("");
+            entity.Property(e => e.SmartFolderName).HasDefaultValue("");
+
+            entity.HasOne(d => d.SmartFolderCreatedByUser).WithMany(p => p.CmsSmartFolderSmartFolderCreatedByUsers).HasConstraintName("FK_CMS_SmartFolder_SmartFolderCreatedByUserID_CMS_User");
+
+            entity.HasOne(d => d.SmartFolderModifiedByUser).WithMany(p => p.CmsSmartFolderSmartFolderModifiedByUsers).HasConstraintName("FK_CMS_SmartFolder_SmartFolderModifiedByUserID_CMS_User");
         });
 
         modelBuilder.Entity<CmsState>(entity =>
@@ -801,8 +796,8 @@ public partial class KxpContext : DbContext
 
             entity.HasIndex(e => e.StateDisplayName, "IX_CMS_State_CountryID_StateDisplayName").IsClustered();
 
-            entity.Property(e => e.StateDisplayName).HasDefaultValueSql("('')");
-            entity.Property(e => e.StateName).HasDefaultValueSql("('')");
+            entity.Property(e => e.StateDisplayName).HasDefaultValue("");
+            entity.Property(e => e.StateName).HasDefaultValue("");
 
             entity.HasOne(d => d.Country).WithMany(p => p.CmsStates)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -811,9 +806,8 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsTag>(entity =>
         {
-            entity.Property(e => e.TagLastModified).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-            entity.Property(e => e.TagName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.TagTitle).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.TagName).HasDefaultValue("");
+            entity.Property(e => e.TagTitle).HasDefaultValue("");
 
             entity.HasOne(d => d.TagParent).WithMany(p => p.InverseTagParent).HasConstraintName("FK_CMS_Tag_TagParentID_CMS_Tag");
 
@@ -824,9 +818,8 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsTaxonomy>(entity =>
         {
-            entity.Property(e => e.TaxonomyLastModified).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-            entity.Property(e => e.TaxonomyName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.TaxonomyTitle).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.TaxonomyName).HasDefaultValue("");
+            entity.Property(e => e.TaxonomyTitle).HasDefaultValue("");
         });
 
         modelBuilder.Entity<CmsUser>(entity =>
@@ -835,14 +828,12 @@ public partial class KxpContext : DbContext
                 .IsUnique()
                 .HasFilter("([Email] IS NOT NULL AND [Email]<>'')");
 
-            entity.Property(e => e.UserName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.UserPassword).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.UserName).HasDefaultValue("");
+            entity.Property(e => e.UserPassword).HasDefaultValue("");
         });
 
         modelBuilder.Entity<CmsUserMacroIdentity>(entity =>
         {
-            entity.Property(e => e.UserMacroIdentityLastModified).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-
             entity.HasOne(d => d.UserMacroIdentityMacroIdentity).WithMany(p => p.CmsUserMacroIdentities).HasConstraintName("FK_CMS_UserMacroIdentity_UserMacroIdentityMacroIdentityID_CMS_MacroIdentity");
 
             entity.HasOne(d => d.UserMacroIdentityUser).WithOne(p => p.CmsUserMacroIdentity)
@@ -863,15 +854,12 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsWebFarmServer>(entity =>
         {
-            entity.Property(e => e.ServerDisplayName).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.ServerDisplayName).HasDefaultValue("");
             entity.Property(e => e.ServerLastModified).HasDefaultValueSql("('9/17/2013 12:18:06 PM')");
-            entity.Property(e => e.ServerName).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.ServerName).HasDefaultValue("");
         });
 
-        modelBuilder.Entity<CmsWebFarmServerLog>(entity =>
-        {
-            entity.Property(e => e.LogCode).HasDefaultValueSql("(N'')");
-        });
+        modelBuilder.Entity<CmsWebFarmServerLog>(entity => entity.Property(e => e.LogCode).HasDefaultValue(""));
 
         modelBuilder.Entity<CmsWebFarmServerTask>(entity =>
         {
@@ -886,16 +874,15 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsWebFarmTask>(entity =>
         {
-            entity.Property(e => e.TaskGuid).HasDefaultValueSql("('00000000-0000-0000-0000-000000000000')");
-            entity.Property(e => e.TaskIsMemory).HasDefaultValueSql("((0))");
-            entity.Property(e => e.TaskType).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.TaskGuid).HasDefaultValue(new Guid("00000000-0000-0000-0000-000000000000"));
+            entity.Property(e => e.TaskIsMemory).HasDefaultValue(false);
+            entity.Property(e => e.TaskType).HasDefaultValue("");
         });
 
         modelBuilder.Entity<CmsWebPageFormerUrlPath>(entity =>
         {
-            entity.Property(e => e.WebPageFormerUrlPath).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.WebPageFormerUrlPathHash).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.WebPageFormerUrlPathLastModified).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
+            entity.Property(e => e.WebPageFormerUrlPath).HasDefaultValue("");
+            entity.Property(e => e.WebPageFormerUrlPathHash).HasDefaultValue("");
 
             entity.HasOne(d => d.WebPageFormerUrlPathContentLanguage).WithMany(p => p.CmsWebPageFormerUrlPaths)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -912,8 +899,8 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsWebPageItem>(entity =>
         {
-            entity.Property(e => e.WebPageItemName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.WebPageItemTreePath).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.WebPageItemName).HasDefaultValue("");
+            entity.Property(e => e.WebPageItemTreePath).HasDefaultValue("");
 
             entity.HasOne(d => d.WebPageItemContentItem).WithMany(p => p.CmsWebPageItems).HasConstraintName("FK_CMS_WebPageItem_WebPageItemContentItemID_CMS_ContentItem");
 
@@ -926,9 +913,9 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsWebPageUrlPath>(entity =>
         {
-            entity.Property(e => e.WebPageUrlPath).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.WebPageUrlPathHash).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.WebPageUrlPathIsLatest).HasDefaultValueSql("((1))");
+            entity.Property(e => e.WebPageUrlPath).HasDefaultValue("");
+            entity.Property(e => e.WebPageUrlPathHash).HasDefaultValue("");
+            entity.Property(e => e.WebPageUrlPathIsLatest).HasDefaultValue(true);
 
             entity.HasOne(d => d.WebPageUrlPathContentLanguage).WithMany(p => p.CmsWebPageUrlPaths)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -945,15 +932,15 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<CmsWebsiteCaptchaSetting>(entity =>
         {
-            entity.Property(e => e.WebsiteCaptchaSettingsReCaptchaSecretKey).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.WebsiteCaptchaSettingsReCaptchaSiteKey).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.WebsiteCaptchaSettingsReCaptchaSecretKey).HasDefaultValue("");
+            entity.Property(e => e.WebsiteCaptchaSettingsReCaptchaSiteKey).HasDefaultValue("");
         });
 
         modelBuilder.Entity<CmsWebsiteChannel>(entity =>
         {
-            entity.Property(e => e.WebsiteChannelDefaultCookieLevel).HasDefaultValueSql("((1000))");
-            entity.Property(e => e.WebsiteChannelDomain).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.WebsiteChannelStoreFormerUrls).HasDefaultValueSql("((1))");
+            entity.Property(e => e.WebsiteChannelDefaultCookieLevel).HasDefaultValue(1000);
+            entity.Property(e => e.WebsiteChannelDomain).HasDefaultValue("");
+            entity.Property(e => e.WebsiteChannelStoreFormerUrls).HasDefaultValue(true);
 
             entity.HasOne(d => d.WebsiteChannelChannel).WithMany(p => p.CmsWebsiteChannels)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -970,29 +957,29 @@ public partial class KxpContext : DbContext
 
             entity.HasIndex(e => e.WorkflowDisplayName, "IX_CMS_Workflow_WorkflowDisplayName").IsClustered();
 
-            entity.Property(e => e.WorkflowAutoPublishChanges).HasDefaultValueSql("((0))");
-            entity.Property(e => e.WorkflowDisplayName).HasDefaultValueSql("('')");
-            entity.Property(e => e.WorkflowEnabled).HasDefaultValueSql("((1))");
-            entity.Property(e => e.WorkflowName).HasDefaultValueSql("('')");
-            entity.Property(e => e.WorkflowSendApproveEmails).HasDefaultValueSql("((1))");
-            entity.Property(e => e.WorkflowSendArchiveEmails).HasDefaultValueSql("((1))");
-            entity.Property(e => e.WorkflowSendPublishEmails).HasDefaultValueSql("((1))");
-            entity.Property(e => e.WorkflowSendReadyForApprovalEmails).HasDefaultValueSql("((1))");
-            entity.Property(e => e.WorkflowSendRejectEmails).HasDefaultValueSql("((1))");
-            entity.Property(e => e.WorkflowUseCheckinCheckout).HasDefaultValueSql("((0))");
+            entity.Property(e => e.WorkflowAutoPublishChanges).HasDefaultValue(false);
+            entity.Property(e => e.WorkflowDisplayName).HasDefaultValue("");
+            entity.Property(e => e.WorkflowEnabled).HasDefaultValue(true);
+            entity.Property(e => e.WorkflowName).HasDefaultValue("");
+            entity.Property(e => e.WorkflowSendApproveEmails).HasDefaultValue(true);
+            entity.Property(e => e.WorkflowSendArchiveEmails).HasDefaultValue(true);
+            entity.Property(e => e.WorkflowSendPublishEmails).HasDefaultValue(true);
+            entity.Property(e => e.WorkflowSendReadyForApprovalEmails).HasDefaultValue(true);
+            entity.Property(e => e.WorkflowSendRejectEmails).HasDefaultValue(true);
+            entity.Property(e => e.WorkflowUseCheckinCheckout).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<CmsWorkflowAction>(entity =>
         {
-            entity.Property(e => e.ActionEnabled).HasDefaultValueSql("((1))");
+            entity.Property(e => e.ActionEnabled).HasDefaultValue(true);
 
             entity.HasOne(d => d.ActionResource).WithMany(p => p.CmsWorkflowActions).HasConstraintName("FK_CMS_WorkflowAction_ActionResourceID");
         });
 
         modelBuilder.Entity<CmsWorkflowStep>(entity =>
         {
-            entity.Property(e => e.StepAllowPublish).HasDefaultValueSql("((0))");
-            entity.Property(e => e.StepAllowReject).HasDefaultValueSql("((1))");
+            entity.Property(e => e.StepAllowPublish).HasDefaultValue(false);
+            entity.Property(e => e.StepAllowReject).HasDefaultValue(true);
 
             entity.HasOne(d => d.StepAction).WithMany(p => p.CmsWorkflowSteps).HasConstraintName("FK_CMS_WorkflowStep_StepActionID");
 
@@ -1018,8 +1005,8 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<EmailLibraryEmailChannel>(entity =>
         {
-            entity.Property(e => e.EmailChannelSendingDomain).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.EmailChannelServiceDomain).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.EmailChannelSendingDomain).HasDefaultValue("");
+            entity.Property(e => e.EmailChannelServiceDomain).HasDefaultValue("");
 
             entity.HasOne(d => d.EmailChannelChannel).WithMany(p => p.EmailLibraryEmailChannels)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -1028,9 +1015,8 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<EmailLibraryEmailChannelSender>(entity =>
         {
-            entity.Property(e => e.EmailChannelSenderCreated).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-            entity.Property(e => e.EmailChannelSenderDisplayName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.EmailChannelSenderName).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.EmailChannelSenderDisplayName).HasDefaultValue("");
+            entity.Property(e => e.EmailChannelSenderName).HasDefaultValue("");
 
             entity.HasOne(d => d.EmailChannelSenderEmailChannel).WithMany(p => p.EmailLibraryEmailChannelSenders)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -1039,9 +1025,8 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<EmailLibraryEmailConfiguration>(entity =>
         {
-            entity.Property(e => e.EmailConfigurationLastModified).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-            entity.Property(e => e.EmailConfigurationName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.EmailConfigurationPurpose).HasDefaultValueSql("(N'Regular')");
+            entity.Property(e => e.EmailConfigurationName).HasDefaultValue("");
+            entity.Property(e => e.EmailConfigurationPurpose).HasDefaultValue("Regular");
 
             entity.HasOne(d => d.EmailConfigurationContentItem).WithMany(p => p.EmailLibraryEmailConfigurations).HasConstraintName("FK_EmailLibrary_EmailConfiguration_EmailConfigurationContentItemID_CMS_ContentItem");
 
@@ -1050,8 +1035,8 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<EmailLibraryEmailLink>(entity =>
         {
-            entity.Property(e => e.EmailLinkDescription).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.EmailLinkTarget).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.EmailLinkDescription).HasDefaultValue("");
+            entity.Property(e => e.EmailLinkTarget).HasDefaultValue("");
 
             entity.HasOne(d => d.EmailLinkEmailConfiguration).WithMany(p => p.EmailLibraryEmailLinks)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -1060,8 +1045,7 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<EmailLibraryEmailMarketingRecipient>(entity =>
         {
-            entity.Property(e => e.EmailMarketingRecipientContactEmail).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.EmailMarketingRecipientLastModified).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
+            entity.Property(e => e.EmailMarketingRecipientContactEmail).HasDefaultValue("");
 
             entity.HasOne(d => d.EmailMarketingRecipientContact).WithMany(p => p.EmailLibraryEmailMarketingRecipients)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -1072,17 +1056,12 @@ public partial class KxpContext : DbContext
                 .HasConstraintName("FK_EmailLibrary_EmailMarketingRecipient_EmailMarketingRecipientEmailConfigurationID_EmailLibrary_EmailConfiguration");
         });
 
-        modelBuilder.Entity<EmailLibraryEmailStatistic>(entity =>
-        {
-            entity.HasOne(d => d.EmailStatisticsEmailConfiguration).WithMany(p => p.EmailLibraryEmailStatistics)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_EmailLibrary_EmailStatistics_EmailStatisticsEmailConfigurationID_EmailLibrary_EmailConfiguration");
-        });
+        modelBuilder.Entity<EmailLibraryEmailStatistic>(entity => entity.HasOne(d => d.EmailStatisticsEmailConfiguration).WithMany(p => p.EmailLibraryEmailStatistics)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_EmailLibrary_EmailStatistics_EmailStatisticsEmailConfigurationID_EmailLibrary_EmailConfiguration"));
 
         modelBuilder.Entity<EmailLibraryEmailStatisticsHit>(entity =>
         {
-            entity.Property(e => e.EmailStatisticsHitsTime).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-
             entity.HasOne(d => d.EmailStatisticsHitsEmailConfiguration).WithMany(p => p.EmailLibraryEmailStatisticsHits)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_EmailLibrary_EmailStatisticsHits_EmailStatisticsHitsEmailConfigurationID_EmailLibrary_EmailConfiguration");
@@ -1092,8 +1071,6 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<EmailLibraryEmailSubscriptionConfirmation>(entity =>
         {
-            entity.Property(e => e.EmailSubscriptionConfirmationDate).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-
             entity.HasOne(d => d.EmailSubscriptionConfirmationContact).WithMany(p => p.EmailLibraryEmailSubscriptionConfirmations)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_EmailLibrary_EmailSubscriptionConfirmation_EmailSubscriptionConfirmationContactID_OM_Contact");
@@ -1105,10 +1082,9 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<EmailLibraryEmailTemplate>(entity =>
         {
-            entity.Property(e => e.EmailTemplateCode).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.EmailTemplateDisplayName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.EmailTemplateLastModified).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-            entity.Property(e => e.EmailTemplateName).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.EmailTemplateCode).HasDefaultValue("");
+            entity.Property(e => e.EmailTemplateDisplayName).HasDefaultValue("");
+            entity.Property(e => e.EmailTemplateName).HasDefaultValue("");
         });
 
         modelBuilder.Entity<EmailLibraryEmailTemplateContentType>(entity =>
@@ -1122,12 +1098,9 @@ public partial class KxpContext : DbContext
                 .HasConstraintName("FK_EmailLibrary_EmailTemplateContentType_EmailTemplateContentTypeEmailTemplateID_EmailLibrary_EmailTemplate");
         });
 
-        modelBuilder.Entity<EmailLibraryRecipientListSetting>(entity =>
-        {
-            entity.HasOne(d => d.RecipientListSettingsRecipientList).WithMany(p => p.EmailLibraryRecipientListSettings)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_EmailLibrary_RecipientListSettings_RecipientListSettingsRecipientListID_OM_ContactGroup");
-        });
+        modelBuilder.Entity<EmailLibraryRecipientListSetting>(entity => entity.HasOne(d => d.RecipientListSettingsRecipientList).WithMany(p => p.EmailLibraryRecipientListSettings)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_EmailLibrary_RecipientListSettings_RecipientListSettingsRecipientListID_OM_ContactGroup"));
 
         modelBuilder.Entity<EmailLibrarySendConfiguration>(entity =>
         {
@@ -1146,9 +1119,9 @@ public partial class KxpContext : DbContext
 
             entity.HasIndex(e => e.FilePath, "IX_Media_File_FilePath").IsClustered();
 
-            entity.Property(e => e.FileCreatedWhen).HasDefaultValueSql("('11/11/2008 4:10:00 PM')");
-            entity.Property(e => e.FileModifiedWhen).HasDefaultValueSql("('11/11/2008 4:11:15 PM')");
-            entity.Property(e => e.FileTitle).HasDefaultValueSql("('')");
+            entity.Property(e => e.FileCreatedWhen).HasDefaultValue(new DateTime(2008, 11, 11, 16, 10, 0, 0, DateTimeKind.Unspecified));
+            entity.Property(e => e.FileModifiedWhen).HasDefaultValue(new DateTime(2008, 11, 11, 16, 11, 15, 0, DateTimeKind.Unspecified));
+            entity.Property(e => e.FileTitle).HasDefaultValue("");
 
             entity.HasOne(d => d.FileCreatedByUser).WithMany(p => p.MediaFileFileCreatedByUsers).HasConstraintName("FK_Media_File_FileCreatedByUserID_CMS_User");
 
@@ -1165,7 +1138,7 @@ public partial class KxpContext : DbContext
 
             entity.HasIndex(e => e.LibraryDisplayName, "IX_Media_Library_LibraryDisplayName").IsClustered();
 
-            entity.Property(e => e.LibraryName).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.LibraryName).HasDefaultValue("");
         });
 
         modelBuilder.Entity<OmAccount>(entity =>
@@ -1207,16 +1180,16 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<OmActivityType>(entity =>
         {
-            entity.Property(e => e.ActivityTypeEnabled).HasDefaultValueSql("((1))");
-            entity.Property(e => e.ActivityTypeIsCustom).HasDefaultValueSql("((1))");
+            entity.Property(e => e.ActivityTypeEnabled).HasDefaultValue(true);
+            entity.Property(e => e.ActivityTypeIsCustom).HasDefaultValue(true);
         });
 
         modelBuilder.Entity<OmContact>(entity =>
         {
-            entity.Property(e => e.ContactCreated).HasDefaultValueSql("('5/3/2011 10:51:13 AM')");
-            entity.Property(e => e.ContactMonitored).HasDefaultValueSql("((0))");
-            entity.Property(e => e.ContactSalesForceLeadReplicationDisabled).HasDefaultValueSql("((0))");
-            entity.Property(e => e.ContactSalesForceLeadReplicationRequired).HasDefaultValueSql("((0))");
+            entity.Property(e => e.ContactCreated).HasDefaultValue(new DateTime(2011, 3, 5, 10, 51, 13, 0, DateTimeKind.Unspecified));
+            entity.Property(e => e.ContactMonitored).HasDefaultValue(false);
+            entity.Property(e => e.ContactSalesForceLeadReplicationDisabled).HasDefaultValue(false);
+            entity.Property(e => e.ContactSalesForceLeadReplicationRequired).HasDefaultValue(false);
 
             entity.HasOne(d => d.ContactCountry).WithMany(p => p.OmContacts).HasConstraintName("FK_OM_Contact_CMS_Country");
 
@@ -1231,14 +1204,14 @@ public partial class KxpContext : DbContext
         {
             entity.HasKey(e => e.ContactGroupId).HasName("PK_CMS_ContactGroup");
 
-            entity.Property(e => e.ContactGroupIsRecipientList).HasDefaultValueSql("((0))");
-            entity.Property(e => e.ContactGroupName).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.ContactGroupIsRecipientList).HasDefaultValue(false);
+            entity.Property(e => e.ContactGroupName).HasDefaultValue("");
         });
 
         modelBuilder.Entity<OmContactGroupMember>(entity =>
         {
-            entity.Property(e => e.ContactGroupMemberFromCondition).HasDefaultValueSql("((0))");
-            entity.Property(e => e.ContactGroupMemberFromManual).HasDefaultValueSql("((0))");
+            entity.Property(e => e.ContactGroupMemberFromCondition).HasDefaultValue(false);
+            entity.Property(e => e.ContactGroupMemberFromManual).HasDefaultValue(false);
 
             entity.HasOne(d => d.ContactGroupMemberContactGroup).WithMany(p => p.OmContactGroupMembers)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -1247,74 +1220,48 @@ public partial class KxpContext : DbContext
 
         modelBuilder.Entity<OmContactRole>(entity =>
         {
-            entity.Property(e => e.ContactRoleDisplayName).HasDefaultValueSql("('')");
-            entity.Property(e => e.ContactRoleName).HasDefaultValueSql("('')");
+            entity.Property(e => e.ContactRoleDisplayName).HasDefaultValue("");
+            entity.Property(e => e.ContactRoleName).HasDefaultValue("");
         });
 
         modelBuilder.Entity<OmContactStatus>(entity =>
         {
-            entity.Property(e => e.ContactStatusDisplayName).HasDefaultValueSql("('')");
-            entity.Property(e => e.ContactStatusName).HasDefaultValueSql("('')");
+            entity.Property(e => e.ContactStatusDisplayName).HasDefaultValue("");
+            entity.Property(e => e.ContactStatusName).HasDefaultValue("");
         });
 
         modelBuilder.Entity<OmTrackedWebsite>(entity =>
         {
-            entity.Property(e => e.TrackedWebsiteDisplayName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.TrackedWebsiteEnabled).HasDefaultValueSql("((0))");
-            entity.Property(e => e.TrackedWebsiteName).HasDefaultValueSql("(N'')");
-            entity.Property(e => e.TrackedWebsiteUrl).HasDefaultValueSql("(N'')");
+            entity.Property(e => e.TrackedWebsiteDisplayName).HasDefaultValue("");
+            entity.Property(e => e.TrackedWebsiteEnabled).HasDefaultValue(false);
+            entity.Property(e => e.TrackedWebsiteName).HasDefaultValue("");
+            entity.Property(e => e.TrackedWebsiteUrl).HasDefaultValue("");
         });
 
-        modelBuilder.Entity<OmVisitorToContact>(entity =>
-        {
-            entity.HasOne(d => d.VisitorToContactContact).WithMany(p => p.OmVisitorToContacts)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_OM_VisitorToContact_OM_Contact_Cascade");
-        });
+        modelBuilder.Entity<OmVisitorToContact>(entity => entity.HasOne(d => d.VisitorToContactContact).WithMany(p => p.OmVisitorToContacts)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_OM_VisitorToContact_OM_Contact_Cascade"));
 
         modelBuilder.Entity<TempFile>(entity =>
         {
-            entity.Property(e => e.FileDirectory).HasDefaultValueSql("('')");
-            entity.Property(e => e.FileExtension).HasDefaultValueSql("('')");
+            entity.Property(e => e.FileDirectory).HasDefaultValue("");
+            entity.Property(e => e.FileExtension).HasDefaultValue("");
             entity.Property(e => e.FileLastModified).HasDefaultValueSql("('6/29/2010 1:57:54 PM')");
-            entity.Property(e => e.FileMimeType).HasDefaultValueSql("('')");
-            entity.Property(e => e.FileName).HasDefaultValueSql("('')");
+            entity.Property(e => e.FileMimeType).HasDefaultValue("");
+            entity.Property(e => e.FileName).HasDefaultValue("");
         });
 
-        modelBuilder.Entity<TempPageBuilderWidget>(entity =>
-        {
-            entity.Property(e => e.PageBuilderWidgetsLastModified).HasDefaultValueSql("('1/1/0001 12:00:00 AM')");
-        });
+        modelBuilder.Entity<ViewCmsResourceStringJoined>(entity => entity.ToView("View_CMS_ResourceString_Joined"));
 
-        modelBuilder.Entity<ViewCmsResourceStringJoined>(entity =>
-        {
-            entity.ToView("View_CMS_ResourceString_Joined");
-        });
+        modelBuilder.Entity<ViewCmsResourceTranslatedJoined>(entity => entity.ToView("View_CMS_ResourceTranslated_Joined"));
 
-        modelBuilder.Entity<ViewCmsResourceTranslatedJoined>(entity =>
-        {
-            entity.ToView("View_CMS_ResourceTranslated_Joined");
-        });
+        modelBuilder.Entity<ViewOmAccountContactAccountJoined>(entity => entity.ToView("View_OM_AccountContact_AccountJoined"));
 
-        modelBuilder.Entity<ViewOmAccountContactAccountJoined>(entity =>
-        {
-            entity.ToView("View_OM_AccountContact_AccountJoined");
-        });
+        modelBuilder.Entity<ViewOmAccountContactContactJoined>(entity => entity.ToView("View_OM_AccountContact_ContactJoined"));
 
-        modelBuilder.Entity<ViewOmAccountContactContactJoined>(entity =>
-        {
-            entity.ToView("View_OM_AccountContact_ContactJoined");
-        });
+        modelBuilder.Entity<ViewOmAccountJoined>(entity => entity.ToView("View_OM_Account_Joined"));
 
-        modelBuilder.Entity<ViewOmAccountJoined>(entity =>
-        {
-            entity.ToView("View_OM_Account_Joined");
-        });
-
-        modelBuilder.Entity<ViewOmContactGroupMemberAccountJoined>(entity =>
-        {
-            entity.ToView("View_OM_ContactGroupMember_AccountJoined");
-        });
+        modelBuilder.Entity<ViewOmContactGroupMemberAccountJoined>(entity => entity.ToView("View_OM_ContactGroupMember_AccountJoined"));
 
         OnModelCreatingPartial(modelBuilder);
     }

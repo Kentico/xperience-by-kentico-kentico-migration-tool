@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("CMS_SearchTaskAzure")]
 [Index("SearchTaskAzurePriority", Name = "IX_CMS_SearchTaskAzure_SearchTaskAzurePriority", AllDescending = true)]
-public partial class CmsSearchTaskAzure
+public class CmsSearchTaskAzure
 {
     [Key]
     [Column("SearchTaskAzureID")]

@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -11,7 +10,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("AliasSiteId", Name = "IX_CMS_DocumentAlias_AliasSiteID")]
 [Index("AliasWildcardRule", "AliasPriority", Name = "IX_CMS_DocumentAlias_AliasWildcardRule_AliasPriority")]
 [Index("AliasCulture", Name = "IX_CMS_Document_AliasCulture")]
-public partial class CmsDocumentAlias
+public class CmsDocumentAlias
 {
     [Key]
     [Column("AliasID")]

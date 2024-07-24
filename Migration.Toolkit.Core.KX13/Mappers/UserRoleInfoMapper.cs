@@ -1,10 +1,12 @@
-namespace Migration.Toolkit.Core.KX13.Mappers;
-
 using CMS.Membership;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX13.Contexts;
+
+namespace Migration.Toolkit.Core.KX13.Mappers;
 
 public class UserRoleInfoMapper : EntityMapperBase<KX13M.CmsUserRole, UserRoleInfo>
 {
@@ -17,12 +19,12 @@ public class UserRoleInfoMapper : EntityMapperBase<KX13M.CmsUserRole, UserRoleIn
 
     protected override UserRoleInfo MapInternal(KX13M.CmsUserRole source, UserRoleInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
-        if (mappingHelper.TranslateRequiredId<KX13M.CmsRole>(r => r.RoleId, source.RoleId, out var xbkRoleId))
+        if (mappingHelper.TranslateRequiredId<KX13M.CmsRole>(r => r.RoleId, source.RoleId, out int xbkRoleId))
         {
             target.RoleID = xbkRoleId;
         }
 
-        if (mappingHelper.TranslateRequiredId<KX13M.CmsUser>(r => r.UserId, source.UserId, out var xbkUserId))
+        if (mappingHelper.TranslateRequiredId<KX13M.CmsUser>(r => r.UserId, source.UserId, out int xbkUserId))
         {
             target.UserID = xbkUserId;
         }

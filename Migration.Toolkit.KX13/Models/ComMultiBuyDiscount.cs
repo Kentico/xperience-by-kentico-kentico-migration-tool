@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("COM_MultiBuyDiscount")]
 [Index("MultiBuyDiscountApplyToSkuid", Name = "IX_COM_MultiBuyDiscount_MultiBuyDiscountApplyToSKUID")]
 [Index("MultiBuyDiscountSiteId", Name = "IX_COM_MultiBuyDiscount_MultiBuyDiscountSiteID")]
-public partial class ComMultiBuyDiscount
+public class ComMultiBuyDiscount
 {
     [Key]
     [Column("MultiBuyDiscountID")]

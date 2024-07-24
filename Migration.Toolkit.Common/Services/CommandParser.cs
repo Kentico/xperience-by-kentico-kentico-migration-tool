@@ -1,15 +1,15 @@
-namespace Migration.Toolkit.Common.Services;
-
-using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
+
 using static Migration.Toolkit.Common.Helpers.ConsoleHelper;
+
+namespace Migration.Toolkit.Common.Services;
 
 public class CommandParser : ICommandParser
 {
     public List<ICommand> Parse(Queue<string> args, ref bool bypassDependencyCheck, bool firstHaveToBeMigrate = true)
     {
         var commands = new List<ICommand>();
-        while (args.TryDequeue(out var arg))
+        while (args.TryDequeue(out string? arg))
         {
             if (arg.IsIn("help", "h"))
             {
@@ -117,14 +117,13 @@ public class CommandParser : ICommandParser
             if (arg == $"--{MigrateCustomTablesCommand.Moniker}")
             {
                 commands.Add(new MigrateCustomTablesCommand());
-                continue;
             }
         }
 
         return commands;
     }
 
-    void PrintCommandDescriptions()
+    private void PrintCommandDescriptions()
     {
         WriteCommandDesc($"starts migration of {Green(MigratePageTypesCommand.MonikerFriendly)}", $"migrate --{MigratePageTypesCommand.Moniker}");
         WriteCommandDesc($"starts migration of {Green(MigratePagesCommand.MonikerFriendly)}", $"migrate --{MigratePagesCommand.Moniker}");
@@ -141,8 +140,5 @@ public class CommandParser : ICommandParser
         WriteCommandDesc($"starts migration of {Green(MigrateCustomModulesCommand.MonikerFriendly)}", $"migrate --{MigrateCustomModulesCommand.Moniker}");
     }
 
-    void WriteCommandDesc(string desc, string commandMoniker)
-    {
-        Console.WriteLine($@"{Yellow(commandMoniker)}: {desc}");
-    }
+    private void WriteCommandDesc(string desc, string commandMoniker) => Console.WriteLine($@"{Yellow(commandMoniker)}: {desc}");
 }

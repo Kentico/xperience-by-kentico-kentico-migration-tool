@@ -1,7 +1,8 @@
-namespace Migration.Toolkit.Common;
-
 using Microsoft.Extensions.DependencyInjection;
+
 using Migration.Toolkit.Common.MigrationProtocol;
+
+namespace Migration.Toolkit.Common;
 
 public static class CommonDiExtensions
 {

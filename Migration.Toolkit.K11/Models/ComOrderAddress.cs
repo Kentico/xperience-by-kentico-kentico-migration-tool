@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("COM_OrderAddress")]
 [Index("AddressCountryId", Name = "IX_COM_OrderAddress_AddressCountryID")]
 [Index("AddressStateId", Name = "IX_COM_OrderAddress_AddressStateID")]
-public partial class ComOrderAddress
+public class ComOrderAddress
 {
     [Key]
     [Column("AddressID")]

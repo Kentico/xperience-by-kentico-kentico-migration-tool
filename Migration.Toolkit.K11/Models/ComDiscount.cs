@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("COM_Discount")]
 [Index("DiscountSiteId", Name = "IX_COM_Discount_DiscountSiteID")]
-public partial class ComDiscount
+public class ComDiscount
 {
     [Key]
     [Column("DiscountID")]

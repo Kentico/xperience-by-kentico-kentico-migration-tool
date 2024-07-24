@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
@@ -13,7 +12,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Index("WebPageItemParentId", Name = "IX_CMS_WebPageItem_WebPageItemParentID")]
 [Index("WebPageItemTreePath", "WebPageItemWebsiteChannelId", Name = "IX_CMS_WebPageItem_WebPageItemTreePath_WebPageItemWebsiteChannelID_Unique", IsUnique = true)]
 [Index("WebPageItemWebsiteChannelId", Name = "IX_CMS_WebPageItem_WebPageItemWebsiteChannelID")]
-public partial class CmsWebPageItem
+public class CmsWebPageItem
 {
     [Key]
     [Column("WebPageItemID")]

@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("Forums_ForumGroup")]
 [Index("GroupGroupId", Name = "IX_Forums_ForumGroup_GroupGroupID")]
 [Index("GroupSiteId", "GroupName", Name = "IX_Forums_ForumGroup_GroupSiteID_GroupName")]
-public partial class ForumsForumGroup
+public class ForumsForumGroup
 {
     [Key]
     [Column("GroupID")]

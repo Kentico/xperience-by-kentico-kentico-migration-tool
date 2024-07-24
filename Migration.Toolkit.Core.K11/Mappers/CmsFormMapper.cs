@@ -1,27 +1,30 @@
-namespace Migration.Toolkit.Core.K11.Mappers;
-
-using CMS.FormEngine;
+﻿using CMS.FormEngine;
 using CMS.OnlineForms;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.K11.Contexts;
-using Migration.Toolkit.KXP.Models;
+using Migration.Toolkit.K11.Models;
 
-public class CmsFormMapper(ILogger<CmsFormMapper> logger,
-        PrimaryKeyMappingContext primaryKeyMappingContext,
-        IProtocol protocol)
-    : EntityMapperBase<Toolkit.K11.Models.CmsForm, BizFormInfo>(logger, primaryKeyMappingContext, protocol)
+namespace Migration.Toolkit.Core.K11.Mappers;
+
+public class CmsFormMapper(
+    ILogger<CmsFormMapper> logger,
+    PrimaryKeyMappingContext primaryKeyMappingContext,
+    IProtocol protocol)
+    : EntityMapperBase<CmsForm, BizFormInfo>(logger, primaryKeyMappingContext, protocol)
 {
-    protected override BizFormInfo? CreateNewInstance(Toolkit.K11.Models.CmsForm source, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override BizFormInfo? CreateNewInstance(CmsForm source, MappingHelper mappingHelper, AddFailure addFailure)
     {
         var newBizFormInfo = BizFormInfo.New();
         newBizFormInfo.FormGUID = source.FormGuid;
         return newBizFormInfo;
     }
 
-    protected override BizFormInfo MapInternal(Toolkit.K11.Models.CmsForm source, BizFormInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override BizFormInfo MapInternal(CmsForm source, BizFormInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         target.FormDisplayName = source.FormDisplayName;
         target.FormName = source.FormName;
@@ -34,7 +37,7 @@ public class CmsFormMapper(ILogger<CmsFormMapper> logger,
         target.FormLogActivity = source.FormLogActivity.UseKenticoDefault();
         // target.FormBuilderLayout = source.FormBuilderLayout;
 
-        if (mappingHelper.TranslateRequiredId<Toolkit.K11.Models.CmsClass>(c => c.ClassId, source.FormClassId, out var formClassId))
+        if (mappingHelper.TranslateRequiredId<CmsClass>(c => c.ClassId, source.FormClassId, out int formClassId))
         {
             target.FormClassID = formClassId;
         }
@@ -43,11 +46,11 @@ public class CmsFormMapper(ILogger<CmsFormMapper> logger,
     }
 }
 
-public class CmsFormMapperEf(ILogger<CmsFormMapperEf> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : EntityMapperBase<Toolkit.K11.Models.CmsForm, Migration.Toolkit.KXP.Models.CmsForm>(logger, pkContext, protocol)
+public class CmsFormMapperEf(ILogger<CmsFormMapperEf> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : EntityMapperBase<CmsForm, KXP.Models.CmsForm>(logger, pkContext, protocol)
 {
-    protected override CmsForm? CreateNewInstance(Toolkit.K11.Models.CmsForm source, MappingHelper mappingHelper, AddFailure addFailure) => new();
+    protected override KXP.Models.CmsForm? CreateNewInstance(CmsForm source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
-    protected override CmsForm MapInternal(Toolkit.K11.Models.CmsForm source, CmsForm target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override KXP.Models.CmsForm MapInternal(CmsForm source, KXP.Models.CmsForm target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         target.FormDisplayName = source.FormDisplayName;
         target.FormName = source.FormName;
@@ -67,10 +70,10 @@ public class CmsFormMapperEf(ILogger<CmsFormMapperEf> logger, PrimaryKeyMappingC
         target.FormSubmitButtonImage = source.FormSubmitButtonImage;
         target.FormGuid = source.FormGuid;
         target.FormLastModified = source.FormLastModified;
-        target.FormLogActivity = source.FormLogActivity;
+        target.FormLogActivity = source.FormLogActivity ?? false;
         // target.FormBuilderLayout = source.FormBuilderLayout;
 
-        if (mappingHelper.TranslateRequiredId<Toolkit.K11.Models.CmsClass>(c => c.ClassId, source.FormClassId, out var classId))
+        if (mappingHelper.TranslateRequiredId<CmsClass>(c => c.ClassId, source.FormClassId, out int classId))
         {
             target.FormClassId = classId;
         }

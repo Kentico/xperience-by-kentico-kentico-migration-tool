@@ -1,4 +1,5 @@
 // ReSharper disable InconsistentNaming
+
 namespace Migration.Toolkit.KX12.Auxiliary;
 
 public class Kx12FormControls

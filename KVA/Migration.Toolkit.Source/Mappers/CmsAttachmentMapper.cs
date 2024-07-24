@@ -1,13 +1,15 @@
-namespace Migration.Toolkit.Source.Mappers;
-
 using CMS.Base;
 using CMS.MediaLibrary;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Helpers;
 using Migration.Toolkit.Source.Model;
+
+namespace Migration.Toolkit.Source.Mappers;
 
 public record CmsAttachmentMapperSource(ICmsAttachment Attachment, int TargetLibraryId, IUploadedFile File, string LibrarySubFolder, ICmsTree? AttachmentNode);
 
@@ -16,15 +18,13 @@ public class CmsAttachmentMapper(ILogger<CmsAttachmentMapper> logger, PrimaryKey
 {
     private const string LEGACY_ORIGINAL_PATH = "__LegacyOriginalPath";
 
-    protected override MediaFileInfo? CreateNewInstance(CmsAttachmentMapperSource source, MappingHelper mappingHelper, AddFailure addFailure)
-    {
+    protected override MediaFileInfo? CreateNewInstance(CmsAttachmentMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) =>
         // library name is generated with site name in it
-        return new MediaFileInfo(source.File, source.TargetLibraryId, source.LibrarySubFolder, 0, 0, 0);
-    }
+        new(source.File, source.TargetLibraryId, source.LibrarySubFolder, 0, 0, 0);
 
     protected override MediaFileInfo MapInternal(CmsAttachmentMapperSource args, MediaFileInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
-        var (cmsAttachment, targetLibraryId, _, _, attachmentNode) = args;
+        (var cmsAttachment, int targetLibraryId, _, _, var attachmentNode) = args;
 
         target.FileName = Path.GetFileNameWithoutExtension(cmsAttachment.AttachmentName);
         target.FileTitle = cmsAttachment.AttachmentTitle ?? cmsAttachment.AttachmentName;

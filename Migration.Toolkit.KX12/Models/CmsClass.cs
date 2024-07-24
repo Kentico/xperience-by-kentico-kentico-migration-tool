@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -13,7 +12,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("ClassPageTemplateCategoryId", Name = "IX_CMS_Class_ClassPageTemplateCategoryID")]
 [Index("ClassResourceId", Name = "IX_CMS_Class_ClassResourceID")]
 [Index("ClassShowAsSystemTable", "ClassIsCustomTable", "ClassIsCoupledClass", "ClassIsDocumentType", Name = "IX_CMS_Class_ClassShowAsSystemTable_ClassIsCustomTable_ClassIsCoupledClass_ClassIsDocumentType")]
-public partial class CmsClass
+public class CmsClass
 {
     [Key]
     [Column("ClassID")]

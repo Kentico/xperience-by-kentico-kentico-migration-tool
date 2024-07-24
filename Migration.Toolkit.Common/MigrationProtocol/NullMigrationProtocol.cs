@@ -1,7 +1,8 @@
-namespace Migration.Toolkit.Common.MigrationProtocol;
-
 using MediatR;
+
 using Migration.Toolkit.Common.Abstractions;
+
+namespace Migration.Toolkit.Common.MigrationProtocol;
 
 public class NullMigrationProtocol : IMigrationProtocol
 {
@@ -11,22 +12,18 @@ public class NullMigrationProtocol : IMigrationProtocol
 
     public void CommandRequest<TRequest, TResponse>(TRequest request) where TRequest : IRequest<TResponse>
     {
-
     }
 
     public void CommandFinished<TRequest, TResponse>(TRequest request, TResponse response) where TRequest : IRequest<TResponse> where TResponse : CommandResult
     {
-
     }
 
     public void CommandError<TRequest, TResponse>(Exception exception, TRequest request) where TRequest : IRequest<TResponse>
     {
-
     }
 
     public void Append(HandbookReference? handbookReference)
     {
-
     }
 
     public void MappedTarget<TTarget>(IModelMappingResult<TTarget> mapped)

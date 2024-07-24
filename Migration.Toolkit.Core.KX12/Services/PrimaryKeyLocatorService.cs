@@ -1,55 +1,29 @@
-namespace Migration.Toolkit.Core.KX12.Services;
-
 using System.Linq.Expressions;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
-using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.KX12.Context;
 using Migration.Toolkit.KXP.Context;
 
-public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
+namespace Migration.Toolkit.Core.KX12.Services;
+
+public class PrimaryKeyLocatorService(
+    ILogger<PrimaryKeyLocatorService> logger,
+    IDbContextFactory<KxpContext> kxpContextFactory,
+    IDbContextFactory<KX12Context> kx12ContextFactory)
+    : IPrimaryKeyLocatorService
 {
-    private readonly ILogger<PrimaryKeyLocatorService> _logger;
-    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
-    private readonly IDbContextFactory<KX12Context> _kx12ContextFactory;
-
-    public PrimaryKeyLocatorService(
-        ILogger<PrimaryKeyLocatorService> logger,
-        IDbContextFactory<KxpContext> kxpContextFactory,
-        IDbContextFactory<KX12Context> kx12ContextFactory
-    )
-    {
-        _logger = logger;
-        _kxpContextFactory = kxpContextFactory;
-        _kx12ContextFactory = kx12ContextFactory;
-    }
-
-    private class KeyEqualityComparerWithLambda<T> : IEqualityComparer<T>
-    {
-        private readonly Func<T?, T?, bool> _equalityComparer;
-
-        public KeyEqualityComparerWithLambda(Func<T?, T?, bool> equalityComparer)
-        {
-            _equalityComparer = equalityComparer;
-        }
-
-        public bool Equals(T? x, T? y) => _equalityComparer.Invoke(x, y);
-
-        public int GetHashCode(T obj) => obj?.GetHashCode() ?? 0;
-    }
-
-    private record CmsUserKey(Guid UserGuid, string UserName);
-
     public IEnumerable<SourceTargetKeyMapping> SelectAll<T>(Expression<Func<T, object>> keyNameSelector)
     {
-        using var kxpContext = _kxpContextFactory.CreateDbContext();
-        using var kx12Context = _kx12ContextFactory.CreateDbContext();
+        using var kxpContext = kxpContextFactory.CreateDbContext();
+        using var kx12Context = kx12ContextFactory.CreateDbContext();
 
         var sourceType = typeof(T);
-        var memberName = keyNameSelector.GetMemberName();
+        string memberName = keyNameSelector.GetMemberName();
 
-        _logger.LogTrace("Preload of entity {Entity} member {MemberName} mapping requested", sourceType.Name, memberName);
+        logger.LogTrace("Preload of entity {Entity} member {MemberName} mapping requested", sourceType.Name, memberName);
 
         if (sourceType == typeof(KX12M.CmsUser) && memberName == nameof(KX12M.CmsUser.UserId))
         {
@@ -84,25 +58,6 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
                 a => a.ContactGuid,
                 b => b.ContactGuid,
                 (a, b) => new SourceTargetKeyMapping(a.ContactId, b.ContactId)
-            );
-
-            foreach (var resultingMapping in result)
-            {
-                yield return resultingMapping;
-            }
-
-            yield break;
-        }
-
-        if (sourceType == typeof(KX12M.CmsTree) && memberName == nameof(KX12M.CmsTree.NodeId))
-        {
-            var source = kx12Context.CmsTrees.Select(x => new { x.NodeId, x.NodeGuid }).ToList();
-            var target = kxpContext.CmsChannels.Select(x => new { x.ChannelId, x.ChannelGuid }).ToList();
-
-            var result = source.Join(target,
-                a => a.NodeGuid,
-                b => b.ChannelGuid,
-                (a, b) => new SourceTargetKeyMapping(a.NodeId, b.ChannelId)
             );
 
             foreach (var resultingMapping in result)
@@ -152,14 +107,13 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
         }
 
 
-
         throw new NotImplementedException();
     }
 
     public bool TryLocate<T>(Expression<Func<T, object>> keyNameSelector, int sourceId, out int targetId)
     {
-        using var kxpContext = _kxpContextFactory.CreateDbContext();
-        using var KX12Context = _kx12ContextFactory.CreateDbContext();
+        using var kxpContext = kxpContextFactory.CreateDbContext();
+        using var KX12Context = kx12ContextFactory.CreateDbContext();
 
         var sourceType = typeof(T);
         targetId = -1;
@@ -202,21 +156,21 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
 
             if (sourceType == typeof(KX12M.CmsState))
             {
-                var k12CodeName = KX12Context.CmsStates.Where(c => c.StateId == sourceId).Select(x => x.StateName).Single();
+                string k12CodeName = KX12Context.CmsStates.Where(c => c.StateId == sourceId).Select(x => x.StateName).Single();
                 targetId = kxpContext.CmsStates.Where(x => x.StateName == k12CodeName).Select(x => x.StateId).Single();
                 return true;
             }
 
             if (sourceType == typeof(KX12M.CmsCountry))
             {
-                var k12CodeName = KX12Context.CmsCountries.Where(c => c.CountryId == sourceId).Select(x => x.CountryName).Single();
+                string k12CodeName = KX12Context.CmsCountries.Where(c => c.CountryId == sourceId).Select(x => x.CountryName).Single();
                 targetId = kxpContext.CmsCountries.Where(x => x.CountryName == k12CodeName).Select(x => x.CountryId).Single();
                 return true;
             }
 
             if (sourceType == typeof(KX12M.OmContactStatus))
             {
-                var k12Guid = KX12Context.OmContactStatuses.Where(c => c.ContactStatusId == sourceId).Select(x => x.ContactStatusName).Single();
+                string k12Guid = KX12Context.OmContactStatuses.Where(c => c.ContactStatusId == sourceId).Select(x => x.ContactStatusName).Single();
                 targetId = kxpContext.OmContactStatuses.Where(x => x.ContactStatusName == k12Guid).Select(x => x.ContactStatusId).Single();
                 return true;
             }
@@ -227,37 +181,39 @@ public class PrimaryKeyLocatorService : IPrimaryKeyLocatorService
                 targetId = kxpContext.OmContacts.Where(x => x.ContactGuid == k12Guid).Select(x => x.ContactId).Single();
                 return true;
             }
-
-            if (sourceType == typeof(KX12M.CmsTree))
-            {
-                // careful - cms.root will have different guid
-                var k12Guid = KX12Context.CmsTrees.Where(c => c.NodeId == sourceId).Select(x => x.NodeGuid).Single();
-                targetId = kxpContext.CmsChannels.Where(x => x.ChannelGuid == k12Guid).Select(x => x.ChannelId).Single();
-                return true;
-            }
         }
         catch (InvalidOperationException ioex)
         {
             if (ioex.Message.StartsWith("Sequence contains no elements"))
             {
-                _logger.LogDebug("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
+                logger.LogDebug("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
             }
             else
             {
-                _logger.LogWarning("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
+                logger.LogWarning("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceId, ioex.Message);
             }
+
             return false;
         }
         finally
         {
             if (targetId != -1)
             {
-                _logger.LogTrace("Mapping {SourceFullType} primary key: {SourceId} to {TargetId}", sourceType.FullName, sourceId, targetId);
+                logger.LogTrace("Mapping {SourceFullType} primary key: {SourceId} to {TargetId}", sourceType.FullName, sourceId, targetId);
             }
         }
 
-        _logger.LogError("Mapping {SourceFullType} primary key is not supported", sourceType.FullName);
+        logger.LogError("Mapping {SourceFullType} primary key is not supported", sourceType.FullName);
         targetId = -1;
         return false;
     }
+
+    private class KeyEqualityComparerWithLambda<T>(Func<T?, T?, bool> equalityComparer) : IEqualityComparer<T>
+    {
+        public bool Equals(T? x, T? y) => equalityComparer.Invoke(x, y);
+
+        public int GetHashCode(T obj) => obj?.GetHashCode() ?? 0;
+    }
+
+    private record CmsUserKey(Guid UserGuid, string UserName);
 }

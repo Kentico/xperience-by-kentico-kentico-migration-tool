@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("COM_VolumeDiscount")]
 [Index("VolumeDiscountSkuid", Name = "IX_COM_VolumeDiscount_VolumeDiscountSKUID")]
-public partial class ComVolumeDiscount
+public class ComVolumeDiscount
 {
     [Key]
     [Column("VolumeDiscountID")]

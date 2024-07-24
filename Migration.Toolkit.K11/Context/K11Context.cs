@@ -1,6 +1,5 @@
-using System;
-using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+
 using Migration.Toolkit.K11.Models;
 
 namespace Migration.Toolkit.K11;
@@ -793,9 +792,6 @@ public partial class K11Context : DbContext
     public virtual DbSet<ViewReportingCategoryReportJoined> ViewReportingCategoryReportJoineds { get; set; }
 
 
-
-
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<AnalyticsCampaign>(entity =>
@@ -1243,10 +1239,7 @@ public partial class K11Context : DbContext
             entity.Property(e => e.FileLocation).HasDefaultValueSql("(N'')");
         });
 
-        modelBuilder.Entity<CiMigration>(entity =>
-        {
-            entity.Property(e => e.DateApplied).HasDefaultValueSql("(sysdatetime())");
-        });
+        modelBuilder.Entity<CiMigration>(entity => entity.Property(e => e.DateApplied).HasDefaultValueSql("(sysdatetime())"));
 
         modelBuilder.Entity<CmsAbuseReport>(entity =>
         {
@@ -1823,12 +1816,9 @@ public partial class K11Context : DbContext
             entity.Property(e => e.Source).HasDefaultValueSql("(N'')");
         });
 
-        modelBuilder.Entity<CmsExternalLogin>(entity =>
-        {
-            entity.HasOne(d => d.User).WithMany(p => p.CmsExternalLogins)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_CMS_ExternalLogin_UserID_CMS_User");
-        });
+        modelBuilder.Entity<CmsExternalLogin>(entity => entity.HasOne(d => d.User).WithMany(p => p.CmsExternalLogins)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_CMS_ExternalLogin_UserID_CMS_User"));
 
         modelBuilder.Entity<CmsForm>(entity =>
         {
@@ -2614,12 +2604,9 @@ public partial class K11Context : DbContext
             entity.HasOne(d => d.SubmissionSubmittedByUser).WithMany(p => p.CmsTranslationSubmissions).HasConstraintName("FK_CMS_TranslationSubmission_CMS_User");
         });
 
-        modelBuilder.Entity<CmsTranslationSubmissionItem>(entity =>
-        {
-            entity.HasOne(d => d.SubmissionItemSubmission).WithMany(p => p.CmsTranslationSubmissionItems)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_CMS_TranslationSubmissionItem_CMS_TranslationSubmission");
-        });
+        modelBuilder.Entity<CmsTranslationSubmissionItem>(entity => entity.HasOne(d => d.SubmissionItemSubmission).WithMany(p => p.CmsTranslationSubmissionItems)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_CMS_TranslationSubmissionItem_CMS_TranslationSubmission"));
 
         modelBuilder.Entity<CmsTree>(entity =>
         {
@@ -2660,7 +2647,14 @@ public partial class K11Context : DbContext
         {
             entity.HasKey(e => e.ElementId).IsClustered(false);
 
-            entity.HasIndex(e => new { e.ElementResourceId, e.ElementLevel, e.ElementParentId, e.ElementOrder, e.ElementCaption }, "IX_CMS_UIElement_ElementResourceID_ElementLevel_ElementParentID_ElementOrder_ElementCaption").IsClustered();
+            entity.HasIndex(e => new
+            {
+                e.ElementResourceId,
+                e.ElementLevel,
+                e.ElementParentId,
+                e.ElementOrder,
+                e.ElementCaption
+            }, "IX_CMS_UIElement_ElementResourceID_ElementLevel_ElementParentID_ElementOrder_ElementCaption").IsClustered();
 
             entity.Property(e => e.ElementCheckModuleReadPermission).HasDefaultValueSql("((1))");
             entity.Property(e => e.ElementIsCustom).HasDefaultValueSql("((0))");
@@ -2914,10 +2908,7 @@ public partial class K11Context : DbContext
             entity.Property(e => e.ServerName).HasDefaultValueSql("(N'')");
         });
 
-        modelBuilder.Entity<CmsWebFarmServerLog>(entity =>
-        {
-            entity.Property(e => e.LogCode).HasDefaultValueSql("(N'')");
-        });
+        modelBuilder.Entity<CmsWebFarmServerLog>(entity => entity.Property(e => e.LogCode).HasDefaultValueSql("(N'')"));
 
         modelBuilder.Entity<CmsWebFarmServerTask>(entity =>
         {
@@ -3882,12 +3873,9 @@ public partial class K11Context : DbContext
                     });
         });
 
-        modelBuilder.Entity<ComSkufile>(entity =>
-        {
-            entity.HasOne(d => d.FileSku).WithMany(p => p.ComSkufiles)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_COM_SKUFile_COM_SKU");
-        });
+        modelBuilder.Entity<ComSkufile>(entity => entity.HasOne(d => d.FileSku).WithMany(p => p.ComSkufiles)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_COM_SKUFile_COM_SKU"));
 
         modelBuilder.Entity<ComSkuoptionCategory>(entity =>
         {
@@ -3949,12 +3937,9 @@ public partial class K11Context : DbContext
                 .HasConstraintName("FK_COM_TaxClassState_TaxClassID_COM_TaxClass");
         });
 
-        modelBuilder.Entity<ComVolumeDiscount>(entity =>
-        {
-            entity.HasOne(d => d.VolumeDiscountSku).WithMany(p => p.ComVolumeDiscounts)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_COM_VolumeDiscount_VolumeDiscountSKUID_COM_SKU");
-        });
+        modelBuilder.Entity<ComVolumeDiscount>(entity => entity.HasOne(d => d.VolumeDiscountSku).WithMany(p => p.ComVolumeDiscounts)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_COM_VolumeDiscount_VolumeDiscountSKUID_COM_SKU"));
 
         modelBuilder.Entity<ComWishlist>(entity =>
         {
@@ -4060,10 +4045,7 @@ public partial class K11Context : DbContext
             entity.HasOne(d => d.InvitedUser).WithMany(p => p.CommunityInvitationInvitedUsers).HasConstraintName("FK_Community_GroupInvitation_InvitedUserID_CMS_User");
         });
 
-        modelBuilder.Entity<ContentArticle>(entity =>
-        {
-            entity.Property(e => e.ArticleName).HasDefaultValueSql("(N'')");
-        });
+        modelBuilder.Entity<ContentArticle>(entity => entity.Property(e => e.ArticleName).HasDefaultValueSql("(N'')"));
 
         modelBuilder.Entity<ContentBlog>(entity =>
         {
@@ -4115,10 +4097,7 @@ public partial class K11Context : DbContext
             entity.Property(e => e.CellWiFi).HasDefaultValueSql("((0))");
         });
 
-        modelBuilder.Entity<ContentEvent>(entity =>
-        {
-            entity.Property(e => e.EventName).HasDefaultValueSql("(N'')");
-        });
+        modelBuilder.Entity<ContentEvent>(entity => entity.Property(e => e.EventName).HasDefaultValueSql("(N'')"));
 
         modelBuilder.Entity<ContentFaq>(entity =>
         {
@@ -4126,10 +4105,7 @@ public partial class K11Context : DbContext
             entity.Property(e => e.Faqquestion).HasDefaultValueSql("(N'')");
         });
 
-        modelBuilder.Entity<ContentFile>(entity =>
-        {
-            entity.Property(e => e.FileName).HasDefaultValueSql("('')");
-        });
+        modelBuilder.Entity<ContentFile>(entity => entity.Property(e => e.FileName).HasDefaultValueSql("('')"));
 
         modelBuilder.Entity<ContentHeadlineBanner>(entity =>
         {
@@ -4137,15 +4113,9 @@ public partial class K11Context : DbContext
             entity.Property(e => e.HeadlineBannerDocumentUrl).HasDefaultValueSql("(N'')");
         });
 
-        modelBuilder.Entity<ContentImageGallery>(entity =>
-        {
-            entity.Property(e => e.GalleryName).HasDefaultValueSql("(N'')");
-        });
+        modelBuilder.Entity<ContentImageGallery>(entity => entity.Property(e => e.GalleryName).HasDefaultValueSql("(N'')"));
 
-        modelBuilder.Entity<ContentJob>(entity =>
-        {
-            entity.Property(e => e.JobName).HasDefaultValueSql("(N'')");
-        });
+        modelBuilder.Entity<ContentJob>(entity => entity.Property(e => e.JobName).HasDefaultValueSql("(N'')"));
 
         modelBuilder.Entity<ContentKbarticle>(entity =>
         {
@@ -4162,10 +4132,7 @@ public partial class K11Context : DbContext
             entity.Property(e => e.LaptopWirelessLan).HasDefaultValueSql("((1))");
         });
 
-        modelBuilder.Entity<ContentMenuItem>(entity =>
-        {
-            entity.Property(e => e.MenuItemName).HasDefaultValueSql("(N'')");
-        });
+        modelBuilder.Entity<ContentMenuItem>(entity => entity.Property(e => e.MenuItemName).HasDefaultValueSql("(N'')"));
 
         modelBuilder.Entity<ContentNews>(entity =>
         {
@@ -4194,15 +4161,9 @@ public partial class K11Context : DbContext
             entity.Property(e => e.ArticleTitle).HasDefaultValueSql("(N'')");
         });
 
-        modelBuilder.Entity<ContentSmartphone>(entity =>
-        {
-            entity.Property(e => e.SmartphoneGps).HasDefaultValueSql("((0))");
-        });
+        modelBuilder.Entity<ContentSmartphone>(entity => entity.Property(e => e.SmartphoneGps).HasDefaultValueSql("((0))"));
 
-        modelBuilder.Entity<CustomtableSampleTable>(entity =>
-        {
-            entity.Property(e => e.ItemText).HasDefaultValueSql("(N'')");
-        });
+        modelBuilder.Entity<CustomtableSampleTable>(entity => entity.Property(e => e.ItemText).HasDefaultValueSql("(N'')"));
 
         modelBuilder.Entity<DancingGoatArticle>(entity =>
         {
@@ -4222,10 +4183,7 @@ public partial class K11Context : DbContext
             entity.Property(e => e.CafeZipCode).HasDefaultValueSql("(N'')");
         });
 
-        modelBuilder.Entity<DancingGoatCity>(entity =>
-        {
-            entity.Property(e => e.CityName).HasDefaultValueSql("(N'')");
-        });
+        modelBuilder.Entity<DancingGoatCity>(entity => entity.Property(e => e.CityName).HasDefaultValueSql("(N'')"));
 
         modelBuilder.Entity<DancingGoatCoffee>(entity =>
         {
@@ -4253,10 +4211,7 @@ public partial class K11Context : DbContext
             entity.Property(e => e.PartnerCafeZipCode).HasDefaultValueSql("(N'')");
         });
 
-        modelBuilder.Entity<EcommerceCheckoutStep>(entity =>
-        {
-            entity.Property(e => e.StepName).HasDefaultValueSql("(N'')");
-        });
+        modelBuilder.Entity<EcommerceCheckoutStep>(entity => entity.Property(e => e.StepName).HasDefaultValueSql("(N'')"));
 
         modelBuilder.Entity<EventsAttendee>(entity =>
         {
@@ -4290,10 +4245,7 @@ public partial class K11Context : DbContext
             entity.HasOne(d => d.ExportUser).WithMany(p => p.ExportHistories).HasConstraintName("FK_Export_History_ExportUserID_CMS_User");
         });
 
-        modelBuilder.Entity<ExportTask>(entity =>
-        {
-            entity.HasOne(d => d.TaskSite).WithMany(p => p.ExportTasks).HasConstraintName("FK_Export_Task_TaskSiteID_CMS_Site");
-        });
+        modelBuilder.Entity<ExportTask>(entity => entity.HasOne(d => d.TaskSite).WithMany(p => p.ExportTasks).HasConstraintName("FK_Export_Task_TaskSiteID_CMS_Site"));
 
         modelBuilder.Entity<FormContactU>(entity =>
         {
@@ -4497,12 +4449,9 @@ public partial class K11Context : DbContext
             entity.Property(e => e.ConnectorEnabled).HasDefaultValueSql("((1))");
         });
 
-        modelBuilder.Entity<IntegrationSyncLog>(entity =>
-        {
-            entity.HasOne(d => d.SyncLogSynchronization).WithMany(p => p.IntegrationSyncLogs)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Integration_SyncLog_SyncLogSynchronizationID_Integration_Synchronization");
-        });
+        modelBuilder.Entity<IntegrationSyncLog>(entity => entity.HasOne(d => d.SyncLogSynchronization).WithMany(p => p.IntegrationSyncLogs)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_Integration_SyncLog_SyncLogSynchronizationID_Integration_Synchronization"));
 
         modelBuilder.Entity<IntegrationSynchronization>(entity =>
         {
@@ -4524,10 +4473,7 @@ public partial class K11Context : DbContext
             entity.HasOne(d => d.TaskSite).WithMany(p => p.IntegrationTasks).HasConstraintName("FK_IntegrationTask_TaskSiteID_CMS_Site");
         });
 
-        modelBuilder.Entity<IntranetPortalDepartment>(entity =>
-        {
-            entity.Property(e => e.DepartmentName).HasDefaultValueSql("(N'')");
-        });
+        modelBuilder.Entity<IntranetPortalDepartment>(entity => entity.Property(e => e.DepartmentName).HasDefaultValueSql("(N'')"));
 
         modelBuilder.Entity<IntranetPortalWorkingEnvironment>(entity =>
         {
@@ -4700,19 +4646,13 @@ public partial class K11Context : DbContext
                 .HasConstraintName("FK_Newsletter_EmailWidgetTemplate_TemplateID_Newsletter_EmailTemplate");
         });
 
-        modelBuilder.Entity<NewsletterIssueContactGroup>(entity =>
-        {
-            entity.HasOne(d => d.ContactGroup).WithMany(p => p.NewsletterIssueContactGroups)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Newsletter_IssueContactGroup_ContactGroupID");
-        });
+        modelBuilder.Entity<NewsletterIssueContactGroup>(entity => entity.HasOne(d => d.ContactGroup).WithMany(p => p.NewsletterIssueContactGroups)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_Newsletter_IssueContactGroup_ContactGroupID"));
 
-        modelBuilder.Entity<NewsletterLink>(entity =>
-        {
-            entity.HasOne(d => d.LinkIssue).WithMany(p => p.NewsletterLinks)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Newsletter_Link_Newsletter_NewsletterIssue");
-        });
+        modelBuilder.Entity<NewsletterLink>(entity => entity.HasOne(d => d.LinkIssue).WithMany(p => p.NewsletterLinks)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_Newsletter_Link_Newsletter_NewsletterIssue"));
 
         modelBuilder.Entity<NewsletterNewsletter>(entity =>
         {
@@ -4923,12 +4863,9 @@ public partial class K11Context : DbContext
             entity.HasOne(d => d.ContactRole).WithMany(p => p.OmAccountContacts).HasConstraintName("FK_OM_AccountContact_OM_ContactRole");
         });
 
-        modelBuilder.Entity<OmActivity>(entity =>
-        {
-            entity.HasIndex(e => e.ActivityCampaign, "IX_OM_Activity_ActivityCampaign")
-                .HasFilter("([ActivityCampaign] IS NOT NULL)")
-                .HasFillFactor(90);
-        });
+        modelBuilder.Entity<OmActivity>(entity => entity.HasIndex(e => e.ActivityCampaign, "IX_OM_Activity_ActivityCampaign")
+            .HasFilter("([ActivityCampaign] IS NOT NULL)")
+            .HasFillFactor(90));
 
         modelBuilder.Entity<OmActivityType>(entity =>
         {
@@ -4981,12 +4918,9 @@ public partial class K11Context : DbContext
             entity.Property(e => e.ContactStatusName).HasDefaultValueSql("('')");
         });
 
-        modelBuilder.Entity<OmMembership>(entity =>
-        {
-            entity.HasOne(d => d.Contact).WithMany(p => p.OmMemberships)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_OM_Membership_OM_Contact");
-        });
+        modelBuilder.Entity<OmMembership>(entity => entity.HasOne(d => d.Contact).WithMany(p => p.OmMemberships)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_OM_Membership_OM_Contact"));
 
         modelBuilder.Entity<OmMvtcombination>(entity =>
         {
@@ -5075,12 +5009,9 @@ public partial class K11Context : DbContext
                 .HasConstraintName("FK_OM_ScoreContactRule_OM_Score");
         });
 
-        modelBuilder.Entity<OmVisitorToContact>(entity =>
-        {
-            entity.HasOne(d => d.VisitorToContactContact).WithMany(p => p.OmVisitorToContacts)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_OM_VisitorToContact_OM_Contact_Cascade");
-        });
+        modelBuilder.Entity<OmVisitorToContact>(entity => entity.HasOne(d => d.VisitorToContactContact).WithMany(p => p.OmVisitorToContacts)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_OM_VisitorToContact_OM_Contact_Cascade"));
 
         modelBuilder.Entity<PersonasPersona>(entity =>
         {
@@ -5097,12 +5028,9 @@ public partial class K11Context : DbContext
             entity.HasOne(d => d.PersonaContactHistoryPersona).WithMany(p => p.PersonasPersonaContactHistories).HasConstraintName("FK_Personas_PersonaContactHistory_Personas_Persona");
         });
 
-        modelBuilder.Entity<PersonasPersonaNode>(entity =>
-        {
-            entity.HasOne(d => d.Node).WithMany(p => p.PersonasPersonaNodes)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Personas_PersonaNode_CMS_Tree");
-        });
+        modelBuilder.Entity<PersonasPersonaNode>(entity => entity.HasOne(d => d.Node).WithMany(p => p.PersonasPersonaNodes)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_Personas_PersonaNode_CMS_Tree"));
 
         modelBuilder.Entity<PollsPoll>(entity =>
         {
@@ -5206,12 +5134,9 @@ public partial class K11Context : DbContext
             entity.HasOne(d => d.CategoryParent).WithMany(p => p.InverseCategoryParent).HasConstraintName("FK_Reporting_ReportCategory_CategoryID_Reporting_ReportCategory_ParentCategoryID");
         });
 
-        modelBuilder.Entity<ReportingReportGraph>(entity =>
-        {
-            entity.HasOne(d => d.GraphReport).WithMany(p => p.ReportingReportGraphs)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Reporting_ReportGraph_GraphReportID_Reporting_Report");
-        });
+        modelBuilder.Entity<ReportingReportGraph>(entity => entity.HasOne(d => d.GraphReport).WithMany(p => p.ReportingReportGraphs)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_Reporting_ReportGraph_GraphReportID_Reporting_Report"));
 
         modelBuilder.Entity<ReportingReportSubscription>(entity =>
         {
@@ -5239,26 +5164,17 @@ public partial class K11Context : DbContext
             entity.HasOne(d => d.ReportSubscriptionValue).WithMany(p => p.ReportingReportSubscriptions).HasConstraintName("FK_Reporting_ReportSubscription_ReportSubscriptionValueID_Reporting_ReportValue");
         });
 
-        modelBuilder.Entity<ReportingReportTable>(entity =>
-        {
-            entity.HasOne(d => d.TableReport).WithMany(p => p.ReportingReportTables)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Reporting_ReportTable_TableReportID_Reporting_Report");
-        });
+        modelBuilder.Entity<ReportingReportTable>(entity => entity.HasOne(d => d.TableReport).WithMany(p => p.ReportingReportTables)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_Reporting_ReportTable_TableReportID_Reporting_Report"));
 
-        modelBuilder.Entity<ReportingReportValue>(entity =>
-        {
-            entity.HasOne(d => d.ValueReport).WithMany(p => p.ReportingReportValues)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Reporting_ReportValue_ValueReportID_Reporting_Report");
-        });
+        modelBuilder.Entity<ReportingReportValue>(entity => entity.HasOne(d => d.ValueReport).WithMany(p => p.ReportingReportValues)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_Reporting_ReportValue_ValueReportID_Reporting_Report"));
 
-        modelBuilder.Entity<ReportingSavedGraph>(entity =>
-        {
-            entity.HasOne(d => d.SavedGraphSavedReport).WithMany(p => p.ReportingSavedGraphs)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Reporting_SavedGraph_SavedGraphSavedReportID_Reporting_SavedReport");
-        });
+        modelBuilder.Entity<ReportingSavedGraph>(entity => entity.HasOne(d => d.SavedGraphSavedReport).WithMany(p => p.ReportingSavedGraphs)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK_Reporting_SavedGraph_SavedGraphSavedReportID_Reporting_SavedReport"));
 
         modelBuilder.Entity<ReportingSavedReport>(entity =>
         {
@@ -5356,30 +5272,15 @@ public partial class K11Context : DbContext
                 .HasConstraintName("FK_SM_FacebookPost_CMS_Site");
         });
 
-        modelBuilder.Entity<SmInsight>(entity =>
-        {
-            entity.Property(e => e.InsightExternalId).HasDefaultValueSql("('')");
-        });
+        modelBuilder.Entity<SmInsight>(entity => entity.Property(e => e.InsightExternalId).HasDefaultValueSql("('')"));
 
-        modelBuilder.Entity<SmInsightHitDay>(entity =>
-        {
-            entity.HasOne(d => d.InsightHitInsight).WithMany(p => p.SmInsightHitDays).OnDelete(DeleteBehavior.ClientSetNull);
-        });
+        modelBuilder.Entity<SmInsightHitDay>(entity => entity.HasOne(d => d.InsightHitInsight).WithMany(p => p.SmInsightHitDays).OnDelete(DeleteBehavior.ClientSetNull));
 
-        modelBuilder.Entity<SmInsightHitMonth>(entity =>
-        {
-            entity.HasOne(d => d.InsightHitInsight).WithMany(p => p.SmInsightHitMonths).OnDelete(DeleteBehavior.ClientSetNull);
-        });
+        modelBuilder.Entity<SmInsightHitMonth>(entity => entity.HasOne(d => d.InsightHitInsight).WithMany(p => p.SmInsightHitMonths).OnDelete(DeleteBehavior.ClientSetNull));
 
-        modelBuilder.Entity<SmInsightHitWeek>(entity =>
-        {
-            entity.HasOne(d => d.InsightHitInsight).WithMany(p => p.SmInsightHitWeeks).OnDelete(DeleteBehavior.ClientSetNull);
-        });
+        modelBuilder.Entity<SmInsightHitWeek>(entity => entity.HasOne(d => d.InsightHitInsight).WithMany(p => p.SmInsightHitWeeks).OnDelete(DeleteBehavior.ClientSetNull));
 
-        modelBuilder.Entity<SmInsightHitYear>(entity =>
-        {
-            entity.HasOne(d => d.InsightHitInsight).WithMany(p => p.SmInsightHitYears).OnDelete(DeleteBehavior.ClientSetNull);
-        });
+        modelBuilder.Entity<SmInsightHitYear>(entity => entity.HasOne(d => d.InsightHitInsight).WithMany(p => p.SmInsightHitYears).OnDelete(DeleteBehavior.ClientSetNull));
 
         modelBuilder.Entity<SmLinkedInAccount>(entity =>
         {
@@ -5489,10 +5390,7 @@ public partial class K11Context : DbContext
             entity.HasOne(d => d.TaskSite).WithMany(p => p.StagingTasks).HasConstraintName("FK_Staging_Task_TaskSiteID_CMS_Site");
         });
 
-        modelBuilder.Entity<StagingTaskGroup>(entity =>
-        {
-            entity.Property(e => e.TaskGroupCodeName).HasDefaultValueSql("(N'')");
-        });
+        modelBuilder.Entity<StagingTaskGroup>(entity => entity.Property(e => e.TaskGroupCodeName).HasDefaultValueSql("(N'')"));
 
         modelBuilder.Entity<StagingTaskGroupTask>(entity =>
         {
@@ -5544,10 +5442,7 @@ public partial class K11Context : DbContext
             entity.Property(e => e.LaptopWebcam).HasDefaultValueSql("((0))");
         });
 
-        modelBuilder.Entity<StorecontentMediaPlayer>(entity =>
-        {
-            entity.Property(e => e.MediaPlayerRadio).HasDefaultValueSql("((0))");
-        });
+        modelBuilder.Entity<StorecontentMediaPlayer>(entity => entity.Property(e => e.MediaPlayerRadio).HasDefaultValueSql("((0))"));
 
         modelBuilder.Entity<StorecontentTablet>(entity =>
         {
@@ -5564,45 +5459,21 @@ public partial class K11Context : DbContext
             entity.Property(e => e.FileName).HasDefaultValueSql("('')");
         });
 
-        modelBuilder.Entity<ViewBoardsBoardMessageJoined>(entity =>
-        {
-            entity.ToView("View_Boards_BoardMessage_Joined");
-        });
+        modelBuilder.Entity<ViewBoardsBoardMessageJoined>(entity => entity.ToView("View_Boards_BoardMessage_Joined"));
 
-        modelBuilder.Entity<ViewCmsAclitemItemsAndOperator>(entity =>
-        {
-            entity.ToView("View_CMS_ACLItem_ItemsAndOperators");
-        });
+        modelBuilder.Entity<ViewCmsAclitemItemsAndOperator>(entity => entity.ToView("View_CMS_ACLItem_ItemsAndOperators"));
 
-        modelBuilder.Entity<ViewCmsObjectVersionHistoryUserJoined>(entity =>
-        {
-            entity.ToView("View_CMS_ObjectVersionHistoryUser_Joined");
-        });
+        modelBuilder.Entity<ViewCmsObjectVersionHistoryUserJoined>(entity => entity.ToView("View_CMS_ObjectVersionHistoryUser_Joined"));
 
-        modelBuilder.Entity<ViewCmsPageTemplateCategoryPageTemplateJoined>(entity =>
-        {
-            entity.ToView("View_CMS_PageTemplateCategoryPageTemplate_Joined");
-        });
+        modelBuilder.Entity<ViewCmsPageTemplateCategoryPageTemplateJoined>(entity => entity.ToView("View_CMS_PageTemplateCategoryPageTemplate_Joined"));
 
-        modelBuilder.Entity<ViewCmsRelationshipJoined>(entity =>
-        {
-            entity.ToView("View_CMS_Relationship_Joined");
-        });
+        modelBuilder.Entity<ViewCmsRelationshipJoined>(entity => entity.ToView("View_CMS_Relationship_Joined"));
 
-        modelBuilder.Entity<ViewCmsResourceStringJoined>(entity =>
-        {
-            entity.ToView("View_CMS_ResourceString_Joined");
-        });
+        modelBuilder.Entity<ViewCmsResourceStringJoined>(entity => entity.ToView("View_CMS_ResourceString_Joined"));
 
-        modelBuilder.Entity<ViewCmsResourceTranslatedJoined>(entity =>
-        {
-            entity.ToView("View_CMS_ResourceTranslated_Joined");
-        });
+        modelBuilder.Entity<ViewCmsResourceTranslatedJoined>(entity => entity.ToView("View_CMS_ResourceTranslated_Joined"));
 
-        modelBuilder.Entity<ViewCmsRoleResourcePermissionJoined>(entity =>
-        {
-            entity.ToView("View_CMS_RoleResourcePermission_Joined");
-        });
+        modelBuilder.Entity<ViewCmsRoleResourcePermissionJoined>(entity => entity.ToView("View_CMS_RoleResourcePermission_Joined"));
 
         modelBuilder.Entity<ViewCmsSiteDocumentCount>(entity =>
         {
@@ -5611,135 +5482,57 @@ public partial class K11Context : DbContext
             entity.Property(e => e.SiteId).ValueGeneratedOnAdd();
         });
 
-        modelBuilder.Entity<ViewCmsSiteRoleResourceUielementJoined>(entity =>
-        {
-            entity.ToView("View_CMS_SiteRoleResourceUIElement_Joined");
-        });
+        modelBuilder.Entity<ViewCmsSiteRoleResourceUielementJoined>(entity => entity.ToView("View_CMS_SiteRoleResourceUIElement_Joined"));
 
-        modelBuilder.Entity<ViewCmsTreeJoined>(entity =>
-        {
-            entity.ToView("View_CMS_Tree_Joined");
-        });
+        modelBuilder.Entity<ViewCmsTreeJoined>(entity => entity.ToView("View_CMS_Tree_Joined"));
 
-        modelBuilder.Entity<ViewCmsUser>(entity =>
-        {
-            entity.ToView("View_CMS_User");
-        });
+        modelBuilder.Entity<ViewCmsUser>(entity => entity.ToView("View_CMS_User"));
 
-        modelBuilder.Entity<ViewCmsUserDocument>(entity =>
-        {
-            entity.ToView("View_CMS_UserDocuments");
-        });
+        modelBuilder.Entity<ViewCmsUserDocument>(entity => entity.ToView("View_CMS_UserDocuments"));
 
-        modelBuilder.Entity<ViewCmsUserRoleJoined>(entity =>
-        {
-            entity.ToView("View_CMS_UserRole_Joined");
-        });
+        modelBuilder.Entity<ViewCmsUserRoleJoined>(entity => entity.ToView("View_CMS_UserRole_Joined"));
 
-        modelBuilder.Entity<ViewCmsUserRoleMembershipRole>(entity =>
-        {
-            entity.ToView("View_CMS_UserRoleMembershipRole");
-        });
+        modelBuilder.Entity<ViewCmsUserRoleMembershipRole>(entity => entity.ToView("View_CMS_UserRoleMembershipRole"));
 
-        modelBuilder.Entity<ViewCmsUserRoleMembershipRoleValidOnlyJoined>(entity =>
-        {
-            entity.ToView("View_CMS_UserRole_MembershipRole_ValidOnly_Joined");
-        });
+        modelBuilder.Entity<ViewCmsUserRoleMembershipRoleValidOnlyJoined>(entity => entity.ToView("View_CMS_UserRole_MembershipRole_ValidOnly_Joined"));
 
-        modelBuilder.Entity<ViewCmsUserSettingsRoleJoined>(entity =>
-        {
-            entity.ToView("View_CMS_UserSettingsRole_Joined");
-        });
+        modelBuilder.Entity<ViewCmsUserSettingsRoleJoined>(entity => entity.ToView("View_CMS_UserSettingsRole_Joined"));
 
-        modelBuilder.Entity<ViewCmsWebPartCategoryWebpartJoined>(entity =>
-        {
-            entity.ToView("View_CMS_WebPartCategoryWebpart_Joined");
-        });
+        modelBuilder.Entity<ViewCmsWebPartCategoryWebpartJoined>(entity => entity.ToView("View_CMS_WebPartCategoryWebpart_Joined"));
 
-        modelBuilder.Entity<ViewCmsWidgetCategoryWidgetJoined>(entity =>
-        {
-            entity.ToView("View_CMS_WidgetCategoryWidget_Joined");
-        });
+        modelBuilder.Entity<ViewCmsWidgetCategoryWidgetJoined>(entity => entity.ToView("View_CMS_WidgetCategoryWidget_Joined"));
 
-        modelBuilder.Entity<ViewComSkuoptionCategoryOptionCategoryJoined>(entity =>
-        {
-            entity.ToView("View_COM_SKUOptionCategory_OptionCategory_Joined");
-        });
+        modelBuilder.Entity<ViewComSkuoptionCategoryOptionCategoryJoined>(entity => entity.ToView("View_COM_SKUOptionCategory_OptionCategory_Joined"));
 
-        modelBuilder.Entity<ViewCommunityFriendFriend>(entity =>
-        {
-            entity.ToView("View_Community_Friend_Friends");
-        });
+        modelBuilder.Entity<ViewCommunityFriendFriend>(entity => entity.ToView("View_Community_Friend_Friends"));
 
-        modelBuilder.Entity<ViewCommunityFriendRequestedFriend>(entity =>
-        {
-            entity.ToView("View_Community_Friend_RequestedFriends");
-        });
+        modelBuilder.Entity<ViewCommunityFriendRequestedFriend>(entity => entity.ToView("View_Community_Friend_RequestedFriends"));
 
-        modelBuilder.Entity<ViewCommunityGroup>(entity =>
-        {
-            entity.ToView("View_Community_Group");
-        });
+        modelBuilder.Entity<ViewCommunityGroup>(entity => entity.ToView("View_Community_Group"));
 
-        modelBuilder.Entity<ViewCommunityMember>(entity =>
-        {
-            entity.ToView("View_Community_Member");
-        });
+        modelBuilder.Entity<ViewCommunityMember>(entity => entity.ToView("View_Community_Member"));
 
-        modelBuilder.Entity<ViewForumsGroupForumPostJoined>(entity =>
-        {
-            entity.ToView("View_Forums_GroupForumPost_Joined");
-        });
+        modelBuilder.Entity<ViewForumsGroupForumPostJoined>(entity => entity.ToView("View_Forums_GroupForumPost_Joined"));
 
-        modelBuilder.Entity<ViewIntegrationTaskJoined>(entity =>
-        {
-            entity.ToView("View_Integration_Task_Joined");
-        });
+        modelBuilder.Entity<ViewIntegrationTaskJoined>(entity => entity.ToView("View_Integration_Task_Joined"));
 
-        modelBuilder.Entity<ViewMembershipMembershipUserJoined>(entity =>
-        {
-            entity.ToView("View_Membership_MembershipUser_Joined");
-        });
+        modelBuilder.Entity<ViewMembershipMembershipUserJoined>(entity => entity.ToView("View_Membership_MembershipUser_Joined"));
 
-        modelBuilder.Entity<ViewMessagingContactList>(entity =>
-        {
-            entity.ToView("View_Messaging_ContactList");
-        });
+        modelBuilder.Entity<ViewMessagingContactList>(entity => entity.ToView("View_Messaging_ContactList"));
 
-        modelBuilder.Entity<ViewMessagingIgnoreList>(entity =>
-        {
-            entity.ToView("View_Messaging_IgnoreList");
-        });
+        modelBuilder.Entity<ViewMessagingIgnoreList>(entity => entity.ToView("View_Messaging_IgnoreList"));
 
-        modelBuilder.Entity<ViewNewsletterSubscriptionsJoined>(entity =>
-        {
-            entity.ToView("View_Newsletter_Subscriptions_Joined");
-        });
+        modelBuilder.Entity<ViewNewsletterSubscriptionsJoined>(entity => entity.ToView("View_Newsletter_Subscriptions_Joined"));
 
-        modelBuilder.Entity<ViewOmAccountContactAccountJoined>(entity =>
-        {
-            entity.ToView("View_OM_AccountContact_AccountJoined");
-        });
+        modelBuilder.Entity<ViewOmAccountContactAccountJoined>(entity => entity.ToView("View_OM_AccountContact_AccountJoined"));
 
-        modelBuilder.Entity<ViewOmAccountContactContactJoined>(entity =>
-        {
-            entity.ToView("View_OM_AccountContact_ContactJoined");
-        });
+        modelBuilder.Entity<ViewOmAccountContactContactJoined>(entity => entity.ToView("View_OM_AccountContact_ContactJoined"));
 
-        modelBuilder.Entity<ViewOmAccountJoined>(entity =>
-        {
-            entity.ToView("View_OM_Account_Joined");
-        });
+        modelBuilder.Entity<ViewOmAccountJoined>(entity => entity.ToView("View_OM_Account_Joined"));
 
-        modelBuilder.Entity<ViewOmContactGroupMemberAccountJoined>(entity =>
-        {
-            entity.ToView("View_OM_ContactGroupMember_AccountJoined");
-        });
+        modelBuilder.Entity<ViewOmContactGroupMemberAccountJoined>(entity => entity.ToView("View_OM_ContactGroupMember_AccountJoined"));
 
-        modelBuilder.Entity<ViewOmContactGroupMemberContactJoined>(entity =>
-        {
-            entity.ToView("View_OM_ContactGroupMember_ContactJoined");
-        });
+        modelBuilder.Entity<ViewOmContactGroupMemberContactJoined>(entity => entity.ToView("View_OM_ContactGroupMember_ContactJoined"));
 
         modelBuilder.Entity<ViewPollAnswerCount>(entity =>
         {
@@ -5748,10 +5541,7 @@ public partial class K11Context : DbContext
             entity.Property(e => e.PollId).ValueGeneratedOnAdd();
         });
 
-        modelBuilder.Entity<ViewReportingCategoryReportJoined>(entity =>
-        {
-            entity.ToView("View_Reporting_CategoryReport_Joined");
-        });
+        modelBuilder.Entity<ViewReportingCategoryReportJoined>(entity => entity.ToView("View_Reporting_CategoryReport_Joined"));
 
         OnModelCreatingPartial(modelBuilder);
     }

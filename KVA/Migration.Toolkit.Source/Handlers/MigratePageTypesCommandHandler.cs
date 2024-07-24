@@ -1,10 +1,11 @@
-namespace Migration.Toolkit.Source.Handlers;
-
 using CMS.ContentEngine;
 using CMS.DataEngine;
+
 using MediatR;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Helpers;
@@ -15,6 +16,8 @@ using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Helpers;
 using Migration.Toolkit.Source.Model;
 using Migration.Toolkit.Source.Services;
+
+namespace Migration.Toolkit.Source.Handlers;
 
 public class MigratePageTypesCommandHandler(
     ILogger<MigratePageTypesCommandHandler> logger,
@@ -136,7 +139,7 @@ public class MigratePageTypesCommandHandler(
         {
             if (mapped is { Success: true })
             {
-                var (dataClassInfo, newInstance) = mapped;
+                (var dataClassInfo, bool newInstance) = mapped;
                 ArgumentNullException.ThrowIfNull(dataClassInfo, nameof(dataClassInfo));
 
                 if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(dataClassInfo.ClassName))

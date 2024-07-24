@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_Channel")]
-public partial class CmsChannel
+public class CmsChannel
 {
     [Key]
     [Column("ChannelID")]
@@ -24,6 +21,9 @@ public partial class CmsChannel
 
     [Column("ChannelGUID")]
     public Guid ChannelGuid { get; set; }
+
+    [StringLength(20)]
+    public string ChannelSize { get; set; } = null!;
 
     [InverseProperty("ContentItemChannel")]
     public virtual ICollection<CmsContentItem> CmsContentItems { get; set; } = new List<CmsContentItem>();

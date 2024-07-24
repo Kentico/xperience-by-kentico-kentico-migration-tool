@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("COM_ExchangeTable")]
 [Index("ExchangeTableSiteId", Name = "IX_COM_ExchangeTable_ExchangeTableSiteID")]
-public partial class ComExchangeTable
+public class ComExchangeTable
 {
     [Key]
     [Column("ExchangeTableID")]

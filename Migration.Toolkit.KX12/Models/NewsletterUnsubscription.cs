@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -10,7 +9,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("UnsubscriptionEmail", "UnsubscriptionNewsletterId", Name = "IX_Newsletter_Unsubscription_Email_NewsletterID")]
 [Index("UnsubscriptionNewsletterId", Name = "IX_Newsletter_Unsubscription_NewsletterID")]
 [Index("UnsubscriptionFromIssueId", Name = "IX_Newsletter_Unsubscription_UnsubscriptionFromIssueID")]
-public partial class NewsletterUnsubscription
+public class NewsletterUnsubscription
 {
     [Key]
     [Column("UnsubscriptionID")]

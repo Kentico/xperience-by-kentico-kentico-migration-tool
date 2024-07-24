@@ -2,18 +2,12 @@ namespace Migration.Toolkit.Common;
 
 public class ConfigurationNames
 {
-    [Obsolete("Use 'XbKConnectionString' instead.")]
-    public const string SourceConnectionString = "SourceConnectionString";
     public const string KxConnectionString = "KxConnectionString";
-    [Obsolete("Use 'XbKConnectionString' instead.")]
-    public const string SourceCmsDirPath = "SourceCmsDirPath";
     public const string KxCmsDirPath = "KxCmsDirPath";
 
-    [Obsolete("Use 'XbKConnectionString' instead.")]
-    public const string TargetConnectionString = "TargetConnectionString";
+    [Obsolete("not needed anymore, connection string from Kentico config section is used")]
     public const string XbKConnectionString = "XbKConnectionString";
-    [Obsolete("Use 'XbKDirPath' instead.")]
-    public const string TargetCmsDirPath = "TargetCmsDirPath";
+
     public const string XbKDirPath = "XbKDirPath";
     public const string MigrateOnlyMediaFileInfo = "MigrateOnlyMediaFileInfo";
     public const string UseOmActivityNodeRelationAutofix = "UseOmActivityNodeRelationAutofix";
@@ -27,10 +21,13 @@ public class ConfigurationNames
     public const string ExcludeCodeNames = "ExcludeCodeNames";
     public const string ExplicitPrimaryKeyMapping = "ExplicitPrimaryKeyMapping";
 
+    public const string SiteName = "SiteName";
     public const string SourceInstanceUri = "SourceInstanceUri";
     public const string Secret = "Secret";
 
     public const string CreateReusableFieldSchemaForClasses = "CreateReusableFieldSchemaForClasses";
+
+    public const string TodoPlaceholder = "[TODO]";
 
     #region "Section names"
 
@@ -53,13 +50,7 @@ public class ConfigurationNames
     public const string Actions = "Actions";
     public const string FieldNameRegex = "FieldNameRegex";
 
-    [Obsolete("Use TargetKxpApiSettings const instead")]
-    public const string TargetKxoApiSettings = "TargetKxoApiSettings";
-    [Obsolete("Use XbKApiSettings const instead")]
-    public const string TargetKxpApiSettings = "TargetKxpApiSettings";
     public const string XbKApiSettings = "XbKApiSettings";
 
     #endregion
-
-    public const string TodoPlaceholder = "[TODO]";
 }

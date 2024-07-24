@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -11,7 +10,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("ScopeCultureId", Name = "IX_CMS_WorkflowScope_ScopeCultureID")]
 [Index("ScopeSiteId", Name = "IX_CMS_WorkflowScope_ScopeSiteID")]
 [Index("ScopeWorkflowId", Name = "IX_CMS_WorkflowScope_ScopeWorkflowID")]
-public partial class CmsWorkflowScope
+public class CmsWorkflowScope
 {
     [Key]
     [Column("ScopeID")]

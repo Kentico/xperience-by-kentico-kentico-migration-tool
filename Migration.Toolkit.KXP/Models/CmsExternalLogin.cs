@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_ExternalLogin")]
 [Index("UserId", Name = "IX_CMS_ExternalLogin_UserID")]
-public partial class CmsExternalLogin
+public class CmsExternalLogin
 {
     [Key]
     [Column("ExternalLoginID")]

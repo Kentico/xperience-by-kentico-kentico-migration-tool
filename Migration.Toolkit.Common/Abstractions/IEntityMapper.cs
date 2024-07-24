@@ -1,6 +1,6 @@
-namespace Migration.Toolkit.Common.Abstractions;
-
 using Kentico.Xperience.UMT.Model;
+
+namespace Migration.Toolkit.Common.Abstractions;
 
 public interface IEntityMapper<TSourceEntity, TTargetEntity>
 {

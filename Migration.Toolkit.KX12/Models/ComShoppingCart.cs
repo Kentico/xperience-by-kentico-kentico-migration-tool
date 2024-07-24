@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -18,7 +17,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("ShoppingCartSiteId", Name = "IX_COM_ShoppingCart_ShoppingCartSiteID")]
 [Index("ShoppingCartGuid", Name = "IX_COM_ShoppingCart_ShoppingCartSiteID_ShoppingCartGUID")]
 [Index("ShoppingCartUserId", Name = "IX_COM_ShoppingCart_ShoppingCartUserID")]
-public partial class ComShoppingCart
+public class ComShoppingCart
 {
     [Key]
     [Column("ShoppingCartID")]

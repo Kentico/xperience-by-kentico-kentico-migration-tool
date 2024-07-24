@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("CMS_AlternativeUrl")]
 [Index("AlternativeUrlDocumentId", Name = "IX_CMS_AlternativeUrl_AlternativeUrlDocumentID")]
 [Index("AlternativeUrlSiteId", "AlternativeUrlUrl", Name = "IX_CMS_AlternativeUrl_AlternativeUrlSiteID_AlternativeUrlUrl", IsUnique = true)]
-public partial class CmsAlternativeUrl
+public class CmsAlternativeUrl
 {
     [Key]
     [Column("AlternativeUrlID")]

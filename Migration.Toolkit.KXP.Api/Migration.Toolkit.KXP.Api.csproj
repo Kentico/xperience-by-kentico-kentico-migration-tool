@@ -6,16 +6,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Migration.Toolkit.Common\Migration.Toolkit.Common.csproj" />
+        <ProjectReference Include="..\Migration.Toolkit.Common\Migration.Toolkit.Common.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Kentico.Xperience.Admin" Version="29.1.0" />
-      <PackageReference Include="Kentico.Xperience.Core" Version="29.1.0" />
+        <PackageReference Include="Kentico.Xperience.Admin" Version="29.2.0"/>
+        <PackageReference Include="Kentico.Xperience.Core" Version="29.2.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Services\" />
+        <Folder Include="Services\"/>
     </ItemGroup>
 
 </Project>

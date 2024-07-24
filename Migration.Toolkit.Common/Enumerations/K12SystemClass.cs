@@ -1,6 +1,7 @@
 // ReSharper disable InconsistentNaming
-namespace Migration.Toolkit.Common.Enumerations;
 
+namespace Migration.Toolkit.Common.Enumerations;
+#pragma warning disable IDE1006
 public class K12SystemClass
 {
     public const string CMS_Root = "CMS.Root";
@@ -333,7 +334,8 @@ public class K12SystemClass
     public const string Ecommerce_GiftCard = "Ecommerce.GiftCard";
     public const string Ecommerce_ShoppingCartCouponCode = "Ecommerce.ShoppingCartCouponCode";
 
-    public static readonly HashSet<string> All = [
+    public static readonly HashSet<string> All =
+    [
         CMS_AbuseReport,
         cms_acl,
         cms_aclitem,
@@ -477,3 +479,4 @@ public class K12SystemClass
     public static HashSet<string> Customizable = new(new[] { cms_user, media_file, OM_Account, OM_Contact }, StringComparer.InvariantCultureIgnoreCase);
     public static HashSet<string> NoLongerSupported = new(new[] { cms_usersettings }, StringComparer.InvariantCultureIgnoreCase);
 }
+#pragma warning enable IDE1006

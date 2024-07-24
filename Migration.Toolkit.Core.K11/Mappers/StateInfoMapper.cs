@@ -1,11 +1,13 @@
-namespace Migration.Toolkit.Core.K11.Mappers;
-
 using CMS.Globalization;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.K11.Contexts;
 using Migration.Toolkit.K11.Models;
+
+namespace Migration.Toolkit.Core.K11.Mappers;
 
 public class StateInfoMapper(ILogger<StateInfoMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : EntityMapperBase<CmsState, StateInfo>(logger, pkContext, protocol)
 {
@@ -20,7 +22,7 @@ public class StateInfoMapper(ILogger<StateInfoMapper> logger, PrimaryKeyMappingC
         target.StateGUID = source.StateGuid;
         target.StateCode = source.StateCode;
 
-        if (mappingHelper.TranslateRequiredId<CmsCountry>(k => k.CountryId, source.CountryId, out var countryId))
+        if (mappingHelper.TranslateRequiredId<CmsCountry>(k => k.CountryId, source.CountryId, out int countryId))
         {
             target.CountryID = countryId;
         }

@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("COM_InternalStatus")]
 [Index("InternalStatusSiteId", "InternalStatusDisplayName", "InternalStatusEnabled", Name = "IX_COM_InternalStatus_InternalStatusSiteID_InternalStatusDisplayName_InternalStatusEnabled")]
-public partial class ComInternalStatus
+public class ComInternalStatus
 {
     [Key]
     [Column("InternalStatusID")]

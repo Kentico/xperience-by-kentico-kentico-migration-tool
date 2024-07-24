@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("customtable_SampleTable")]
-public partial class CustomtableSampleTable
+public class CustomtableSampleTable
 {
     [Key]
     [Column("ItemID")]

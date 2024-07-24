@@ -1,6 +1,6 @@
-namespace Migration.Toolkit.Common.Abstractions;
-
 using System.Reflection;
+
+namespace Migration.Toolkit.Common.Abstractions;
 
 public interface ICommand
 {

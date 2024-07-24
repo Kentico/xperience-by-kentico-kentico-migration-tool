@@ -1,6 +1,6 @@
-namespace Migration.Toolkit.Common.Abstractions;
-
 using Migration.Toolkit.Common.MigrationProtocol;
+
+namespace Migration.Toolkit.Common.Abstractions;
 
 public interface IModelMappingResult
 {
@@ -15,13 +15,11 @@ public interface IModelMappingResult<TResult> : IModelMappingResult
 
     void Deconstruct(out TResult? item, out bool newInstance)
     {
-        item = this.Item;
-        newInstance = this.NewInstance;
+        item = Item;
+        newInstance = NewInstance;
     }
-    void Deconstruct(out HandbookReference? handbookReference)
-    {
-        handbookReference = this.HandbookReference;
-    }
+
+    void Deconstruct(out HandbookReference? handbookReference) => handbookReference = HandbookReference;
 }
 
 public record AggregatedResult<TResult>(IEnumerable<IModelMappingResult<TResult>> Results) : IModelMappingResult<TResult>
@@ -32,14 +30,16 @@ public record AggregatedResult<TResult>(IEnumerable<IModelMappingResult<TResult>
 
     public HandbookReference? HandbookReference => throw new NotImplementedException();
 
-    public bool Success => this.Results.All(x => x.Success);
+    public bool Success => Results.All(x => x.Success);
 }
 
 public record MapperResult<TResult>(TResult? Item, bool NewInstance, bool Success, HandbookReference? HandbookReference) : IModelMappingResult<TResult>;
+
 public record MapperResultSuccess<TResult>(TResult? Item, bool NewInstance) : MapperResult<TResult>(Item, NewInstance, true, null);
+
 public record MapperResultFailure<TResult>(HandbookReference HandbookReference) : MapperResult<TResult>(default, false, false, HandbookReference);
 
 public static class Extensions
 {
-    public static MapperResultFailure<TResult> AsFailure<TResult>(this HandbookReference reference) => new MapperResultFailure<TResult>(reference);
+    public static MapperResultFailure<TResult> AsFailure<TResult>(this HandbookReference reference) => new(reference);
 }

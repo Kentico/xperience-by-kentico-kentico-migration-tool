@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("COM_GiftCard")]
 [Index("GiftCardSiteId", Name = "IX_COM_GiftCard_GiftCardSiteID")]
-public partial class ComGiftCard
+public class ComGiftCard
 {
     [Key]
     [Column("GiftCardID")]

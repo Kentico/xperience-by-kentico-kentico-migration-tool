@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -12,7 +11,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("ObjectPublishedVersionHistoryId", Name = "IX_CMS_ObjectSettings_ObjectPublishedVersionHistoryID")]
 [Index("ObjectSettingsObjectId", "ObjectSettingsObjectType", Name = "IX_CMS_ObjectSettings_ObjectSettingsObjectType_ObjectSettingsObjectID", IsUnique = true)]
 [Index("ObjectWorkflowStepId", Name = "IX_CMS_ObjectSettings_ObjectWorkflowStepID")]
-public partial class CmsObjectSetting
+public class CmsObjectSetting
 {
     [Key]
     [Column("ObjectSettingsID")]

@@ -1,25 +1,18 @@
-namespace Migration.Toolkit.Common.Services;
-
 using Microsoft.Data.SqlClient;
 
-public class CoupledDataService
+namespace Migration.Toolkit.Common.Services;
+
+public class CoupledDataService(ToolkitConfiguration configuration)
 {
-    private readonly ToolkitConfiguration _configuration;
-
-    public CoupledDataService(ToolkitConfiguration configuration)
-    {
-        _configuration = configuration;
-    }
-
     public Dictionary<string, object>? GetSourceCoupledDataRow(string tableName, string primaryKeyColumn, int? coupledDataId)
     {
         ArgumentNullException.ThrowIfNull(tableName);
         ArgumentNullException.ThrowIfNull(primaryKeyColumn);
         ArgumentNullException.ThrowIfNull(coupledDataId);
 
-        using var targetConnection = new SqlConnection(_configuration.KxConnectionString);
+        using var targetConnection = new SqlConnection(configuration.KxConnectionString);
         using var command = targetConnection.CreateCommand();
-        var query = $"SELECT * FROM {tableName} WHERE {primaryKeyColumn} = @{primaryKeyColumn}";
+        string query = $"SELECT * FROM {tableName} WHERE {primaryKeyColumn} = @{primaryKeyColumn}";
         command.CommandText = query;
         command.Parameters.AddWithValue(primaryKeyColumn, coupledDataId);
 
@@ -29,7 +22,7 @@ public class CoupledDataService
         var result = new Dictionary<string, object>();
         if (reader.Read())
         {
-            for (var i = 0; i < reader.FieldCount; i++)
+            for (int i = 0; i < reader.FieldCount; i++)
             {
                 result.Add(reader.GetName(i), reader.GetValue(i));
             }

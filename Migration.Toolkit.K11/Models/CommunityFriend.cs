@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -12,7 +11,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("FriendRequestedUserId", "FriendStatus", Name = "IX_Community_Friend_FriendRequestedUserID_FriendStatus")]
 [Index("FriendRequestedUserId", "FriendUserId", Name = "IX_Community_Friend_FriendRequestedUserID_FriendUserID", IsUnique = true)]
 [Index("FriendUserId", "FriendStatus", Name = "IX_Community_Friend_FriendUserID_FriendStatus")]
-public partial class CommunityFriend
+public class CommunityFriend
 {
     [Key]
     [Column("FriendID")]

@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("CMS_Layout")]
 [Index("LayoutDisplayName", Name = "IX_CMS_Layout_LayoutDisplayName")]
-public partial class CmsLayout
+public class CmsLayout
 {
     [Key]
     [Column("LayoutID")]

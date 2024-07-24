@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("SM_LinkedInApplication")]
 [Index("LinkedInApplicationSiteId", Name = "IX_SM_LinkedInApplication_LinkedInApplicationSiteID")]
-public partial class SmLinkedInApplication
+public class SmLinkedInApplication
 {
     [Key]
     [Column("LinkedInApplicationID")]

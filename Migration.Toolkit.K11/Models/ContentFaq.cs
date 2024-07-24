@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("CONTENT_FAQ")]
-public partial class ContentFaq
+public class ContentFaq
 {
     [Key]
     [Column("FAQID")]

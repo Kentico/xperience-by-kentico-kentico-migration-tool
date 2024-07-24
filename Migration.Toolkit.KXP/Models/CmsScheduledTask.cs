@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("CMS_ScheduledTask")]
 [Index("TaskNextRunTime", "TaskEnabled", "TaskServerName", Name = "IX_CMS_ScheduledTask_TaskNextRunTime_TaskEnabled_TaskServerName")]
 [Index("TaskUserId", Name = "IX_CMS_ScheduledTask_TaskUserID")]
-public partial class CmsScheduledTask
+public class CmsScheduledTask
 {
     [Key]
     [Column("TaskID")]

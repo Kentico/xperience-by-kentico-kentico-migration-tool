@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
@@ -11,7 +10,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Index("HeadlessTokenHash", Name = "IX_CMS_HeadlessToken_HeadlessTokenHash")]
 [Index("HeadlessTokenHeadlessChannelId", Name = "IX_CMS_HeadlessToken_HeadlessTokenHeadlessChannelID")]
 [Index("HeadlessTokenModifiedByUserId", Name = "IX_CMS_HeadlessToken_HeadlessTokenModifiedByUserID")]
-public partial class CmsHeadlessToken
+public class CmsHeadlessToken
 {
     [Key]
     [Column("HeadlessTokenID")]
@@ -26,8 +25,7 @@ public partial class CmsHeadlessToken
     [StringLength(200)]
     public string HeadlessTokenDisplayName { get; set; } = null!;
 
-    [Required]
-    public bool? HeadlessTokenEnabled { get; set; }
+    public bool HeadlessTokenEnabled { get; set; }
 
     public DateTime HeadlessTokenCreatedWhen { get; set; }
 

@@ -1,18 +1,15 @@
-namespace Migration.Toolkit.KXP.Api;
-
 using System.Diagnostics;
+
 using CMS.DataEngine;
 using CMS.FormEngine;
-using Migration.Toolkit.Common.Enumerations;
+
+namespace Migration.Toolkit.KXP.Api;
 
 public record CustomizedFieldInfo(string FieldName);
 
 public class KxpClassFacade
 {
-    public KxpClassFacade(KxpApiInitializer kxpApiInitializer)
-    {
-        kxpApiInitializer.EnsureApiIsInitialized();
-    }
+    public KxpClassFacade(KxpApiInitializer kxpApiInitializer) => kxpApiInitializer.EnsureApiIsInitialized();
 
     public DataClassInfo SetClass(DataClassInfo dataClassInfo)
     {
@@ -27,22 +24,16 @@ public class KxpClassFacade
         return dataClassInfo;
     }
 
-    public DataClassInfo GetClass(Guid classGuid)
-    {
-        return DataClassInfoProvider.GetDataClassInfo(classGuid);
-    }
+    public DataClassInfo GetClass(Guid classGuid) => DataClassInfoProvider.GetDataClassInfo(classGuid);
 
-    public DataClassInfo GetClass(string className)
-    {
-        return DataClassInfoProvider.GetDataClassInfo(className);
-    }
+    public DataClassInfo GetClass(string className) => DataClassInfoProvider.GetDataClassInfo(className);
 
 
     public IEnumerable<CustomizedFieldInfo> GetCustomizedFieldInfos(string className)
     {
         var dci = DataClassInfoProvider.GetDataClassInfo(className);
         var fi = new FormInfo(dci.ClassFormDefinition);
-        foreach (var columnName in fi.GetColumnNames())
+        foreach (string? columnName in fi.GetColumnNames())
         {
             var field = fi.GetFormField(columnName);
             if (!field.System)
@@ -54,7 +45,7 @@ public class KxpClassFacade
 
     public IEnumerable<CustomizedFieldInfo> GetCustomizedFieldInfos(FormInfo formInfo)
     {
-        foreach (var columnName in formInfo.GetColumnNames())
+        foreach (string? columnName in formInfo.GetColumnNames())
         {
             var field = formInfo.GetFormField(columnName);
             if (!field.System)
@@ -69,7 +60,7 @@ public class KxpClassFacade
         var dci = DataClassInfoProvider.GetDataClassInfo(className);
 
         var fi = new FormInfo(dci.ClassFormDefinition);
-        foreach (var columnName in fi.GetColumnNames())
+        foreach (string? columnName in fi.GetColumnNames())
         {
             var field = fi.GetFormField(columnName);
             if (!field.System)

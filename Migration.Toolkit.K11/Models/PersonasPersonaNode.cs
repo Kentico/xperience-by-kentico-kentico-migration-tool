@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -10,7 +9,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("Personas_PersonaNode")]
 [Index("NodeId", Name = "IX_Personas_PersonaNode_NodeID")]
 [Index("PersonaId", Name = "IX_Personas_PersonaNode_PersonaID")]
-public partial class PersonasPersonaNode
+public class PersonasPersonaNode
 {
     [Key]
     [Column("PersonaID")]

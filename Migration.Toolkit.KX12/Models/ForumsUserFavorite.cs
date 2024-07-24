@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -12,7 +11,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("SiteId", Name = "IX_Forums_UserFavorites_SiteID")]
 [Index("UserId", Name = "IX_Forums_UserFavorites_UserID")]
 [Index("UserId", "PostId", "ForumId", Name = "IX_Forums_UserFavorites_UserID_PostID_ForumID", IsUnique = true)]
-public partial class ForumsUserFavorite
+public class ForumsUserFavorite
 {
     [Key]
     [Column("FavoriteID")]

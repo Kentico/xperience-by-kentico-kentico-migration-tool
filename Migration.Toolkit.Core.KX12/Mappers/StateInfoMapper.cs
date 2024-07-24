@@ -1,11 +1,12 @@
-namespace Migration.Toolkit.Core.KX12.Mappers;
-
 using CMS.Globalization;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX12.Contexts;
-using Migration.Toolkit.KX12.Models;
+
+namespace Migration.Toolkit.Core.KX12.Mappers;
 
 public class StateInfoMapper : EntityMapperBase<KX12M.CmsState, StateInfo>
 {
@@ -13,10 +14,10 @@ public class StateInfoMapper : EntityMapperBase<KX12M.CmsState, StateInfo>
     {
     }
 
-    protected override StateInfo? CreateNewInstance(CmsState source, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override StateInfo? CreateNewInstance(KX12M.CmsState source, MappingHelper mappingHelper, AddFailure addFailure)
         => StateInfo.New();
 
-    protected override StateInfo MapInternal(CmsState source, StateInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override StateInfo MapInternal(KX12M.CmsState source, StateInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         target.StateName = source.StateName;
         target.StateDisplayName = source.StateDisplayName;
@@ -24,7 +25,7 @@ public class StateInfoMapper : EntityMapperBase<KX12M.CmsState, StateInfo>
         target.StateGUID = source.StateGuid;
         target.StateCode = source.StateCode;
 
-        if (mappingHelper.TranslateRequiredId<KX12M.CmsCountry>(k => k.CountryId, source.CountryId, out var countryId))
+        if (mappingHelper.TranslateRequiredId<KX12M.CmsCountry>(k => k.CountryId, source.CountryId, out int countryId))
         {
             target.CountryID = countryId;
         }

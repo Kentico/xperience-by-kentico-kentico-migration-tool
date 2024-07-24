@@ -1,10 +1,8 @@
-namespace Migration.Toolkit.Core.K11.Providers;
-
-using System;
-using System.Threading.Tasks;
 using CMS.Base;
 using CMS.ContentEngine.Internal;
 using CMS.Helpers;
+
+namespace Migration.Toolkit.Core.K11.Providers;
 
 internal class ContentItemNameProvider
 {
@@ -12,12 +10,9 @@ internal class ContentItemNameProvider
 
 
     /// <summary>
-    /// Creates a new instance of <see cref="ContentItemNameProvider"/>.
+    ///     Creates a new instance of <see cref="ContentItemNameProvider" />.
     /// </summary>
-    public ContentItemNameProvider(IContentItemNameValidator codeNameValidator)
-    {
-        this.codeNameValidator = codeNameValidator;
-    }
+    public ContentItemNameProvider(IContentItemNameValidator codeNameValidator) => this.codeNameValidator = codeNameValidator;
 
     public Task<string> Get(string name)
     {
@@ -28,9 +23,9 @@ internal class ContentItemNameProvider
 
         async Task<string> Get(string name)
         {
-            var codeName = ValidationHelper.GetCodeName(name, useUnicode: false);
+            string codeName = ValidationHelper.GetCodeName(name, useUnicode: false);
 
-            var isCodeNameValid = ValidationHelper.IsCodeName(codeName);
+            bool isCodeNameValid = ValidationHelper.IsCodeName(codeName);
 
             if (string.IsNullOrEmpty(codeName) || !isCodeNameValid)
             {

@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -10,7 +9,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("LayoutId", Name = "IX_CMS_TemplateDeviceLayout_LayoutID")]
 [Index("PageTemplateId", "ProfileId", Name = "IX_CMS_TemplateDeviceLayout_PageTemplateID_ProfileID", IsUnique = true)]
 [Index("ProfileId", Name = "IX_CMS_TemplateDeviceLayout_ProfileID")]
-public partial class CmsTemplateDeviceLayout
+public class CmsTemplateDeviceLayout
 {
     [Key]
     [Column("TemplateDeviceLayoutID")]

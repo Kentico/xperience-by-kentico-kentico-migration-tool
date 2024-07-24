@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("Analytics_Statistics")]
 [Index("StatisticsSiteId", Name = "IX_Analytics_Statistics_StatisticsSiteID")]
-public partial class AnalyticsStatistic
+public class AnalyticsStatistic
 {
     [Key]
     [Column("StatisticsID")]

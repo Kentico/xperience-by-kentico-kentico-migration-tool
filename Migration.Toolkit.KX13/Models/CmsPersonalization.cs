@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("CMS_Personalization")]
 [Index("PersonalizationSiteId", Name = "IX_CMS_Personalization_PersonalizationSiteID_SiteID")]
 [Index("PersonalizationUserId", Name = "IX_CMS_Personalization_PersonalizationUserID")]
-public partial class CmsPersonalization
+public class CmsPersonalization
 {
     [Key]
     [Column("PersonalizationID")]

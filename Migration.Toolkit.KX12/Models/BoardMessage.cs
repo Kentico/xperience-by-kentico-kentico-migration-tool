@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -11,7 +10,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("MessageApproved", "MessageIsSpam", Name = "IX_Board_Message_MessageApproved_MessageIsSpam")]
 [Index("MessageBoardId", "MessageGuid", Name = "IX_Board_Message_MessageBoardID_MessageGUID", IsUnique = true)]
 [Index("MessageUserId", Name = "IX_Board_Message_MessageUserID")]
-public partial class BoardMessage
+public class BoardMessage
 {
     [Key]
     [Column("MessageID")]

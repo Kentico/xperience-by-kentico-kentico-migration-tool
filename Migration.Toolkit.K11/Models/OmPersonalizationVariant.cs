@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("OM_PersonalizationVariant")]
 [Index("VariantPageTemplateId", Name = "IX_OM_PersonalizationVariant_VariantDocumentID")]
 [Index("VariantDocumentId", Name = "IX_OM_PersonalizationVariant_VariantPageTemplateID")]
-public partial class OmPersonalizationVariant
+public class OmPersonalizationVariant
 {
     [Key]
     [Column("VariantID")]

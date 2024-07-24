@@ -12,8 +12,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.Core.KX13
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.KXP.Api", "Migration.Toolkit.KXP.Api\Migration.Toolkit.KXP.Api.csproj", "{8E806DDF-6405-4386-B69E-B6FAA672A188}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.TestConsole", "Migration.Toolkit.TestConsole\Migration.Toolkit.TestConsole.csproj", "{DD3C628C-A38F-423F-B930-3A0F7270BF92}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.KXP.Extensions", "Migration.Toolkit.KXP.Extensions\Migration.Toolkit.KXP.Extensions.csproj", "{B601194D-192B-4539-8AB0-9813130EFAD7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Instance.Extensions", "Instance.Extensions", "{D06721D3-6E2D-4235-B146-2BB80DF2DBA9}"
@@ -21,8 +19,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Instance.Extensions", "Inst
 		KX13.Extensions\ToolkitApiController.cs = KX13.Extensions\ToolkitApiController.cs
 		KX13.NET48.Extensions\ToolkitApiController.NET48.cs = KX13.NET48.Extensions\ToolkitApiController.NET48.cs
 	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Experiments", "Experiments", "{ECDC90AD-5A66-4C0E-BD87-C328E3B6A287}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration.Toolkit.Tests", "Migration.Toolkit.Tests\Migration.Toolkit.Tests.csproj", "{FEA68426-F772-419D-989D-C6ADDA757344}"
 EndProject
@@ -75,10 +71,6 @@ Global
 		{8E806DDF-6405-4386-B69E-B6FAA672A188}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8E806DDF-6405-4386-B69E-B6FAA672A188}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8E806DDF-6405-4386-B69E-B6FAA672A188}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DD3C628C-A38F-423F-B930-3A0F7270BF92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DD3C628C-A38F-423F-B930-3A0F7270BF92}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DD3C628C-A38F-423F-B930-3A0F7270BF92}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DD3C628C-A38F-423F-B930-3A0F7270BF92}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B601194D-192B-4539-8AB0-9813130EFAD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B601194D-192B-4539-8AB0-9813130EFAD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B601194D-192B-4539-8AB0-9813130EFAD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -111,7 +103,6 @@ Global
 		{C565B800-032C-44E4-A913-659C24E9A3EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{DD3C628C-A38F-423F-B930-3A0F7270BF92} = {ECDC90AD-5A66-4C0E-BD87-C328E3B6A287}
 		{8094319D-85E5-430C-BBC0-345C9AA8CBF2} = {F823E280-75D2-4C82-825E-CB6FB00E7067}
 		{CAC43720-697A-43C2-8F75-2D029AD2ABFD} = {F823E280-75D2-4C82-825E-CB6FB00E7067}
 		{1F7DC18B-CF87-4AB2-A5CC-094125246954} = {5695AAC9-FF68-4AC2-ABFC-0FD5A512D3C3}

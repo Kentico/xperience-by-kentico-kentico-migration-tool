@@ -1,19 +1,21 @@
-namespace Migration.Toolkit.Core.K11.Mappers;
-
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.K11.Contexts;
-using Migration.Toolkit.KXP.Models;
+using Migration.Toolkit.K11.Models;
 
-public class OmContactGroupMapper(ILogger<OmContactGroupMapper> logger,
-        PrimaryKeyMappingContext primaryKeyMappingContext,
-        IProtocol protocol)
-    : EntityMapperBase<Toolkit.K11.Models.OmContactGroup, OmContactGroup>(logger, primaryKeyMappingContext, protocol)
+namespace Migration.Toolkit.Core.K11.Mappers;
+
+public class OmContactGroupMapper(
+    ILogger<OmContactGroupMapper> logger,
+    PrimaryKeyMappingContext primaryKeyMappingContext,
+    IProtocol protocol)
+    : EntityMapperBase<OmContactGroup, KXP.Models.OmContactGroup>(logger, primaryKeyMappingContext, protocol)
 {
-    protected override OmContactGroup? CreateNewInstance(Toolkit.K11.Models.OmContactGroup tSourceEntity, MappingHelper mappingHelper, AddFailure addFailure) => new();
+    protected override KXP.Models.OmContactGroup? CreateNewInstance(OmContactGroup tSourceEntity, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
-    protected override OmContactGroup MapInternal(Toolkit.K11.Models.OmContactGroup source, OmContactGroup target, bool newInstance,
+    protected override KXP.Models.OmContactGroup MapInternal(OmContactGroup source, KXP.Models.OmContactGroup target, bool newInstance,
         MappingHelper mappingHelper, AddFailure addFailure)
     {
         target.ContactGroupName = source.ContactGroupName;

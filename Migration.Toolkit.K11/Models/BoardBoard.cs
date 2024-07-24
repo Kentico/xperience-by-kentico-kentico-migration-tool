@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -11,7 +10,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("BoardGroupId", "BoardName", Name = "IX_Board_Board_BoardGroupID_BoardName")]
 [Index("BoardSiteId", Name = "IX_Board_Board_BoardSiteID")]
 [Index("BoardUserId", "BoardName", Name = "IX_Board_Board_BoardUserID_BoardName")]
-public partial class BoardBoard
+public class BoardBoard
 {
     [Key]
     [Column("BoardID")]

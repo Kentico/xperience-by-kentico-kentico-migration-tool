@@ -1,11 +1,10 @@
-namespace Migration.Toolkit.Common;
-
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Text;
 
+namespace Migration.Toolkit.Common;
+
 /// <summary>
-/// simplified implementation of semantic version object for this use-case
+///     simplified implementation of semantic version object for this use-case
 /// </summary>
 /// <param name="Major"></param>
 /// <param name="Minor"></param>
@@ -16,9 +15,17 @@ public record SemanticVersion(int Major, int? Minor, int? Hotfix) //, string? Bu
     {
         var sb = new StringBuilder();
         sb.Append(Major);
-        if (!Minor.HasValue) return sb.ToString();
+        if (!Minor.HasValue)
+        {
+            return sb.ToString();
+        }
+
         sb.Append($".{Minor}");
-        if (!Hotfix.HasValue) return sb.ToString();
+        if (!Hotfix.HasValue)
+        {
+            return sb.ToString();
+        }
+
         sb.Append($".{Hotfix}");
         return sb.ToString();
     }
@@ -28,24 +35,27 @@ public record SemanticVersion(int Major, int? Minor, int? Hotfix) //, string? Bu
         semVer = null;
         if (!string.IsNullOrWhiteSpace(s))
         {
-            var split = s.Split(".");
+            string[] split = s.Split(".");
             switch (split.Length)
             {
-                case 1 when int.TryParse(split[0], out var major):
-                    {
-                        semVer = new(major, null, null);
-                        return true;
-                    }
-                case 2 when int.TryParse(split[0], out var major) && int.TryParse(split[1], out var minor):
-                    {
-                        semVer = new(major, minor, null);
-                        return true;
-                    }
-                case 3 when int.TryParse(split[0], out var major) && int.TryParse(split[1], out var minor) && int.TryParse(split[2], out var hotfix):
-                    {
-                        semVer = new(major, minor, hotfix);
-                        return true;
-                    }
+                case 1 when int.TryParse(split[0], out int major):
+                {
+                    semVer = new SemanticVersion(major, null, null);
+                    return true;
+                }
+                case 2 when int.TryParse(split[0], out int major) && int.TryParse(split[1], out int minor):
+                {
+                    semVer = new SemanticVersion(major, minor, null);
+                    return true;
+                }
+                case 3 when int.TryParse(split[0], out int major) && int.TryParse(split[1], out int minor) && int.TryParse(split[2], out int hotfix):
+                {
+                    semVer = new SemanticVersion(major, minor, hotfix);
+                    return true;
+                }
+
+                default:
+                    break;
             }
         }
 
@@ -54,7 +64,7 @@ public record SemanticVersion(int Major, int? Minor, int? Hotfix) //, string? Bu
 
     public bool IsLesserThan(SemanticVersion ver, bool compareOnlySpecified = true)
     {
-        var (major, minor, hotfix) = ver;
+        (int major, int? minor, int? hotfix) = ver;
         if (compareOnlySpecified)
         {
             if (Major - major < 0)

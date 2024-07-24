@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -12,7 +11,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("SubscriptionSiteId", Name = "IX_Notification_Subscription_SubscriptionSiteID")]
 [Index("SubscriptionTemplateId", Name = "IX_Notification_Subscription_SubscriptionTemplateID")]
 [Index("SubscriptionUserId", Name = "IX_Notification_Subscription_SubscriptionUserID")]
-public partial class NotificationSubscription
+public class NotificationSubscription
 {
     [Key]
     [Column("SubscriptionID")]

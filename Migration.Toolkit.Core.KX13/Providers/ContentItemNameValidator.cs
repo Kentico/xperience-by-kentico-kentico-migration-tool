@@ -1,24 +1,17 @@
-namespace Migration.Toolkit.Core.KX13.Providers;
-
 using CMS.ContentEngine.Internal;
+
+namespace Migration.Toolkit.Core.KX13.Providers;
 
 internal class ContentItemNameValidator : IContentItemNameValidator
 {
-    ///<inheritdoc/>
-    public bool IsUnique(string name)
-    {
-        return IsUnique(0, name);
-    }
+    /// <inheritdoc />
+    public bool IsUnique(string name) => IsUnique(0, name);
 
 
-    ///<inheritdoc/>
+    /// <inheritdoc />
     public bool IsUnique(int id, string name)
     {
-        var contentItemInfo = new ContentItemInfo()
-        {
-            ContentItemID = id,
-            ContentItemName = name,
-        };
+        var contentItemInfo = new ContentItemInfo { ContentItemID = id, ContentItemName = name };
 
         return contentItemInfo.CheckUniqueCodeName();
     }

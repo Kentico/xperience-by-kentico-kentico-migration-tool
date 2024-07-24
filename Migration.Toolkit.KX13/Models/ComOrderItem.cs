@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("COM_OrderItem")]
 [Index("OrderItemOrderId", Name = "IX_COM_OrderItem_OrderItemOrderID")]
 [Index("OrderItemSkuid", Name = "IX_COM_OrderItem_OrderItemSKUID")]
-public partial class ComOrderItem
+public class ComOrderItem
 {
     [Key]
     [Column("OrderItemID")]

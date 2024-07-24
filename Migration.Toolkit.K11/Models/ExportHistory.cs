@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("Export_History")]
 [Index("ExportSiteId", Name = "IX_Export_History_ExportSiteID")]
 [Index("ExportUserId", Name = "IX_Export_History_ExportUserID")]
-public partial class ExportHistory
+public class ExportHistory
 {
     [Key]
     [Column("ExportID")]

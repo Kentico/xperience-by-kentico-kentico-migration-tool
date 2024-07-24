@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("Analytics_ExitPages")]
 [Index("ExitPageLastModified", Name = "IX_Analytics_ExitPages_ExitPageLastModified")]
-public partial class AnalyticsExitPage
+public class AnalyticsExitPage
 {
     [Key]
     [StringLength(200)]

@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("CMS_Role")]
 [Index("SiteId", "RoleId", Name = "IX_CMS_Role_SiteID_RoleID")]
-public partial class CmsRole
+public class CmsRole
 {
     [Key]
     [Column("RoleID")]

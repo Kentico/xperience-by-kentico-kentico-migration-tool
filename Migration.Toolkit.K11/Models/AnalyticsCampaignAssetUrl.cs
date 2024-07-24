@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("Analytics_CampaignAssetUrl")]
 [Index("CampaignAssetUrlCampaignAssetId", Name = "IX_Analytics_CampaignAssetUrl_CampaignAssetUrlCampaignAssetID")]
-public partial class AnalyticsCampaignAssetUrl
+public class AnalyticsCampaignAssetUrl
 {
     [Key]
     [Column("CampaignAssetUrlID")]

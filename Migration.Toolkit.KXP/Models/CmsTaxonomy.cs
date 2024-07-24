@@ -1,14 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_Taxonomy")]
-[Index("TaxonomyTitle", Name = "IX_CMS_Taxonomy_TaxonomyTitle_Unique", IsUnique = true)]
-public partial class CmsTaxonomy
+public class CmsTaxonomy
 {
     [Key]
     [Column("TaxonomyID")]

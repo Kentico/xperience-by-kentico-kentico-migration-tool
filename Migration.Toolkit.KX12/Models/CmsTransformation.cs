@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("CMS_Transformation")]
 [Index("TransformationClassId", Name = "IX_CMS_Transformation_TransformationClassID")]
-public partial class CmsTransformation
+public class CmsTransformation
 {
     [Key]
     [Column("TransformationID")]

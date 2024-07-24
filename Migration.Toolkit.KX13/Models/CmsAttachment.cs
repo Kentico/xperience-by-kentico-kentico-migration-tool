@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -12,7 +11,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("AttachmentIsUnsorted", "AttachmentGroupGuid", "AttachmentFormGuid", "AttachmentOrder", Name = "IX_CMS_Attachment_AttachmentIsUnsorted_AttachmentGroupGUID_AttachmentFormGUID_AttachmentOrder")]
 [Index("AttachmentSiteId", Name = "IX_CMS_Attachment_AttachmentSiteID")]
 [Index("AttachmentVariantParentId", Name = "IX_CMS_Attachment_AttachmentVariantParentID")]
-public partial class CmsAttachment
+public class CmsAttachment
 {
     [Key]
     [Column("AttachmentID")]

@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("Chat_SupportCannedResponse")]
 [Index("ChatSupportCannedResponseChatUserId", Name = "IX_Chat_SupportCannedResponse_ChatSupportCannedResponseChatUserID")]
 [Index("ChatSupportCannedResponseSiteId", Name = "IX_Chat_SupportCannedResponse_ChatSupportCannedResponseSiteID")]
-public partial class ChatSupportCannedResponse
+public class ChatSupportCannedResponse
 {
     [Key]
     [Column("ChatSupportCannedResponseID")]

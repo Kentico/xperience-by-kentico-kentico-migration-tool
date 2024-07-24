@@ -1,11 +1,9 @@
-using System;
-using System.IO;
-using System.Linq;
 using System.Reflection;
+
 using CMS;
-using CMS.Core;
 using CMS.Base;
 using CMS.Base.Routing;
+using CMS.Core;
 using CMS.Helpers;
 using CMS.MediaLibrary;
 using CMS.Routing.Web;
@@ -21,7 +19,7 @@ public class LegacyAttachmentHandler : CMS.DataEngine.Module
     }
 
     /// <summary>
-    /// Handles the module pre-initialization.
+    ///     Handles the module pre-initialization.
     /// </summary>
     protected override void OnPreInit()
     {
@@ -36,13 +34,7 @@ public class LegacyAttachmentHandler : CMS.DataEngine.Module
         var registerMethod = HttpHandlerRouteTable.Default.GetType().GetMethod("Register", BindingFlags.NonPublic | BindingFlags.Instance);
         var handlerType = customHandlerType ?? typeof(MediaFileInfo).Assembly.GetType("CMS.MediaLibrary.GetMediaService");
 
-        registerMethod.Invoke(HttpHandlerRouteTable.Default, new object[]
-        {
-            new RegisterHttpHandlerAttribute(routeTemplate, handlerType)
-            {
-                Order = order
-            }
-        });
+        registerMethod.Invoke(HttpHandlerRouteTable.Default, new object[] { new RegisterHttpHandlerAttribute(routeTemplate, handlerType) { Order = order } });
     }
 }
 
@@ -54,12 +46,12 @@ public class AttachmentsService : ActionResultServiceBase
 
     protected override CMSActionResult GetActionResultInternal()
     {
-        var pathAndFileName = QueryHelper.GetString("pathandfilename", null);
+        string pathAndFileName = QueryHelper.GetString("pathandfilename", null);
         if (pathAndFileName != null)
         {
             pathAndFileName = pathAndFileName.TrimEnd('/');
-            var dir = System.IO.Path.GetDirectoryName(pathAndFileName)?.Replace("\\", "/");
-            var fileName = System.IO.Path.GetFileNameWithoutExtension(pathAndFileName);
+            string dir = System.IO.Path.GetDirectoryName(pathAndFileName)?.Replace("\\", "/");
+            string fileName = System.IO.Path.GetFileNameWithoutExtension(pathAndFileName);
 
             var mediaFiles = MediaFileInfoProvider.ProviderObject.Get()
                 .Columns(
@@ -87,12 +79,8 @@ public class AttachmentsService : ActionResultServiceBase
                 mediaFile = mediaFiles.FirstOrDefault();
             }
 
-            var mediaPath = MediaFileInfoProvider.GetMediaFilePath(mediaFile.FilePath, mediaFile.FileLibraryID, SystemContext.WebApplicationPhysicalPath);
-            var result = new CMSPhysicalFileResult(mediaPath)
-            {
-                ContentType = mediaFile.FileMimeType,
-                ContentDisposition = HTTPHelper.GetFileDisposition(mediaPath, System.IO.Path.GetExtension(mediaPath))
-            };
+            string mediaPath = MediaFileInfoProvider.GetMediaFilePath(mediaFile.FilePath, mediaFile.FileLibraryID, SystemContext.WebApplicationPhysicalPath);
+            var result = new CMSPhysicalFileResult(mediaPath) { ContentType = mediaFile.FileMimeType, ContentDisposition = HTTPHelper.GetFileDisposition(mediaPath, System.IO.Path.GetExtension(mediaPath)) };
             return result;
         }
 

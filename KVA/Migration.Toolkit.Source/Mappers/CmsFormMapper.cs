@@ -1,13 +1,16 @@
-namespace Migration.Toolkit.Source.Mappers;
-
 using CMS.FormEngine;
 using CMS.OnlineForms;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
+using Migration.Toolkit.KXP.Models;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Model;
+
+namespace Migration.Toolkit.Source.Mappers;
 
 public class CmsFormMapper(
     ILogger<CmsFormMapper> logger,
@@ -35,24 +38,28 @@ public class CmsFormMapper(
         switch (source)
         {
             case CmsFormK11 s:
-                {
-                    target.FormLogActivity = s.FormLogActivity.UseKenticoDefault();
-                    break;
-                }
+            {
+                target.FormLogActivity = s.FormLogActivity.UseKenticoDefault();
+                break;
+            }
             case CmsFormK12 s:
-                {
-                    target.FormLogActivity = s.FormLogActivity.UseKenticoDefault();
-                    target.FormBuilderLayout = s.FormBuilderLayout;
-                    break;
-                }
+            {
+                target.FormLogActivity = s.FormLogActivity.UseKenticoDefault();
+                target.FormBuilderLayout = s.FormBuilderLayout;
+                break;
+            }
             case CmsFormK13 s:
-                {
-                    target.FormLogActivity = s.FormLogActivity;
-                    target.FormBuilderLayout = s.FormBuilderLayout;
-                    break;
-                }
+            {
+                target.FormLogActivity = s.FormLogActivity;
+                target.FormBuilderLayout = s.FormBuilderLayout;
+                break;
+            }
+
+            default:
+                break;
         }
-        if (mappingHelper.TranslateRequiredId<ICmsClass>(c => c.ClassID, source.FormClassID, out var formClassId))
+
+        if (mappingHelper.TranslateRequiredId<ICmsClass>(c => c.ClassID, source.FormClassID, out int formClassId))
         {
             target.FormClassID = formClassId;
         }
@@ -61,15 +68,15 @@ public class CmsFormMapper(
     }
 }
 
-public class CmsFormMapperEf : EntityMapperBase<ICmsForm, Migration.Toolkit.KXP.Models.CmsForm>
+public class CmsFormMapperEf : EntityMapperBase<ICmsForm, CmsForm>
 {
     public CmsFormMapperEf(ILogger<CmsFormMapperEf> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : base(logger, pkContext, protocol)
     {
     }
 
-    protected override Migration.Toolkit.KXP.Models.CmsForm? CreateNewInstance(ICmsForm source, MappingHelper mappingHelper, AddFailure addFailure) => new();
+    protected override CmsForm? CreateNewInstance(ICmsForm source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
-    protected override Migration.Toolkit.KXP.Models.CmsForm MapInternal(ICmsForm source, Migration.Toolkit.KXP.Models.CmsForm target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override CmsForm MapInternal(ICmsForm source, CmsForm target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         target.FormDisplayName = source.FormDisplayName;
         target.FormName = source.FormName;
@@ -92,28 +99,31 @@ public class CmsFormMapperEf : EntityMapperBase<ICmsForm, Migration.Toolkit.KXP.
         switch (source)
         {
             case CmsFormK11 s:
-                {
-                    target.FormLogActivity = s.FormLogActivity.UseKenticoDefault();
-                    break;
-                }
+            {
+                target.FormLogActivity = s.FormLogActivity.UseKenticoDefault();
+                break;
+            }
             case CmsFormK12 s:
-                {
-                    target.FormLogActivity = s.FormLogActivity.UseKenticoDefault();
-                    target.FormBuilderLayout = s.FormBuilderLayout;
-                    break;
-                }
+            {
+                target.FormLogActivity = s.FormLogActivity.UseKenticoDefault();
+                target.FormBuilderLayout = s.FormBuilderLayout;
+                break;
+            }
             case CmsFormK13 s:
-                {
-                    target.FormLogActivity = s.FormLogActivity;
-                    target.FormBuilderLayout = s.FormBuilderLayout;
-                    break;
-                }
+            {
+                target.FormLogActivity = s.FormLogActivity;
+                target.FormBuilderLayout = s.FormBuilderLayout;
+                break;
+            }
+
+            default:
+                break;
         }
 
         // TODO tk: 2022-05-20 new deduce: target.FormAfterSubmitMode = source.FormAfterSubmitMode;
         // TODO tk: 2022-05-20 new deduce: target.FormAfterSubmitRelatedValue = source.FormAfterSubmitRelatedValue;
 
-        if (mappingHelper.TranslateRequiredId<ICmsClass>(c => c.ClassID, source.FormClassID, out var classId))
+        if (mappingHelper.TranslateRequiredId<ICmsClass>(c => c.ClassID, source.FormClassID, out int classId))
         {
             target.FormClassId = classId;
         }

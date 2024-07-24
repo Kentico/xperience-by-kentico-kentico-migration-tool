@@ -1,12 +1,14 @@
-namespace Migration.Toolkit.Source.Mappers;
-
 using CMS.Modules;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Enumerations;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Model;
+
+namespace Migration.Toolkit.Source.Mappers;
 
 public class ResourceMapper(ILogger<ResourceMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol)
     : EntityMapperBase<ICmsResource, ResourceInfo>(logger, pkContext, protocol)
@@ -35,7 +37,7 @@ public class ResourceMapper(ILogger<ResourceMapper> logger, PrimaryKeyMappingCon
 
             if (target.ResourceName.StartsWith("CMS.", StringComparison.InvariantCultureIgnoreCase))
             {
-                var targetResourceNamePatched = target.ResourceName.Substring(4, target.ResourceName.Length - 4);
+                string targetResourceNamePatched = target.ResourceName[4..];
                 logger.LogInformation("Patching CMS Resource '{ResourceName}': name changed to '{ResourceNamePatched}'", target.ResourceName, targetResourceNamePatched);
                 target.ResourceName = targetResourceNamePatched;
             }

@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("Export_Task")]
 [Index("TaskSiteId", "TaskObjectType", Name = "IX_Export_Task_TaskSiteID_TaskObjectType")]
-public partial class ExportTask
+public class ExportTask
 {
     [Key]
     [Column("TaskID")]

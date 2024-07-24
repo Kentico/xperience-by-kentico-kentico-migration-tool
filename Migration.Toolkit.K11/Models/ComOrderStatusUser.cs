@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -11,7 +10,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("FromStatusId", Name = "IX_COM_OrderStatusUser_FromStatusID")]
 [Index("OrderId", "Date", Name = "IX_COM_OrderStatusUser_OrderID_Date")]
 [Index("ToStatusId", Name = "IX_COM_OrderStatusUser_ToStatusID")]
-public partial class ComOrderStatusUser
+public class ComOrderStatusUser
 {
     [Key]
     [Column("OrderStatusUserID")]

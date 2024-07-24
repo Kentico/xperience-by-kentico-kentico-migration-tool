@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("Newsletter_Link")]
 [Index("LinkIssueId", Name = "IX_Newsletter_Link_LinkIssueID")]
-public partial class NewsletterLink
+public class NewsletterLink
 {
     [Key]
     [Column("LinkID")]

@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_WorkflowAction")]
 [Index("ActionResourceId", Name = "IX_CMS_WorkflowAction_ActionResourceID")]
-public partial class CmsWorkflowAction
+public class CmsWorkflowAction
 {
     [Key]
     [Column("ActionID")]
@@ -38,8 +37,7 @@ public partial class CmsWorkflowAction
 
     public DateTime ActionLastModified { get; set; }
 
-    [Required]
-    public bool? ActionEnabled { get; set; }
+    public bool ActionEnabled { get; set; }
 
     public string? ActionAllowedObjects { get; set; }
 

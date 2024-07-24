@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("Newsletter_EmailWidgetTemplate")]
 [Index("EmailWidgetId", Name = "IX_Newsletter_EmailWidgetTemplate_EmailWidgetID")]
 [Index("TemplateId", Name = "IX_Newsletter_EmailWidgetTemplate_TemplateID")]
-public partial class NewsletterEmailWidgetTemplate
+public class NewsletterEmailWidgetTemplate
 {
     [Key]
     [Column("EmailWidgetTemplateID")]

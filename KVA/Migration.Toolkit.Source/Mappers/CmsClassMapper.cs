@@ -1,12 +1,13 @@
-namespace Migration.Toolkit.Source.Mappers;
-
 using System.Diagnostics;
 using System.Xml;
+
 using CMS.ContentEngine;
 using CMS.Core;
 using CMS.DataEngine;
 using CMS.FormEngine;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Enumerations;
@@ -15,17 +16,21 @@ using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Api.Services.CmsClass;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Model;
-using Migration.Toolkit.Source.Services;
 
-public class CmsClassMapper(ILogger<CmsClassMapper> logger,
-        PrimaryKeyMappingContext primaryKeyMappingContext,
-        IProtocol protocol,
-        FieldMigrationService fieldMigrationService,
-        ModelFacade modelFacade
-    )
+namespace Migration.Toolkit.Source.Mappers;
+
+public class CmsClassMapper(
+    ILogger<CmsClassMapper> logger,
+    PrimaryKeyMappingContext primaryKeyMappingContext,
+    IProtocol protocol,
+    FieldMigrationService fieldMigrationService,
+    ModelFacade modelFacade
+)
     : EntityMapperBase<ICmsClass, DataClassInfo>(logger,
-    primaryKeyMappingContext, protocol)
+        primaryKeyMappingContext, protocol)
 {
+    private const string REQUIRED_RULE_IDENTIFIER = "Kentico.Administration.RequiredValue";
+
     protected override DataClassInfo? CreateNewInstance(ICmsClass source, MappingHelper mappingHelper, AddFailure addFailure) =>
         DataClassInfo.New();
 
@@ -35,8 +40,8 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
         target.ClassDisplayName = source.ClassDisplayName;
         target.ClassName = source.ClassName;
 
-        var isCustomizableSystemClass = false;
-        var classIsCustom = true;
+        bool isCustomizableSystemClass = false;
+        bool classIsCustom = true;
         var classResource = modelFacade.SelectById<ICmsResource>(source.ClassResourceID);
         if (classResource?.ResourceName is { } resourceName)
         {
@@ -55,6 +60,7 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
         {
             target.ClassTableName = source.ClassTableName;
         }
+
         target.ClassShowTemplateSelection = source.ClassShowTemplateSelection.UseKenticoDefault();
         target.ClassLastModified = source.ClassLastModified;
         target.ClassGUID = source.ClassGUID;
@@ -90,7 +96,7 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
             };
         }
 
-        if (mappingHelper.TranslateIdAllowNulls<ICmsResource>(c => c.ResourceID, source.ClassResourceID, out var resourceId))
+        if (mappingHelper.TranslateIdAllowNulls<ICmsResource>(c => c.ResourceID, source.ClassResourceID, out int? resourceId))
         {
             if (resourceId.HasValue)
             {
@@ -105,16 +111,19 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
                 className.Equals("cms.site", StringComparison.InvariantCultureIgnoreCase) ||
                 className.Equals("cms.root", StringComparison.InvariantCultureIgnoreCase)
                 :
-                {
-                    throw new Exception("Unable to map obsolete dataclass");
-                    return target;
-                }
+            {
+                throw new Exception("Unable to map obsolete dataclass");
+                return target;
+            }
             // Target Other,null
             // Target System,null
             case not null when target is { ClassType: ClassType.OTHER or ClassType.SYSTEM_TABLE }:
-                {
-                    break;
-                }
+            {
+                break;
+            }
+
+            default:
+                break;
         }
 
         switch (source)
@@ -126,30 +135,30 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
                 ClassIsDocumentType: false,
                 ClassResourceID: { } classResourceId
             }:
-                {
-                    target.ClassType = ClassType.OTHER;
-                    target.ClassContentTypeType = null;
+            {
+                target.ClassType = ClassType.OTHER;
+                target.ClassContentTypeType = null;
 
-                    target = PatchDataClassInfo(target, out var oldPrimaryKeyName, out var documentNameField);
+                target = PatchDataClassInfo(target, out string? oldPrimaryKeyName, out string? documentNameField);
 
-                    break;
-                }
+                break;
+            }
 
             // Target Form,null
             case
             {
                 ClassIsDocumentType: false,
                 ClassIsCoupledClass: true,
-                ClassIsForm: true,
+                ClassIsForm: true
                 // ClassIsPage: false
             }
                 :
-                {
-                    target.ClassType = ClassType.FORM;
-                    target.ClassContentTypeType = "";
+            {
+                target.ClassType = ClassType.FORM;
+                target.ClassContentTypeType = "";
 
-                    break;
-                }
+                break;
+            }
 
             // Target Content,Reusable
             case
@@ -157,32 +166,35 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
                 ClassIsDocumentType: false,
                 ClassIsForm: false or null,
                 ClassShowAsSystemTable: false,
-                ClassIsCustomTable: false,
+                ClassIsCustomTable: false
                 // ClassIsPage: false
             }:
-                {
-                    target.ClassType = ClassType.CONTENT_TYPE;
-                    target.ClassContentTypeType = ClassContentTypeType.REUSABLE;
+            {
+                target.ClassType = ClassType.CONTENT_TYPE;
+                target.ClassContentTypeType = ClassContentTypeType.REUSABLE;
 
-                    target = PatchDataClassInfo(target, out var oldPrimaryKeyName, out var documentNameField);
-                    break;
-                }
+                target = PatchDataClassInfo(target, out string? oldPrimaryKeyName, out string? documentNameField);
+                break;
+            }
 
             // Target Content,Website
             case { ClassName: { } className } when className.Equals("cms.folder", StringComparison.InvariantCultureIgnoreCase):
             case
             {
                 ClassIsDocumentType: true,
-                ClassIsForm: false or null,
+                ClassIsForm: false or null
                 // ClassIsPage: true
             }:
-                {
-                    target.ClassType = ClassType.CONTENT_TYPE;
-                    target.ClassContentTypeType = ClassContentTypeType.WEBSITE;
+            {
+                target.ClassType = ClassType.CONTENT_TYPE;
+                target.ClassContentTypeType = ClassContentTypeType.WEBSITE;
 
-                    target = PatchDataClassInfo(target, out var oldPrimaryKeyName, out var documentNameField);
-                    break;
-                }
+                target = PatchDataClassInfo(target, out string? oldPrimaryKeyName, out string? documentNameField);
+                break;
+            }
+
+            default:
+                break;
         }
 
         return target;
@@ -205,7 +217,7 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
             patcher.PatchFields();
             patcher.RemoveCategories(); // TODO tk: 2022-10-11 remove when supported
 
-            var result = patcher.GetPatched();
+            string? result = patcher.GetPatched();
             if (isCustomizableSystemClass)
             {
                 result = FormHelper.MergeFormDefinitions(target.ClassFormDefinition, result);
@@ -227,16 +239,17 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
         if (dataClass.ClassType is ClassType.CONTENT_TYPE)
         {
             var fi = new FormInfo(dataClass.ClassFormDefinition);
-            var tableName = dataClass.ClassTableName;
+            string tableName = dataClass.ClassTableName;
             var contentTypeManager = Service.Resolve<IContentTypeManager>();
             contentTypeManager.Initialize(dataClass);
             if (!string.IsNullOrWhiteSpace(tableName))
             {
                 dataClass.ClassTableName = tableName;
             }
+
             var nfi = new FormInfo(dataClass.ClassFormDefinition);
 
-            foreach (var dataDefinitionItem in fi.GetFormElements(true, true) ?? new())
+            foreach (var dataDefinitionItem in fi.GetFormElements(true, true) ?? [])
             {
                 if (dataDefinitionItem is FormFieldInfo ffi)
                 {
@@ -283,14 +296,12 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
 
     public static string? GetLegacyDocumentName(FormInfo nfi, string className)
     {
-        if (nfi.GetFields(true, true, true).FirstOrDefault(f => GuidHelper.CreateDocumentNameFieldGuid($"documentname|{className}").Equals(f.Guid)) is { } foundField)
+        if (nfi.GetFields(true, true).FirstOrDefault(f => GuidHelper.CreateDocumentNameFieldGuid($"documentname|{className}").Equals(f.Guid)) is { } foundField)
         {
             return foundField.Name;
         }
-        else
-        {
-            return null;
-        }
+
+        return null;
     }
 
     private static void AppendDocumentNameField(FormInfo nfi, string className, out string documentNameField)
@@ -303,7 +314,7 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
 
         // no DocumentName in v27, we supply one in migration
         documentNameField = "DocumentName";
-        var i = 0;
+        int i = 0;
         while (nfi.GetFormField(documentNameField) is not null)
         {
             documentNameField = $"DocumentName{++i}";
@@ -324,8 +335,6 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
         });
     }
 
-    private const string REQUIRED_RULE_IDENTIFIER = "Kentico.Administration.RequiredValue";
-
     private string AppendRequiredValidationRule(string rulesXml)
     {
         if (string.IsNullOrWhiteSpace(rulesXml))
@@ -334,7 +343,7 @@ public class CmsClassMapper(ILogger<CmsClassMapper> logger,
                 @"<validationrulesdata><ValidationRuleConfiguration><ValidationRuleIdentifier>Kentico.Administration.RequiredValue</ValidationRuleIdentifier><RuleValues /></ValidationRuleConfiguration></validationrulesdata>";
         }
 
-        XmlDocument document = new XmlDocument();
+        var document = new XmlDocument();
         document.LoadXml($"<root>{rulesXml}</root>");
         var mbIdentifierNodes = document.SelectNodes("//ValidationRuleIdentifier");
 

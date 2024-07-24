@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_Query")]
 [Index("ClassId", "QueryName", Name = "IX_CMS_Query_QueryClassID_QueryName")]
-public partial class CmsQuery
+public class CmsQuery
 {
     [Key]
     [Column("QueryID")]

@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("Forums_Attachment")]
 [Index("AttachmentSiteId", "AttachmentGuid", Name = "IX_Forums_Attachment_AttachmentGUID", IsUnique = true)]
 [Index("AttachmentPostId", Name = "IX_Forums_Attachment_AttachmentPostID")]
-public partial class ForumsAttachment
+public class ForumsAttachment
 {
     [Key]
     [Column("AttachmentID")]

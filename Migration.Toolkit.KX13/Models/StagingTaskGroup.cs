@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("staging_TaskGroup")]
-public partial class StagingTaskGroup
+public class StagingTaskGroup
 {
     [Key]
     [Column("TaskGroupID")]

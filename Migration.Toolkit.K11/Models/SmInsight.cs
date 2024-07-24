@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("SM_Insight")]
 [Index("InsightCodeName", "InsightPeriodType", Name = "IX_SM_Insight_InsightCodeName_InsightPeriodType")]
-public partial class SmInsight
+public class SmInsight
 {
     [Key]
     [Column("InsightID")]

@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("COM_Brand")]
 [Index("BrandDisplayName", Name = "IX_COM_Brand_BrandDisplayName")]
 [Index("BrandSiteId", "BrandEnabled", Name = "IX_COM_Brand_BrandSiteID_BrandEnabled")]
-public partial class ComBrand
+public class ComBrand
 {
     [Key]
     [Column("BrandID")]

@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("COM_Manufacturer")]
 [Index("ManufacturerSiteId", Name = "IX_COM_Manufacturer_ManufacturerSiteID")]
-public partial class ComManufacturer
+public class ComManufacturer
 {
     [Key]
     [Column("ManufacturerID")]

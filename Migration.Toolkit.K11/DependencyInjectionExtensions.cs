@@ -1,8 +1,9 @@
-namespace Migration.Toolkit.K11;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 using Migration.Toolkit.Common;
+
+namespace Migration.Toolkit.K11;
 
 public static class DependencyInjectionExtensions
 {

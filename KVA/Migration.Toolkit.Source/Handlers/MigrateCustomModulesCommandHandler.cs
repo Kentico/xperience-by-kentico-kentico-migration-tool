@@ -1,14 +1,16 @@
-namespace Migration.Toolkit.Source.Handlers;
-
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Xml.Linq;
+
 using CMS.DataEngine;
 using CMS.FormEngine;
 using CMS.Modules;
+
 using MediatR;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Enumerations;
@@ -17,11 +19,12 @@ using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Common.Services.BulkCopy;
 using Migration.Toolkit.KXP.Api;
 using Migration.Toolkit.KXP.Api.Services.CmsClass;
-using Migration.Toolkit.Source;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Helpers;
 using Migration.Toolkit.Source.Mappers;
 using Migration.Toolkit.Source.Model;
+
+namespace Migration.Toolkit.Source.Handlers;
 
 public class MigrateCustomModulesCommandHandler(
     ILogger<MigrateCustomModulesCommandHandler> logger,
@@ -35,7 +38,7 @@ public class MigrateCustomModulesCommandHandler(
     BulkDataCopyService bulkDataCopyService,
     FieldMigrationService fieldMigrationService,
     ModelFacade modelFacade
-    )
+)
     : IRequestHandler<MigrateCustomModulesCommand, CommandResult>
 {
     public async Task<CommandResult> Handle(MigrateCustomModulesCommand request, CancellationToken cancellationToken)
@@ -92,7 +95,7 @@ public class MigrateCustomModulesCommandHandler(
 
             protocol.FetchedSource(cmsClass);
 
-            var k12ResourceName = modelFacade.SelectById<ICmsResource>(cmsClass.ClassResourceID)?.ResourceName;
+            string? k12ResourceName = modelFacade.SelectById<ICmsResource>(cmsClass.ClassResourceID)?.ResourceName;
             if (k12ResourceName != null && K12SystemResource.All.Contains(k12ResourceName) && !K12SystemResource.ConvertToNonSysResource.Contains(k12ResourceName))
             {
                 if (!K12SystemClass.Customizable.Contains(cmsClass.ClassName))
@@ -198,11 +201,11 @@ public class MigrateCustomModulesCommandHandler(
 
         var memberFormInfo = new FormInfo(target.ClassFormDefinition);
 
-        var includedSystemFields = toolkitConfiguration.MemberIncludeUserSystemFields?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+        string[] includedSystemFields = toolkitConfiguration.MemberIncludeUserSystemFields?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
 
         var memberColumns = memberFormInfo.GetColumnNames();
 
-        foreach (var uColumn in cmsUserFi.GetColumnNames())
+        foreach (string? uColumn in cmsUserFi.GetColumnNames())
         {
             var field = cmsUserFi.GetFormField(uColumn);
 
@@ -218,7 +221,7 @@ public class MigrateCustomModulesCommandHandler(
             }
         }
 
-        foreach (var usColumn in cmsUserSettingsFi.GetColumnNames())
+        foreach (string? usColumn in cmsUserSettingsFi.GetColumnNames())
         {
             var field = cmsUserSettingsFi.GetFormField(usColumn);
 
@@ -250,7 +253,7 @@ public class MigrateCustomModulesCommandHandler(
         );
         patcher.PatchFields();
         patcher.RemoveCategories();
-        var result = patcher.GetPatched();
+        string? result = patcher.GetPatched();
         cmsUserFormInfo = new FormInfo(result);
     }
 
@@ -274,7 +277,7 @@ public class MigrateCustomModulesCommandHandler(
             {
                 if (mapped is { Success: true })
                 {
-                    var (alternativeFormInfo, newInstance) = mapped;
+                    (var alternativeFormInfo, bool newInstance) = mapped;
                     ArgumentNullException.ThrowIfNull(alternativeFormInfo, nameof(alternativeFormInfo));
 
                     AlternativeFormInfoProvider.ProviderObject.Set(alternativeFormInfo);
@@ -296,12 +299,9 @@ public class MigrateCustomModulesCommandHandler(
         }
     }
 
-    private Task<List<ICmsClass>> GetResourceClasses(int k12ResourceId)
-    {
-        return Task.FromResult(modelFacade
-            .SelectWhere<ICmsClass>("ClassResourceID = @classResourceId", new SqlParameter("classResourceId", k12ResourceId))
-            .ToList());
-    }
+    private Task<List<ICmsClass>> GetResourceClasses(int k12ResourceId) => Task.FromResult(modelFacade
+        .SelectWhere<ICmsClass>("ClassResourceID = @classResourceId", new SqlParameter("classResourceId", k12ResourceId))
+        .ToList());
 
     private async Task MigrateResources(CancellationToken cancellationToken)
     {
@@ -315,8 +315,8 @@ public class MigrateCustomModulesCommandHandler(
 
             protocol.FetchedTarget(xbkResource);
 
-            var sysResourceInclude = K12SystemResource.ConvertToNonSysResource.Contains(k12CmsResource.ResourceName);
-            var isSystemResource = K12SystemResource.All.Contains(k12CmsResource.ResourceName);
+            bool sysResourceInclude = K12SystemResource.ConvertToNonSysResource.Contains(k12CmsResource.ResourceName);
+            bool isSystemResource = K12SystemResource.All.Contains(k12CmsResource.ResourceName);
             if (isSystemResource)
             {
                 if (sysResourceInclude)
@@ -369,7 +369,7 @@ public class MigrateCustomModulesCommandHandler(
             {
                 if (mapped is { Success: true })
                 {
-                    var (resourceInfo, newInstance) = mapped;
+                    (var resourceInfo, bool newInstance) = mapped;
                     ArgumentNullException.ThrowIfNull(resourceInfo, nameof(resourceInfo));
 
                     ResourceInfoProvider.ProviderObject.Set(resourceInfo);
@@ -400,7 +400,7 @@ public class MigrateCustomModulesCommandHandler(
         {
             if (mapped is { Success: true } result)
             {
-                var (dataClassInfo, newInstance) = result;
+                (var dataClassInfo, bool newInstance) = result;
                 ArgumentNullException.ThrowIfNull(dataClassInfo, nameof(dataClassInfo));
 
                 kxpClassFacade.SetClass(dataClassInfo);

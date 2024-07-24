@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -14,7 +13,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("VersionDeletedByUserId", "VersionDeletedWhen", Name = "IX_CMS_VersionHistory_VersionDeletedByUserID_VersionDeletedWhen", IsDescending = new[] { false, true })]
 [Index("VersionWorkflowId", Name = "IX_CMS_VersionHistory_VersionWorkflowID")]
 [Index("VersionWorkflowStepId", Name = "IX_CMS_VersionHistory_VersionWorkflowStepID")]
-public partial class CmsVersionHistory
+public class CmsVersionHistory
 {
     [Key]
     [Column("VersionHistoryID")]

@@ -1,13 +1,12 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
 
 [Keyless]
-public partial class ViewCmsUserDocument
+public class ViewCmsUserDocument
 {
     [StringLength(100)]
     public string? DocumentName { get; set; }

@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("OM_ContactChangeRecalculationQueue")]
-public partial class OmContactChangeRecalculationQueue
+public class OmContactChangeRecalculationQueue
 {
     [Key]
     [Column("ContactChangeRecalculationQueueID")]

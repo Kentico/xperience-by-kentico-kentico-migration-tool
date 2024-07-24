@@ -1,14 +1,15 @@
-namespace Migration.Toolkit.Source.Services;
-
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+
 using CMS.Base;
 using CMS.Helpers;
 using CMS.MediaLibrary;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
@@ -17,6 +18,8 @@ using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Context;
 using Migration.Toolkit.Source.Mappers;
 using Migration.Toolkit.Source.Model;
+
+namespace Migration.Toolkit.Source.Services;
 
 public class AttachmentMigrator(
     ILogger<AttachmentMigrator> logger,
@@ -27,15 +30,22 @@ public class AttachmentMigrator(
     ModelFacade modelFacade
 )
 {
-    public record MigrateAttachmentResult(
-        bool Success,
-        bool CanContinue,
-        MediaFileInfo? MediaFileInfo = null,
-        MediaLibraryInfo? MediaLibraryInfo = null);
+    private static readonly Regex sanitizationRegex =
+        RegexHelper.GetRegex("[^-_a-z0-9]", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+    private static readonly Regex libraryPathValidationRegex =
+        RegexHelper.GetRegex("^[-_a-z0-9]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.CultureInvariant);
+
+
+    private readonly ConcurrentDictionary<(string libraryName, int siteId), int> mediaLibraryIdCache = new();
 
     public MigrateAttachmentResult TryMigrateAttachmentByPath(string documentPath, string additionalPath)
     {
-        if (string.IsNullOrWhiteSpace(documentPath)) return new MigrateAttachmentResult(false, false);
+        if (string.IsNullOrWhiteSpace(documentPath))
+        {
+            return new MigrateAttachmentResult(false, false);
+        }
+
         documentPath = $"/{documentPath.Trim('/')}";
 
         var attachments =
@@ -77,36 +87,40 @@ public class AttachmentMigrator(
 
     public MigrateAttachmentResult MigrateAttachment(Guid ksAttachmentGuid, string additionalPath)
     {
-        var attachment = modelFacade
+        var attachments = modelFacade
             .SelectWhere<ICmsAttachment>("AttachmentGuid = @attachmentGuid", new SqlParameter("attachmentGuid", ksAttachmentGuid))
-            .SingleOrDefault();
+            .ToList();
 
-        if (attachment == null)
+        switch (attachments)
         {
-            logger.LogWarning("Attachment '{AttachmentGuid}' not found! => skipping", ksAttachmentGuid);
-            protocol.Append(HandbookReferences.TemporaryAttachmentMigrationIsNotSupported.WithData(new { AttachmentGuid = ksAttachmentGuid, }));
-            return new MigrateAttachmentResult(false, true);
+            case { Count: 0 }:
+            {
+                logger.LogWarning("Attachment '{AttachmentGuid}' not found! => skipping", ksAttachmentGuid);
+                protocol.Append(HandbookReferences.TemporaryAttachmentMigrationIsNotSupported.WithData(new { AttachmentGuid = ksAttachmentGuid }));
+                return new MigrateAttachmentResult(false, true);
+            }
+            case [var attachment]:
+            {
+                return MigrateAttachment(attachment, additionalPath);
+            }
+            default:
+            {
+                logger.LogWarning("Attachment '{AttachmentGuid}' found multiple times! => skipping", ksAttachmentGuid);
+                protocol.Append(HandbookReferences.NonUniqueEntityGuid.WithData(new { AttachmentGuid = ksAttachmentGuid, AttachmentIds = attachments.Select(a => a.AttachmentID) }));
+                return new MigrateAttachmentResult(false, true);
+            }
         }
-
-        return MigrateAttachment(attachment, additionalPath);
     }
 
     public MigrateAttachmentResult MigrateAttachment(ICmsAttachment ksAttachment, string? additionalMediaPath = null)
     {
-        // TODO tomas.krch: 2022-08-18 directory validation only -_ replace!
         protocol.FetchedSource(ksAttachment);
 
         if (ksAttachment.AttachmentFormGUID != null)
         {
             logger.LogWarning("Attachment '{AttachmentGuid}' is temporary => skipping", ksAttachment.AttachmentGUID);
-            protocol.Append(HandbookReferences.TemporaryAttachmentMigrationIsNotSupported.WithData(new
-            {
-                ksAttachment.AttachmentID,
-                ksAttachment.AttachmentGUID,
-                ksAttachment.AttachmentName,
-                ksAttachment.AttachmentSiteID
-            }));
-            return new(false, true);
+            protocol.Append(HandbookReferences.TemporaryAttachmentMigrationIsNotSupported.WithData(new { ksAttachment.AttachmentID, ksAttachment.AttachmentGUID, ksAttachment.AttachmentName, ksAttachment.AttachmentSiteID }));
+            return new MigrateAttachmentResult(false, true);
         }
 
         var ksAttachmentDocument = ksAttachment.AttachmentDocumentID is { } attachmentDocumentId
@@ -118,9 +132,9 @@ public class AttachmentMigrator(
             : null;
 
         var site = modelFacade.SelectById<ICmsSite>(ksAttachment.AttachmentSiteID) ?? throw new InvalidOperationException("Site not exists!");
-        if (!TryEnsureTargetLibraryExists(ksAttachment.AttachmentSiteID, site.SiteName, out var targetMediaLibraryId))
+        if (!TryEnsureTargetLibraryExists(ksAttachment.AttachmentSiteID, site.SiteName, out int targetMediaLibraryId))
         {
-            return new(false, false);
+            return new MigrateAttachmentResult(false, false);
         }
 
         var uploadedFile = CreateUploadFileFromAttachment(ksAttachment);
@@ -131,14 +145,14 @@ public class AttachmentMigrator(
                 .WithIdentityPrint(ksAttachment)
                 .WithMessage("Failed to create dummy upload file containing data")
             );
-            return new(false, true);
+            return new MigrateAttachmentResult(false, true);
         }
 
         var mediaFile = mediaFileFacade.GetMediaFile(ksAttachment.AttachmentGUID);
 
         protocol.FetchedTarget(mediaFile);
 
-        var librarySubFolder = "";
+        string librarySubFolder = "";
 
         if (ksNode != null)
         {
@@ -147,7 +161,7 @@ public class AttachmentMigrator(
 
         if (!string.IsNullOrWhiteSpace(additionalMediaPath) && (ksAttachment.AttachmentIsUnsorted != true || ksAttachment.AttachmentGroupGUID != null))
         {
-            librarySubFolder = System.IO.Path.Combine(librarySubFolder, additionalMediaPath);
+            librarySubFolder = Path.Combine(librarySubFolder, additionalMediaPath);
         }
 
         var mapped = attachmentMapper.Map(new CmsAttachmentMapperSource(ksAttachment, targetMediaLibraryId, uploadedFile, librarySubFolder, ksNode), mediaFile);
@@ -169,7 +183,7 @@ public class AttachmentMigrator(
                 protocol.Success(ksAttachmentDocument, mediaFileInfo, mapped);
                 logger.LogEntitySetAction(newInstance, mediaFileInfo);
 
-                return new(true, true, mediaFileInfo, MediaLibraryInfoProvider.ProviderObject.Get(targetMediaLibraryId));
+                return new MigrateAttachmentResult(true, true, mediaFileInfo, MediaLibraryInfoProvider.ProviderObject.Get(targetMediaLibraryId));
             }
             catch (Exception exception)
             {
@@ -177,16 +191,12 @@ public class AttachmentMigrator(
                 protocol.Append(HandbookReferences.ErrorCreatingTargetInstance<MediaFileInfo>(exception)
                     .NeedsManualAction()
                     .WithIdentityPrint(mediaFileInfo)
-                    .WithData(new
-                    {
-                        mediaFileInfo.FileGUID,
-                        mediaFileInfo.FileName
-                    })
+                    .WithData(new { mediaFileInfo.FileGUID, mediaFileInfo.FileName })
                 );
             }
         }
 
-        return new(false, true);
+        return new MigrateAttachmentResult(false, true);
     }
 
     private IUploadedFile? CreateUploadFileFromAttachment(ICmsAttachment attachment)
@@ -196,23 +206,18 @@ public class AttachmentMigrator(
             var ms = new MemoryStream(attachment.AttachmentBinary);
             return DummyUploadedFile.FromStream(ms, attachment.AttachmentMimeType, attachment.AttachmentSize, attachment.AttachmentName);
         }
-        else
-        {
-            return null;
-        }
+
+        return null;
     }
-
-
-    private readonly ConcurrentDictionary<(string libraryName, int siteId), int> _mediaLibraryIdCache = new();
 
     private bool TryEnsureTargetLibraryExists(int targetSiteId, string targetSiteName, out int targetLibraryId)
     {
-        var targetLibraryCodeName = $"AttachmentsForSite{targetSiteName}";
-        var targetLibraryDisplayName = $"Attachments for site {targetSiteName}";
+        string targetLibraryCodeName = $"AttachmentsForSite{targetSiteName}";
+        string targetLibraryDisplayName = $"Attachments for site {targetSiteName}";
         using var dbContext = kxpContextFactory.CreateDbContext();
         try
         {
-            targetLibraryId = _mediaLibraryIdCache.GetOrAdd((targetLibraryCodeName, targetSiteId), static (arg, context) => MediaLibraryFactory(arg, context),
+            targetLibraryId = mediaLibraryIdCache.GetOrAdd((targetLibraryCodeName, targetSiteId), static (arg, context) => MediaLibraryFactory(arg, context),
                 new MediaLibraryFactoryContext(mediaFileFacade, targetLibraryCodeName, targetLibraryDisplayName, dbContext));
 
             return true;
@@ -222,7 +227,7 @@ public class AttachmentMigrator(
             logger.LogError(exception, "creating target media library failed");
             protocol.Append(HandbookReferences.ErrorCreatingTargetInstance<MediaLibraryInfo>(exception)
                 .NeedsManualAction()
-                .WithData(new { TargetLibraryCodeName = targetLibraryCodeName, targetSiteId, })
+                .WithData(new { TargetLibraryCodeName = targetLibraryCodeName, targetSiteId })
             );
         }
 
@@ -230,28 +235,28 @@ public class AttachmentMigrator(
         return false;
     }
 
-    private record MediaLibraryFactoryContext(KxpMediaFileFacade MediaFileFacade, string TargetLibraryCodeName, string TargetLibraryDisplayName, KxpContext DbContext);
-
-    private static readonly Regex SanitizationRegex =
-        RegexHelper.GetRegex("[^-_a-z0-9]", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.CultureInvariant);
-
-    private static readonly Regex LibraryPathValidationRegex =
-        RegexHelper.GetRegex("^[-_a-z0-9]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.CultureInvariant);
-
     private static int MediaLibraryFactory((string libraryName, int siteId) arg, MediaLibraryFactoryContext context)
     {
-        var (libraryName, siteId) = arg;
+        (string libraryName, int siteId) = arg;
 
         // TODO tomas.krch: 2023-11-02 libraries now globalized, where do i put conflicting directories?
         var tml = context.DbContext.MediaLibraries.SingleOrDefault(ml => ml.LibraryName == libraryName);
 
-        var libraryDirectory = context.TargetLibraryCodeName;
-        if (!LibraryPathValidationRegex.IsMatch(libraryDirectory))
+        string libraryDirectory = context.TargetLibraryCodeName;
+        if (!libraryPathValidationRegex.IsMatch(libraryDirectory))
         {
-            libraryDirectory = SanitizationRegex.Replace(libraryDirectory, "_");
+            libraryDirectory = sanitizationRegex.Replace(libraryDirectory, "_");
         }
 
         return tml?.LibraryId ?? context.MediaFileFacade
             .CreateMediaLibrary(siteId, libraryDirectory, "Created by Xperience Migration.Toolkit", context.TargetLibraryCodeName, context.TargetLibraryDisplayName).LibraryID;
     }
+
+    public record MigrateAttachmentResult(
+        bool Success,
+        bool CanContinue,
+        MediaFileInfo? MediaFileInfo = null,
+        MediaLibraryInfo? MediaLibraryInfo = null);
+
+    private record MediaLibraryFactoryContext(KxpMediaFileFacade MediaFileFacade, string TargetLibraryCodeName, string TargetLibraryDisplayName, KxpContext DbContext);
 }

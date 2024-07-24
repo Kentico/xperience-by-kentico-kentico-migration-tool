@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("OM_ActivityType")]
-public partial class OmActivityType
+public class OmActivityType
 {
     [Key]
     [Column("ActivityTypeID")]

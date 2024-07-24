@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("CONTENT_BlogPost")]
-public partial class ContentBlogPost
+public class ContentBlogPost
 {
     [Key]
     [Column("BlogPostID")]

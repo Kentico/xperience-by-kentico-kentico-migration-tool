@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -10,7 +9,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("TransitionEndStepId", Name = "IX_CMS_WorkflowTransition_TransitionEndStepID")]
 [Index("TransitionStartStepId", "TransitionSourcePointGuid", "TransitionEndStepId", Name = "IX_CMS_WorkflowTransition_TransitionStartStepID_TransitionSourcePointGUID_TransitionEndStepID", IsUnique = true)]
 [Index("TransitionWorkflowId", Name = "IX_CMS_WorkflowTransition_TransitionWorkflowID")]
-public partial class CmsWorkflowTransition
+public class CmsWorkflowTransition
 {
     [Key]
     [Column("TransitionID")]

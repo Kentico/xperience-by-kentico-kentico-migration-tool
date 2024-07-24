@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("SharePoint_SharePointConnection")]
 [Index("SharePointConnectionSiteId", Name = "IX_SharePoint_SharePointConnection_SharePointConnectionSiteID")]
-public partial class SharePointSharePointConnection
+public class SharePointSharePointConnection
 {
     [Key]
     [Column("SharePointConnectionID")]

@@ -1,15 +1,16 @@
-namespace Migration.Toolkit.KXP.Api;
-
 using CMS.DataEngine;
+
 using Microsoft.Extensions.Logging;
+
+namespace Migration.Toolkit.KXP.Api;
 
 public class KxpApiInitializer(ILogger<KxpApiInitializer> logger)
 {
-    private bool _apiInitializationCalled = false;
+    private bool apiInitializationCalled;
 
     public bool EnsureApiIsInitialized()
     {
-        if (!_apiInitializationCalled)
+        if (!apiInitializationCalled)
         {
             logger.LogTrace("Kxp api initialization called");
             if (!CMSApplication.Init())
@@ -17,11 +18,9 @@ public class KxpApiInitializer(ILogger<KxpApiInitializer> logger)
                 logger.LogError("Kxp api initialization failed!");
                 return false;
             }
-            else
-            {
-                _apiInitializationCalled = true;
-                logger.LogInformation("Kxp api initialization finished");
-            }
+
+            apiInitializationCalled = true;
+            logger.LogInformation("Kxp api initialization finished");
         }
         else
         {

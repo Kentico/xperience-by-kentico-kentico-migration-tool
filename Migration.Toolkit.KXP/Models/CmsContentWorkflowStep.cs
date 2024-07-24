@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("CMS_ContentWorkflowStep")]
 [Index("ContentWorkflowStepName", Name = "IX_CMS_ContentWorkflowStep_ContentWorkflowStepName", IsUnique = true)]
 [Index("ContentWorkflowStepWorkflowId", Name = "IX_CMS_ContentWorkflowStep_ContentWorkflowStepWorkflowID")]
-public partial class CmsContentWorkflowStep
+public class CmsContentWorkflowStep
 {
     [Key]
     [Column("ContentWorkflowStepID")]

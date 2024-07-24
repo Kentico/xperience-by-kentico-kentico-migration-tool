@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -11,7 +10,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("WebPartName", Name = "IX_CMS_WebPart_WebPartName")]
 [Index("WebPartParentId", Name = "IX_CMS_WebPart_WebPartParentID")]
 [Index("WebPartResourceId", Name = "IX_CMS_WebPart_WebPartResourceID")]
-public partial class CmsWebPart
+public class CmsWebPart
 {
     [Key]
     [Column("WebPartID")]

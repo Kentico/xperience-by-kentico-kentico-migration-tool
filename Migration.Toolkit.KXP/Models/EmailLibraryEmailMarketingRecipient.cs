@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("EmailLibrary_EmailMarketingRecipient")]
 [Index("EmailMarketingRecipientContactId", Name = "IX_EmailLibrary_EmailMarketingRecipient_EmailMarketingRecipientContactID")]
 [Index("EmailMarketingRecipientEmailConfigurationId", Name = "IX_EmailLibrary_EmailMarketingRecipient_EmailMarketingRecipientEmailConfigurationID")]
-public partial class EmailLibraryEmailMarketingRecipient
+public class EmailLibraryEmailMarketingRecipient
 {
     [Key]
     [Column("EmailMarketingRecipientID")]

@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("Newsletter_OpenedEmail")]
 [Index("OpenedEmailIssueId", Name = "IX_Newsletter_OpenedEmail_OpenedEmailIssueID")]
-public partial class NewsletterOpenedEmail
+public class NewsletterOpenedEmail
 {
     [Key]
     [Column("OpenedEmailID")]

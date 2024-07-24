@@ -1,17 +1,18 @@
-namespace Migration.Toolkit.Source;
-
 using System.Runtime.CompilerServices;
-using CMS.DataEngine;
+
 using Microsoft.Data.SqlClient;
+
 using Migration.Toolkit.Common;
+
+namespace Migration.Toolkit.Source;
 
 public class ModelFacade(ToolkitConfiguration configuration)
 {
-    private SemanticVersion? _version;
+    private SemanticVersion? semanticVersion;
 
     public async IAsyncEnumerable<T> SelectAllAsync<T>([EnumeratorCancellation] CancellationToken cancellationToken) where T : ISourceModel<T>
     {
-        _version ??= SelectVersion();
+        semanticVersion ??= SelectVersion();
 
         await using var conn = GetConnection();
         await conn.OpenAsync(cancellationToken);
@@ -20,27 +21,32 @@ public class ModelFacade(ToolkitConfiguration configuration)
         await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken))
         {
-            yield return T.FromReader(reader, _version);
+            yield return T.FromReader(reader, semanticVersion);
         }
     }
 
-    public IEnumerable<T> SelectAll<T>() where T : ISourceModel<T>
+    public IEnumerable<T> SelectAll<T>(string? orderBy = null) where T : ISourceModel<T>
     {
-        _version ??= SelectVersion();
+        semanticVersion ??= SelectVersion();
         using var conn = GetConnection();
         conn.Open();
         var cmd = conn.CreateCommand();
         cmd.CommandText = $"SELECT * FROM {T.TableName}";
+        if (!string.IsNullOrWhiteSpace(orderBy))
+        {
+            cmd.CommandText += orderBy;
+        }
+
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
         {
-            yield return T.FromReader(reader, _version);
+            yield return T.FromReader(reader, semanticVersion);
         }
     }
 
     public IEnumerable<T> SelectWhere<T>(string where, params SqlParameter[] parameters) where T : ISourceModel<T>
     {
-        _version ??= SelectVersion();
+        semanticVersion ??= SelectVersion();
         using var conn = GetConnection();
         conn.Open();
         var cmd = conn.CreateCommand();
@@ -49,19 +55,19 @@ public class ModelFacade(ToolkitConfiguration configuration)
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
         {
-            yield return T.FromReader(reader, _version);
+            yield return T.FromReader(reader, semanticVersion);
         }
     }
 
     public bool IsAvailable<T>() where T : ISourceModel<T>
     {
-        _version ??= SelectVersion();
-        return T.IsAvailable(_version);
+        semanticVersion ??= SelectVersion();
+        return T.IsAvailable(semanticVersion);
     }
 
     public IEnumerable<T> Select<T>(string where, string orderBy, params SqlParameter[] parameters) where T : ISourceModel<T>
     {
-        _version ??= SelectVersion();
+        semanticVersion ??= SelectVersion();
         using var conn = GetConnection();
         conn.Open();
         var cmd = conn.CreateCommand();
@@ -70,13 +76,13 @@ public class ModelFacade(ToolkitConfiguration configuration)
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
         {
-            yield return T.FromReader(reader, _version);
+            yield return T.FromReader(reader, semanticVersion);
         }
     }
 
     public IEnumerable<TResult> Select<TResult>(string query, Func<SqlDataReader, SemanticVersion, TResult> convertor, params SqlParameter[] parameters)
     {
-        _version ??= SelectVersion();
+        semanticVersion ??= SelectVersion();
         using var conn = GetConnection();
         conn.Open();
         var cmd = conn.CreateCommand();
@@ -85,21 +91,25 @@ public class ModelFacade(ToolkitConfiguration configuration)
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
         {
-            yield return convertor(reader, _version);
+            yield return convertor(reader, semanticVersion);
         }
     }
 
     public T? SelectById<T>(int? id) where T : ISourceModel<T>
     {
-        if (!id.HasValue) return default;
-        _version ??= SelectVersion();
+        if (!id.HasValue)
+        {
+            return default;
+        }
+
+        semanticVersion ??= SelectVersion();
         using var conn = GetConnection();
         conn.Open();
         var cmd = conn.CreateCommand();
-        cmd.CommandText = $"SELECT * FROM {T.TableName} WHERE {T.GetPrimaryKeyName(_version)}={id}";
+        cmd.CommandText = $"SELECT * FROM {T.TableName} WHERE {T.GetPrimaryKeyName(semanticVersion)}={id}";
         using var reader = cmd.ExecuteReader();
         reader.Read();
-        var result = T.FromReader(reader, _version);
+        var result = T.FromReader(reader, semanticVersion);
         if (reader.Read())
         {
             throw new InvalidOperationException("Multiple items were found by ID");
@@ -116,26 +126,25 @@ public class ModelFacade(ToolkitConfiguration configuration)
             return false;
         }
 
-        _version ??= SelectVersion();
+        semanticVersion ??= SelectVersion();
         using var conn = GetConnection();
         conn.Open();
         var cmd = conn.CreateCommand();
-        cmd.CommandText = $"SELECT {T.GuidColumnName} FROM {T.TableName} WHERE {T.GetPrimaryKeyName(_version)}={id}";
-        var ret = cmd.ExecuteScalar();
+        cmd.CommandText = $"SELECT {T.GuidColumnName} FROM {T.TableName} WHERE {T.GetPrimaryKeyName(semanticVersion)}={id}";
+        object ret = cmd.ExecuteScalar();
         if (ret is Guid guid)
         {
             objectGuid = guid;
             return true;
         }
-        else if (ret is DBNull)
+
+        if (ret is DBNull)
         {
             objectGuid = null;
             return true;
         }
-        else
-        {
-            throw new InvalidOperationException($"Unexpected return value: '{ret}'");
-        }
+
+        throw new InvalidOperationException($"Unexpected return value: '{ret}'");
     }
 
     public SemanticVersion SelectVersion()
@@ -146,7 +155,7 @@ public class ModelFacade(ToolkitConfiguration configuration)
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT KeyValue FROM CMS_SettingsKey WHERE KeyName LIKE 'CMSDataVersion'";
 
-        var cmsVersion = "";
+        string cmsVersion = "";
         if (cmd.ExecuteScalar() is string cmsDbVersion)
         {
             cmsVersion += cmsDbVersion;
@@ -172,18 +181,15 @@ public class ModelFacade(ToolkitConfiguration configuration)
             : throw new InvalidOperationException("Unable to determine source instance version");
     }
 
-    private SqlConnection GetConnection()
-    {
-        return new SqlConnection(configuration.KxConnectionString);
-    }
+    private SqlConnection GetConnection() => new(configuration.KxConnectionString);
 
     public string HashPath(string path)
     {
-        _version ??= SelectVersion();
+        semanticVersion ??= SelectVersion();
         using var conn = GetConnection();
         conn.Open();
         var cmd = conn.CreateCommand();
-        cmd.CommandText = $"SELECT CONVERT(VARCHAR(64), HASHBYTES('SHA2_256', LOWER(@path)), 2)";
+        cmd.CommandText = "SELECT CONVERT(VARCHAR(64), HASHBYTES('SHA2_256', LOWER(@path)), 2)";
         cmd.Parameters.AddWithValue("path", path);
         if (cmd.ExecuteScalar() is string s)
         {

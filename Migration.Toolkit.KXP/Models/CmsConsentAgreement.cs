@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_ConsentAgreement")]
 [Index("ConsentAgreementContactId", "ConsentAgreementConsentId", Name = "IX_CMS_ConsentAgreement_ConsentAgreementContactID_ConsentAgreementConsentID")]
-public partial class CmsConsentAgreement
+public class CmsConsentAgreement
 {
     [Key]
     [Column("ConsentAgreementID")]

@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -10,7 +9,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("InvitationGroupId", Name = "IX_Community_Invitation_InvitationGroupID")]
 [Index("InvitedByUserId", Name = "IX_Community_Invitation_InvitedByUserID")]
 [Index("InvitedUserId", Name = "IX_Community_Invitation_InvitedUserID")]
-public partial class CommunityInvitation
+public class CommunityInvitation
 {
     [Key]
     [Column("InvitationID")]

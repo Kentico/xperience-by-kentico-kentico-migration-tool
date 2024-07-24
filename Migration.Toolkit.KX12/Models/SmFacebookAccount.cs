@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("SM_FacebookAccount")]
 [Index("FacebookAccountFacebookApplicationId", Name = "IX_SM_FacebookAccount_FacebookAccountFacebookApplicationID")]
 [Index("FacebookAccountSiteId", Name = "IX_SM_FacebookAccount_FacebookAccountSiteID")]
-public partial class SmFacebookAccount
+public class SmFacebookAccount
 {
     [Key]
     [Column("FacebookAccountID")]

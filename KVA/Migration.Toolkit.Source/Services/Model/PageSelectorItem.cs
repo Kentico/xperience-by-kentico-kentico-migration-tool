@@ -1,6 +1,6 @@
-namespace Migration.Toolkit.Source.Services.Model;
-
 using Newtonsoft.Json;
+
+namespace Migration.Toolkit.Source.Services.Model;
 
 /// <summary>Represents an item for a page selector.</summary>
 public class PageSelectorItem

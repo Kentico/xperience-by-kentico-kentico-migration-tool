@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -10,7 +9,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("ElementGuid", Name = "IX_CMS_UIElement_ElementGUID", IsUnique = true)]
 [Index("ElementPageTemplateId", Name = "IX_CMS_UIElement_ElementPageTemplateID")]
 [Index("ElementParentId", Name = "IX_CMS_UIElement_ElementParentID")]
-public partial class CmsUielement
+public class CmsUielement
 {
     [Key]
     [Column("ElementID")]

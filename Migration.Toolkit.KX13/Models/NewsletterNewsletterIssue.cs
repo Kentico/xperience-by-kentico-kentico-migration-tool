@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -12,7 +11,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("IssueSiteId", Name = "IX_Newsletter_NewsletterIssue_IssueSiteID")]
 [Index("IssueTemplateId", Name = "IX_Newsletter_NewsletterIssue_IssueTemplateID")]
 [Index("IssueVariantOfIssueId", Name = "IX_Newsletter_NewsletterIssue_IssueVariantOfIssueID")]
-public partial class NewsletterNewsletterIssue
+public class NewsletterNewsletterIssue
 {
     [Key]
     [Column("IssueID")]

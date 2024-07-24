@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -11,7 +10,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("PaymentOptionFailedOrderStatusId", Name = "IX_COM_PaymentOption_PaymentOptionFailedOrderStatusID")]
 [Index("PaymentOptionSiteId", Name = "IX_COM_PaymentOption_PaymentOptionSiteID")]
 [Index("PaymentOptionSucceededOrderStatusId", Name = "IX_COM_PaymentOption_PaymentOptionSucceededOrderStatusID")]
-public partial class ComPaymentOption
+public class ComPaymentOption
 {
     [Key]
     [Column("PaymentOptionID")]

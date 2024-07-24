@@ -1,10 +1,10 @@
-namespace Migration.Toolkit.Tests;
-
 using Migration.Toolkit.Common.Helpers;
+
+namespace Migration.Toolkit.Tests;
 
 public class UnitTest1
 {
-    [Theory()]
+    [Theory]
     // relative permanent link media file
     [InlineData("~/getmedia/CCEAD0F0-E2BF-459B-814A-36699E5C773E/somefile.jpeg", null, "CCEAD0F0-E2BF-459B-814A-36699E5C773E", true, MediaKind.MediaFile, MediaLinkKind.Guid)]
     // relative permanent link media file with query
@@ -35,7 +35,6 @@ public class UnitTest1
     [InlineData("/CCEAD0F0-E2BF-459B-814A-36699E5C773E/myfile.jpeg", null, null, false, MediaKind.None, MediaLinkKind.None)]
     // invalid format
     [InlineData(null, null, null, false, MediaKind.None, MediaLinkKind.None)]
-
     /*
      * Direct file path – a direct path to the media file on the file system. For example: ~/MediaLibraryFolder/sample_image.jpg. These URLs change whenever the file is renamed or moved to a different media library (directory on the file system).
      * also depends on storage settings - Settings -> Content -> Media -> Media libraries folder !!!
@@ -47,11 +46,11 @@ public class UnitTest1
     // [InlineData("~/custom_library_global_dir/mysite/sub-dir/sub-sub-dir/somefile.png?ext=.png", "/custom_library_global_dir/mysite/sub-dir/sub-sub-dir/somefile.png", null, true, MediaKind.MediaFile, MediaLinkKind.DirectMediaPath)]
     // direct media path is not supported for absolute physical paths eg. C:\MyLibraries
     // direct media path is not supported for absolute network share paths eg. \\myserver\MyLibraries
-    public void ParseMediaLink(string mediaUri, string? expectedPath, string? expectedGuid, bool expectSuccess, MediaKind expectedMediaKind, MediaLinkKind expectedMediaLinkKind)
+    public void ParseMediaLink(string? mediaUri, string? expectedPath, string? expectedGuid, bool expectSuccess, MediaKind expectedMediaKind, MediaLinkKind expectedMediaLinkKind)
     {
         Guid? expectedMediaId = Guid.TryParse(expectedGuid ?? "", out var eg) ? eg : null;
 
-        var (success, mediaLinkKind, mediaKind, path, mediaGuid) = MediaHelper.MatchMediaLink(mediaUri);
+        (bool success, var mediaLinkKind, var mediaKind, string? path, var mediaGuid) = MediaHelper.MatchMediaLink(mediaUri);
 
         Assert.Equal(expectedMediaKind, mediaKind);
         Assert.Equal(expectedMediaLinkKind, mediaLinkKind);

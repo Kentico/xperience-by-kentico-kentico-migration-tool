@@ -1,10 +1,11 @@
-namespace Migration.Toolkit.Core.K11.Handlers;
-
 using CMS.DataProtection;
+
 using MediatR;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
@@ -13,20 +14,21 @@ using Migration.Toolkit.K11;
 using Migration.Toolkit.K11.Models;
 using Migration.Toolkit.KXP.Context;
 
+namespace Migration.Toolkit.Core.K11.Handlers;
+
 public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataProtectionCommand, CommandResult>, IDisposable
 {
-    private readonly ILogger<MigrateDataProtectionCommandHandler> _logger;
-    private readonly IDbContextFactory<KxpContext> _kxpContextFactory;
-    private readonly IDbContextFactory<K11Context> _k11ContextFactory;
-    private readonly IEntityMapper<CmsConsent, KXP.Models.CmsConsent> _consentMapper;
-    private readonly IEntityMapper<CmsConsentArchive, KXP.Models.CmsConsentArchive> _consentArchiveMapper;
-    private readonly IEntityMapper<CmsConsentAgreement, KXP.Models.CmsConsentAgreement> _consentAgreementMapper;
-    private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
-    private readonly IProtocol _protocol;
+    private static readonly int batchSize = 1000;
+    private readonly IEntityMapper<CmsConsentAgreement, KXP.Models.CmsConsentAgreement> consentAgreementMapper;
+    private readonly IEntityMapper<CmsConsentArchive, KXP.Models.CmsConsentArchive> consentArchiveMapper;
+    private readonly IEntityMapper<CmsConsent, KXP.Models.CmsConsent> consentMapper;
+    private readonly IDbContextFactory<K11Context> k11ContextFactory;
+    private readonly IDbContextFactory<KxpContext> kxpContextFactory;
+    private readonly ILogger<MigrateDataProtectionCommandHandler> logger;
+    private readonly PrimaryKeyMappingContext primaryKeyMappingContext;
+    private readonly IProtocol protocol;
 
-    private KxpContext _kxpContext;
-
-    private static readonly int _batchSize = 1000;
+    private KxpContext kxpContext;
 
     public MigrateDataProtectionCommandHandler(
         ILogger<MigrateDataProtectionCommandHandler> logger,
@@ -39,21 +41,21 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
         IProtocol protocol
     )
     {
-        _logger = logger;
-        _kxpContextFactory = kxpContextFactory;
-        _k11ContextFactory = k11ContextFactory;
-        _consentMapper = consentMapper;
-        _consentArchiveMapper = consentArchiveMapper;
-        _consentAgreementMapper = consentAgreementMapper;
-        _primaryKeyMappingContext = primaryKeyMappingContext;
-        _protocol = protocol;
-        _kxpContext = _kxpContextFactory.CreateDbContext();
+        this.logger = logger;
+        this.kxpContextFactory = kxpContextFactory;
+        this.k11ContextFactory = k11ContextFactory;
+        this.consentMapper = consentMapper;
+        this.consentArchiveMapper = consentArchiveMapper;
+        this.consentAgreementMapper = consentAgreementMapper;
+        this.primaryKeyMappingContext = primaryKeyMappingContext;
+        this.protocol = protocol;
+        kxpContext = this.kxpContextFactory.CreateDbContext();
     }
+
+    public void Dispose() => kxpContext.Dispose();
 
     public async Task<CommandResult> Handle(MigrateDataProtectionCommand request, CancellationToken cancellationToken)
     {
-        var batchSize = _batchSize;
-
         await MigrateConsent(cancellationToken);
         await MigrateConsentArchive(cancellationToken);
         await MigrateConsentAgreement(cancellationToken, batchSize);
@@ -63,52 +65,52 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
 
     private async Task<CommandResult> MigrateConsent(CancellationToken cancellationToken)
     {
-        await using var k11Context = await _k11ContextFactory.CreateDbContextAsync(cancellationToken);
+        await using var k11Context = await k11ContextFactory.CreateDbContextAsync(cancellationToken);
 
         foreach (var k11Consent in k11Context.CmsConsents)
         {
-            _protocol.FetchedSource(k11Consent);
-            _logger.LogTrace("Migrating consent {ConsentName} with ConsentGuid {ConsentGuid}", k11Consent.ConsentName, k11Consent.ConsentGuid);
+            protocol.FetchedSource(k11Consent);
+            logger.LogTrace("Migrating consent {ConsentName} with ConsentGuid {ConsentGuid}", k11Consent.ConsentName, k11Consent.ConsentGuid);
 
-            var kxoConsent = await _kxpContext.CmsConsents.FirstOrDefaultAsync(consent => consent.ConsentGuid == k11Consent.ConsentGuid, cancellationToken);
-            _protocol.FetchedTarget(kxoConsent);
+            var kxoConsent = await kxpContext.CmsConsents.FirstOrDefaultAsync(consent => consent.ConsentGuid == k11Consent.ConsentGuid, cancellationToken);
+            protocol.FetchedTarget(kxoConsent);
 
-            var mapped = _consentMapper.Map(k11Consent, kxoConsent);
-            _protocol.MappedTarget(mapped);
+            var mapped = consentMapper.Map(k11Consent, kxoConsent);
+            protocol.MappedTarget(mapped);
 
             if (mapped is { Success: true } result)
             {
-                var (cmsConsent, newInstance) = result;
+                (var cmsConsent, bool newInstance) = result;
                 ArgumentNullException.ThrowIfNull(cmsConsent, nameof(cmsConsent));
 
                 if (newInstance)
                 {
-                    _kxpContext.CmsConsents.Add(cmsConsent);
+                    kxpContext.CmsConsents.Add(cmsConsent);
                 }
                 else
                 {
-                    _kxpContext.CmsConsents.Update(cmsConsent);
+                    kxpContext.CmsConsents.Update(cmsConsent);
                 }
 
                 try
                 {
-                    await _kxpContext.SaveChangesAsync(cancellationToken);
+                    await kxpContext.SaveChangesAsync(cancellationToken);
 
-                    _protocol.Success(k11Consent, cmsConsent, mapped);
-                    _logger.LogEntitySetAction(newInstance, cmsConsent);
-                    _primaryKeyMappingContext.SetMapping<CmsConsent>(r => r.ConsentId, k11Consent.ConsentId, cmsConsent.ConsentId);
+                    protocol.Success(k11Consent, cmsConsent, mapped);
+                    logger.LogEntitySetAction(newInstance, cmsConsent);
+                    primaryKeyMappingContext.SetMapping<CmsConsent>(r => r.ConsentId, k11Consent.ConsentId, cmsConsent.ConsentId);
                 }
                 /*Violation in unique index or Violation in unique constraint */
                 catch (DbUpdateException dbUpdateException) when (dbUpdateException.InnerException is SqlException { Number: 2601 or 2627 } sqlException)
                 {
-                    _logger.LogEntitySetError(sqlException, newInstance, k11Consent);
-                    _protocol.Append(HandbookReferences
+                    logger.LogEntitySetError(sqlException, newInstance, k11Consent);
+                    protocol.Append(HandbookReferences
                         .DbConstraintBroken(sqlException, k11Consent)
                         .WithMessage("Failed to migrate consent, target database constraint broken.")
                     );
 
-                    await _kxpContext.DisposeAsync();
-                    _kxpContext = await _kxpContextFactory.CreateDbContextAsync(cancellationToken);
+                    await kxpContext.DisposeAsync();
+                    kxpContext = await kxpContextFactory.CreateDbContextAsync(cancellationToken);
                 }
             }
         }
@@ -118,53 +120,53 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
 
     private async Task<CommandResult> MigrateConsentArchive(CancellationToken cancellationToken)
     {
-        await using var k11Context = await _k11ContextFactory.CreateDbContextAsync(cancellationToken);
+        await using var k11Context = await k11ContextFactory.CreateDbContextAsync(cancellationToken);
 
         foreach (var k11ArchiveConsent in k11Context.CmsConsentArchives)
         {
-            _protocol.FetchedSource(k11ArchiveConsent);
-            _logger.LogTrace("Migrating consent archive with ConsentArchiveGuid {ConsentGuid}", k11ArchiveConsent.ConsentArchiveGuid);
+            protocol.FetchedSource(k11ArchiveConsent);
+            logger.LogTrace("Migrating consent archive with ConsentArchiveGuid {ConsentGuid}", k11ArchiveConsent.ConsentArchiveGuid);
 
-            var kxoConsentArchive = await _kxpContext.CmsConsentArchives.FirstOrDefaultAsync(consentArchive => consentArchive.ConsentArchiveGuid == k11ArchiveConsent.ConsentArchiveGuid, cancellationToken);
-            _protocol.FetchedTarget(kxoConsentArchive);
+            var kxoConsentArchive = await kxpContext.CmsConsentArchives.FirstOrDefaultAsync(consentArchive => consentArchive.ConsentArchiveGuid == k11ArchiveConsent.ConsentArchiveGuid, cancellationToken);
+            protocol.FetchedTarget(kxoConsentArchive);
 
-            var mapped = _consentArchiveMapper.Map(k11ArchiveConsent, kxoConsentArchive);
-            _protocol.MappedTarget(mapped);
+            var mapped = consentArchiveMapper.Map(k11ArchiveConsent, kxoConsentArchive);
+            protocol.MappedTarget(mapped);
 
             if (mapped is { Success: true } result)
             {
-                var (cmsConsentArchive, newInstance) = result;
+                (var cmsConsentArchive, bool newInstance) = result;
                 ArgumentNullException.ThrowIfNull(cmsConsentArchive, nameof(cmsConsentArchive));
 
                 if (newInstance)
                 {
-                    _kxpContext.CmsConsentArchives.Add(cmsConsentArchive);
+                    kxpContext.CmsConsentArchives.Add(cmsConsentArchive);
                 }
                 else
                 {
-                    _kxpContext.CmsConsentArchives.Update(cmsConsentArchive);
+                    kxpContext.CmsConsentArchives.Update(cmsConsentArchive);
                 }
 
                 try
                 {
-                    await _kxpContext.SaveChangesAsync(cancellationToken);
+                    await kxpContext.SaveChangesAsync(cancellationToken);
 
-                    _protocol.Success(k11ArchiveConsent, cmsConsentArchive, mapped);
-                    _logger.LogEntitySetAction(newInstance, cmsConsentArchive);
-                    _primaryKeyMappingContext.SetMapping<CmsConsentArchive>(r => r.ConsentArchiveGuid,
+                    protocol.Success(k11ArchiveConsent, cmsConsentArchive, mapped);
+                    logger.LogEntitySetAction(newInstance, cmsConsentArchive);
+                    primaryKeyMappingContext.SetMapping<CmsConsentArchive>(r => r.ConsentArchiveGuid,
                         k11ArchiveConsent.ConsentArchiveId, cmsConsentArchive.ConsentArchiveId);
                 }
                 /*Violation in unique index or Violation in unique constraint */
                 catch (DbUpdateException dbUpdateException) when (dbUpdateException.InnerException is SqlException { Number: 2601 or 2627 } sqlException)
                 {
-                    _logger.LogEntitySetError(sqlException, newInstance, k11ArchiveConsent);
-                    _protocol.Append(HandbookReferences
+                    logger.LogEntitySetError(sqlException, newInstance, k11ArchiveConsent);
+                    protocol.Append(HandbookReferences
                         .DbConstraintBroken(sqlException, k11ArchiveConsent)
                         .WithMessage("Failed to migrate consent archive, target database constraint broken.")
                     );
 
-                    await _kxpContext.DisposeAsync();
-                    _kxpContext = await _kxpContextFactory.CreateDbContextAsync(cancellationToken);
+                    await kxpContext.DisposeAsync();
+                    kxpContext = await kxpContextFactory.CreateDbContextAsync(cancellationToken);
                 }
             }
         }
@@ -174,27 +176,27 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
 
     private async Task<CommandResult> MigrateConsentAgreement(CancellationToken cancellationToken, int batchSize)
     {
-        await using var k11Context = await _k11ContextFactory.CreateDbContextAsync(cancellationToken);
-        var index = 0;
-        var indexFull = 0;
+        await using var k11Context = await k11ContextFactory.CreateDbContextAsync(cancellationToken);
+        int index = 0;
+        int indexFull = 0;
         var consentAgreementUpdates = new List<KXP.Models.CmsConsentAgreement>();
         var consentAgreementNews = new List<KXP.Models.CmsConsentAgreement>();
-        var itemsCount = k11Context.CmsConsentAgreements.Count();
+        int itemsCount = k11Context.CmsConsentAgreements.Count();
 
         foreach (var k11ConsentAgreement in k11Context.CmsConsentAgreements)
         {
-            _protocol.FetchedSource(k11ConsentAgreement);
-            _logger.LogTrace("Migrating consent agreement with ConsentAgreementGuid {ConsentAgreementGuid}", k11ConsentAgreement.ConsentAgreementGuid);
+            protocol.FetchedSource(k11ConsentAgreement);
+            logger.LogTrace("Migrating consent agreement with ConsentAgreementGuid {ConsentAgreementGuid}", k11ConsentAgreement.ConsentAgreementGuid);
 
-            var kxoConsentAgreement = await _kxpContext.CmsConsentAgreements.FirstOrDefaultAsync(consentAgreement => consentAgreement.ConsentAgreementGuid == k11ConsentAgreement.ConsentAgreementGuid, cancellationToken);
-            _protocol.FetchedTarget(kxoConsentAgreement);
+            var kxoConsentAgreement = await kxpContext.CmsConsentAgreements.FirstOrDefaultAsync(consentAgreement => consentAgreement.ConsentAgreementGuid == k11ConsentAgreement.ConsentAgreementGuid, cancellationToken);
+            protocol.FetchedTarget(kxoConsentAgreement);
 
-            var mapped = _consentAgreementMapper.Map(k11ConsentAgreement, kxoConsentAgreement);
-            _protocol.MappedTarget(mapped);
+            var mapped = consentAgreementMapper.Map(k11ConsentAgreement, kxoConsentAgreement);
+            protocol.MappedTarget(mapped);
 
             if (mapped is { Success: true } result)
             {
-                var (cmsConsentAgreement, newInstance) = result;
+                (var cmsConsentAgreement, bool newInstance) = result;
                 ArgumentNullException.ThrowIfNull(cmsConsentAgreement, nameof(cmsConsentAgreement));
 
                 if (newInstance)
@@ -212,24 +214,24 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
 
             if (index == batchSize || indexFull == itemsCount)
             {
-                _kxpContext.CmsConsentAgreements.AddRange(consentAgreementNews);
-                _kxpContext.CmsConsentAgreements.UpdateRange(consentAgreementUpdates);
+                kxpContext.CmsConsentAgreements.AddRange(consentAgreementNews);
+                kxpContext.CmsConsentAgreements.UpdateRange(consentAgreementUpdates);
 
                 try
                 {
-                    await _kxpContext.SaveChangesAsync(cancellationToken);
+                    await kxpContext.SaveChangesAsync(cancellationToken);
 
                     foreach (var newK11ConsentAgreement in consentAgreementNews)
                     {
-                        _protocol.Success(k11ConsentAgreement, newK11ConsentAgreement, mapped);
-                        _logger.LogDebug("CmsConsentAgreement: with ConsentAgreementGuid \'{ConsentAgreementGuid}\' was inserted",
+                        protocol.Success(k11ConsentAgreement, newK11ConsentAgreement, mapped);
+                        logger.LogDebug("CmsConsentAgreement: with ConsentAgreementGuid \'{ConsentAgreementGuid}\' was inserted",
                             newK11ConsentAgreement.ConsentAgreementGuid);
                     }
 
                     foreach (var updateK11ConsentAgreement in consentAgreementUpdates)
                     {
-                        _protocol.Success(k11ConsentAgreement, updateK11ConsentAgreement, mapped);
-                        _logger.LogDebug("CmsConsentAgreement: with ConsentAgreementGuid \'{ConsentAgreementGuid}\' was updated",
+                        protocol.Success(k11ConsentAgreement, updateK11ConsentAgreement, mapped);
+                        logger.LogDebug("CmsConsentAgreement: with ConsentAgreementGuid \'{ConsentAgreementGuid}\' was updated",
                             updateK11ConsentAgreement.ConsentAgreementGuid);
                     }
                 }
@@ -238,47 +240,42 @@ public class MigrateDataProtectionCommandHandler : IRequestHandler<MigrateDataPr
                     sqlException.Message.Contains("Cannot insert duplicate key row in object")
                 )
                 {
-                    await _kxpContext.DisposeAsync();
+                    await kxpContext.DisposeAsync();
 
-                    _protocol.Append(HandbookReferences
+                    protocol.Append(HandbookReferences
                         .ErrorCreatingTargetInstance<KXP.Models.CmsConsentAgreement>(dbUpdateException)
                         .NeedsManualAction()
                         .WithIdentityPrints(consentAgreementNews)
                     );
-                    _logger.LogEntitiesSetError(dbUpdateException, true, consentAgreementNews);
+                    logger.LogEntitiesSetError(dbUpdateException, true, consentAgreementNews);
 
 
-                    _protocol.Append(HandbookReferences
+                    protocol.Append(HandbookReferences
                         .ErrorUpdatingTargetInstance<KXP.Models.CmsConsentAgreement>(dbUpdateException)
                         .NeedsManualAction()
                         .WithIdentityPrints(consentAgreementUpdates)
                     );
 
                     var cai = ConsentAgreementInfo.New();
-                    _protocol.Append(HandbookReferences
+                    protocol.Append(HandbookReferences
                         .ErrorUpdatingTargetInstance<KXP.Models.CmsConsentAgreement>(dbUpdateException)
                         .NeedsManualAction()
                         .WithIdentityPrint(cai)
                     );
 
-                    _logger.LogEntitiesSetError(dbUpdateException, false, consentAgreementUpdates);
+                    logger.LogEntitiesSetError(dbUpdateException, false, consentAgreementUpdates);
 
-                    _kxpContext = await _kxpContextFactory.CreateDbContextAsync(cancellationToken);
+                    kxpContext = await kxpContextFactory.CreateDbContextAsync(cancellationToken);
                 }
                 finally
                 {
                     index = 0;
-                    consentAgreementUpdates = new List<KXP.Models.CmsConsentAgreement>();
-                    consentAgreementNews = new List<KXP.Models.CmsConsentAgreement>();
+                    consentAgreementUpdates = [];
+                    consentAgreementNews = [];
                 }
             }
         }
 
         return new GenericCommandResult();
-    }
-
-    public void Dispose()
-    {
-        _kxpContext.Dispose();
     }
 }

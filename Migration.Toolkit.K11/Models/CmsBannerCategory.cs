@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("CMS_BannerCategory")]
 [Index("BannerCategoryName", "BannerCategorySiteId", Name = "IX_CMS_BannerCategory_BannerCategoryName_BannerCategorySiteID", IsUnique = true)]
 [Index("BannerCategorySiteId", Name = "IX_CMS_BannerCategory_BannerCategorySiteID")]
-public partial class CmsBannerCategory
+public class CmsBannerCategory
 {
     [Key]
     [Column("BannerCategoryID")]

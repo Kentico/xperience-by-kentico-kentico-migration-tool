@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -10,7 +9,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("Media_LibraryRolePermission")]
 [Index("PermissionId", Name = "IX_Media_LibraryRolePermission_PermissionID")]
 [Index("RoleId", Name = "IX_Media_LibraryRolePermission_RoleID")]
-public partial class MediaLibraryRolePermission
+public class MediaLibraryRolePermission
 {
     [Key]
     [Column("LibraryID")]

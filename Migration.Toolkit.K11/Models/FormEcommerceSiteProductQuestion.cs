@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("Form_EcommerceSite_ProductQuestion")]
-public partial class FormEcommerceSiteProductQuestion
+public class FormEcommerceSiteProductQuestion
 {
     [Key]
     [Column("ProductQuestionID")]

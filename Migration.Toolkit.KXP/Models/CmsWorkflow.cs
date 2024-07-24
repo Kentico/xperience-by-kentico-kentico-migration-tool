@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_Workflow")]
-public partial class CmsWorkflow
+public class CmsWorkflow
 {
     [Key]
     [Column("WorkflowID")]
@@ -63,8 +60,7 @@ public partial class CmsWorkflow
 
     public int? WorkflowRecurrenceType { get; set; }
 
-    [Required]
-    public bool? WorkflowEnabled { get; set; }
+    public bool WorkflowEnabled { get; set; }
 
     [InverseProperty("HistoryWorkflow")]
     public virtual ICollection<CmsAutomationHistory> CmsAutomationHistories { get; set; } = new List<CmsAutomationHistory>();

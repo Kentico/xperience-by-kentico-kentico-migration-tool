@@ -1,6 +1,6 @@
-namespace Migration.Toolkit.KX12.Context;
-
 using Microsoft.EntityFrameworkCore;
+
+namespace Migration.Toolkit.KX12.Context;
 
 public partial class KX12Context
 {

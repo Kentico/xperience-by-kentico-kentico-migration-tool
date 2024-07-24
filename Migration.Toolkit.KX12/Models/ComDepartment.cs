@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -11,7 +10,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("DepartmentDisplayName", Name = "IX_COM_Department_DepartmentDisplayName")]
 [Index("DepartmentName", "DepartmentSiteId", Name = "IX_COM_Department_DepartmentName_DepartmentSiteID", IsUnique = true)]
 [Index("DepartmentSiteId", Name = "IX_COM_Department_DepartmentSiteID")]
-public partial class ComDepartment
+public class ComDepartment
 {
     [Key]
     [Column("DepartmentID")]

@@ -1,13 +1,12 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
 
 [Keyless]
-public partial class ViewNewsletterSubscriptionsJoined
+public class ViewNewsletterSubscriptionsJoined
 {
     [Column("SubscriberID")]
     public int SubscriberId { get; set; }

@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -10,7 +9,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("RoleGroupId", Name = "IX_CMS_Role_RoleGroupID")]
 [Index("SiteId", "RoleId", Name = "IX_CMS_Role_SiteID_RoleID")]
 [Index("SiteId", "RoleName", "RoleGroupId", Name = "IX_CMS_Role_SiteID_RoleName_RoleGroupID", IsUnique = true)]
-public partial class CmsRole
+public class CmsRole
 {
     [Key]
     [Column("RoleID")]

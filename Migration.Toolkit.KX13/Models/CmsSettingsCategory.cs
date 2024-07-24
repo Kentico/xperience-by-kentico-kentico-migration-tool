@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("CMS_SettingsCategory")]
 [Index("CategoryParentId", Name = "IX_CMS_SettingsCategory_CategoryParentID")]
 [Index("CategoryResourceId", Name = "IX_CMS_SettingsCategory_CategoryResourceID")]
-public partial class CmsSettingsCategory
+public class CmsSettingsCategory
 {
     [Key]
     [Column("CategoryID")]

@@ -1,10 +1,11 @@
-namespace Migration.Toolkit.Core.KX13.Mappers;
-
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX13.Contexts;
 using Migration.Toolkit.KXP.Models;
+
+namespace Migration.Toolkit.Core.KX13.Mappers;
 
 public class OmContactGroupMapper : EntityMapperBase<KX13M.OmContactGroup, OmContactGroup>
 {
@@ -16,9 +17,9 @@ public class OmContactGroupMapper : EntityMapperBase<KX13M.OmContactGroup, OmCon
     {
     }
 
-    protected override OmContactGroup? CreateNewInstance(Toolkit.KX13.Models.OmContactGroup tSourceEntity, MappingHelper mappingHelper, AddFailure addFailure) => new();
+    protected override OmContactGroup? CreateNewInstance(KX13M.OmContactGroup tSourceEntity, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
-    protected override OmContactGroup MapInternal(Toolkit.KX13.Models.OmContactGroup source, OmContactGroup target, bool newInstance,
+    protected override OmContactGroup MapInternal(KX13M.OmContactGroup source, OmContactGroup target, bool newInstance,
         MappingHelper mappingHelper, AddFailure addFailure)
     {
         target.ContactGroupName = source.ContactGroupName;

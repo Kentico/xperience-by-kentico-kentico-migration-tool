@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -17,7 +16,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("DocumentPublishedVersionHistoryId", Name = "IX_CMS_Document_DocumentPublishedVersionHistoryID")]
 [Index("DocumentTagGroupId", Name = "IX_CMS_Document_DocumentTagGroupID")]
 [Index("DocumentWorkflowStepId", Name = "IX_CMS_Document_DocumentWorkflowStepID")]
-public partial class CmsDocument
+public class CmsDocument
 {
     [Key]
     [Column("DocumentID")]

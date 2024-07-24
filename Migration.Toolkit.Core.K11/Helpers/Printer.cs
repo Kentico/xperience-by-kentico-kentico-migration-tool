@@ -1,19 +1,21 @@
-namespace Migration.Toolkit.Core.K11.Helpers;
-
 using CMS.DataEngine;
+using CMS.FormEngine;
 using CMS.Globalization;
 using CMS.MediaLibrary;
 using CMS.Membership;
 using CMS.Modules;
+
 using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.K11.Models;
+
+namespace Migration.Toolkit.Core.K11.Helpers;
 
 public class Printer
 {
     public static string PrintKxpModelInfo<T>(T model)
     {
-        var currentTypeName = ReflectionHelper<T>.CurrentType.Name;
+        string currentTypeName = ReflectionHelper<T>.CurrentType.Name;
 
         return model switch
         {
@@ -34,17 +36,15 @@ public class Printer
 
     public static string GetEntityIdentityPrint<T>(T model, bool printType = true)
     {
-        var currentTypeName = ReflectionHelper<T>.CurrentType.Name;
+        string currentTypeName = ReflectionHelper<T>.CurrentType.Name;
 
         string Fallback(object obj) => printType
-            ? $"{currentTypeName}({SerializationHelper.SerializeOnlyNonComplexProperties(obj)})"
-            : $"{SerializationHelper.SerializeOnlyNonComplexProperties(obj)}"
-        ;
+                ? $"{currentTypeName}({SerializationHelper.SerializeOnlyNonComplexProperties(obj)})"
+                : $"{SerializationHelper.SerializeOnlyNonComplexProperties(obj)}";
 
         string FormatModel(string inner) => printType
-            ? $"{currentTypeName}({inner})"
-            : $"{inner}"
-        ;
+                ? $"{currentTypeName}({inner})"
+                : $"{inner}";
 
         return model switch
         {
@@ -56,7 +56,7 @@ public class Printer
             StateInfo item => FormatModel($"ID={item.StateID}, GUID={item.StateGUID}, Name={item.StateName}"),
 
             ResourceInfo item => FormatModel($"ID={item.ResourceID}, Guid={item.ResourceGUID} Name={item.ResourceName}"),
-            CMS.FormEngine.AlternativeFormInfo item => FormatModel($"ID={item.FormID}, Guid={item.FormGUID} Name={item.FormName}"),
+            AlternativeFormInfo item => FormatModel($"ID={item.FormID}, Guid={item.FormGUID} Name={item.FormName}"),
             UserInfo item => FormatModel($"ID={item.UserID}, Guid={item.UserGUID} Name={item.UserName}"),
             RoleInfo item => FormatModel($"ID={item.RoleID}, Guid={item.RoleGUID} Name={item.RoleName}"),
             MemberInfo item => FormatModel($"ID={item.MemberID}, Guid={item.MemberGuid} Name={item.MemberName}"),
@@ -68,7 +68,7 @@ public class Printer
             KXP.Models.CmsConsentAgreement item => FormatModel($"ID={item.ConsentAgreementId}, GUID={item.ConsentAgreementGuid}"),
             KXP.Models.CmsSettingsKey item => FormatModel($"ID={item.KeyId}, GUID={item.KeyGuid}, Name={item.KeyName}"),
 
-            Toolkit.K11.Models.CmsRole item => FormatModel($"ID={item.RoleId}, GUID={item.RoleGuid}, Name={item.RoleName}, SiteId={item.SiteId}"),
+            CmsRole item => FormatModel($"ID={item.RoleId}, GUID={item.RoleGuid}, Name={item.RoleName}, SiteId={item.SiteId}"),
             CmsAttachment item => FormatModel($"ID={item.AttachmentId}, GUID={item.AttachmentGuid}, Name={item.AttachmentName}"),
             CmsClass item => FormatModel($"ID={item.ClassId}, GUID={item.ClassGuid}, Name={item.ClassName}"),
             CmsConsent item => FormatModel($"ID={item.ConsentId}, GUID={item.ConsentGuid}, Name={item.ConsentName}"),
@@ -85,36 +85,18 @@ public class Printer
         };
     }
 
-    public static string GetEntityIdentityPrints<T>(IEnumerable<T> models, string separator = "|")
-    {
-        return string.Join(separator, models.Select(m => GetEntityIdentityPrint(m, false)));
-    }
+    public static string GetEntityIdentityPrints<T>(IEnumerable<T> models, string separator = "|") => string.Join(separator, models.Select(m => GetEntityIdentityPrint(m, false)));
 
-    public static string PrintEnumValues<TEnum>(string separator) where TEnum : struct, Enum
-    {
-        return string.Join(separator, Enum.GetValues<TEnum>());
-    }
+    public static string PrintEnumValues<TEnum>(string separator) where TEnum : struct, Enum => string.Join(separator, Enum.GetValues<TEnum>());
 }
 
 public class PrintService : IPrintService
 {
-    public string PrintKxpModelInfo<T>(T model)
-    {
-        return Printer.PrintKxpModelInfo(model);
-    }
+    public string PrintKxpModelInfo<T>(T model) => Printer.PrintKxpModelInfo(model);
 
-    public string GetEntityIdentityPrint<T>(T model, bool printType = true)
-    {
-        return Printer.GetEntityIdentityPrint<T>(model, printType);
-    }
+    public string GetEntityIdentityPrint<T>(T model, bool printType = true) => Printer.GetEntityIdentityPrint(model, printType);
 
-    public string GetEntityIdentityPrints<T>(IEnumerable<T> models, string separator = "|")
-    {
-        return Printer.GetEntityIdentityPrints(models, separator);
-    }
+    public string GetEntityIdentityPrints<T>(IEnumerable<T> models, string separator = "|") => Printer.GetEntityIdentityPrints(models, separator);
 
-    public string PrintEnumValues<TEnum>(string separator) where TEnum : struct, Enum
-    {
-        return Printer.PrintEnumValues<TEnum>(separator);
-    }
+    public string PrintEnumValues<TEnum>(string separator) where TEnum : struct, Enum => Printer.PrintEnumValues<TEnum>(separator);
 }

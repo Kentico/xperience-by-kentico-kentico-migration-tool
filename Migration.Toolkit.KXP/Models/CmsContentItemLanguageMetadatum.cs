@@ -1,17 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_ContentItemLanguageMetadata")]
-[Index("ContentItemLanguageMetadataContentItemId", "ContentItemLanguageMetadataContentLanguageId", "ContentItemLanguageMetadataLatestVersionStatus", Name = "IX_CMS_ContentItemLanguageMetadata_ContentItemID_ContentLanguageID_LatestVersionStatus", IsUnique = true)]
+[Index("ContentItemLanguageMetadataContentItemId", "ContentItemLanguageMetadataContentLanguageId", "ContentItemLanguageMetadataLatestVersionStatus", Name = "IX_CMS_ContentItemLanguageMetadata_ContentItemID_ContentLanguageID_LatestVersionStatus",
+    IsUnique = true)]
 [Index("ContentItemLanguageMetadataContentWorkflowStepId", Name = "IX_CMS_ContentItemLanguageMetadata_ContentItemLanguageMetadataContentWorkflowStepID")]
 [Index("ContentItemLanguageMetadataCreatedByUserId", Name = "IX_CMS_ContentItemLanguageMetadata_ContentItemLanguageMetadataCreatedByUserID")]
 [Index("ContentItemLanguageMetadataModifiedByUserId", Name = "IX_CMS_ContentItemLanguageMetadata_ContentItemLanguageMetadataModifiedByUserID")]
-public partial class CmsContentItemLanguageMetadatum
+public class CmsContentItemLanguageMetadatum
 {
     [Key]
     [Column("ContentItemLanguageMetadataID")]
@@ -47,6 +47,8 @@ public partial class CmsContentItemLanguageMetadatum
     public int? ContentItemLanguageMetadataContentWorkflowStepId { get; set; }
 
     public DateTime? ContentItemLanguageMetadataScheduledPublishWhen { get; set; }
+
+    public DateTime? ContentItemLanguageMetadataScheduledUnpublishWhen { get; set; }
 
     [InverseProperty("ContentItemTagContentItemLanguageMetadata")]
     public virtual ICollection<CmsContentItemTag> CmsContentItemTags { get; set; } = new List<CmsContentItemTag>();

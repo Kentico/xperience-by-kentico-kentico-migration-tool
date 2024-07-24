@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -13,7 +12,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("UserGuid", Name = "IX_CMS_User_UserGUID", IsUnique = true)]
 [Index("UserName", Name = "IX_CMS_User_UserName", IsUnique = true)]
 [Index("UserPrivilegeLevel", Name = "IX_CMS_User_UserPrivilegeLevel")]
-public partial class CmsUser
+public class CmsUser
 {
     [Key]
     [Column("UserID")]

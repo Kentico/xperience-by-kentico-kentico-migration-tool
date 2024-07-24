@@ -1,54 +1,34 @@
-namespace Migration.Toolkit.Core.KX13.Services;
-
 using CMS.Globalization;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX13.Contexts;
 using Migration.Toolkit.KX13.Context;
-using Migration.Toolkit.KX13.Models;
 using Migration.Toolkit.KXP.Api;
 
-public class CountryMigrator
+namespace Migration.Toolkit.Core.KX13.Services;
+
+public class CountryMigrator(
+    ILogger<CountryMigrator> logger,
+    IDbContextFactory<KX13Context> kx13ContextFactory,
+    PrimaryKeyMappingContext primaryKeyMappingContext,
+    IProtocol protocol,
+    IEntityMapper<KX13M.CmsCountry, CountryInfo> countryMapper,
+    IEntityMapper<KX13M.CmsState, StateInfo> stateMapper,
+    KxpApiInitializer kxpApiInitializer)
 {
-    private readonly ILogger<CountryMigrator> _logger;
-    private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
-    private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
-    private readonly IProtocol _protocol;
-    private readonly IEntityMapper<CmsCountry, CountryInfo> _countryMapper;
-    private readonly IEntityMapper<CmsState, StateInfo> _stateMapper;
-    private readonly KxpApiInitializer _kxpApiInitializer;
-
-    public CountryMigrator(
-        ILogger<CountryMigrator> logger,
-        IDbContextFactory<Toolkit.KX13.Context.KX13Context> kx13ContextFactory,
-        ToolkitConfiguration toolkitConfiguration,
-        PrimaryKeyMappingContext primaryKeyMappingContext,
-        IProtocol protocol,
-        IEntityMapper<KX13M.CmsCountry, CountryInfo> countryMapper,
-        IEntityMapper<KX13M.CmsState, StateInfo> stateMapper,
-        KxpApiInitializer kxpApiInitializer
-    )
-    {
-        _logger = logger;
-        _kx13ContextFactory = kx13ContextFactory;
-        _primaryKeyMappingContext = primaryKeyMappingContext;
-        _protocol = protocol;
-        _countryMapper = countryMapper;
-        _stateMapper = stateMapper;
-        _kxpApiInitializer = kxpApiInitializer;
-    }
-
     public void MigrateCountriesAndStates()
     {
-        if (!_kxpApiInitializer.EnsureApiIsInitialized())
+        if (!kxpApiInitializer.EnsureApiIsInitialized())
         {
-            throw new InvalidOperationException($"Falied to initialize kentico API. Please check configuration.");
+            throw new InvalidOperationException("Falied to initialize kentico API. Please check configuration.");
         }
 
-        var kx13Context = _kx13ContextFactory.CreateDbContext();
+        var kx13Context = kx13ContextFactory.CreateDbContext();
 
         var kx13Countries = kx13Context.CmsCountries.AsNoTracking();
         foreach (var kx13CmsCountry in kx13Countries)
@@ -60,8 +40,8 @@ public class CountryMigrator
                 continue;
             }
 
-            var mapped = _countryMapper.Map(kx13CmsCountry, null);
-            _protocol.MappedTarget(mapped);
+            var mapped = countryMapper.Map(kx13CmsCountry, null);
+            protocol.MappedTarget(mapped);
 
             if (mapped is (var countryInfo, var newInstance) { Success: true })
             {
@@ -69,15 +49,15 @@ public class CountryMigrator
                 {
                     CountryInfoProvider.ProviderObject.Set(countryInfo);
 
-                    _protocol.Success(kx13CmsCountry, countryInfo, mapped);
-                    _logger.LogEntitySetAction(newInstance, countryInfo);
+                    protocol.Success(kx13CmsCountry, countryInfo, mapped);
+                    logger.LogEntitySetAction(newInstance, countryInfo);
 
-                    _primaryKeyMappingContext.SetMapping<KX13M.CmsCountry>(r => r.CountryId, kx13CmsCountry.CountryId, countryInfo.CountryID);
+                    primaryKeyMappingContext.SetMapping<KX13M.CmsCountry>(r => r.CountryId, kx13CmsCountry.CountryId, countryInfo.CountryID);
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogEntitySetError(exception, newInstance, countryInfo);
-                    _protocol.Append(HandbookReferences.ErrorCreatingTargetInstance<CountryInfo>(exception)
+                    logger.LogEntitySetError(exception, newInstance, countryInfo);
+                    protocol.Append(HandbookReferences.ErrorCreatingTargetInstance<CountryInfo>(exception)
                         .NeedsManualAction()
                         .WithIdentityPrint(countryInfo)
                     );
@@ -96,8 +76,8 @@ public class CountryMigrator
                 continue;
             }
 
-            var mapped = _stateMapper.Map(kx13CmsState, null);
-            _protocol.MappedTarget(mapped);
+            var mapped = stateMapper.Map(kx13CmsState, null);
+            protocol.MappedTarget(mapped);
 
             if (mapped is (var stateInfo, var newInstance) { Success: true })
             {
@@ -105,15 +85,15 @@ public class CountryMigrator
                 {
                     StateInfoProvider.ProviderObject.Set(stateInfo);
 
-                    _protocol.Success(kx13CmsState, stateInfo, mapped);
-                    _logger.LogEntitySetAction(newInstance, stateInfo);
+                    protocol.Success(kx13CmsState, stateInfo, mapped);
+                    logger.LogEntitySetAction(newInstance, stateInfo);
 
-                    _primaryKeyMappingContext.SetMapping<KX13M.CmsState>(r => r.StateId, kx13CmsState.StateId, stateInfo.StateID);
+                    primaryKeyMappingContext.SetMapping<KX13M.CmsState>(r => r.StateId, kx13CmsState.StateId, stateInfo.StateID);
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogEntitySetError(exception, newInstance, stateInfo);
-                    _protocol.Append(HandbookReferences.ErrorCreatingTargetInstance<StateInfo>(exception)
+                    logger.LogEntitySetError(exception, newInstance, stateInfo);
+                    protocol.Append(HandbookReferences.ErrorCreatingTargetInstance<StateInfo>(exception)
                         .NeedsManualAction()
                         .WithIdentityPrint(stateInfo)
                     );

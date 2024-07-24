@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("IntranetPortal_WorkingEnvironment")]
-public partial class IntranetPortalWorkingEnvironment
+public class IntranetPortalWorkingEnvironment
 {
     [Key]
     [Column("workingenvironmentID")]

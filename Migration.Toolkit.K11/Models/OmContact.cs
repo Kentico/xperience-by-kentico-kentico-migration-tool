@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -15,7 +14,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("ContactPersonaId", "ContactLastName", Name = "IX_OM_Contact_ContactPersonaID_ContactLastName")]
 [Index("ContactStateId", Name = "IX_OM_Contact_ContactStateID")]
 [Index("ContactStatusId", Name = "IX_OM_Contact_ContactStatusID")]
-public partial class OmContact
+public class OmContact
 {
     [Key]
     [Column("ContactID")]

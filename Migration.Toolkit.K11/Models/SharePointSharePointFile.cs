@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("SharePoint_SharePointFile")]
 [Index("SharePointFileSiteId", Name = "IX_SharePoint_SharePointFile_SharePointFileSiteID")]
 [Index("SharePointFileSharePointLibraryId", "SharePointFileServerRelativeUrl", Name = "UQ_SharePoint_SharePointFile_LibraryID_ServerRelativeURL", IsUnique = true)]
-public partial class SharePointSharePointFile
+public class SharePointSharePointFile
 {
     [Key]
     [Column("SharePointFileID")]

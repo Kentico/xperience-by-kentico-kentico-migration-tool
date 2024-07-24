@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("EmailLibrary_RecipientListSettings")]
 [Index("RecipientListSettingsRecipientListId", Name = "IX_EmailLibrary_RecipientListSettings_RecipientListSettingsRecipientListID")]
-public partial class EmailLibraryRecipientListSetting
+public class EmailLibraryRecipientListSetting
 {
     [Key]
     [Column("RecipientListSettingsID")]

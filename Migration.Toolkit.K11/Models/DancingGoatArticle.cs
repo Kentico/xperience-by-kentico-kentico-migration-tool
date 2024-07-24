@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("DancingGoat_Article")]
-public partial class DancingGoatArticle
+public class DancingGoatArticle
 {
     [Key]
     [Column("ArticleID")]

@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("Notification_Template")]
 [Index("TemplateSiteId", Name = "IX_Notification_Template_TemplateSiteID")]
-public partial class NotificationTemplate
+public class NotificationTemplate
 {
     [Key]
     [Column("TemplateID")]

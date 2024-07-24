@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_Form")]
 [Index("FormClassId", Name = "IX_CMS_Form_FormClassID")]
-public partial class CmsForm
+public class CmsForm
 {
     [Key]
     [Column("FormID")]
@@ -40,8 +39,7 @@ public partial class CmsForm
 
     public DateTime FormLastModified { get; set; }
 
-    [Required]
-    public bool? FormLogActivity { get; set; }
+    public bool FormLogActivity { get; set; }
 
     public string? FormBuilderLayout { get; set; }
 

@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("COM_SKUFile")]
 [Index("FileSkuid", Name = "IX_COM_SKUFile_FileSKUID")]
-public partial class ComSkufile
+public class ComSkufile
 {
     [Key]
     [Column("FileID")]

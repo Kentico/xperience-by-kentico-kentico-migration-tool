@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("CMS_WebsiteChannel")]
 [Index("WebsiteChannelChannelId", Name = "IX_CMS_WebsiteChannel_WebsiteChannelChannelID")]
 [Index("WebsiteChannelPrimaryContentLanguageId", Name = "IX_CMS_WebsiteChannel_WebsiteChannelPrimaryContentLanguageID")]
-public partial class CmsWebsiteChannel
+public class CmsWebsiteChannel
 {
     [Key]
     [Column("WebsiteChannelID")]
@@ -32,8 +31,7 @@ public partial class CmsWebsiteChannel
 
     public int WebsiteChannelDefaultCookieLevel { get; set; }
 
-    [Required]
-    public bool? WebsiteChannelStoreFormerUrls { get; set; }
+    public bool WebsiteChannelStoreFormerUrls { get; set; }
 
     [InverseProperty("WebPageFormerUrlPathWebsiteChannel")]
     public virtual ICollection<CmsWebPageFormerUrlPath> CmsWebPageFormerUrlPaths { get; set; } = new List<CmsWebPageFormerUrlPath>();

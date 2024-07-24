@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("Analytics_HourHits")]
 [Index("HitsStatisticsId", Name = "IX_Analytics_HourHits_HitsStatisticsID")]
-public partial class AnalyticsHourHit
+public class AnalyticsHourHit
 {
     [Key]
     [Column("HitsID")]

@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -11,7 +10,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("ChatNotificationRoomId", Name = "IX_Chat_Notification_ChatNotificationRoomID")]
 [Index("ChatNotificationSenderId", Name = "IX_Chat_Notification_ChatNotificationSenderID")]
 [Index("ChatNotificationSiteId", Name = "IX_Chat_Notification_ChatNotificationSiteID")]
-public partial class ChatNotification
+public class ChatNotification
 {
     [Key]
     [Column("ChatNotificationID")]

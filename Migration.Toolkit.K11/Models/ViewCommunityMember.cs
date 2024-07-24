@@ -1,13 +1,12 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Keyless]
-public partial class ViewCommunityMember
+public class ViewCommunityMember
 {
     [Column("UserID")]
     public int UserId { get; set; }

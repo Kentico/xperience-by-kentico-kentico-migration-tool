@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("OM_ContactGroup")]
-public partial class OmContactGroup
+public class OmContactGroup
 {
     [Key]
     [Column("ContactGroupID")]

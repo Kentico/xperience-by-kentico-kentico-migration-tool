@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("Staging_Server")]
 [Index("ServerEnabled", Name = "IX_Staging_Server_ServerEnabled")]
 [Index("ServerSiteId", Name = "IX_Staging_Server_ServerSiteID")]
-public partial class StagingServer
+public class StagingServer
 {
     [Key]
     [Column("ServerID")]

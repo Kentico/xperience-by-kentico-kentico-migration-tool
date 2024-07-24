@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
@@ -11,7 +10,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Index("ContentItemTagFieldGuid", Name = "IX_CMS_ContentItemTag_ContentItemTagFieldGUID")]
 [Index("ContentItemTagTagGuid", Name = "IX_CMS_ContentItemTag_ContentItemTagTagGUID")]
 [Index("ContentItemTagTagGuid", "ContentItemTagFieldGuid", "ContentItemTagContentItemLanguageMetadataId", Name = "IX_CMS_ContentItemTag_ContentItemTagTagGUID_ContentItemTagFieldGUID_ContentItemTagContentItemLanguageMetadataID", IsUnique = true)]
-public partial class CmsContentItemTag
+public class CmsContentItemTag
 {
     [Key]
     [Column("ContentItemTagID")]

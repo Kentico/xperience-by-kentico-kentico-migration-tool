@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("Newsletter_EmailWidget")]
 [Index("EmailWidgetSiteId", Name = "IX_Newsletter_EmailWidget_EmailWidgetSiteID")]
-public partial class NewsletterEmailWidget
+public class NewsletterEmailWidget
 {
     [Key]
     [Column("EmailWidgetID")]

@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -20,7 +19,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("NodeSkuid", Name = "IX_CMS_Tree_NodeSKUID")]
 [Index("NodeSiteId", "NodeGuid", Name = "IX_CMS_Tree_NodeSiteID_NodeGUID", IsUnique = true)]
 [Index("NodeTemplateId", Name = "IX_CMS_Tree_NodeTemplateID")]
-public partial class CmsTree
+public class CmsTree
 {
     [Key]
     [Column("NodeID")]

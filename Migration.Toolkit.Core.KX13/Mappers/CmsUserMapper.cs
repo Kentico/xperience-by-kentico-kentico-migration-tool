@@ -1,32 +1,25 @@
-namespace Migration.Toolkit.Core.KX13.Mappers;
+﻿using Microsoft.Extensions.Logging;
 
-using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX13.Contexts;
 using Migration.Toolkit.KXP.Models;
 
-public class CmsUserMapper : EntityMapperBase<KX13M.CmsUser, CmsUser>
+namespace Migration.Toolkit.Core.KX13.Mappers;
+
+public class CmsUserMapper(
+    ILogger<CmsUserMapper> logger,
+    PrimaryKeyMappingContext primaryKeyMappingContext,
+    IProtocol protocol) : EntityMapperBase<KX13M.CmsUser, CmsUser>(logger, primaryKeyMappingContext, protocol)
 {
-    private readonly ILogger<CmsUserMapper> _logger;
+    protected override CmsUser CreateNewInstance(KX13M.CmsUser tSourceEntity, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
-    public CmsUserMapper(
-        ILogger<CmsUserMapper> logger,
-        PrimaryKeyMappingContext primaryKeyMappingContext,
-        IProtocol protocol
-    ) : base(logger, primaryKeyMappingContext, protocol)
-    {
-        _logger = logger;
-    }
-
-    protected override CmsUser CreateNewInstance(Toolkit.KX13.Models.CmsUser tSourceEntity, MappingHelper mappingHelper, AddFailure addFailure) => new();
-
-    protected override CmsUser MapInternal(Toolkit.KX13.Models.CmsUser source, CmsUser target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override CmsUser MapInternal(KX13M.CmsUser source, CmsUser target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         if (!newInstance && source.UserGuid != target.UserGuid)
         {
             // assertion failed
-            _logger.LogTrace("Assertion failed, entity key mismatch");
+            logger.LogTrace("Assertion failed, entity key mismatch");
             throw new InvalidOperationException("Assertion failed, entity key mismatch.");
         }
 
@@ -48,15 +41,11 @@ public class CmsUserMapper : EntityMapperBase<KX13M.CmsUser, CmsUser>
 
         foreach (var sourceCmsUserRole in source.CmsUserRoles)
         {
-            if (mappingHelper.TranslateRequiredId<KX13M.CmsRole>(r => r.RoleId, sourceCmsUserRole.RoleId, out var targetRoleId))
+            if (mappingHelper.TranslateRequiredId<KX13M.CmsRole>(r => r.RoleId, sourceCmsUserRole.RoleId, out int targetRoleId))
             {
                 if (target.CmsUserRoles.All(x => x.RoleId != targetRoleId))
                 {
-                    target.CmsUserRoles.Add(new CmsUserRole
-                    {
-                        RoleId = targetRoleId,
-                        User = target,
-                    });
+                    target.CmsUserRoles.Add(new CmsUserRole { RoleId = targetRoleId, User = target });
                 }
             }
         }

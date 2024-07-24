@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("CMS_ContentLanguage")]
-public partial class CmsContentLanguage
+public class CmsContentLanguage
 {
     [Key]
     [Column("ContentLanguageID")]

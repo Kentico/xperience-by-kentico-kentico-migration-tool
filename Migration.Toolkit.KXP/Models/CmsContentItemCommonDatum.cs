@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("CMS_ContentItemCommonData")]
 [Index("ContentItemCommonDataContentItemId", "ContentItemCommonDataContentLanguageId", "ContentItemCommonDataIsLatest", Name = "IX_CMS_ContentItemCommonData_ContentItemID_ContentLanguageID_IsLatest", IsUnique = true)]
 [Index("ContentItemCommonDataContentItemId", "ContentItemCommonDataContentLanguageId", "ContentItemCommonDataVersionStatus", Name = "IX_CMS_ContentItemCommonData_ContentItemID_ContentLanguageID_VersionStatus", IsUnique = true)]
-public partial class CmsContentItemCommonDatum
+public class CmsContentItemCommonDatum
 {
     [Key]
     [Column("ContentItemCommonDataID")]

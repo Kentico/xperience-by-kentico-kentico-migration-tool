@@ -1,7 +1,8 @@
-namespace Migration.Toolkit.Common;
-
 using MediatR;
+
 using Migration.Toolkit.Common.Abstractions;
+
+namespace Migration.Toolkit.Common;
 
 public record MigrateSitesCommand : IRequest<CommandResult>, ICommand
 {
@@ -132,7 +133,6 @@ public record MigrateCustomModulesCommand : IRequest<CommandResult>, ICommand
 
     public Type[] Dependencies => [typeof(MigrateSitesCommand)];
 }
-
 
 public record MigrateCustomTablesCommand : IRequest<CommandResult>, ICommand
 {

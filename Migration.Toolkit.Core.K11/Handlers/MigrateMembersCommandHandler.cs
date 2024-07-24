@@ -1,11 +1,11 @@
-namespace Migration.Toolkit.Core.K11.Handlers;
-
-using System.Diagnostics;
 using CMS.Membership;
+
 using MediatR;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
@@ -13,18 +13,23 @@ using Migration.Toolkit.Core.K11.Contexts;
 using Migration.Toolkit.Core.K11.Mappers;
 using Migration.Toolkit.K11;
 using Migration.Toolkit.K11.Models;
-using Migration.Toolkit.KXP.Api.Enums;
+using Migration.Toolkit.KXP.Api.Auxiliary;
 
-public class MigrateMembersCommandHandler(ILogger<MigrateMembersCommandHandler> logger,
-        IDbContextFactory<K11Context> k11ContextFactory,
-        IEntityMapper<MemberInfoMapperSource, MemberInfo> memberInfoMapper,
-        PrimaryKeyMappingContext primaryKeyMappingContext,
-        IProtocol protocol)
+namespace Migration.Toolkit.Core.K11.Handlers;
+
+public class MigrateMembersCommandHandler(
+    ILogger<MigrateMembersCommandHandler> logger,
+    IDbContextFactory<K11Context> k11ContextFactory,
+    IEntityMapper<MemberInfoMapperSource, MemberInfo> memberInfoMapper,
+    PrimaryKeyMappingContext primaryKeyMappingContext,
+    IProtocol protocol)
     : IRequestHandler<MigrateMembersCommand, CommandResult>, IDisposable
 {
     private const string USER_PUBLIC = "public";
 
-    private static int[] MigratedAdminUserPrivilegeLevels => [(int)UserPrivilegeLevelEnum.None];
+    public void Dispose()
+    {
+    }
 
     public async Task<CommandResult> Handle(MigrateMembersCommand request, CancellationToken cancellationToken)
     {
@@ -32,7 +37,7 @@ public class MigrateMembersCommandHandler(ILogger<MigrateMembersCommandHandler> 
 
         var k11CmsUsers = k11Context.CmsUsers
                 .Include(u => u.CmsUserSettingUserSettingsUserNavigation)
-                .Where(u => MigratedAdminUserPrivilegeLevels.Contains(u.UserPrivilegeLevel))
+                .Where(u => UserHelper.PrivilegeLevelsMigratedAsMemberUser.Contains(u.UserPrivilegeLevel))
             ;
 
         foreach (var k11User in k11CmsUsers)
@@ -63,7 +68,7 @@ public class MigrateMembersCommandHandler(ILogger<MigrateMembersCommandHandler> 
     {
         if (mapped is { Success: true } result)
         {
-            var (memberInfo, newInstance) = result;
+            (var memberInfo, bool newInstance) = result;
             ArgumentNullException.ThrowIfNull(memberInfo);
 
             try
@@ -78,7 +83,7 @@ public class MigrateMembersCommandHandler(ILogger<MigrateMembersCommandHandler> 
             {
                 logger.LogEntitySetError(sqlException, newInstance, memberInfo);
                 protocol.Append(HandbookReferences.DbConstraintBroken(sqlException, k11User)
-                    .WithData(new { k11User.UserName, k11User.UserGuid, k11User.UserId, })
+                    .WithData(new { k11User.UserName, k11User.UserGuid, k11User.UserId })
                     .WithMessage("Failed to migrate user, target database broken.")
                 );
             }
@@ -95,10 +100,5 @@ public class MigrateMembersCommandHandler(ILogger<MigrateMembersCommandHandler> 
             // left for OM_Activity
             primaryKeyMappingContext.SetMapping<CmsUser>(r => r.UserId, k11User.UserId, memberInfo.MemberID);
         }
-    }
-
-    public void Dispose()
-    {
-
     }
 }

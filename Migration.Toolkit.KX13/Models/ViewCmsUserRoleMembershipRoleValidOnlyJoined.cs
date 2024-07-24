@@ -1,13 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
 
 [Keyless]
-public partial class ViewCmsUserRoleMembershipRoleValidOnlyJoined
+public class ViewCmsUserRoleMembershipRoleValidOnlyJoined
 {
     [Column("UserID")]
     public int UserId { get; set; }

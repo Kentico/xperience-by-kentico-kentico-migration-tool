@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("COM_OrderStatus")]
 [Index("StatusSiteId", "StatusOrder", Name = "IX_COM_OrderStatus_StatusSiteID_StatusOrder")]
-public partial class ComOrderStatus
+public class ComOrderStatus
 {
     [Key]
     [Column("StatusID")]

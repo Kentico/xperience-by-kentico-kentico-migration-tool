@@ -1,10 +1,11 @@
-namespace Migration.Toolkit.Source.Handlers;
-
 using MediatR;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Source.Model;
 using Migration.Toolkit.Source.Services;
+
+namespace Migration.Toolkit.Source.Handlers;
 
 // ReSharper disable once UnusedMember.Global [implicit use]
 public class MigrateAttachmentsCommandHandler(
@@ -12,23 +13,25 @@ public class MigrateAttachmentsCommandHandler(
     AttachmentMigrator attachmentMigrator
 ) : IRequestHandler<MigrateAttachmentsCommand, CommandResult>
 {
-    public async Task<CommandResult> Handle(MigrateAttachmentsCommand request, CancellationToken cancellationToken)
+    public Task<CommandResult> Handle(MigrateAttachmentsCommand request, CancellationToken cancellationToken)
     {
-        var kx13CmsAttachments = modelFacade.SelectAll<ICmsAttachment>();
+        var ksCmsAttachments = modelFacade.SelectAll<ICmsAttachment>();
 
-        foreach (var kx13CmsAttachment in kx13CmsAttachments)
+        foreach (var ksCmsAttachment in ksCmsAttachments)
         {
-            if (kx13CmsAttachment.AttachmentIsUnsorted != true || kx13CmsAttachment.AttachmentGroupGUID != null)
+            if (ksCmsAttachment.AttachmentIsUnsorted != true || ksCmsAttachment.AttachmentGroupGUID != null)
             {
                 // those must be migrated with pages
                 continue;
             }
 
-            var (_, canContinue, _, _) = attachmentMigrator.MigrateAttachment(kx13CmsAttachment);
+            (_, bool canContinue, _, _) = attachmentMigrator.MigrateAttachment(ksCmsAttachment);
             if (!canContinue)
+            {
                 break;
+            }
         }
 
-        return new GenericCommandResult();
+        return Task.FromResult<CommandResult>(new GenericCommandResult());
     }
 }

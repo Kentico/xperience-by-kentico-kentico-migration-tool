@@ -1,16 +1,15 @@
-namespace Migration.Toolkit.Source.Services;
-
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Source.Model;
+
+namespace Migration.Toolkit.Source.Services;
 
 public class CmsRelationshipService(
     ModelFacade modelFacade)
 {
-    public record NodeRelationShipResult(ICmsRelationship Relationship, ICmsTree? RightNode);
     public IEnumerable<NodeRelationShipResult> GetNodeRelationships(int nodeId, string className, Guid fieldGuid)
     {
-        var relationshipName = $"{className}_{fieldGuid}";
+        string relationshipName = $"{className}_{fieldGuid}";
         var relationships = modelFacade.SelectWhere<ICmsRelationship>("""
                                                                       LeftNodeId = @nodeId AND
                                                                       EXISTS(
@@ -25,7 +24,9 @@ public class CmsRelationshipService(
 
         foreach (var cmsRelationship in relationships)
         {
-            yield return new(cmsRelationship, modelFacade.SelectById<ICmsTree>(cmsRelationship.RightNodeID));
+            yield return new NodeRelationShipResult(cmsRelationship, modelFacade.SelectById<ICmsTree>(cmsRelationship.RightNodeID));
         }
     }
+
+    public record NodeRelationShipResult(ICmsRelationship Relationship, ICmsTree? RightNode);
 }

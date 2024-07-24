@@ -1,37 +1,44 @@
-namespace Migration.Toolkit.Core.K11.Handlers;
-
 using CMS.Membership;
+
 using MediatR;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.K11.Contexts;
 using Migration.Toolkit.K11;
 using Migration.Toolkit.K11.Models;
+using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Api.Enums;
 
-public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logger,
-        IDbContextFactory<K11Context> k11ContextFactory,
-        IEntityMapper<CmsUser, UserInfo> userInfoMapper,
-        IEntityMapper<CmsRole, RoleInfo> roleMapper,
-        IEntityMapper<CmsUserRole, UserRoleInfo> userRoleMapper,
-        PrimaryKeyMappingContext primaryKeyMappingContext,
-        IProtocol protocol)
+namespace Migration.Toolkit.Core.K11.Handlers;
+
+public class MigrateUsersCommandHandler(
+    ILogger<MigrateUsersCommandHandler> logger,
+    IDbContextFactory<K11Context> k11ContextFactory,
+    IEntityMapper<CmsUser, UserInfo> userInfoMapper,
+    IEntityMapper<CmsRole, RoleInfo> roleMapper,
+    IEntityMapper<CmsUserRole, UserRoleInfo> userRoleMapper,
+    PrimaryKeyMappingContext primaryKeyMappingContext,
+    IProtocol protocol)
     : IRequestHandler<MigrateUsersCommand, CommandResult>, IDisposable
 {
     private const string USER_PUBLIC = "public";
 
-    private static int[] MigratedAdminUserPrivilegeLevels => new[] { (int)UserPrivilegeLevelEnum.Editor, (int)UserPrivilegeLevelEnum.Admin, (int)UserPrivilegeLevelEnum.GlobalAdmin };
+    public void Dispose()
+    {
+    }
 
     public async Task<CommandResult> Handle(MigrateUsersCommand request, CancellationToken cancellationToken)
     {
         await using var k11Context = await k11ContextFactory.CreateDbContextAsync(cancellationToken);
 
         var k11CmsUsers = k11Context.CmsUsers
-                .Where(u => MigratedAdminUserPrivilegeLevels.Contains(u.UserPrivilegeLevel))
+                .Where(u => UserHelper.PrivilegeLevelsMigratedAsAdminUser.Contains(u.UserPrivilegeLevel))
             ;
 
         foreach (var k11User in k11CmsUsers)
@@ -66,7 +73,7 @@ public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logg
             var mapped = userInfoMapper.Map(k11User, xbkUserInfo);
             protocol.MappedTarget(mapped);
 
-            await SaveUserUsingKenticoApi(cancellationToken, mapped, k11User);
+            SaveUserUsingKenticoApi(mapped, k11User);
         }
 
         await MigrateUserCmsRoles(k11Context, cancellationToken);
@@ -74,11 +81,11 @@ public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logg
         return new GenericCommandResult();
     }
 
-    private async Task<bool> SaveUserUsingKenticoApi(CancellationToken cancellationToken, IModelMappingResult<UserInfo> mapped, CmsUser k11User)
+    private bool SaveUserUsingKenticoApi(IModelMappingResult<UserInfo> mapped, CmsUser k11User)
     {
         if (mapped is { Success: true } result)
         {
-            var (userInfo, newInstance) = result;
+            (var userInfo, bool newInstance) = result;
             ArgumentNullException.ThrowIfNull(userInfo);
 
             try
@@ -93,7 +100,7 @@ public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logg
             {
                 logger.LogEntitySetError(sqlException, newInstance, userInfo);
                 protocol.Append(HandbookReferences.DbConstraintBroken(sqlException, k11User)
-                    .WithData(new { k11User.UserName, k11User.UserGuid, k11User.UserId, })
+                    .WithData(new { k11User.UserName, k11User.UserGuid, k11User.UserId })
                     .WithMessage("Failed to migrate user, target database broken.")
                 );
                 return false;
@@ -120,7 +127,7 @@ public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logg
     {
         var groupedRoles = k11Context.CmsRoles
             .Where(r =>
-                r.CmsUserRoles.Any(ur => MigratedAdminUserPrivilegeLevels.Contains(ur.User.UserPrivilegeLevel))
+                r.CmsUserRoles.Any(ur => UserHelper.PrivilegeLevelsMigratedAsAdminUser.Contains(ur.User.UserPrivilegeLevel))
             )
             .GroupBy(x => x.RoleName)
             .AsNoTracking();
@@ -150,14 +157,17 @@ public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logg
 
         var k11CmsRoles = k11Context.CmsRoles
             .Where(r =>
-                r.CmsUserRoles.Any(ur => MigratedAdminUserPrivilegeLevels.Contains(ur.User.UserPrivilegeLevel))
+                r.CmsUserRoles.Any(ur => UserHelper.PrivilegeLevelsMigratedAsAdminUser.Contains(ur.User.UserPrivilegeLevel))
             )
             .AsNoTracking()
             .AsAsyncEnumerable();
 
         await foreach (var k11CmsRole in k11CmsRoles.WithCancellation(cancellationToken))
         {
-            if (skippedRoles.Contains(k11CmsRole.RoleGuid)) continue;
+            if (skippedRoles.Contains(k11CmsRole.RoleGuid))
+            {
+                continue;
+            }
 
             protocol.FetchedSource(k11CmsRole);
 
@@ -206,7 +216,7 @@ public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logg
         var k11UserRoles = k11Context.CmsUserRoles
             .Where(ur =>
                 ur.RoleId == k11RoleId &&
-                MigratedAdminUserPrivilegeLevels.Contains(ur.User.UserPrivilegeLevel)
+                UserHelper.PrivilegeLevelsMigratedAsAdminUser.Contains(ur.User.UserPrivilegeLevel)
             )
             .AsNoTracking()
             .AsAsyncEnumerable();
@@ -214,7 +224,7 @@ public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logg
         await foreach (var k11UserRole in k11UserRoles)
         {
             protocol.FetchedSource(k11UserRole);
-            if (!primaryKeyMappingContext.TryRequireMapFromSource<CmsRole>(u => u.RoleId, k11RoleId, out var xbkRoleId))
+            if (!primaryKeyMappingContext.TryRequireMapFromSource<CmsRole>(u => u.RoleId, k11RoleId, out int xbkRoleId))
             {
                 var handbookRef = HandbookReferences
                     .MissingRequiredDependency<KXP.Models.CmsRole>(nameof(UserRoleInfo.RoleID), k11UserRole.RoleId)
@@ -225,7 +235,7 @@ public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logg
                 continue;
             }
 
-            if (!primaryKeyMappingContext.TryRequireMapFromSource<CmsUser>(u => u.UserId, k11UserRole.UserId, out var xbkUserId))
+            if (!primaryKeyMappingContext.TryRequireMapFromSource<CmsUser>(u => u.UserId, k11UserRole.UserId, out int xbkUserId))
             {
                 continue;
             }
@@ -238,7 +248,7 @@ public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logg
 
             if (mapped is { Success: true })
             {
-                var (userRoleInfo, newInstance) = mapped;
+                (var userRoleInfo, bool newInstance) = mapped;
                 ArgumentNullException.ThrowIfNull(userRoleInfo);
 
                 try
@@ -252,16 +262,11 @@ public class MigrateUsersCommandHandler(ILogger<MigrateUsersCommandHandler> logg
                 {
                     logger.LogEntitySetError(ex, newInstance, userRoleInfo);
                     protocol.Append(HandbookReferences.ErrorSavingTargetInstance<UserRoleInfo>(ex)
-                        .WithData(new { k11UserRole.UserRoleId, k11UserRole.UserId, k11UserRole.RoleId, })
+                        .WithData(new { k11UserRole.UserRoleId, k11UserRole.UserId, k11UserRole.RoleId })
                         .WithMessage("Failed to migrate user role")
                     );
                 }
             }
         }
-    }
-
-    public void Dispose()
-    {
-
     }
 }

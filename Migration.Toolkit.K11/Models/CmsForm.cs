@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("CMS_Form")]
 [Index("FormClassId", Name = "IX_CMS_Form_FormClassID")]
 [Index("FormSiteId", Name = "IX_CMS_Form_FormSiteID")]
-public partial class CmsForm
+public class CmsForm
 {
     [Key]
     [Column("FormID")]

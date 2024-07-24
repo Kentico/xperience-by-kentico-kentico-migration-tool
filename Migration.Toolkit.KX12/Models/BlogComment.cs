@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -10,7 +9,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("CommentApprovedByUserId", Name = "IX_Blog_Comment_CommentApprovedByUserID")]
 [Index("CommentPostDocumentId", Name = "IX_Blog_Comment_CommentPostDocumentID")]
 [Index("CommentUserId", Name = "IX_Blog_Comment_CommentUserID")]
-public partial class BlogComment
+public class BlogComment
 {
     [Key]
     [Column("CommentID")]

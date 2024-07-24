@@ -1,16 +1,17 @@
 using System.Diagnostics.Contracts;
+
 using Microsoft.Extensions.Configuration;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Helpers;
+using Migration.Toolkit.Core.KX13.Helpers;
 
 namespace Migration.Toolkit.CLI;
-
-using Migration.Toolkit.Core.KX13.Helpers;
 
 public enum ValidationMessageType
 {
     Error,
-    Warning,
+    Warning
 }
 
 public record ValidationMessage(ValidationMessageType Type, string Message, string? RecommendedFix = null);
@@ -27,45 +28,28 @@ public static class ConfigurationValidator
             yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_Settings_IsRequired);
         }
 
-        if (
-            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.SourceConnectionString)) &&
-            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.KxConnectionString))
-        )
+        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.KxConnectionString)))
         {
             yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_SourceConnectionString_IsRequired);
         }
 
-        if (
-            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.SourceCmsDirPath)) &&
-            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.KxCmsDirPath))
-        )
+        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.KxCmsDirPath)))
         {
-            yield return new ValidationMessage(ValidationMessageType.Warning,
-                Resources.ConfigurationValidator_GetValidationErrors_SourceCmsDirPath_IsRecommended);
+            yield return new ValidationMessage(ValidationMessageType.Warning, Resources.ConfigurationValidator_GetValidationErrors_SourceCmsDirPath_IsRecommended);
         }
 
-        if (
-            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.TargetConnectionString)) &&
-            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.XbKConnectionString))
-        )
+        if (settings?.GetValue<string>(ConfigurationNames.XbKConnectionString) is not null)
         {
-            yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_TargetConnectionString_IsRequired);
+            yield return new ValidationMessage(ValidationMessageType.Warning, $"Configuration key '{ConfigurationNames.XbKConnectionString}' is deprecated, use 'Settings:ConnectionStrings:CMSConnectionString' instead");
         }
 
-        if (
-            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.TargetCmsDirPath)) &&
-            CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.XbKDirPath))
-           )
+        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.XbKDirPath)))
         {
             yield return new ValidationMessage(ValidationMessageType.Error,
                 Resources.ConfigurationValidator_GetValidationErrors_TargetCmsDirPath_IsRequired);
         }
 
-        var targetKxpApiSettings =
-                settings?.GetSection(ConfigurationNames.XbKApiSettings) ??
-                settings?.GetSection(ConfigurationNames.TargetKxpApiSettings)
-            ;
-
+        var targetKxpApiSettings = settings?.GetSection(ConfigurationNames.XbKApiSettings);
         if (targetKxpApiSettings is null)
         {
             yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_TargetKxpApiSettings_IsRequired);
@@ -100,14 +84,16 @@ public static class ConfigurationValidator
             var querySourceInstanceApi = optInFeatures?.GetSection(ConfigurationNames.QuerySourceInstanceApi);
             if (querySourceInstanceApi is not null)
             {
-                var qsiEnabled = querySourceInstanceApi.GetValue<bool?>(ConfigurationNames.Enabled);
+                bool? qsiEnabled = querySourceInstanceApi.GetValue<bool?>(ConfigurationNames.Enabled);
                 if (qsiEnabled is true)
                 {
                     var connections = querySourceInstanceApi.GetSection(ConfigurationNames.Connections).GetChildren();
                     foreach (var connection in connections)
                     {
-                        var siteUri = connection.GetValue<string>(ConfigurationNames.SourceInstanceUri);
-                        var secret = connection.GetValue<string>(ConfigurationNames.Secret);
+#warning EXTEND SITENAME
+                        // var siteName = connection.GetValue<string>(ConfigurationNames.SiteName);
+                        string? siteUri = connection.GetValue<string>(ConfigurationNames.SourceInstanceUri);
+                        string? secret = connection.GetValue<string>(ConfigurationNames.Secret);
 
                         if (Uri.TryCreate(siteUri, UriKind.Absolute, out var sourceSiteUri))
                         {
@@ -137,31 +123,31 @@ public static class ConfigurationValidator
             var customMigrationModel = optInFeatures?.GetValue<CustomMigrationModel>(ConfigurationNames.CustomMigration);
             if (customMigrationModel is { FieldMigrations.Length: > 0 })
             {
-                ValidationMessage Required(int item, string fieldName)
-                {
-                    return new ValidationMessage(
+                static ValidationMessage Required(int item, string fieldName) => new(
                         ValidationMessageType.Error,
                         $"Custom DataType migration at index [{item}] is missing value '{fieldName}', supply value or remove whole DataType migration."
                     );
-                }
 
                 var fieldMigrations = customMigrationModel.FieldMigrations;
 
-                for (var i = 0; i < fieldMigrations.Length; i++)
+                for (int i = 0; i < fieldMigrations.Length; i++)
                 {
                     var current = fieldMigrations[i];
                     if (string.IsNullOrWhiteSpace(current.SourceDataType))
                     {
                         yield return Required(i, nameof(ConfigurationNames.SourceDataType));
                     }
+
                     if (string.IsNullOrWhiteSpace(current.TargetDataType))
                     {
                         yield return Required(i, nameof(ConfigurationNames.TargetDataType));
                     }
+
                     if (string.IsNullOrWhiteSpace(current.SourceFormControl))
                     {
                         yield return Required(i, nameof(ConfigurationNames.SourceFormControl));
                     }
+
                     if (string.IsNullOrWhiteSpace(current.TargetFormComponent))
                     {
                         yield return Required(i, nameof(ConfigurationNames.TargetFormComponent));
@@ -176,16 +162,10 @@ public static class ConfigurationValidator
     #region "Helper methods"
 
     [Pure]
-    private static bool StringIsNullOrFitsOneOf<TEnum>(string? s) where TEnum : Enum
-    {
-        return s is null || Enum.TryParse(ReflectionHelper<TEnum>.CurrentType, s, out var _);
-    }
+    private static bool StringIsNullOrFitsOneOf<TEnum>(string? s) where TEnum : Enum => s is null || Enum.TryParse(ReflectionHelper<TEnum>.CurrentType, s, out object? _);
 
     [Pure]
-    private static bool CheckCfgValue(string? s)
-    {
-        return string.IsNullOrWhiteSpace(s) || s == ConfigurationNames.TodoPlaceholder;
-    }
+    private static bool CheckCfgValue(string? s) => string.IsNullOrWhiteSpace(s) || s == ConfigurationNames.TodoPlaceholder;
 
     #endregion
 }

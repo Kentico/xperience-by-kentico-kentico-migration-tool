@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -12,7 +11,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("PageTemplateScopeLevels", Name = "IX_CMS_PageTemplateScope_PageTemplateScopeLevels")]
 [Index("PageTemplateScopeSiteId", Name = "IX_CMS_PageTemplateScope_PageTemplateScopeSiteID")]
 [Index("PageTemplateScopeTemplateId", Name = "IX_CMS_PageTemplateScope_PageTemplateScopeTemplateID")]
-public partial class CmsPageTemplateScope
+public class CmsPageTemplateScope
 {
     [Key]
     [Column("PageTemplateScopeID")]

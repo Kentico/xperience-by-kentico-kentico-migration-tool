@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -13,7 +12,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("PostLevel", Name = "IX_Forums_ForumPost_PostLevel")]
 [Index("PostParentId", Name = "IX_Forums_ForumPost_PostParentID")]
 [Index("PostUserId", Name = "IX_Forums_ForumPost_PostUserID")]
-public partial class ForumsForumPost
+public class ForumsForumPost
 {
     [Key]
     public int PostId { get; set; }

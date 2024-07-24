@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("COM_TaxClass")]
 [Index("TaxClassSiteId", Name = "IX_COM_TaxClass_TaxClassSiteID")]
-public partial class ComTaxClass
+public class ComTaxClass
 {
     [Key]
     [Column("TaxClassID")]

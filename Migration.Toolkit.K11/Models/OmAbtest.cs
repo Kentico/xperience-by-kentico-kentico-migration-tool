@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("OM_ABTest")]
 [Index("AbtestSiteId", Name = "IX_OM_ABTest_SiteID")]
-public partial class OmAbtest
+public class OmAbtest
 {
     [Key]
     [Column("ABTestID")]

@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -12,7 +11,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("GroupAvatarId", Name = "IX_Community_Group_GroupAvatarID")]
 [Index("GroupCreatedByUserId", Name = "IX_Community_Group_GroupCreatedByUserID")]
 [Index("GroupSiteId", "GroupName", Name = "IX_Community_Group_GroupSiteID_GroupName")]
-public partial class CommunityGroup
+public class CommunityGroup
 {
     [Key]
     [Column("GroupID")]

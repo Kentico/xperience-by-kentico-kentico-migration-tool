@@ -1,6 +1,6 @@
-namespace Migration.Toolkit.Common.Services;
-
 using Migration.Toolkit.Common.Abstractions;
+
+namespace Migration.Toolkit.Common.Services;
 
 public interface ICommandParser
 {

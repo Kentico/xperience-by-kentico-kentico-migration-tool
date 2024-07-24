@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -17,7 +16,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("UserSettingsUserId", Name = "IX_CMS_UserSettings_UserSettingsUserID", IsUnique = true)]
 [Index("UserTimeZoneId", Name = "IX_CMS_UserSettings_UserTimeZoneID")]
 [Index("UserWaitingForApproval", Name = "IX_CMS_UserSettings_UserWaitingForApproval")]
-public partial class CmsUserSetting
+public class CmsUserSetting
 {
     [Key]
     [Column("UserSettingsID")]

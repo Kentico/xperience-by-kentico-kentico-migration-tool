@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("COM_TaxClassCountry")]
 [Index("CountryId", Name = "IX_COM_TaxClassCountry_CountryID")]
 [Index("TaxClassId", "CountryId", Name = "IX_COM_TaxClassCountry_TaxClassID_CountryID", IsUnique = true)]
-public partial class ComTaxClassCountry
+public class ComTaxClassCountry
 {
     [Key]
     [Column("TaxClassCountryID")]

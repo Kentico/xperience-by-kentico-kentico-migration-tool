@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Table("OM_AccountStatus")]
-public partial class OmAccountStatus
+public class OmAccountStatus
 {
     [Key]
     [Column("AccountStatusID")]

@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -10,7 +9,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Index("UserControlCodeName", Name = "IX_CMS_FormUserControl_UserControlCodeName", IsUnique = true)]
 [Index("UserControlParentId", Name = "IX_CMS_FormUserControl_UserControlParentID")]
 [Index("UserControlResourceId", Name = "IX_CMS_FormUserControl_UserControlResourceID")]
-public partial class CmsFormUserControl
+public class CmsFormUserControl
 {
     [Key]
     [Column("UserControlID")]

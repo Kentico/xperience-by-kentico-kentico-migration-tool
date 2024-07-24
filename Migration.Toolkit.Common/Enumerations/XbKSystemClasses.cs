@@ -1,7 +1,7 @@
 // ReSharper disable InconsistentNaming
 
 namespace Migration.Toolkit.Common.Enumerations;
-
+#pragma warning disable IDE1006
 public class XbKSystemClasses
 {
     public const string cms_culture = "cms.culture";
@@ -100,12 +100,12 @@ public class XbKSystemClasses
     public static HashSet<string> All = new(
         new[]
         {
-            cms_culture, cms_site, cms_Role, cms_user, cms_UserRole, cms_emailtemplate, cms_permission, cms_resource, CMS_EventLog, cms_tree, cms_document, cms_class, cms_query,
-            cms_transformation, cms_workflow, cms_workflowstep, cms_workflowscope, cms_versionhistory, cms_sitedomainalias, cms_form, cms_LicenseKey, cms_WebFarmServer, cms_country, cms_state,
-            CMS_SettingsKey, CMS_ResourceSite, CMS_CultureSite, CMS_UserSite, CMS_WorkflowStepRole, CMS_ClassSite, cms_FormRole, cms_rolepermission, cms_settingscategory, cms_AlternativeForm,
-            cms_timezone, cms_email, cms_attachmentforemail, cms_SearchIndex, cms_SearchIndexSite, cms_SearchIndexCulture, CMS_SearchTask, cms_userculture, CMS_Membership, CMS_MembershipRole,
-            CMS_MembershipUser, CMS_WorkflowTransition, CMS_MacroRule, CMS_WorkflowStepUser, CMS_WorkflowUser, cms_workflowaction, cms_webfarmservertask, CMS_MacroIdentity, CMS_UserMacroIdentity,
-            CMS_SearchTaskAzure, CMS_Consent, CMS_ConsentAgreement, CMS_ConsentArchive, CMS_AlternativeUrl, CMS_PageTemplateConfiguration, CMS_AutomationTemplate, CMS_PageUrlPath,
-            CMS_PageFormerUrlPath, CMS_FormFeaturedField, CMS_MacroRuleCategory, CMS_MacroRuleMacroRuleCategory, cms_contentrelationship, cms_contentrelationshipitem,
+            cms_culture, cms_site, cms_Role, cms_user, cms_UserRole, cms_emailtemplate, cms_permission, cms_resource, CMS_EventLog, cms_tree, cms_document, cms_class, cms_query, cms_transformation, cms_workflow, cms_workflowstep,
+            cms_workflowscope, cms_versionhistory, cms_sitedomainalias, cms_form, cms_LicenseKey, cms_WebFarmServer, cms_country, cms_state, CMS_SettingsKey, CMS_ResourceSite, CMS_CultureSite, CMS_UserSite, CMS_WorkflowStepRole, CMS_ClassSite,
+            cms_FormRole, cms_rolepermission, cms_settingscategory, cms_AlternativeForm, cms_timezone, cms_email, cms_attachmentforemail, cms_SearchIndex, cms_SearchIndexSite, cms_SearchIndexCulture, CMS_SearchTask, cms_userculture,
+            CMS_Membership, CMS_MembershipRole, CMS_MembershipUser, CMS_WorkflowTransition, CMS_MacroRule, CMS_WorkflowStepUser, CMS_WorkflowUser, cms_workflowaction, cms_webfarmservertask, CMS_MacroIdentity, CMS_UserMacroIdentity,
+            CMS_SearchTaskAzure, CMS_Consent, CMS_ConsentAgreement, CMS_ConsentArchive, CMS_AlternativeUrl, CMS_PageTemplateConfiguration, CMS_AutomationTemplate, CMS_PageUrlPath, CMS_PageFormerUrlPath, CMS_FormFeaturedField,
+            CMS_MacroRuleCategory, CMS_MacroRuleMacroRuleCategory, cms_contentrelationship, cms_contentrelationshipitem
         }, StringComparer.InvariantCultureIgnoreCase);
 }
+#pragma warning enable IDE1006

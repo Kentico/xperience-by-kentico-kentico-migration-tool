@@ -1,10 +1,11 @@
-namespace Migration.Toolkit.Core.KX12.Mappers;
-
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX12.Contexts;
 using Migration.Toolkit.KXP.Models;
+
+namespace Migration.Toolkit.Core.KX12.Mappers;
 
 public class OmContactStatusMapper : EntityMapperBase<KX12M.OmContactStatus, OmContactStatus>
 {

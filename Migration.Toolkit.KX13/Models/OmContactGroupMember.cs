@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -10,7 +9,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("ContactGroupMemberContactGroupId", "ContactGroupMemberType", Name = "IX_OM_ContactGroupMember_ContactGroupID_Type_MemberID_RelatedID_FromCondition_FromAccount_FromManual")]
 [Index("ContactGroupMemberContactGroupId", "ContactGroupMemberType", "ContactGroupMemberRelatedId", Name = "IX_OM_ContactGroupMember_ContactGroupID_Type_RelatedID", IsUnique = true)]
 [Index("ContactGroupMemberRelatedId", Name = "IX_OM_ContactGroupMember_ContactGroupMemberRelatedID")]
-public partial class OmContactGroupMember
+public class OmContactGroupMember
 {
     [Key]
     [Column("ContactGroupMemberID")]

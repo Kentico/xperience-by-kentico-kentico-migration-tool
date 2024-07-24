@@ -1,6 +1,6 @@
-namespace Migration.Toolkit.Common.Helpers;
-
 using System.Text;
+
+namespace Migration.Toolkit.Common.Helpers;
 
 public static class UriHelperXbyk
 {
@@ -21,12 +21,10 @@ public static class UriHelperXbyk
         return sb.ToString();
     }
 
-    public record struct UniqueDomainResult(bool Success, bool Changed, string Result, string? Fallback);
-
     public static UniqueDomainResult GetUniqueDomainCandidate(string input, ref int startPort, Func<string, bool> checkIsUnique, int maxAttempts = 100)
     {
         bool useFallback = false;
-        var initial = input;
+        string initial = input;
         if (string.IsNullOrWhiteSpace(input))
         {
             initial = "https://localhost";
@@ -46,15 +44,11 @@ public static class UriHelperXbyk
 
         var uri = uriTmp ?? new Uri("https://localhost");
 
-        var changed = false;
-        var candidate = BuildXbyKDomainString(uri, initial.Length + 20);
+        bool changed = false;
+        string candidate = BuildXbyKDomainString(uri, initial.Length + 20);
         while (!checkIsUnique(candidate) && --maxAttempts > 0)
         {
-            var builder = new UriBuilder(uri)
-            {
-                Port = ++startPort,
-                Scheme = "https"
-            };
+            var builder = new UriBuilder(uri) { Port = ++startPort, Scheme = "https" };
             candidate = BuildXbyKDomainString(builder.Uri, initial.Length + 20);
             changed = true;
         }
@@ -68,4 +62,6 @@ public static class UriHelperXbyk
             ? new UniqueDomainResult(!useFallback, changed, input, candidate)
             : new UniqueDomainResult(!useFallback, changed, candidate, null);
     }
+
+    public record struct UniqueDomainResult(bool Success, bool Changed, string Result, string? Fallback);
 }

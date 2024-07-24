@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_WorkflowStepUser")]
 [Index("UserId", Name = "IX_CMS_WorkflowStepUser_UserID")]
-public partial class CmsWorkflowStepUser
+public class CmsWorkflowStepUser
 {
     [Key]
     [Column("WorkflowStepUserID")]

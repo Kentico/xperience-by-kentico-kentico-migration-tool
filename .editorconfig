@@ -1,4 +1,4 @@
-﻿# Severity levels of analyzers https://docs.microsoft.com/en-us/visualstudio/code-quality/roslyn-analyzers-overview?view=vs-2019#severity-levels-of-analyzers
+# Severity levels of analyzers https://docs.microsoft.com/en-us/visualstudio/code-quality/roslyn-analyzers-overview?view=vs-2019#severity-levels-of-analyzers
 
 root = true
 

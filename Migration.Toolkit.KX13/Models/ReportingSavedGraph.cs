@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("Reporting_SavedGraph")]
 [Index("SavedGraphGuid", Name = "IX_Reporting_SavedGraph_SavedGraphGUID")]
 [Index("SavedGraphSavedReportId", Name = "IX_Reporting_SavedGraph_SavedGraphSavedReportID")]
-public partial class ReportingSavedGraph
+public class ReportingSavedGraph
 {
     [Key]
     [Column("SavedGraphID")]

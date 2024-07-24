@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("Integration_SyncLog")]
 [Index("SyncLogSynchronizationId", Name = "IX_Integration_SyncLog_SyncLogTaskID")]
-public partial class IntegrationSyncLog
+public class IntegrationSyncLog
 {
     [Key]
     [Column("SyncLogID")]

@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -13,7 +12,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("StepId", Name = "IX_CMS_WorkflowHistory_StepID")]
 [Index("TargetStepId", Name = "IX_CMS_WorkflowHistory_TargetStepID")]
 [Index("VersionHistoryId", Name = "IX_CMS_WorkflowHistory_VersionHistoryID")]
-public partial class CmsWorkflowHistory
+public class CmsWorkflowHistory
 {
     [Key]
     [Column("WorkflowHistoryID")]

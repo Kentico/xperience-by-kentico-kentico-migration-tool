@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -10,7 +9,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("PageFormerUrlPathNodeId", Name = "IX_CMS_PageFormerUrlPath_PageFormerUrlPathNodeID")]
 [Index("PageFormerUrlPathSiteId", Name = "IX_CMS_PageFormerUrlPath_PageFormerUrlPathSiteID")]
 [Index("PageFormerUrlPathUrlPathHash", "PageFormerUrlPathCulture", "PageFormerUrlPathSiteId", Name = "IX_CMS_PageFormerUrlPath_UrlPathHash_Culture_SiteID", IsUnique = true)]
-public partial class CmsPageFormerUrlPath
+public class CmsPageFormerUrlPath
 {
     [Key]
     [Column("PageFormerUrlPathID")]

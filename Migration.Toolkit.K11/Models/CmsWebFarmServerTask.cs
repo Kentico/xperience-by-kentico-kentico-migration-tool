@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [PrimaryKey("ServerId", "TaskId")]
 [Table("CMS_WebFarmServerTask")]
 [Index("TaskId", Name = "IX_CMS_WebFarmServerTask_TaskID")]
-public partial class CmsWebFarmServerTask
+public class CmsWebFarmServerTask
 {
     [Key]
     [Column("ServerID")]

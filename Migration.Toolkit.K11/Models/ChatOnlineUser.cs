@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -10,7 +9,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("ChatOnlineUserChatUserId", Name = "IX_Chat_OnlineUser_ChatOnlineUserChatUserID")]
 [Index("ChatOnlineUserSiteId", Name = "IX_Chat_OnlineUser_SiteID")]
 [Index("ChatOnlineUserChatUserId", "ChatOnlineUserSiteId", Name = "UQ_Chat_OnlineUser_SiteID-ChatUserID", IsUnique = true)]
-public partial class ChatOnlineUser
+public class ChatOnlineUser
 {
     [Key]
     [Column("ChatOnlineUserID")]

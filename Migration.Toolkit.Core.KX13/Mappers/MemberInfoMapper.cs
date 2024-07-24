@@ -1,11 +1,12 @@
-namespace Migration.Toolkit.Core.KX13.Mappers;
+﻿using System.Data;
 
-using System.Data;
 using CMS.FormEngine;
 using CMS.Membership;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Enumerations;
@@ -14,6 +15,8 @@ using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX13.Contexts;
 using Migration.Toolkit.KX13.Context;
 using Migration.Toolkit.KXP.Api;
+
+namespace Migration.Toolkit.Core.KX13.Mappers;
 
 public record MemberInfoMapperSource(KX13M.CmsUser User, KX13M.CmsUserSetting UserSetting);
 
@@ -26,8 +29,6 @@ public class MemberInfoMapper(
     IDbContextFactory<KX13Context> kx13DbContextFactory)
     : EntityMapperBase<MemberInfoMapperSource, MemberInfo>(logger, primaryKeyMappingContext, protocol)
 {
-    protected override MemberInfo CreateNewInstance(MemberInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) => new();
-
     public static IReadOnlyList<string> MigratedUserFields = new List<string>
     {
         nameof(KX13M.CmsUser.UserGuid),
@@ -36,8 +37,10 @@ public class MemberInfoMapper(
         // nameof(KX13M.CmsUser.UserPassword),
         nameof(KX13M.CmsUser.UserEnabled),
         nameof(KX13M.CmsUser.UserCreated),
-        nameof(KX13M.CmsUser.UserSecurityStamp),
+        nameof(KX13M.CmsUser.UserSecurityStamp)
     };
+
+    protected override MemberInfo CreateNewInstance(MemberInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
     protected override MemberInfo MapInternal(MemberInfoMapperSource source, MemberInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
@@ -85,9 +88,9 @@ public class MemberInfoMapper(
         var customized = kxpClassFacade.GetCustomizedFieldInfosAll(MemberInfo.TYPEINFO.ObjectClassName);
         foreach (var customizedFieldInfo in customized)
         {
-            var fieldName = customizedFieldInfo.FieldName;
+            string fieldName = customizedFieldInfo.FieldName;
 
-            if (ReflectionHelper<KX13M.CmsUser>.TryGetPropertyValue(user, fieldName, StringComparison.InvariantCultureIgnoreCase, out var value) ||
+            if (ReflectionHelper<KX13M.CmsUser>.TryGetPropertyValue(user, fieldName, StringComparison.InvariantCultureIgnoreCase, out object? value) ||
                 ReflectionHelper<KX13M.CmsUserSetting>.TryGetPropertyValue(userSetting, fieldName, StringComparison.InvariantCultureIgnoreCase, out value))
             {
                 target.SetValue(fieldName, value);
@@ -103,7 +106,7 @@ public class MemberInfoMapper(
             {
                 try
                 {
-                    var query =
+                    string query =
                         $"SELECT {string.Join(", ", userCustomizedFields.Select(x => x.FieldName))} FROM {UserInfo.TYPEINFO.ClassStructureInfo.TableName} WHERE {UserInfo.TYPEINFO.ClassStructureInfo.IDColumn} = @id";
 
                     using var conn = new SqlConnection(toolkitConfiguration.KxConnectionString);
@@ -146,7 +149,7 @@ public class MemberInfoMapper(
             {
                 try
                 {
-                    var query =
+                    string query =
                         $"SELECT {string.Join(", ", userSettingsCustomizedFields.Select(x => x.FieldName))} FROM {usDci.ClassTableName} WHERE UserSettingsID = @id";
 
                     using var conn = new SqlConnection(toolkitConfiguration.KxConnectionString);

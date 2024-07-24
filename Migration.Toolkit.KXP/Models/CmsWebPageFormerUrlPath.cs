@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
@@ -10,7 +9,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Index("WebPageFormerUrlPathContentLanguageId", Name = "IX_CMS_WebPageFormerUrlPath_WebPageFormerUrlPathContentLanguageID")]
 [Index("WebPageFormerUrlPathWebPageItemId", Name = "IX_CMS_WebPageFormerUrlPath_WebPageFormerUrlPathWebPageItemID")]
 [Index("WebPageFormerUrlPathWebsiteChannelId", Name = "IX_CMS_WebPageFormerUrlPath_WebPageFormerUrlPathWebsiteChannelID")]
-public partial class CmsWebPageFormerUrlPath
+public class CmsWebPageFormerUrlPath
 {
     [Key]
     [Column("WebPageFormerUrlPathID")]

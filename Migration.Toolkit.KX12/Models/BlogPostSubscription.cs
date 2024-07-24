@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("Blog_PostSubscription")]
 [Index("SubscriptionPostDocumentId", Name = "IX_Blog_PostSubscription_SubscriptionPostDocumentID")]
 [Index("SubscriptionUserId", Name = "IX_Blog_PostSubscription_SubscriptionUserID")]
-public partial class BlogPostSubscription
+public class BlogPostSubscription
 {
     [Key]
     [Column("SubscriptionID")]

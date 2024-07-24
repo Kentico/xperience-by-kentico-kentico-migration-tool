@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -12,7 +11,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("CustomerLastName", Name = "IX_COM_Customer_CustomerLastName")]
 [Index("CustomerSiteId", Name = "IX_COM_Customer_CustomerSiteID")]
 [Index("CustomerUserId", Name = "IX_COM_Customer_CustomerUserID")]
-public partial class ComCustomer
+public class ComCustomer
 {
     [Key]
     [Column("CustomerID")]

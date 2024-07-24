@@ -1,16 +1,16 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_Personalization")]
-[Index("PersonalizationId", "PersonalizationUserId", "PersonalizationDocumentId", "PersonalizationDashboardName", Name = "IX_CMS_Personalization_PersonalizationID_PersonalizationUserID_PersonalizationDocumentID_PersonalizationDashboardName", IsUnique = true)]
+[Index("PersonalizationId", "PersonalizationUserId", "PersonalizationDocumentId", "PersonalizationDashboardName", Name = "IX_CMS_Personalization_PersonalizationID_PersonalizationUserID_PersonalizationDocumentID_PersonalizationDashboardName",
+    IsUnique = true)]
 [Index("PersonalizationSiteId", Name = "IX_CMS_Personalization_PersonalizationSiteID_SiteID")]
 [Index("PersonalizationUserId", Name = "IX_CMS_Personalization_PersonalizationUserID")]
-public partial class CmsPersonalization
+public class CmsPersonalization
 {
     [Key]
     [Column("PersonalizationID")]

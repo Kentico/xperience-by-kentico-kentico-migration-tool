@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("OM_ABVariant")]
 [Index("AbvariantSiteId", Name = "IX_OM_ABVariant_ABVariantSiteID")]
 [Index("AbvariantTestId", Name = "IX_OM_ABVariant_ABVariantTestID")]
-public partial class OmAbvariant
+public class OmAbvariant
 {
     [Key]
     [Column("ABVariantID")]

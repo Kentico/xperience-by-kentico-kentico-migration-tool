@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("CMS_WorkflowStepRoles")]
 [Index("RoleId", Name = "IX_CMS_WorkflowStepRoles_RoleID")]
-public partial class CmsWorkflowStepRole
+public class CmsWorkflowStepRole
 {
     [Key]
     [Column("WorkflowStepRoleID")]

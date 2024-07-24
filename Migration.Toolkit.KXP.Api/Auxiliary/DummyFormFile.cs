@@ -1,17 +1,9 @@
-namespace Migration.Toolkit.KXP.Api.Auxiliary;
-
 using CMS.Base;
+
+namespace Migration.Toolkit.KXP.Api.Auxiliary;
 
 public class DummyUploadedFile : IUploadedFile
 {
-    public Stream InputStream { get; }
-
-    public string ContentType { get; }
-
-    public long Length { get; }
-
-    public string FileName { get; }
-
     private DummyUploadedFile(Stream stream, string contentType, long length, string fileName)
     {
         InputStream = stream;
@@ -20,17 +12,19 @@ public class DummyUploadedFile : IUploadedFile
         ContentType = contentType;
     }
 
-    public static IUploadedFile FromStream(Stream stream, string contentType, long length, string fileName)
-    {
-        return new DummyUploadedFile(stream, contentType, length, fileName);
-    }
+    public Stream InputStream { get; }
 
-    public static IUploadedFile FromByteArray(byte[] byteArray, string contentType, long length, string fileName)
-    {
-        return new DummyUploadedFile(new MemoryStream(byteArray), contentType, length, fileName);
-    }
+    public string ContentType { get; }
+
+    public long Length { get; }
+
+    public string FileName { get; }
 
     public Stream OpenReadStream() => InputStream;
 
     public bool CanOpenReadStream => InputStream.CanRead;
+
+    public static IUploadedFile FromStream(Stream stream, string contentType, long length, string fileName) => new DummyUploadedFile(stream, contentType, length, fileName);
+
+    public static IUploadedFile FromByteArray(byte[] byteArray, string contentType, long length, string fileName) => new DummyUploadedFile(new MemoryStream(byteArray), contentType, length, fileName);
 }

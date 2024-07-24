@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("COM_MultiBuyCouponCode")]
 [Index("MultiBuyCouponCodeMultiBuyDiscountId", Name = "IX_COM_MultiBuyCouponCode_MultiBuyCouponCodeMultiBuyDiscountID")]
-public partial class ComMultiBuyCouponCode
+public class ComMultiBuyCouponCode
 {
     [Key]
     [Column("MultiBuyCouponCodeID")]

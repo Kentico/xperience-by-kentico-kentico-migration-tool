@@ -1,34 +1,41 @@
-namespace Migration.Toolkit.Source.Handlers;
-
 using System.Collections;
+
 using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
 using CMS.DataEngine;
 using CMS.FormEngine;
+
 using Kentico.Xperience.UMT.Model;
 using Kentico.Xperience.UMT.Services;
+
 using MediatR;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.Source.Mappers;
 using Migration.Toolkit.Source.Model;
 using Migration.Toolkit.Source.Services;
+
 using Newtonsoft.Json;
+
+namespace Migration.Toolkit.Source.Handlers;
 
 public class MigrateCategoriesCommandHandler(
     ILogger<MigrateCategoriesCommandHandler> logger,
     ModelFacade modelFacade,
     IImporter importer,
     ReusableSchemaService reusableSchemaService,
-    IUmtMapper<TagModelSource> tagModelMapper
+    IUmtMapper<TagModelSource> tagModelMapper,
+    SpoiledGuidContext spoiledGuidContext
 ) : IRequestHandler<MigrateCategoriesCommand, CommandResult>
 {
     public async Task<CommandResult> Handle(MigrateCategoriesCommand request, CancellationToken cancellationToken)
     {
-        var taxonomyName = "Categories";
+        string taxonomyName = "Categories";
         var result = await importer.ImportAsync(new TaxonomyModel
         {
             TaxonomyName = taxonomyName,
@@ -40,25 +47,20 @@ public class MigrateCategoriesCommandHandler(
 
         if (result.Imported is TaxonomyInfo taxonomy)
         {
-            var query = """
-                        SELECT C.ClassName, C.ClassGuid, C.ClassID
-                        FROM View_CMS_Tree_Joined [TJ]
-                                 JOIN dbo.CMS_DocumentCategory [CDC] on [TJ].DocumentID = [CDC].DocumentID
-                                 JOIN CMS_Class [C] ON TJ.NodeClassID = [C].ClassID
-                                 JOIN dbo.CMS_Category CC on CDC.CategoryID = CC.CategoryID AND CC.CategoryUserID IS NULL
-                        GROUP BY C.ClassName, C.ClassGuid, C.ClassID
-                        """;
+            string query = """
+                           SELECT C.ClassName, C.ClassGuid, C.ClassID
+                           FROM View_CMS_Tree_Joined [TJ]
+                                    JOIN dbo.CMS_DocumentCategory [CDC] on [TJ].DocumentID = [CDC].DocumentID
+                                    JOIN CMS_Class [C] ON TJ.NodeClassID = [C].ClassID
+                                    JOIN dbo.CMS_Category CC on CDC.CategoryID = CC.CategoryID AND CC.CategoryUserID IS NULL
+                           GROUP BY C.ClassName, C.ClassGuid, C.ClassID
+                           """;
 
-            var classesWithCategories = modelFacade.Select(query, (reader, version) => new
-            {
-                ClassName = reader.Unbox<string>("ClassName"),
-                ClassGuid = reader.Unbox<Guid>("ClassGuid"),
-                ClassID = reader.Unbox<int>("ClassID"),
-            });
+            var classesWithCategories = modelFacade.Select(query, (reader, version) => new { ClassName = reader.Unbox<string>("ClassName"), ClassGuid = reader.Unbox<Guid>("ClassGuid"), ClassID = reader.Unbox<int>("ClassID") });
 
             var skippedClasses = new List<int>();
-            Guid schemaGuid = Guid.Empty;
-            var categoryFieldName = "Category_Legacy";
+            var schemaGuid = Guid.Empty;
+            string categoryFieldName = "Category_Legacy";
             foreach (var classWithCategoryUsage in classesWithCategories)
             {
                 var targetDataClass = DataClassInfoProvider.ProviderObject.Get(classWithCategoryUsage.ClassGuid);
@@ -106,7 +108,7 @@ public class MigrateCategoriesCommandHandler(
                             .AssertSuccess<TagInfo>(logger) is { Success: true, Info: { } tag })
                     {
                         query = """
-                                SELECT TJ.DocumentGUID, CDC.CategoryID, TJ.DocumentCheckedOutVersionHistoryID, TJ.NodeClassID
+                                SELECT TJ.DocumentGUID, TJ.NodeSiteID, TJ.NodeID, TJ.DocumentID, CDC.CategoryID, TJ.DocumentCheckedOutVersionHistoryID, TJ.NodeClassID
                                 FROM View_CMS_Tree_Joined [TJ]
                                          JOIN dbo.CMS_DocumentCategory [CDC] on [TJ].DocumentID = [CDC].DocumentID
                                          JOIN dbo.CMS_Category CC on CDC.CategoryID = CC.CategoryID AND CC.CategoryUserID IS NULL
@@ -115,10 +117,16 @@ public class MigrateCategoriesCommandHandler(
 
                         var docsWithCategories = modelFacade.Select(query, (reader, _) => new
                         {
-                            DocumentGUID = reader.Unbox<Guid>("DocumentGUID"),
                             CategoryID = reader.Unbox<int?>("CategoryID"),
                             DocumentCheckedOutVersionHistoryID = reader.Unbox<int?>("DocumentCheckedOutVersionHistoryID"),
-                            NodeClassID = reader.Unbox<int>("NodeClassID")
+                            NodeClassID = reader.Unbox<int>("NodeClassID"),
+                            NodeSiteID = reader.Unbox<int>("NodeSiteID"),
+                            DocumentGUID = spoiledGuidContext.EnsureDocumentGuid(
+                                reader.Unbox<Guid>("DocumentGUID"),
+                                reader.Unbox<int>("NodeSiteID"),
+                                reader.Unbox<int>("NodeID"),
+                                reader.Unbox<int>("DocumentID")
+                            )
                         }, new SqlParameter("categoryId", cmsCategory.CategoryID));
 
                         foreach (var dwc in docsWithCategories)
@@ -166,26 +174,19 @@ public class MigrateCategoriesCommandHandler(
         return new GenericCommandResult();
     }
 
-    private Guid EnsureReusableFieldSchema(TaxonomyInfo taxonomy, string categoryFieldName, string categoryFieldDisplayName)
-    {
-        return reusableSchemaService.EnsureReusableFieldSchema(
-            "categories_container",
-            "Categories container",
-            "Container for legacy categories",
-            new FormFieldInfo
-            {
-                Enabled = true,
-                Visible = true,
-                AllowEmpty = true,
-                DataType = "taxonomy",
-                Name = categoryFieldName,
-                Caption = categoryFieldDisplayName,
-                Guid = new Guid("F65FE16C-53B0-47F7-B865-E8E300EC5F91"),
-                Settings = new Hashtable
-                {
-                    { "controlname", "Kentico.Administration.TagSelector" },
-                    { "TaxonomyGroup", $"[\"{taxonomy.TaxonomyGUID}\"]" }
-                }
-            });
-    }
+    private Guid EnsureReusableFieldSchema(TaxonomyInfo taxonomy, string categoryFieldName, string categoryFieldDisplayName) => reusableSchemaService.EnsureReusableFieldSchema(
+        "categories_container",
+        "Categories container",
+        "Container for legacy categories",
+        new FormFieldInfo
+        {
+            Enabled = true,
+            Visible = true,
+            AllowEmpty = true,
+            DataType = "taxonomy",
+            Name = categoryFieldName,
+            Caption = categoryFieldDisplayName,
+            Guid = new Guid("F65FE16C-53B0-47F7-B865-E8E300EC5F91"),
+            Settings = new Hashtable { { "controlname", "Kentico.Administration.TagSelector" }, { "TaxonomyGroup", $"[\"{taxonomy.TaxonomyGUID}\"]" } }
+        });
 }

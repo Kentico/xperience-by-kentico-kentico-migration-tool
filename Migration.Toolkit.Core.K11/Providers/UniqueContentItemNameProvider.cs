@@ -1,8 +1,7 @@
-namespace Migration.Toolkit.Core.K11.Providers;
-
-using System.Threading.Tasks;
 using CMS.Base;
 using CMS.ContentEngine.Internal;
+
+namespace Migration.Toolkit.Core.K11.Providers;
 
 internal class UniqueContentItemNameProvider : UniqueStringValueProviderBase
 {
@@ -10,28 +9,22 @@ internal class UniqueContentItemNameProvider : UniqueStringValueProviderBase
 
 
     /// <summary>
-    /// Creates a new instance of <see cref="UniqueContentItemNameProvider"/>.
+    ///     Creates a new instance of <see cref="UniqueContentItemNameProvider" />.
     /// </summary>
     public UniqueContentItemNameProvider(IContentItemNameValidator codeNameValidator)
-        : base(TypeHelper.GetMaxCodeNameLength(ContentItemInfo.TYPEINFO.MaxCodeNameLength))
-    {
-        this.codeNameValidator = codeNameValidator;
-    }
+        : base(TypeHelper.GetMaxCodeNameLength(ContentItemInfo.TYPEINFO.MaxCodeNameLength)) => this.codeNameValidator = codeNameValidator;
 
-    public override Task<string> GetUniqueValue(string inputValue)
-    {
-        return base.GetUniqueValue(AddSuffix(inputValue));
-    }
+    public override Task<string> GetUniqueValue(string inputValue) => base.GetUniqueValue(AddSuffix(inputValue));
 
 
     private string AddSuffix(string codeName)
     {
-        var randomSuffix = GetRandomSuffix();
-        var codeNameWithSuffix = codeName += randomSuffix;
+        string randomSuffix = GetRandomSuffix();
+        string codeNameWithSuffix = codeName += randomSuffix;
 
         if (codeNameWithSuffix.Length > MaxLength)
         {
-            var availableLength = MaxLength - randomSuffix.Length;
+            int availableLength = MaxLength - randomSuffix.Length;
 
             codeNameWithSuffix = $"{codeName[..availableLength]}{randomSuffix}";
         }
@@ -40,9 +33,6 @@ internal class UniqueContentItemNameProvider : UniqueStringValueProviderBase
     }
 
 
-    ///<inheritdoc/>
-    protected override Task<bool> IsValueUnique(string value)
-    {
-        return Task.FromResult(codeNameValidator.IsUnique(value));
-    }
+    /// <inheritdoc />
+    protected override Task<bool> IsValueUnique(string value) => Task.FromResult(codeNameValidator.IsUnique(value));
 }

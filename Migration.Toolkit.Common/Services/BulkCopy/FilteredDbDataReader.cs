@@ -1,12 +1,12 @@
-namespace Migration.Toolkit.Common.Services.BulkCopy;
-
 using System.Data;
+
+namespace Migration.Toolkit.Common.Services.BulkCopy;
 
 public class FilteredDbDataReader<TReader>(IDataReader innerReader, Func<IDataReader, bool> includePredicate) : DataReaderProxyBase(innerReader)
     where TReader : IDataReader
 {
-    public int TotalItems { get; private set; } = 0;
-    public int TotalNonFiltered { get; private set; } = 0;
+    public int TotalItems { get; private set; }
+    public int TotalNonFiltered { get; private set; }
 
     public override bool Read()
     {
@@ -15,7 +15,7 @@ public class FilteredDbDataReader<TReader>(IDataReader innerReader, Func<IDataRe
             if (base.Read())
             {
                 TotalItems++;
-                if (!includePredicate(_innerReader))
+                if (!includePredicate(InnerReader))
                 {
                     continue;
                 }

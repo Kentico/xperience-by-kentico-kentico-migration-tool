@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
@@ -9,8 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("CMS_Tag")]
 [Index("TagParentId", Name = "IX_CMS_Tag_TagParentID")]
 [Index("TagTaxonomyId", Name = "IX_CMS_Tag_TagTaxonomyID")]
-[Index("TagTitle", "TagTaxonomyId", Name = "IX_CMS_Tag_TagTitle_TagTaxonomyID_Unique", IsUnique = true)]
-public partial class CmsTag
+public class CmsTag
 {
     [Key]
     [Column("TagID")]

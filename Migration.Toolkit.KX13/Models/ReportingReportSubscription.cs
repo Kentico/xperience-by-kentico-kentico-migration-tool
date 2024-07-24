@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -13,7 +12,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Index("ReportSubscriptionTableId", Name = "IX_Reporting_ReportSubscription_ReportSubscriptionTableID")]
 [Index("ReportSubscriptionUserId", Name = "IX_Reporting_ReportSubscription_ReportSubscriptionUserID")]
 [Index("ReportSubscriptionValueId", Name = "IX_Reporting_ReportSubscription_ReportSubscriptionValueID")]
-public partial class ReportingReportSubscription
+public class ReportingReportSubscription
 {
     [Key]
     [Column("ReportSubscriptionID")]

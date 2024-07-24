@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("CMS_Resource")]
 [Index("ResourceName", Name = "IX_CMS_Resource_ResourceName")]
-public partial class CmsResource
+public class CmsResource
 {
     [Key]
     [Column("ResourceID")]

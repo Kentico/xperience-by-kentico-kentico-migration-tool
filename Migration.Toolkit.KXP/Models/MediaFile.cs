@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
@@ -11,7 +10,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Index("FileGuid", Name = "IX_Media_File_FileGUID")]
 [Index("FileLibraryId", Name = "IX_Media_File_FileLibraryID")]
 [Index("FileModifiedByUserId", Name = "IX_Media_File_FileModifiedByUserID")]
-public partial class MediaFile
+public class MediaFile
 {
     [Key]
     [Column("FileID")]

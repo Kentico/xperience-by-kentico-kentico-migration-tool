@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_WebFarmTask")]
 [Index("TaskIsMemory", "TaskCreated", Name = "IX_CMS_WebFarmTask_TaskIsMemory_TaskCreated")]
-public partial class CmsWebFarmTask
+public class CmsWebFarmTask
 {
     [Key]
     [Column("TaskID")]

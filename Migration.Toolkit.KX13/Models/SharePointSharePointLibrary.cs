@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("SharePoint_SharePointLibrary")]
 [Index("SharePointLibrarySharePointConnectionId", Name = "IX_SharePoint_SharePointLibrary_SharePointLibrarySharepointConnectionID")]
 [Index("SharePointLibrarySiteId", Name = "IX_SharePoint_SharePointLibrary_SharePointlibrarySiteID")]
-public partial class SharePointSharePointLibrary
+public class SharePointSharePointLibrary
 {
     [Key]
     [Column("SharePointLibraryID")]

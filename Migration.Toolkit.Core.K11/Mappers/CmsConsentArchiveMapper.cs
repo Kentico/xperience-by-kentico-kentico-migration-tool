@@ -1,18 +1,21 @@
-namespace Migration.Toolkit.Core.K11.Mappers;
-
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.K11.Contexts;
-using Migration.Toolkit.KXP.Models;
+using Migration.Toolkit.K11.Models;
 
-public class CmsConsentArchiveMapper(ILogger<CmsConsentArchiveMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext,
-        IProtocol protocol)
-    : EntityMapperBase<Toolkit.K11.Models.CmsConsentArchive, CmsConsentArchive>(logger, primaryKeyMappingContext, protocol)
+namespace Migration.Toolkit.Core.K11.Mappers;
+
+public class CmsConsentArchiveMapper(
+    ILogger<CmsConsentArchiveMapper> logger,
+    PrimaryKeyMappingContext primaryKeyMappingContext,
+    IProtocol protocol)
+    : EntityMapperBase<CmsConsentArchive, KXP.Models.CmsConsentArchive>(logger, primaryKeyMappingContext, protocol)
 {
-    protected override CmsConsentArchive? CreateNewInstance(Toolkit.K11.Models.CmsConsentArchive source, MappingHelper mappingHelper, AddFailure addFailure) => new();
+    protected override KXP.Models.CmsConsentArchive? CreateNewInstance(CmsConsentArchive source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
-    protected override CmsConsentArchive MapInternal(Toolkit.K11.Models.CmsConsentArchive source, CmsConsentArchive target, bool newInstance,
+    protected override KXP.Models.CmsConsentArchive MapInternal(CmsConsentArchive source, KXP.Models.CmsConsentArchive target, bool newInstance,
         MappingHelper mappingHelper, AddFailure addFailure)
     {
         target.ConsentArchiveContent = source.ConsentArchiveContent;
@@ -20,7 +23,7 @@ public class CmsConsentArchiveMapper(ILogger<CmsConsentArchiveMapper> logger, Pr
         target.ConsentArchiveLastModified = source.ConsentArchiveLastModified;
         target.ConsentArchiveHash = source.ConsentArchiveHash;
 
-        if (mappingHelper.TranslateRequiredId<Toolkit.K11.Models.CmsConsent>(r => r.ConsentId, source.ConsentArchiveConsentId, out var consentId))
+        if (mappingHelper.TranslateRequiredId<CmsConsent>(r => r.ConsentId, source.ConsentArchiveConsentId, out int consentId))
         {
             target.ConsentArchiveConsentId = consentId;
         }

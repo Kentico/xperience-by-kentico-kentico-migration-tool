@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("COM_Department")]
 [Index("DepartmentDefaultTaxClassId", Name = "IX_COM_Department_DepartmentDefaultTaxClassID")]
 [Index("DepartmentSiteId", Name = "IX_COM_Department_DepartmentSiteID")]
-public partial class ComDepartment
+public class ComDepartment
 {
     [Key]
     [Column("DepartmentID")]

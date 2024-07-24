@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX13.Models;
 [Table("CMS_UserMacroIdentity")]
 [Index("UserMacroIdentityMacroIdentityId", Name = "IX_CMS_UserMacroIdentity_UserMacroIdentityMacroIdentityID")]
 [Index("UserMacroIdentityUserId", Name = "UQ_CMS_UserMacroIdentity_UserMacroIdentityUserID", IsUnique = true)]
-public partial class CmsUserMacroIdentity
+public class CmsUserMacroIdentity
 {
     [Key]
     [Column("UserMacroIdentityID")]

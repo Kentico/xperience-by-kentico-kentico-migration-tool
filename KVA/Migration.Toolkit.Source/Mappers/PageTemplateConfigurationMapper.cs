@@ -1,29 +1,32 @@
-namespace Migration.Toolkit.Source.Mappers;
-
 using AngleSharp.Text;
+
 using CMS.MediaLibrary;
 using CMS.Websites;
-using Kentico.Components.Web.Mvc.FormComponents;
-using Kentico.PageBuilder.Web.Mvc;
+
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Enumerations;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Common.Services.Ipc;
 using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Api.Services.CmsClass;
-using Migration.Toolkit.KXP.Models;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Model;
+using Migration.Toolkit.Source.Services;
 using Migration.Toolkit.Source.Services.Model;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
+namespace Migration.Toolkit.Source.Mappers;
 
 public class PageTemplateConfigurationMapper(
     ILogger<PageTemplateConfigurationMapper> logger,
     PrimaryKeyMappingContext pkContext,
     IProtocol protocol,
-    SourceInstanceContext sourceInstanceContext)
+    SourceInstanceContext sourceInstanceContext,
+    SpoiledGuidContext spoiledGuidContext)
     : EntityMapperBase<ICmsPageTemplateConfiguration, PageTemplateConfigurationInfo>(logger, pkContext, protocol)
 {
     protected override PageTemplateConfigurationInfo? CreateNewInstance(ICmsPageTemplateConfiguration source, MappingHelper mappingHelper, AddFailure addFailure)
@@ -64,7 +67,7 @@ public class PageTemplateConfigurationMapper(
                             sourceInstanceContext.GetPageTemplateFormComponents(source.PageTemplateConfigurationSiteID, pageTemplateConfiguration.Identifier);
                         if (pageTemplateConfiguration.Properties is { Count: > 0 })
                         {
-                            WalkProperties(pageTemplateConfiguration.Properties, pageTemplateConfigurationFcs);
+                            WalkProperties(source.PageTemplateConfigurationSiteID, pageTemplateConfiguration.Properties, pageTemplateConfigurationFcs);
                         }
 
                         target.PageTemplateConfigurationTemplate = JsonConvert.SerializeObject(pageTemplateConfiguration);
@@ -73,7 +76,7 @@ public class PageTemplateConfigurationMapper(
 
                 if (source.PageTemplateConfigurationWidgets != null)
                 {
-                    var areas = JsonConvert.DeserializeObject<Migration.Toolkit.Source.Services.Model.EditableAreasConfiguration>(source.PageTemplateConfigurationWidgets);
+                    var areas = JsonConvert.DeserializeObject<EditableAreasConfiguration>(source.PageTemplateConfigurationWidgets);
                     if (areas?.EditableAreas is { Count: > 0 })
                     {
                         WalkAreas(source.PageTemplateConfigurationSiteID, areas.EditableAreas);
@@ -91,15 +94,13 @@ public class PageTemplateConfigurationMapper(
 
             return target;
         }
-        else
-        {
-            return null;
-        }
+
+        return null;
     }
 
     #region "Page template & page widget walkers"
 
-    private void WalkAreas(int siteId, List<Migration.Toolkit.Source.Services.Model.EditableAreaConfiguration> areas)
+    private void WalkAreas(int siteId, List<EditableAreaConfiguration> areas)
     {
         foreach (var area in areas)
         {
@@ -112,14 +113,14 @@ public class PageTemplateConfigurationMapper(
         }
     }
 
-    private void WalkSections(int siteId, List<Migration.Toolkit.Source.Services.Model.SectionConfiguration> sections)
+    private void WalkSections(int siteId, List<SectionConfiguration> sections)
     {
         foreach (var section in sections)
         {
             logger.LogTrace("Walk section {TypeIdentifier}|{Identifier}", section.TypeIdentifier, section.Identifier);
 
             var sectionFcs = sourceInstanceContext.GetSectionFormComponents(siteId, section.TypeIdentifier);
-            WalkProperties(section.Properties, sectionFcs);
+            WalkProperties(siteId, section.Properties, sectionFcs);
 
             if (section.Zones is { Count: > 0 })
             {
@@ -128,7 +129,7 @@ public class PageTemplateConfigurationMapper(
         }
     }
 
-    private void WalkZones(int siteId, List<Migration.Toolkit.Source.Services.Model.ZoneConfiguration> zones)
+    private void WalkZones(int siteId, List<ZoneConfiguration> zones)
     {
         foreach (var zone in zones)
         {
@@ -141,7 +142,7 @@ public class PageTemplateConfigurationMapper(
         }
     }
 
-    private void WalkWidgets(int siteId, List<Migration.Toolkit.Source.Services.Model.WidgetConfiguration> widgets)
+    private void WalkWidgets(int siteId, List<WidgetConfiguration> widgets)
     {
         foreach (var widget in widgets)
         {
@@ -154,15 +155,15 @@ public class PageTemplateConfigurationMapper(
 
                 if (variant.Properties is { Count: > 0 })
                 {
-                    WalkProperties(variant.Properties, widgetFcs);
+                    WalkProperties(siteId, variant.Properties, widgetFcs);
                 }
             }
         }
     }
 
-    private void WalkProperties(JObject properties, List<EditingFormControlModel>? formControlModels)
+    private void WalkProperties(int siteId, JObject properties, List<EditingFormControlModel>? formControlModels)
     {
-        foreach (var (key, value) in properties)
+        foreach ((string key, var value) in properties)
         {
             logger.LogTrace("Walk property {Name}|{Identifier}", key, value?.ToString());
 
@@ -179,36 +180,37 @@ public class PageTemplateConfigurationMapper(
                     switch (oldFormComponent)
                     {
                         case Kx13FormComponents.Kentico_AttachmentSelector when newFormComponent == FormComponents.AdminAssetSelectorComponent:
+                        {
+                            if (value?.ToObject<List<AttachmentSelectorItem>>() is { Count: > 0 } items)
                             {
-                                if (value?.ToObject<List<AttachmentSelectorItem>>() is { Count: > 0 } items)
-                                {
-                                    properties[key] = JToken.FromObject(items.Select(x => new AssetRelatedItem { Identifier = x.FileGuid }).ToList());
-                                }
-
-                                logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
-                                break;
+                                properties[key] = JToken.FromObject(items.Select(x => new AssetRelatedItem { Identifier = x.FileGuid }).ToList());
                             }
+
+                            logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
+                            break;
+                        }
                         case Kx13FormComponents.Kentico_PageSelector when newFormComponent == FormComponents.Kentico_Xperience_Admin_Websites_WebPageSelectorComponent:
+                        {
+                            if (value?.ToObject<List<PageSelectorItem>>() is { Count: > 0 } items)
                             {
-                                if (value?.ToObject<List<Migration.Toolkit.Source.Services.Model.PageSelectorItem>>() is { Count: > 0 } items)
-                                {
-                                    properties[key] = JToken.FromObject(items.Select(x => new WebPageRelatedItem { WebPageGuid = x.NodeGuid }).ToList());
-                                }
+                                properties[key] = JToken.FromObject(items.Select(x => new WebPageRelatedItem { WebPageGuid = spoiledGuidContext.EnsureNodeGuid(x.NodeGuid, siteId) }).ToList());
+                            }
 
-                                logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
-                                break;
-                            }
+                            logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
+                            break;
+                        }
                         case Kx13FormComponents.Kentico_FileUploader:
-                            {
-                                // TODO tomas.krch 2024-03-27: implement!
-                                break;
-                            }
+                        {
+                            // TODO tomas.krch 2024-03-27: implement!
+                            break;
+                        }
+
+                        default:
+                            break;
                     }
                 }
                 else if (FieldMappingInstance.BuiltInModel.SupportedInKxpLegacyMode.Contains(editingFcm.FormComponentIdentifier))
                 {
-                    // TODO tomas.krch 2024-03-27: nothing is supported in legacy mode (no legacy mode)
-
                     // OK
                     logger.LogTrace("Editing form component found {FormComponentName} => supported in legacy mode",
                         editingFcm.FormComponentIdentifier);

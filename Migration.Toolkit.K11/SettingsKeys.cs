@@ -1,5 +1,6 @@
 // ReSharper disable InconsistentNaming
 // ReSharper disable IdentifierTypo
+
 namespace Migration.Toolkit.K11;
 
 public static class SettingsKeys

@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
 
 [Table("CMS_CssStylesheet")]
 [Index("StylesheetName", Name = "IX_CMS_CssStylesheet_StylesheetName")]
-public partial class CmsCssStylesheet
+public class CmsCssStylesheet
 {
     [Key]
     [Column("StylesheetID")]

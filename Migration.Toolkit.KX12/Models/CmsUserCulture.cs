@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -10,7 +9,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("CMS_UserCulture")]
 [Index("CultureId", Name = "IX_CMS_UserCulture_CultureID")]
 [Index("SiteId", Name = "IX_CMS_UserCulture_SiteID")]
-public partial class CmsUserCulture
+public class CmsUserCulture
 {
     [Key]
     [Column("UserID")]

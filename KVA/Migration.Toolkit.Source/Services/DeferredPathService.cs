@@ -2,17 +2,11 @@ namespace Migration.Toolkit.Source.Services;
 
 public class DeferredPathService
 {
+    private readonly List<DeferredWidgetPatch> deferredWidgetPatch = [];
+
+    public IEnumerable<DeferredWidgetPatch> GetWidgetsToPatch() => deferredWidgetPatch.ToList();
+
+    public void AddPatch(Guid uniqueId, string className, int webSiteChannelId) => deferredWidgetPatch.Add(new DeferredWidgetPatch(uniqueId, className, webSiteChannelId));
+
     public record DeferredWidgetPatch(Guid UniqueId, string ClassName, int WebSiteChannelId);
-    private readonly List<DeferredWidgetPatch> _deferredWidgetPatch = new();
-
-
-    public IEnumerable<DeferredWidgetPatch> GetWidgetsToPatch()
-    {
-        return _deferredWidgetPatch.ToList();
-    }
-
-    public void AddPatch(Guid uniqueId, string className, int webSiteChannelId)
-    {
-        _deferredWidgetPatch.Add(new(uniqueId, className, webSiteChannelId));
-    }
 }

@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
@@ -10,7 +9,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Index("SendConfigurationEmailConfigurationId", Name = "IX_EmailLibrary_SendConfiguration_SendConfigurationEmailConfigurationID")]
 [Index("SendConfigurationRecipientListId", Name = "IX_EmailLibrary_SendConfiguration_SendConfigurationRecipientListID")]
 [Index("SendConfigurationEmailConfigurationId", Name = "UQ_EmailLibrary_SendConfiguration_SendConfigurationEmailConfigurationID", IsUnique = true)]
-public partial class EmailLibrarySendConfiguration
+public class EmailLibrarySendConfiguration
 {
     [Key]
     [Column("SendConfigurationID")]

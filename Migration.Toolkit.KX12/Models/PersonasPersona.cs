@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
 
 [Table("Personas_Persona")]
 [Index("PersonaScoreId", Name = "IX_Personas_Persona_PersonaScoreID")]
-public partial class PersonasPersona
+public class PersonasPersona
 {
     [Key]
     [Column("PersonaID")]

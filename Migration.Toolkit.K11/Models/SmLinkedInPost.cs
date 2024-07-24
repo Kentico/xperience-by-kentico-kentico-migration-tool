@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -10,7 +9,7 @@ namespace Migration.Toolkit.K11.Models;
 [Index("LinkedInPostCampaignId", Name = "IX_SM_LinkedInPost_LinkedInPostCampaignID")]
 [Index("LinkedInPostLinkedInAccountId", Name = "IX_SM_LinkedInPost_LinkedInPostLinkedInAccountID")]
 [Index("LinkedInPostSiteId", Name = "IX_SM_LinkedInPost_LinkedInPostSiteID")]
-public partial class SmLinkedInPost
+public class SmLinkedInPost
 {
     [Key]
     [Column("LinkedInPostID")]

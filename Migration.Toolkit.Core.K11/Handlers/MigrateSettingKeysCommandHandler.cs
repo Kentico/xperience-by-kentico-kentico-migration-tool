@@ -1,20 +1,24 @@
-namespace Migration.Toolkit.Core.K11.Handlers;
-
 using CMS.DataEngine;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.K11;
 using Migration.Toolkit.K11.Models;
 
-public class MigrateSettingKeysCommandHandler(ILogger<MigrateSettingKeysCommandHandler> logger,
-        IEntityMapper<CmsSettingsKey, SettingsKeyInfo> mapper,
-        IDbContextFactory<K11Context> k11ContextFactory,
-        ToolkitConfiguration toolkitConfiguration,
-        IProtocol protocol)
+namespace Migration.Toolkit.Core.K11.Handlers;
+
+public class MigrateSettingKeysCommandHandler(
+    ILogger<MigrateSettingKeysCommandHandler> logger,
+    IEntityMapper<CmsSettingsKey, SettingsKeyInfo> mapper,
+    IDbContextFactory<K11Context> k11ContextFactory,
+    ToolkitConfiguration toolkitConfiguration,
+    IProtocol protocol)
     : IRequestHandler<MigrateSettingKeysCommand, CommandResult>
 {
     public async Task<CommandResult> Handle(MigrateSettingKeysCommand request, CancellationToken cancellationToken)
@@ -35,7 +39,7 @@ public class MigrateSettingKeysCommandHandler(ILogger<MigrateSettingKeysCommandH
 
             var kxoGlobalSettingsKey = GetKxoSettingsKey(k11CmsSettingsKey);
 
-            var canBeMigrated = !kxoGlobalSettingsKey?.KeyIsHidden ?? false;
+            bool canBeMigrated = !kxoGlobalSettingsKey?.KeyIsHidden ?? false;
             var kxoCmsSettingsKey = k11CmsSettingsKey.SiteId is null ? kxoGlobalSettingsKey : GetKxoSettingsKey(k11CmsSettingsKey);
 
             if (!canBeMigrated)
@@ -46,12 +50,7 @@ public class MigrateSettingKeysCommandHandler(ILogger<MigrateSettingKeysCommandH
                         .NotCurrentlySupportedSkip<SettingsKeyInfo>()
                         .WithId(nameof(k11CmsSettingsKey.KeyId), k11CmsSettingsKey.KeyId)
                         .WithMessage("Settings key is not supported in target instance")
-                        .WithData(new
-                        {
-                            k11CmsSettingsKey.KeyName,
-                            k11CmsSettingsKey.SiteId,
-                            k11CmsSettingsKey.KeyGuid
-                        })
+                        .WithData(new { k11CmsSettingsKey.KeyName, k11CmsSettingsKey.SiteId, k11CmsSettingsKey.KeyGuid })
                 );
                 continue;
             }
@@ -82,8 +81,5 @@ public class MigrateSettingKeysCommandHandler(ILogger<MigrateSettingKeysCommandH
         return new GenericCommandResult();
     }
 
-    private SettingsKeyInfo? GetKxoSettingsKey(CmsSettingsKey k11CmsSettingsKey)
-    {
-        return SettingsKeyInfoProvider.ProviderObject.Get(k11CmsSettingsKey.KeyName);
-    }
+    private SettingsKeyInfo? GetKxoSettingsKey(CmsSettingsKey k11CmsSettingsKey) => SettingsKeyInfoProvider.ProviderObject.Get(k11CmsSettingsKey.KeyName);
 }

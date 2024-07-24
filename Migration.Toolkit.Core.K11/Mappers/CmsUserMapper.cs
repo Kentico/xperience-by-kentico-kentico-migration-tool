@@ -1,19 +1,21 @@
-namespace Migration.Toolkit.Core.K11.Mappers;
+﻿using Microsoft.Extensions.Logging;
 
-using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.K11.Contexts;
-using Migration.Toolkit.KXP.Models;
+using Migration.Toolkit.K11.Models;
 
-public class CmsUserMapper(ILogger<CmsUserMapper> logger,
-        PrimaryKeyMappingContext primaryKeyMappingContext,
-        IProtocol protocol)
-    : EntityMapperBase<Toolkit.K11.Models.CmsUser, CmsUser>(logger, primaryKeyMappingContext, protocol)
+namespace Migration.Toolkit.Core.K11.Mappers;
+
+public class CmsUserMapper(
+    ILogger<CmsUserMapper> logger,
+    PrimaryKeyMappingContext primaryKeyMappingContext,
+    IProtocol protocol)
+    : EntityMapperBase<CmsUser, KXP.Models.CmsUser>(logger, primaryKeyMappingContext, protocol)
 {
-    protected override CmsUser CreateNewInstance(Toolkit.K11.Models.CmsUser tSourceEntity, MappingHelper mappingHelper, AddFailure addFailure) => new();
+    protected override KXP.Models.CmsUser CreateNewInstance(CmsUser tSourceEntity, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
-    protected override CmsUser MapInternal(Toolkit.K11.Models.CmsUser source, CmsUser target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override KXP.Models.CmsUser MapInternal(CmsUser source, KXP.Models.CmsUser target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         if (!newInstance && source.UserGuid != target.UserGuid)
         {
@@ -40,15 +42,11 @@ public class CmsUserMapper(ILogger<CmsUserMapper> logger,
 
         foreach (var sourceCmsUserRole in source.CmsUserRoles)
         {
-            if (mappingHelper.TranslateRequiredId<Toolkit.K11.Models.CmsRole>(r => r.RoleId, sourceCmsUserRole.RoleId, out var targetRoleId))
+            if (mappingHelper.TranslateRequiredId<CmsRole>(r => r.RoleId, sourceCmsUserRole.RoleId, out int targetRoleId))
             {
                 if (target.CmsUserRoles.All(x => x.RoleId != targetRoleId))
                 {
-                    target.CmsUserRoles.Add(new CmsUserRole
-                    {
-                        RoleId = targetRoleId,
-                        User = target,
-                    });
+                    target.CmsUserRoles.Add(new KXP.Models.CmsUserRole { RoleId = targetRoleId, User = target });
                 }
             }
         }

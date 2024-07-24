@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX12.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KX12.Models;
 [Table("CMS_EmailTemplate")]
 [Index("EmailTemplateName", "EmailTemplateSiteId", Name = "IX_CMS_EmailTemplate_EmailTemplateName_EmailTemplateSiteID")]
 [Index("EmailTemplateSiteId", Name = "IX_CMS_EmailTemplate_EmailTemplateSiteID")]
-public partial class CmsEmailTemplate
+public class CmsEmailTemplate
 {
     [Key]
     [Column("EmailTemplateID")]

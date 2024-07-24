@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.K11.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.K11.Models;
 [Table("SM_TwitterAccount")]
 [Index("TwitterAccountSiteId", Name = "IX_SM_TwitterAccount_TwitterAccountSiteID")]
 [Index("TwitterAccountTwitterApplicationId", Name = "IX_SM_TwitterAccount_TwitterAccountTwitterApplicationID")]
-public partial class SmTwitterAccount
+public class SmTwitterAccount
 {
     [Key]
     [Column("TwitterAccountID")]

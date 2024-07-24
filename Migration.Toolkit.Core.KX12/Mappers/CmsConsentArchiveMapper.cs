@@ -1,10 +1,11 @@
-namespace Migration.Toolkit.Core.KX12.Mappers;
-
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX12.Contexts;
 using Migration.Toolkit.KXP.Models;
+
+namespace Migration.Toolkit.Core.KX12.Mappers;
 
 public class CmsConsentArchiveMapper : EntityMapperBase<KX12M.CmsConsentArchive, CmsConsentArchive>
 {
@@ -23,7 +24,7 @@ public class CmsConsentArchiveMapper : EntityMapperBase<KX12M.CmsConsentArchive,
         target.ConsentArchiveLastModified = source.ConsentArchiveLastModified;
         target.ConsentArchiveHash = source.ConsentArchiveHash;
 
-        if (mappingHelper.TranslateRequiredId<KX12M.CmsConsent>(r => r.ConsentId, source.ConsentArchiveConsentId, out var consentId))
+        if (mappingHelper.TranslateRequiredId<KX12M.CmsConsent>(r => r.ConsentId, source.ConsentArchiveConsentId, out int consentId))
         {
             target.ConsentArchiveConsentId = consentId;
         }

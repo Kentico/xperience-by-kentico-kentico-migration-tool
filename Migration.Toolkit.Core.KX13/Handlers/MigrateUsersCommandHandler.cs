@@ -1,89 +1,77 @@
-namespace Migration.Toolkit.Core.KX13.Handlers;
-
 using CMS.Membership;
+
 using MediatR;
+
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX13.Contexts;
 using Migration.Toolkit.KX13.Context;
+using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Api.Enums;
+using Migration.Toolkit.KXP.Models;
 
-public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, CommandResult>, IDisposable
+namespace Migration.Toolkit.Core.KX13.Handlers;
+
+public class MigrateUsersCommandHandler(
+    ILogger<MigrateUsersCommandHandler> logger,
+    IDbContextFactory<KX13Context> kx13ContextFactory,
+    IEntityMapper<KX13M.CmsUser, UserInfo> userInfoMapper,
+    IEntityMapper<KX13M.CmsRole, RoleInfo> roleMapper,
+    IEntityMapper<KX13M.CmsUserRole, UserRoleInfo> userRoleMapper,
+    PrimaryKeyMappingContext primaryKeyMappingContext,
+    IProtocol protocol)
+    : IRequestHandler<MigrateUsersCommand, CommandResult>, IDisposable
 {
     private const string USER_PUBLIC = "public";
 
-    private readonly ILogger<MigrateUsersCommandHandler> _logger;
-    private readonly IDbContextFactory<KX13Context> _kx13ContextFactory;
-    private readonly IEntityMapper<Toolkit.KX13.Models.CmsUser, UserInfo> _userInfoMapper;
-    private readonly IEntityMapper<KX13M.CmsRole, RoleInfo> _roleMapper;
-    private readonly IEntityMapper<KX13M.CmsUserRole, UserRoleInfo> _userRoleMapper;
-    private readonly PrimaryKeyMappingContext _primaryKeyMappingContext;
-    private readonly IProtocol _protocol;
-
-    private static int[] MigratedAdminUserPrivilegeLevels => new[] { (int)UserPrivilegeLevelEnum.Editor, (int)UserPrivilegeLevelEnum.Admin, (int)UserPrivilegeLevelEnum.GlobalAdmin };
-
-    public MigrateUsersCommandHandler(
-        ILogger<MigrateUsersCommandHandler> logger,
-        IDbContextFactory<KX13Context> kx13ContextFactory,
-        IEntityMapper<KX13M.CmsUser, UserInfo> userInfoMapper,
-        IEntityMapper<KX13M.CmsRole, RoleInfo> roleMapper,
-        IEntityMapper<KX13M.CmsUserRole, UserRoleInfo> userRoleMapper,
-        PrimaryKeyMappingContext primaryKeyMappingContext,
-        IProtocol protocol
-    )
+    public void Dispose()
     {
-        _logger = logger;
-        _kx13ContextFactory = kx13ContextFactory;
-        _userInfoMapper = userInfoMapper;
-        _roleMapper = roleMapper;
-        _userRoleMapper = userRoleMapper;
-        _primaryKeyMappingContext = primaryKeyMappingContext;
-        _protocol = protocol;
     }
 
     public async Task<CommandResult> Handle(MigrateUsersCommand request, CancellationToken cancellationToken)
     {
-        await using var kx13Context = await _kx13ContextFactory.CreateDbContextAsync(cancellationToken);
+        await using var kx13Context = await kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
         var kx13CmsUsers = kx13Context.CmsUsers
-                .Where(u => MigratedAdminUserPrivilegeLevels.Contains(u.UserPrivilegeLevel))
+                .Where(u => UserHelper.PrivilegeLevelsMigratedAsAdminUser.Contains(u.UserPrivilegeLevel))
             ;
 
         foreach (var kx13User in kx13CmsUsers)
         {
-            _protocol.FetchedSource(kx13User);
-            _logger.LogTrace("Migrating user {UserName} with UserGuid {UserGuid}", kx13User.UserName, kx13User.UserGuid);
+            protocol.FetchedSource(kx13User);
+            logger.LogTrace("Migrating user {UserName} with UserGuid {UserGuid}", kx13User.UserName, kx13User.UserGuid);
 
             var xbkUserInfo = UserInfoProvider.ProviderObject.Get(kx13User.UserGuid);
 
-            _protocol.FetchedTarget(xbkUserInfo);
+            protocol.FetchedTarget(xbkUserInfo);
 
             if (kx13User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.GlobalAdmin && xbkUserInfo != null)
             {
-                _protocol.Append(HandbookReferences.CmsUserAdminUserSkip.WithIdentityPrint(xbkUserInfo));
-                _logger.LogInformation("User with guid {UserGuid} is administrator, you need to update administrators manually => skipping", kx13User.UserGuid);
-                _primaryKeyMappingContext.SetMapping<KX13M.CmsUser>(r => r.UserId, kx13User.UserId, xbkUserInfo.UserID);
+                protocol.Append(HandbookReferences.CmsUserAdminUserSkip.WithIdentityPrint(xbkUserInfo));
+                logger.LogInformation("User with guid {UserGuid} is administrator, you need to update administrators manually => skipping", kx13User.UserGuid);
+                primaryKeyMappingContext.SetMapping<KX13M.CmsUser>(r => r.UserId, kx13User.UserId, xbkUserInfo.UserID);
                 continue;
             }
 
             if (xbkUserInfo?.UserName == USER_PUBLIC || kx13User.UserName == USER_PUBLIC)
             {
-                _protocol.Append(HandbookReferences.CmsUserPublicUserSkip.WithIdentityPrint(xbkUserInfo));
-                _logger.LogInformation("User with guid {UserGuid} is public user, special case that can't be migrated => skipping", xbkUserInfo?.UserGUID ?? kx13User.UserGuid);
+                protocol.Append(HandbookReferences.CmsUserPublicUserSkip.WithIdentityPrint(xbkUserInfo));
+                logger.LogInformation("User with guid {UserGuid} is public user, special case that can't be migrated => skipping", xbkUserInfo?.UserGUID ?? kx13User.UserGuid);
                 if (xbkUserInfo != null)
                 {
-                    _primaryKeyMappingContext.SetMapping<KX13M.CmsUser>(r => r.UserId, kx13User.UserId, xbkUserInfo.UserID);
+                    primaryKeyMappingContext.SetMapping<KX13M.CmsUser>(r => r.UserId, kx13User.UserId, xbkUserInfo.UserID);
                 }
 
                 continue;
             }
 
-            var mapped = _userInfoMapper.Map(kx13User, xbkUserInfo);
-            _protocol.MappedTarget(mapped);
+            var mapped = userInfoMapper.Map(kx13User, xbkUserInfo);
+            protocol.MappedTarget(mapped);
 
             await SaveUserUsingKenticoApi(mapped, kx13User);
         }
@@ -97,30 +85,30 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
     {
         if (mapped is { Success: true } result)
         {
-            var (userInfo, newInstance) = result;
+            (var userInfo, bool newInstance) = result;
             ArgumentNullException.ThrowIfNull(userInfo);
 
             try
             {
                 UserInfoProvider.ProviderObject.Set(userInfo);
 
-                _protocol.Success(kx13User, userInfo, mapped);
-                _logger.LogEntitySetAction(newInstance, userInfo);
+                protocol.Success(kx13User, userInfo, mapped);
+                logger.LogEntitySetAction(newInstance, userInfo);
             }
             /*Violation in unique index or Violation in unique constraint */
             catch (DbUpdateException dbUpdateException) when (dbUpdateException.InnerException is SqlException { Number: 2601 or 2627 } sqlException)
             {
-                _logger.LogEntitySetError(sqlException, newInstance, userInfo);
-                _protocol.Append(HandbookReferences.DbConstraintBroken(sqlException, kx13User)
-                    .WithData(new { kx13User.UserName, kx13User.UserGuid, kx13User.UserId, })
+                logger.LogEntitySetError(sqlException, newInstance, userInfo);
+                protocol.Append(HandbookReferences.DbConstraintBroken(sqlException, kx13User)
+                    .WithData(new { kx13User.UserName, kx13User.UserGuid, kx13User.UserId })
                     .WithMessage("Failed to migrate user, target database broken.")
                 );
                 return Task.CompletedTask;
             }
             catch (Exception ex)
             {
-                _logger.LogEntitySetError(ex, newInstance, userInfo);
-                _protocol.Append(HandbookReferences
+                logger.LogEntitySetError(ex, newInstance, userInfo);
+                protocol.Append(HandbookReferences
                     .ErrorCreatingTargetInstance<UserInfo>(ex)
                     .NeedsManualAction()
                     .WithIdentityPrint(userInfo)
@@ -128,7 +116,7 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
                 return Task.CompletedTask;
             }
 
-            _primaryKeyMappingContext.SetMapping<KX13M.CmsUser>(r => r.UserId, kx13User.UserId, userInfo.UserID);
+            primaryKeyMappingContext.SetMapping<KX13M.CmsUser>(r => r.UserId, kx13User.UserId, userInfo.UserID);
             return Task.CompletedTask;
         }
 
@@ -139,19 +127,19 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
     {
         var kx13CmsRoles = kx13Context.CmsRoles
             .Where(r =>
-                r.CmsUserRoles.Any(ur => MigratedAdminUserPrivilegeLevels.Contains(ur.User.UserPrivilegeLevel))
+                r.CmsUserRoles.Any(ur => UserHelper.PrivilegeLevelsMigratedAsAdminUser.Contains(ur.User.UserPrivilegeLevel))
             )
             .AsNoTracking()
             .AsAsyncEnumerable();
 
         await foreach (var kx13CmsRole in kx13CmsRoles.WithCancellation(cancellationToken))
         {
-            _protocol.FetchedSource(kx13CmsRole);
+            protocol.FetchedSource(kx13CmsRole);
 
             var xbkRoleInfo = RoleInfoProvider.ProviderObject.Get(kx13CmsRole.RoleGuid);
-            _protocol.FetchedTarget(xbkRoleInfo);
-            var mapped = _roleMapper.Map(kx13CmsRole, xbkRoleInfo);
-            _protocol.MappedTarget(mapped);
+            protocol.FetchedTarget(xbkRoleInfo);
+            var mapped = roleMapper.Map(kx13CmsRole, xbkRoleInfo);
+            protocol.MappedTarget(mapped);
 
             if (mapped is not (var roleInfo, var newInstance) { Success: true })
             {
@@ -163,10 +151,10 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
             {
                 RoleInfoProvider.ProviderObject.Set(roleInfo);
 
-                _protocol.Success(kx13CmsRole, roleInfo, mapped);
-                _logger.LogEntitySetAction(newInstance, roleInfo);
+                protocol.Success(kx13CmsRole, roleInfo, mapped);
+                logger.LogEntitySetAction(newInstance, roleInfo);
 
-                _primaryKeyMappingContext.SetMapping<KX13M.CmsRole>(
+                primaryKeyMappingContext.SetMapping<KX13M.CmsRole>(
                     r => r.RoleId,
                     kx13CmsRole.RoleId,
                     roleInfo.RoleID
@@ -174,8 +162,8 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
             }
             catch (Exception ex)
             {
-                _logger.LogEntitySetError(ex, newInstance, roleInfo);
-                _protocol.Append(HandbookReferences
+                logger.LogEntitySetError(ex, newInstance, roleInfo);
+                protocol.Append(HandbookReferences
                     .ErrorCreatingTargetInstance<RoleInfo>(ex)
                     .NeedsManualAction()
                     .WithIdentityPrint(roleInfo)
@@ -189,66 +177,61 @@ public class MigrateUsersCommandHandler : IRequestHandler<MigrateUsersCommand, C
 
     private async Task MigrateUserRole(int kx13RoleId)
     {
-        var kx13Context = await _kx13ContextFactory.CreateDbContextAsync();
+        var kx13Context = await kx13ContextFactory.CreateDbContextAsync();
         var kx13UserRoles = kx13Context.CmsUserRoles
             .Where(ur =>
                 ur.RoleId == kx13RoleId &&
-                MigratedAdminUserPrivilegeLevels.Contains(ur.User.UserPrivilegeLevel)
+                UserHelper.PrivilegeLevelsMigratedAsAdminUser.Contains(ur.User.UserPrivilegeLevel)
             )
             .AsNoTracking()
             .AsAsyncEnumerable();
 
         await foreach (var kx13UserRole in kx13UserRoles)
         {
-            _protocol.FetchedSource(kx13UserRole);
-            if (!_primaryKeyMappingContext.TryRequireMapFromSource<KX13M.CmsRole>(u => u.RoleId, kx13RoleId, out var xbkRoleId))
+            protocol.FetchedSource(kx13UserRole);
+            if (!primaryKeyMappingContext.TryRequireMapFromSource<KX13M.CmsRole>(u => u.RoleId, kx13RoleId, out int xbkRoleId))
             {
                 var handbookRef = HandbookReferences
-                    .MissingRequiredDependency<KXP.Models.CmsRole>(nameof(UserRoleInfo.RoleID), kx13UserRole.RoleId)
+                    .MissingRequiredDependency<CmsRole>(nameof(UserRoleInfo.RoleID), kx13UserRole.RoleId)
                     .NeedsManualAction();
 
-                _protocol.Append(handbookRef);
-                _logger.LogWarning("Unable to locate role in target instance with source RoleID '{RoleID}'", kx13UserRole.RoleId);
+                protocol.Append(handbookRef);
+                logger.LogWarning("Unable to locate role in target instance with source RoleID '{RoleID}'", kx13UserRole.RoleId);
                 continue;
             }
 
-            if (!_primaryKeyMappingContext.TryRequireMapFromSource<KX13M.CmsUser>(u => u.UserId, kx13UserRole.UserId, out var xbkUserId))
+            if (!primaryKeyMappingContext.TryRequireMapFromSource<KX13M.CmsUser>(u => u.UserId, kx13UserRole.UserId, out int xbkUserId))
             {
                 continue;
             }
 
             var xbkUserRole = UserRoleInfoProvider.ProviderObject.Get(xbkUserId, xbkRoleId);
-            _protocol.FetchedTarget(xbkUserRole);
+            protocol.FetchedTarget(xbkUserRole);
 
-            var mapped = _userRoleMapper.Map(kx13UserRole, xbkUserRole);
-            _protocol.MappedTarget(mapped);
+            var mapped = userRoleMapper.Map(kx13UserRole, xbkUserRole);
+            protocol.MappedTarget(mapped);
 
             if (mapped is { Success: true })
             {
-                var (userRoleInfo, newInstance) = mapped;
+                (var userRoleInfo, bool newInstance) = mapped;
                 ArgumentNullException.ThrowIfNull(userRoleInfo);
 
                 try
                 {
                     UserRoleInfoProvider.ProviderObject.Set(userRoleInfo);
 
-                    _protocol.Success(kx13UserRole, userRoleInfo, mapped);
-                    _logger.LogEntitySetAction(newInstance, userRoleInfo);
+                    protocol.Success(kx13UserRole, userRoleInfo, mapped);
+                    logger.LogEntitySetAction(newInstance, userRoleInfo);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogEntitySetError(ex, newInstance, userRoleInfo);
-                    _protocol.Append(HandbookReferences.ErrorSavingTargetInstance<UserRoleInfo>(ex)
-                        .WithData(new { kx13UserRole.UserRoleId, kx13UserRole.UserId, kx13UserRole.RoleId, })
+                    logger.LogEntitySetError(ex, newInstance, userRoleInfo);
+                    protocol.Append(HandbookReferences.ErrorSavingTargetInstance<UserRoleInfo>(ex)
+                        .WithData(new { kx13UserRole.UserRoleId, kx13UserRole.UserId, kx13UserRole.RoleId })
                         .WithMessage("Failed to migrate user role")
                     );
                 }
             }
         }
-    }
-
-    public void Dispose()
-    {
-
     }
 }

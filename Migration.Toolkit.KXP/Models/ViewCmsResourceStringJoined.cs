@@ -1,13 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
 
 [Keyless]
-public partial class ViewCmsResourceStringJoined
+public class ViewCmsResourceStringJoined
 {
     [Column("StringID")]
     public int StringId { get; set; }

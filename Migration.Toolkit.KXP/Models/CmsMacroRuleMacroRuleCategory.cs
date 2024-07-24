@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KXP.Models;
@@ -9,7 +8,7 @@ namespace Migration.Toolkit.KXP.Models;
 [Table("CMS_MacroRuleMacroRuleCategory")]
 [Index("MacroRuleCategoryId", Name = "IX_CMS_MacroRuleMacroRuleCategory_MacroRuleCategoryID")]
 [Index("MacroRuleId", Name = "IX_CMS_MacroRuleMacroRuleCategory_MacroRuleID")]
-public partial class CmsMacroRuleMacroRuleCategory
+public class CmsMacroRuleMacroRuleCategory
 {
     [Key]
     [Column("MacroRuleMacroRuleCategoryID")]

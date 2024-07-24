@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Migration.Toolkit.KX13.Models;
 
 [Table("Reporting_ReportCategory")]
 [Index("CategoryParentId", Name = "IX_Reporting_ReportCategory_CategoryParentID")]
-public partial class ReportingReportCategory
+public class ReportingReportCategory
 {
     [Key]
     [Column("CategoryID")]
