@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
-
+using CMS.Base;
 using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
 using CMS.DataEngine;
@@ -32,7 +32,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Migration.Toolkit.Source.Handlers;
-
 // ReSharper disable once UnusedType.Global
 public class MigratePagesCommandHandler(
     ILogger<MigratePagesCommandHandler> logger,
@@ -253,6 +252,26 @@ public class MigratePagesCommandHandler(
                             );
                         }
 
+                        var allTargetLanguages = ContentLanguageInfoProvider.ProviderObject.Get().ToList();
+
+                        var channelCulturesWithoutPage = cultureCodeToLanguageGuid
+                            .Where(x => allTargetLanguages
+                                .Any(y => y.ContentLanguageGUID == x.Value)
+                            )
+                            .Where(x => !migratedDocuments
+                                .Select(y => y.DocumentCulture)
+                                .Any(y => x.Key == y)
+                            );
+
+                        foreach (var culture in channelCulturesWithoutPage)
+                        {
+                            await CreateNewDefaultUrlPaths(webPageItemInfo.WebPageItemGUID,
+                                webPageItemInfo.WebPageItemID, ksSite.SiteGUID,
+                                culture.Value,
+                                ksNode,
+                                culture.Key);
+                        }
+
                         MigrateFormerUrls(ksNode, webPageItemInfo);
 
                         var urls = WebPageUrlPathInfo.Provider.Get()
@@ -312,12 +331,186 @@ public class MigratePagesCommandHandler(
         }
     }
 
+    private async Task CreateNewDefaultUrlPaths(Guid webPageItemGuid, int webPageItemId, Guid webSiteChannelGuid, Guid languageGuid, ICmsTree ksTree, string documentCulture)
+    {
+        if (modelFacade.IsAvailable<ICmsPageUrlPath>())
+        {
+            var ksPaths = modelFacade.SelectWhere<CmsPageUrlPathK13>("PageUrlPathNodeId = @nodeId AND PageUrlPathCulture = @culture",
+               new SqlParameter("nodeId", ksTree.NodeID),
+               new SqlParameter("culture", documentCulture)
+            ).ToList();
+
+            var existingPaths = WebPageUrlPathInfo.Provider.Get()
+                .WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID), webPageItemId)
+                .ToList();
+
+            var languageInfo = ContentLanguageInfoProvider.ProviderObject.Get(languageGuid);
+            var webSiteChannel = WebsiteChannelInfoProvider.ProviderObject.Get(webSiteChannelGuid);
+            if (ksPaths.Count > 0)
+            {
+                foreach (var ksPath in ksPaths)
+                {
+                    logger.LogTrace("Page url path: C={Culture} S={Site} P={Path}", ksPath.PageUrlPathCulture, ksPath.PageUrlPathSiteID, ksPath.PageUrlPathUrlPath);
+
+                    Debug.Assert(!string.IsNullOrWhiteSpace(ksPath.PageUrlPathUrlPath), "!string.IsNullOrWhiteSpace(kx13PageUrlPath.PageUrlPathUrlPath)");
+
+                    var webPageUrlPath = new WebPageUrlPathModel
+                    {
+                        WebPageUrlPathGUID = Guid.NewGuid(),
+                        WebPageUrlPath = ksPath.PageUrlPathUrlPath,
+                        WebPageUrlPathHash = ksPath.PageUrlPathUrlPathHash,
+                        WebPageUrlPathWebPageItemGuid = webPageItemGuid,
+                        WebPageUrlPathWebsiteChannelGuid = webSiteChannelGuid,
+                        WebPageUrlPathContentLanguageGuid = languageGuid,
+                        WebPageUrlPathIsLatest = true,
+                        WebPageUrlPathIsDraft = false
+                    };
+
+                    var ep = existingPaths.FirstOrDefault(ep =>
+                        ep.WebPageUrlPath == webPageUrlPath.WebPageUrlPath &&
+                        ep.WebPageUrlPathContentLanguageID == languageInfo.ContentLanguageID &&
+                        ep.WebPageUrlPathIsDraft == webPageUrlPath.WebPageUrlPathIsDraft &&
+                        ep.WebPageUrlPathIsLatest == webPageUrlPath.WebPageUrlPathIsLatest &&
+                        ep.WebPageUrlPathWebsiteChannelID == webSiteChannel.WebsiteChannelID
+                    );
+
+                    if (ep != null)
+                    {
+                        webPageUrlPath.WebPageUrlPathGUID = ep.WebPageUrlPathGUID;
+                        logger.LogTrace("Existing page url path found for '{Path}', fixing GUID to '{Guid}'", ksPath.PageUrlPathUrlPath, webPageUrlPath.WebPageUrlPathGUID);
+                    }
+
+                    switch (await importer.ImportAsync(webPageUrlPath))
+                    {
+                        case { Success: true, Imported: WebPageUrlPathInfo imported }:
+                        {
+                            logger.LogInformation("Page url path created default '{Path}' '{Guid}'", imported.WebPageUrlPath, imported.WebPageUrlPathGUID);
+                            break;
+                        }
+                        case { Success: false, Exception: { } exception }:
+                        {
+                            logger.LogError("Failed to create default page url path: {Error}", exception.ToString());
+                            break;
+                        }
+                        case { Success: false, ModelValidationResults: { } validation }:
+                        {
+                            foreach (var validationResult in validation)
+                            {
+                                logger.LogError("Failed to create default page url path {Members}: {Error}", string.Join(",", validationResult.MemberNames), validationResult.ErrorMessage);
+                            }
+
+                            break;
+                        }
+
+                        default:
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                var webPageUrlPath = new WebPageUrlPathModel
+                {
+                    WebPageUrlPathGUID = GuidHelper.CreateWebPageUrlPathGuid($"{Guid.NewGuid()}|{documentCulture}|{ksTree.NodeAliasPath}"),
+                    WebPageUrlPath = $"{languageInfo.ContentLanguageName}/{ksTree.NodeAliasPath}",
+                    WebPageUrlPathWebPageItemGuid = webPageItemGuid,
+                    WebPageUrlPathWebsiteChannelGuid = webSiteChannelGuid,
+                    WebPageUrlPathContentLanguageGuid = languageGuid,
+                    WebPageUrlPathIsLatest = true,
+                    WebPageUrlPathIsDraft = false
+                };
+
+                var ep = existingPaths.FirstOrDefault(ep =>
+                    ep.WebPageUrlPath == webPageUrlPath.WebPageUrlPath &&
+                    ep.WebPageUrlPathContentLanguageID == languageInfo.ContentLanguageID &&
+                    ep.WebPageUrlPathIsDraft == webPageUrlPath.WebPageUrlPathIsDraft &&
+                    ep.WebPageUrlPathIsLatest == webPageUrlPath.WebPageUrlPathIsLatest &&
+                    ep.WebPageUrlPathWebsiteChannelID == webSiteChannel.WebsiteChannelID
+                );
+
+                if (ep != null)
+                {
+                    webPageUrlPath.WebPageUrlPathGUID = ep.WebPageUrlPathGUID;
+                    logger.LogTrace("Existing page url path found for '{Path}', fixing GUID to '{Guid}'", webPageUrlPath.WebPageUrlPath, webPageUrlPath.WebPageUrlPathGUID);
+                }
+
+                switch (await importer.ImportAsync(webPageUrlPath))
+                {
+                    case { Success: true, Imported: WebPageUrlPathInfo imported }:
+                    {
+                        logger.LogInformation("Page url path created default '{Path}' '{Guid}'", imported.WebPageUrlPath, imported.WebPageUrlPathGUID);
+                        break;
+                    }
+                    case { Success: false, Exception: { } exception }:
+                    {
+                        logger.LogError("Failed to create default page url path: {Error}", exception.ToString());
+                        break;
+                    }
+                    case { Success: false, ModelValidationResults: { } validation }:
+                    {
+                        foreach (var validationResult in validation)
+                        {
+                            logger.LogError("Failed to create default page url path {Members}: {Error}", string.Join(",", validationResult.MemberNames), validationResult.ErrorMessage);
+                        }
+
+                        break;
+                    }
+
+                    default:
+                        break;
+                }
+            }
+        }
+        else
+        {
+            var languageInfo = ContentLanguageInfoProvider.ProviderObject.Get(languageGuid);
+
+            var webSiteChannel = WebsiteChannelInfoProvider.ProviderObject.Get(webSiteChannelGuid);
+
+            string urlPath = $"{languageInfo.ContentLanguageName}/{ksTree.NodeAliasPath}";
+
+            var webPageUrlPath = new WebPageUrlPathModel
+            {
+                WebPageUrlPathGUID = GuidHelper.CreateWebPageUrlPathGuid($"{urlPath}|{documentCulture}|{webSiteChannel.WebsiteChannelGUID}"),
+                WebPageUrlPath = urlPath,
+                WebPageUrlPathWebPageItemGuid = webPageItemGuid,
+                WebPageUrlPathWebsiteChannelGuid = webSiteChannelGuid,
+                WebPageUrlPathContentLanguageGuid = languageGuid,
+                WebPageUrlPathIsLatest = true,
+                WebPageUrlPathIsDraft = false
+            };
+
+            switch (await importer.ImportAsync(webPageUrlPath))
+            {
+                case { Success: true, Imported: WebPageUrlPathInfo imported }:
+                {
+                    logger.LogInformation("Page url path created default '{Path}' '{Guid}'", imported.WebPageUrlPath, imported.WebPageUrlPathGUID);
+                    break;
+                }
+                case { Success: false, Exception: { } exception }:
+                {
+                    logger.LogError("Failed to create default page url path: {Error}", exception.ToString());
+                    break;
+                }
+                case { Success: false, ModelValidationResults: { } validation }:
+                {
+                    foreach (var validationResult in validation)
+                    {
+                        logger.LogError("Failed to create default page url path {Members}: {Error}", string.Join(",", validationResult.MemberNames), validationResult.ErrorMessage);
+                    }
+
+                    break;
+                }
+
+                default:
+                    break;
+            }
+        }
+    }
+
     private async Task MigratePageUrlPaths(Guid webPageItemGuid, int webPageItemId, Guid webSiteChannelGuid, Guid languageGuid,
         List<ContentItemCommonDataInfo> contentItemCommonDataInfos, ICmsDocument ksDocument, ICmsTree ksTree)
     {
-        // TODO tomas.krch 2024-03-27: we will need to create even missing ones.. WebPageUrlPathInfo
-        // migration of cmspageurlpath is not available => fallback needed
-
         if (modelFacade.IsAvailable<ICmsPageUrlPath>())
         {
             var ksPaths = modelFacade.SelectWhere<CmsPageUrlPathK13>("PageUrlPathNodeId = @nodeId AND PageUrlPathCulture = @culture",
