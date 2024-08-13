@@ -459,7 +459,7 @@ public class MigratePagesCommandHandler(
                 {
                     CmsDocumentK11 doc => doc.DocumentUrlPath,
                     CmsDocumentK12 doc => doc.DocumentUrlPath,
-                    null => $"{languageInfo.ContentLanguageName}/{ksTree.NodeAliasPath}",
+                    null => $"{languageInfo.ContentLanguageName}{ksTree.NodeAliasPath}",
                     _ => null
                 }).NullIf(string.Empty) ?? ksTree.NodeAliasPath;
 
@@ -492,7 +492,7 @@ public class MigratePagesCommandHandler(
     private async Task CreateDefaultPageUrlAsync(Guid webPageItemGuid, Guid webSiteChannelGuid, Guid languageGuid,
         ICmsTree ksTree, string documentCulture, ContentLanguageInfo languageInfo, WebsiteChannelInfo webSiteChannel, List<WebPageUrlPathInfo> existingPaths)
     {
-        string urlPath = $"{languageInfo.ContentLanguageName}/{ksTree.NodeAliasPath}";
+        string urlPath = $"{languageInfo.ContentLanguageName}{ksTree.NodeAliasPath}";
 
         var webPageUrlPath = new WebPageUrlPathModel
         {
