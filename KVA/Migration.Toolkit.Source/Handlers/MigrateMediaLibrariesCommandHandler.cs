@@ -17,6 +17,7 @@ using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Context;
 using Migration.Toolkit.KXP.Models;
 using Migration.Toolkit.Source.Contexts;
+using Migration.Toolkit.Source.Helpers;
 using Migration.Toolkit.Source.Mappers;
 using Migration.Toolkit.Source.Model;
 
@@ -180,8 +181,34 @@ public class MigrateMediaLibrariesCommandHandler(
                 if (!toolkitConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(true) &&
                     !string.IsNullOrWhiteSpace(toolkitConfiguration.KxCmsDirPath))
                 {
-                    sourceMediaLibraryPath = Path.Combine(toolkitConfiguration.KxCmsDirPath, ksSite.SiteName, DirMedia, ksMediaLibrary.LibraryFolder);
-                    loadMediaFileData = true;
+                    string? cmsMediaLibrariesFolder = KenticoHelper.GetSettingsKey(modelFacade,  ksSite.SiteID, "CMSMediaLibrariesFolder");
+                    if (cmsMediaLibrariesFolder != null)
+                    {
+                        if (Path.IsPathRooted(cmsMediaLibrariesFolder))
+                        {
+                            sourceMediaLibraryPath = Path.Combine(cmsMediaLibrariesFolder, ksSite.SiteName, ksMediaLibrary.LibraryFolder);
+                            loadMediaFileData = true;
+                        }
+                        else
+                        {
+                            if (cmsMediaLibrariesFolder.StartsWith("~/"))
+                            {
+                                string cleared = $"{cmsMediaLibrariesFolder.Substring(2, cmsMediaLibrariesFolder.Length - 2)}".Replace("/", "\\");
+                                sourceMediaLibraryPath = Path.Combine(toolkitConfiguration.KxCmsDirPath, cleared, ksSite.SiteName, ksMediaLibrary.LibraryFolder);
+                                loadMediaFileData = true;
+                            }
+                            else
+                            {
+                                sourceMediaLibraryPath = Path.Combine(toolkitConfiguration.KxCmsDirPath, cmsMediaLibrariesFolder, ksSite.SiteName, ksMediaLibrary.LibraryFolder);
+                                loadMediaFileData = true;    
+                            }
+                        }
+                    }
+                    else
+                    {
+                        sourceMediaLibraryPath = Path.Combine(toolkitConfiguration.KxCmsDirPath, ksSite.SiteName, DirMedia, ksMediaLibrary.LibraryFolder);
+                        loadMediaFileData = true;    
+                    }
                 }
 
                 var ksMediaFiles = modelFacade.SelectWhere<IMediaFile>("FileLibraryID = @FileLibraryId", new SqlParameter("FileLibraryId", ksMediaLibrary.LibraryID));
