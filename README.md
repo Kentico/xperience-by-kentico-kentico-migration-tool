@@ -13,8 +13,10 @@ The Kentico Migration Tool transfers content and other data from **Kentico Xperi
 ## Library Version Matrix
 
 | Xperience Version | Library Version |
-| ----------------- | --------------- |
-| >= 29.1.0         | >= 1.0.0        |
+|-------------------|-----------------|
+| == 29.1.0         | >= 1.0.0        |
+| == 29.2.0         | >= 1.1.0        |
+| == 29.3.3         | >= 1.2.0        |
 
 ## Dependencies
 
