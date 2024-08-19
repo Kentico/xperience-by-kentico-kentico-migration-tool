@@ -30,6 +30,7 @@ public static class TcaDirective
     public const string ClearMacroTable = "clear hashtable";
     public const string ConvertToAsset = "convert to asset";
     public const string ConvertToPages = "convert to pages";
+    public const string ConvertToRichText = "convert to richtext";
 }
 
 /// <summary>
@@ -63,12 +64,11 @@ public static class FieldMappingInstance
         new FieldMigration(KsFieldDataType.Text, FieldDataType.Text, FcText.RadioButtonsControl, FormComponents.AdminRadioGroupComponent),
         new FieldMigration(KsFieldDataType.Text, FieldDataType.Text, FcText.TextAreaControl, FormComponents.AdminTextAreaComponent),
         new FieldMigration(KsFieldDataType.Text, FieldDataType.Text, SfcDirective.CatchAnyNonMatching, FormComponents.AdminTextInputComponent),
-        new FieldMigration(KsFieldDataType.Text, FieldDataType.Text, SfcDirective.CatchAnyNonMatching, FormComponents.AdminTextInputComponent),
-        new FieldMigration(KsFieldDataType.LongText, FieldDataType.LongText, FcLongText.HtmlAreaControl, FormComponents.AdminRichTextEditorComponent),
+        new FieldMigration(KsFieldDataType.LongText, FieldDataType.RichTextHTML, FcLongText.HtmlAreaControl, FormComponents.AdminRichTextEditorComponent, [TcaDirective.ConvertToRichText]),
         new FieldMigration(KsFieldDataType.LongText, FieldDataType.LongText, FcLongText.TextBoxControl, FormComponents.AdminTextInputComponent),
         new FieldMigration(KsFieldDataType.LongText, FieldDataType.LongText, FcLongText.DropDownListControl, FormComponents.AdminDropDownComponent),
         new FieldMigration(KsFieldDataType.LongText, FieldDataType.LongText, FcLongText.TextAreaControl, FormComponents.AdminTextAreaComponent),
-        new FieldMigration(KsFieldDataType.LongText, FieldDataType.LongText, SfcDirective.CatchAnyNonMatching, FormComponents.AdminRichTextEditorComponent),
+        new FieldMigration(KsFieldDataType.LongText, FieldDataType.LongText, SfcDirective.CatchAnyNonMatching, FormComponents.AdminTextAreaComponent),
         new FieldMigration(KsFieldDataType.Integer, FieldDataType.Integer, SfcDirective.CatchAnyNonMatching, FormComponents.AdminNumberInputComponent),
         new FieldMigration(KsFieldDataType.LongInteger, FieldDataType.LongInteger, SfcDirective.CatchAnyNonMatching, TfcDirective.Clear, [TfcDirective.Clear]), //FormComponents.AdminNumberInputComponent),
         new FieldMigration(KsFieldDataType.Double, FieldDataType.Double, SfcDirective.CatchAnyNonMatching, TfcDirective.Clear, [TfcDirective.Clear]), // FormComponents.AdminNumberInputComponent),
