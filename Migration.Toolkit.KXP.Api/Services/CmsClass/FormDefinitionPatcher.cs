@@ -418,10 +418,12 @@ public class FormDefinitionPatcher
                 case TcaDirective.ConvertToRichText:
                 {
                     field
-                        .EnsureElement(FieldElemSettings, settings =>
-                        {
-                            settings.EnsureElement("ConfigurationName", e => e.Value = "Kentico.Administration.StructuredContent");
-                        });
+                        .EnsureElement(FieldElemSettings, settings => settings.EnsureElement("ConfigurationName", e => e.Value = "Kentico.Administration.StructuredContent"));
+                    break;
+                }
+                // ReSharper disable once RedundantEmptySwitchSection - not redundant, IDE0010 required to specify default switch branch
+                default:
+                {
                     break;
                 }
             }
