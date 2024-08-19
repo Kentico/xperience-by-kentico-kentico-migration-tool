@@ -16,7 +16,7 @@ public static class KenticoHelper
             target.SetValue(columnName, customNodeData.GetValue(columnName));
         }
     }
-    
+
     public static string? GetSettingsKey(ModelFacade facade, int? siteId, string keyName)
     {
         var keys = facade.Select<ICmsSettingsKey>("KeyName = @keyName", "SiteID", new SqlParameter("keyName", keyName)).ToList();

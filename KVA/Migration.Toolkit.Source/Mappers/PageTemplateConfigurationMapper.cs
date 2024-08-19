@@ -181,14 +181,14 @@ public class PageTemplateConfigurationMapper(
                     {
                         case Kx13FormComponents.Kentico_PathSelector:
                         {
-                            if (value?.ToObject<List<Services.Model.PathSelectorItem>>() is { Count: > 0 } items)
+                            if (value?.ToObject<List<PathSelectorItem>>() is { Count: > 0 } items)
                             {
                                 properties[key] = JToken.FromObject(items.Select(x => new Kentico.Components.Web.Mvc.FormComponents.PathSelectorItem
                                 {
                                     TreePath = x.NodeAliasPath
                                 }).ToList());
                             }
-                            
+
                             break;
                         }
                         case Kx13FormComponents.Kentico_AttachmentSelector when newFormComponent == FormComponents.AdminAssetSelectorComponent:

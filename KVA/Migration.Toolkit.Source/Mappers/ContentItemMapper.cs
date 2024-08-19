@@ -8,7 +8,6 @@ using CMS.FormEngine;
 using CMS.MediaLibrary;
 using CMS.Websites;
 using CMS.Websites.Internal;
-using Kentico.Components.Web.Mvc.FormComponents;
 using Kentico.Xperience.UMT.Model;
 
 using Microsoft.Extensions.Logging;
@@ -82,7 +81,7 @@ public class ContentItemMapper(
             .WhereEquals(nameof(WebPageItemInfo.WebPageItemGUID), contentItemGuid)
             .FirstOrDefault();
         string? treePath = targetWebPage?.WebPageItemTreePath;
-        
+
         var websiteChannelInfo = WebsiteChannelInfoProvider.ProviderObject.Get(siteGuid);
         var treePathConvertor = TreePathConvertor.GetSiteConverter(websiteChannelInfo.WebsiteChannelID);
         if (treePath == null)
@@ -91,7 +90,7 @@ public class ContentItemMapper(
             if (treePathIsDifferent)
             {
                 logger.LogInformation($"Original node alias path '{cmsTree.NodeAliasPath}' of '{cmsTree.NodeName}' item was converted to '{treePath}' since the value does not allow original range of allowed characters.");
-            }    
+            }
         }
 
         foreach (var cmsDocument in migratedDocuments)
@@ -840,14 +839,14 @@ public class ContentItemMapper(
                     {
                         case Kx13FormComponents.Kentico_PathSelector:
                         {
-                            if (value?.ToObject<List<Services.Model.PathSelectorItem>>() is { Count: > 0 } items)
+                            if (value?.ToObject<List<PathSelectorItem>>() is { Count: > 0 } items)
                             {
                                 properties[key] = JToken.FromObject(items.Select(x => new Kentico.Components.Web.Mvc.FormComponents.PathSelectorItem
                                 {
                                     TreePath = x.NodeAliasPath
                                 }).ToList());
                             }
-                            
+
                             break;
                         }
                         case Kx13FormComponents.Kentico_AttachmentSelector when newFormComponent == FormComponents.AdminAssetSelectorComponent:
@@ -862,7 +861,7 @@ public class ContentItemMapper(
                         }
                         case Kx13FormComponents.Kentico_PageSelector when newFormComponent == FormComponents.Kentico_Xperience_Admin_Websites_WebPageSelectorComponent:
                         {
-                            if (value?.ToObject<List<Services.Model.PageSelectorItem>>() is { Count: > 0 } items)
+                            if (value?.ToObject<List<PageSelectorItem>>() is { Count: > 0 } items)
                             {
                                 properties[key] = JToken.FromObject(items.Select(x => new WebPageRelatedItem { WebPageGuid = spoiledGuidContext.EnsureNodeGuid(x.NodeGuid, siteId) }).ToList());
                             }

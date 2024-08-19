@@ -181,7 +181,7 @@ public class MigrateMediaLibrariesCommandHandler(
                 if (!toolkitConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(true) &&
                     !string.IsNullOrWhiteSpace(toolkitConfiguration.KxCmsDirPath))
                 {
-                    string? cmsMediaLibrariesFolder = KenticoHelper.GetSettingsKey(modelFacade,  ksSite.SiteID, "CMSMediaLibrariesFolder");
+                    string? cmsMediaLibrariesFolder = KenticoHelper.GetSettingsKey(modelFacade, ksSite.SiteID, "CMSMediaLibrariesFolder");
                     if (cmsMediaLibrariesFolder != null)
                     {
                         if (Path.IsPathRooted(cmsMediaLibrariesFolder))
@@ -193,21 +193,21 @@ public class MigrateMediaLibrariesCommandHandler(
                         {
                             if (cmsMediaLibrariesFolder.StartsWith("~/"))
                             {
-                                string cleared = $"{cmsMediaLibrariesFolder.Substring(2, cmsMediaLibrariesFolder.Length - 2)}".Replace("/", "\\");
+                                string cleared = $"{cmsMediaLibrariesFolder[2..]}".Replace("/", "\\");
                                 sourceMediaLibraryPath = Path.Combine(toolkitConfiguration.KxCmsDirPath, cleared, ksSite.SiteName, ksMediaLibrary.LibraryFolder);
                                 loadMediaFileData = true;
                             }
                             else
                             {
                                 sourceMediaLibraryPath = Path.Combine(toolkitConfiguration.KxCmsDirPath, cmsMediaLibrariesFolder, ksSite.SiteName, ksMediaLibrary.LibraryFolder);
-                                loadMediaFileData = true;    
+                                loadMediaFileData = true;
                             }
                         }
                     }
                     else
                     {
                         sourceMediaLibraryPath = Path.Combine(toolkitConfiguration.KxCmsDirPath, ksSite.SiteName, DirMedia, ksMediaLibrary.LibraryFolder);
-                        loadMediaFileData = true;    
+                        loadMediaFileData = true;
                     }
                 }
 
