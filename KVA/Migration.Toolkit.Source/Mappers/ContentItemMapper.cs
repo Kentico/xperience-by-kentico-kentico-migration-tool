@@ -7,7 +7,8 @@ using CMS.Core.Internal;
 using CMS.FormEngine;
 using CMS.MediaLibrary;
 using CMS.Websites;
-
+using CMS.Websites.Internal;
+using Kentico.Components.Web.Mvc.FormComponents;
 using Kentico.Xperience.UMT.Model;
 
 using Microsoft.Extensions.Logging;
@@ -77,12 +78,20 @@ public class ContentItemMapper(
             ContentItemChannelGuid = siteGuid
         };
 
+        var targetWebPage = WebPageItemInfo.Provider.Get()
+            .WhereEquals(nameof(WebPageItemInfo.WebPageItemGUID), contentItemGuid)
+            .FirstOrDefault();
+        string? treePath = targetWebPage?.WebPageItemTreePath;
+        
         var websiteChannelInfo = WebsiteChannelInfoProvider.ProviderObject.Get(siteGuid);
         var treePathConvertor = TreePathConvertor.GetSiteConverter(websiteChannelInfo.WebsiteChannelID);
-        (bool treePathIsDifferent, string treePath) = treePathConvertor.ConvertAndEnsureUniqueness(cmsTree.NodeAliasPath).GetAwaiter().GetResult();
-        if (treePathIsDifferent)
+        if (treePath == null)
         {
-            logger.LogInformation($"Original node alias path '{cmsTree.NodeAliasPath}' of '{cmsTree.NodeName}' item was converted to '{treePath}' since the value does not allow original range of allowed characters.");
+            (bool treePathIsDifferent, treePath) = treePathConvertor.ConvertAndEnsureUniqueness(cmsTree.NodeAliasPath).GetAwaiter().GetResult();
+            if (treePathIsDifferent)
+            {
+                logger.LogInformation($"Original node alias path '{cmsTree.NodeAliasPath}' of '{cmsTree.NodeName}' item was converted to '{treePath}' since the value does not allow original range of allowed characters.");
+            }    
         }
 
         foreach (var cmsDocument in migratedDocuments)
@@ -339,7 +348,7 @@ public class ContentItemMapper(
         {
             if (pageTemplateConfiguration != null)
             {
-                var pageTemplateConfigurationObj = JsonConvert.DeserializeObject<PageTemplateConfiguration>(pageTemplateConfiguration);
+                var pageTemplateConfigurationObj = JsonConvert.DeserializeObject<Services.Model.PageTemplateConfiguration>(pageTemplateConfiguration);
                 if (pageTemplateConfigurationObj?.Identifier != null)
                 {
                     logger.LogTrace("Walk page template configuration {Identifier}", pageTemplateConfigurationObj.Identifier);
@@ -829,11 +838,18 @@ public class ContentItemMapper(
 
                     switch (oldFormComponent)
                     {
-                        // case Kx13FormComponents.Kentico_PathSelector:
-                        // {
-                        //     // new PathSelectorItem()
-                        //     break;
-                        // }
+                        case Kx13FormComponents.Kentico_PathSelector:
+                        {
+                            if (value?.ToObject<List<Services.Model.PathSelectorItem>>() is { Count: > 0 } items)
+                            {
+                                properties[key] = JToken.FromObject(items.Select(x => new Kentico.Components.Web.Mvc.FormComponents.PathSelectorItem
+                                {
+                                    TreePath = x.NodeAliasPath
+                                }).ToList());
+                            }
+                            
+                            break;
+                        }
                         case Kx13FormComponents.Kentico_AttachmentSelector when newFormComponent == FormComponents.AdminAssetSelectorComponent:
                         {
                             if (value?.ToObject<List<AttachmentSelectorItem>>() is { Count: > 0 } items)
@@ -846,7 +862,7 @@ public class ContentItemMapper(
                         }
                         case Kx13FormComponents.Kentico_PageSelector when newFormComponent == FormComponents.Kentico_Xperience_Admin_Websites_WebPageSelectorComponent:
                         {
-                            if (value?.ToObject<List<PageSelectorItem>>() is { Count: > 0 } items)
+                            if (value?.ToObject<List<Services.Model.PageSelectorItem>>() is { Count: > 0 } items)
                             {
                                 properties[key] = JToken.FromObject(items.Select(x => new WebPageRelatedItem { WebPageGuid = spoiledGuidContext.EnsureNodeGuid(x.NodeGuid, siteId) }).ToList());
                             }

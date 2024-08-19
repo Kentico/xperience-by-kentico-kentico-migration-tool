@@ -63,6 +63,7 @@ public static class FieldMappingInstance
         new FieldMigration(KsFieldDataType.Text, FieldDataType.Text, FcText.RadioButtonsControl, FormComponents.AdminRadioGroupComponent),
         new FieldMigration(KsFieldDataType.Text, FieldDataType.Text, FcText.TextAreaControl, FormComponents.AdminTextAreaComponent),
         new FieldMigration(KsFieldDataType.Text, FieldDataType.Text, SfcDirective.CatchAnyNonMatching, FormComponents.AdminTextInputComponent),
+        new FieldMigration(KsFieldDataType.Text, FieldDataType.Text, SfcDirective.CatchAnyNonMatching, FormComponents.AdminTextInputComponent),
         new FieldMigration(KsFieldDataType.LongText, FieldDataType.LongText, FcLongText.HtmlAreaControl, FormComponents.AdminRichTextEditorComponent),
         new FieldMigration(KsFieldDataType.LongText, FieldDataType.LongText, FcLongText.TextBoxControl, FormComponents.AdminTextInputComponent),
         new FieldMigration(KsFieldDataType.LongText, FieldDataType.LongText, FcLongText.DropDownListControl, FormComponents.AdminDropDownComponent),
@@ -92,8 +93,8 @@ public static class FieldMappingInstance
         BuiltInFieldMigrations,
         [
             new FormComponentReplacement(Kx13FormComponents.Kentico_AttachmentSelector, FormComponents.AdminAssetSelectorComponent),
-            new FormComponentReplacement(Kx13FormComponents.Kentico_PageSelector, FormComponents.Kentico_Xperience_Admin_Websites_WebPageSelectorComponent)
-            // new(Kx13FormComponents.Kentico_PathSelector, FormComponents.Kentico_Xperience_Admin_Websites_WebPageSelectorComponent)
+            new FormComponentReplacement(Kx13FormComponents.Kentico_PageSelector, FormComponents.Kentico_Xperience_Admin_Websites_WebPageSelectorComponent),
+            new FormComponentReplacement(Kx13FormComponents.Kentico_PathSelector, FormComponents.Kentico_Xperience_Admin_Websites_WebPageSelectorComponent)
         ],
         [] // legacy mode is no more
     );
