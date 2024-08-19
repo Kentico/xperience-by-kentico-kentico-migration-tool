@@ -16,6 +16,7 @@ using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Api;
 using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Context;
+using Migration.Toolkit.Source.Auxiliary;
 using Migration.Toolkit.Source.Mappers;
 using Migration.Toolkit.Source.Model;
 
@@ -27,7 +28,8 @@ public class AttachmentMigrator(
     IDbContextFactory<KxpContext> kxpContextFactory,
     IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo> attachmentMapper,
     IProtocol protocol,
-    ModelFacade modelFacade
+    ModelFacade modelFacade,
+    EntityIdentityFacade entityIdentityFacade
 )
 {
     private static readonly Regex sanitizationRegex =
@@ -85,10 +87,13 @@ public class AttachmentMigrator(
         }
     }
 
-    public MigrateAttachmentResult MigrateAttachment(Guid ksAttachmentGuid, string additionalPath)
+    public MigrateAttachmentResult MigrateAttachment(Guid ksAttachmentGuid, string additionalPath, int siteId)
     {
         var attachments = modelFacade
-            .SelectWhere<ICmsAttachment>("AttachmentGuid = @attachmentGuid", new SqlParameter("attachmentGuid", ksAttachmentGuid))
+            .SelectWhere<ICmsAttachment>("AttachmentGuid = @attachmentGuid AND AttachmentSiteID = @siteId",
+                new SqlParameter("attachmentGuid", ksAttachmentGuid),
+                new SqlParameter("siteId", siteId)
+                )
             .ToList();
 
         switch (attachments)
@@ -148,7 +153,12 @@ public class AttachmentMigrator(
             return new MigrateAttachmentResult(false, true);
         }
 
-        var mediaFile = mediaFileFacade.GetMediaFile(ksAttachment.AttachmentGUID);
+        (bool isFixed, var newAttachmentGuid) = entityIdentityFacade.Translate(ksAttachment);
+        if (isFixed)
+        {
+            logger.LogWarning("Attachment {Attachment} link will be broken, new guid {Guid} was required", new { ksAttachment.AttachmentSiteID, ksAttachment.AttachmentID, ksAttachment.AttachmentGUID }, newAttachmentGuid);
+        }
+        var mediaFile = mediaFileFacade.GetMediaFile(newAttachmentGuid);
 
         protocol.FetchedTarget(mediaFile);
 
@@ -164,7 +174,7 @@ public class AttachmentMigrator(
             librarySubFolder = Path.Combine(librarySubFolder, additionalMediaPath);
         }
 
-        var mapped = attachmentMapper.Map(new CmsAttachmentMapperSource(ksAttachment, targetMediaLibraryId, uploadedFile, librarySubFolder, ksNode), mediaFile);
+        var mapped = attachmentMapper.Map(new CmsAttachmentMapperSource(ksAttachment, newAttachmentGuid, targetMediaLibraryId, uploadedFile, librarySubFolder, ksNode), mediaFile);
         protocol.MappedTarget(mapped);
 
         if (mapped is (var mediaFileInfo, var newInstance) { Success: true })
@@ -207,6 +217,7 @@ public class AttachmentMigrator(
             return DummyUploadedFile.FromStream(ms, attachment.AttachmentMimeType, attachment.AttachmentSize, attachment.AttachmentName);
         }
 
+        logger.LogWarning("Attachment binary is null! {Attachment}", new { attachment.AttachmentName, attachment.AttachmentSiteID, attachment.AttachmentID });
         return null;
     }
 

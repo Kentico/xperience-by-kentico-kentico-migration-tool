@@ -11,6 +11,7 @@ using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Common.Services.Ipc;
 using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Api.Services.CmsClass;
+using Migration.Toolkit.Source.Auxiliary;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Model;
 using Migration.Toolkit.Source.Services;
@@ -26,6 +27,7 @@ public class PageTemplateConfigurationMapper(
     PrimaryKeyMappingContext pkContext,
     IProtocol protocol,
     SourceInstanceContext sourceInstanceContext,
+    EntityIdentityFacade entityIdentityFacade,
     SpoiledGuidContext spoiledGuidContext)
     : EntityMapperBase<ICmsPageTemplateConfiguration, PageTemplateConfigurationInfo>(logger, pkContext, protocol)
 {
@@ -179,6 +181,18 @@ public class PageTemplateConfigurationMapper(
 
                     switch (oldFormComponent)
                     {
+                        case Kx13FormComponents.Kentico_MediaFilesSelector:
+                        {
+                            if (value?.ToObject<List<MediaFilesSelectorItem>>() is { Count: > 0 } items)
+                            {
+                                properties[key] = JToken.FromObject(items.Select(x => new Kentico.Components.Web.Mvc.FormComponents.MediaFilesSelectorItem
+                                {
+                                    FileGuid = entityIdentityFacade.Translate<IMediaFile>(x.FileGuid, siteId).Identity
+                                }).ToList());
+                            }
+
+                            break;
+                        }
                         case Kx13FormComponents.Kentico_PathSelector:
                         {
                             if (value?.ToObject<List<PathSelectorItem>>() is { Count: > 0 } items)

@@ -15,4 +15,8 @@ public static class GuidHelper
     public static Guid CreateNodeGuid(string name) => GuidV5.NewNameBased(GuidNsNode, name);
     public static Guid CreateTaxonomyGuid(string name) => GuidV5.NewNameBased(GuidNsTaxonomy, name);
     public static Guid CreateDocumentNameFieldGuid(string name) => GuidV5.NewNameBased(GuidNsDocumentNameField, name);
+
+
+    public static readonly Guid GuidNsLibraryFallback = new("8935FCE5-1BDC-4677-A4CA-6DFD32F65A0F");
+    public static Guid CreateGuidFromLibraryAndSiteID(string libraryName, int siteId) => GuidV5.NewNameBased(GuidNsLibraryFallback, $"{libraryName}|{siteId}");
 }

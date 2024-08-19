@@ -19,6 +19,7 @@ using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.Common.Services.BulkCopy;
 using Migration.Toolkit.Common.Services.Ipc;
 using Migration.Toolkit.KXP.Models;
+using Migration.Toolkit.Source.Auxiliary;
 using Migration.Toolkit.Source.Behaviors;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Helpers;
@@ -45,6 +46,10 @@ public static class KsCoreDiExtensions
         services.AddSingleton<ModelFacade>();
         services.AddSingleton<ISpoiledGuidContext, SpoiledGuidContext>();
         services.AddSingleton(s => s.GetRequiredService<ISpoiledGuidContext>() as SpoiledGuidContext ?? throw new InvalidOperationException());
+
+        services.AddSingleton<ISourceGuidContext, SourceGuidContext>();
+        services.AddSingleton<EntityIdentityFacade>();
+        services.AddSingleton<IdentityLocator>();
 
         services.AddTransient<BulkDataCopyService>();
         services.AddTransient<CmsRelationshipService>();

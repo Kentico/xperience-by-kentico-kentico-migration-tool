@@ -1,12 +1,10 @@
 // ReSharper disable InconsistentNaming
 
 using System.Data;
-
 using Migration.Toolkit.Common;
 
 namespace Migration.Toolkit.Source.Model;
-
-public interface ICmsClassSite : ISourceModel<ICmsClassSite>
+public partial interface ICmsClassSite : ISourceModel<ICmsClassSite>
 {
     int ClassID { get; }
     int SiteID { get; }
@@ -18,7 +16,6 @@ public interface ICmsClassSite : ISourceModel<ICmsClassSite>
         { Major: 13 } => CmsClassSiteK13.GetPrimaryKeyName(version),
         _ => throw new InvalidCastException($"Invalid version {version}")
     };
-
     static bool ISourceModel<ICmsClassSite>.IsAvailable(SemanticVersion version) => version switch
     {
         { Major: 11 } => CmsClassSiteK11.IsAvailable(version),
@@ -26,10 +23,8 @@ public interface ICmsClassSite : ISourceModel<ICmsClassSite>
         { Major: 13 } => CmsClassSiteK13.IsAvailable(version),
         _ => throw new InvalidCastException($"Invalid version {version}")
     };
-
     static string ISourceModel<ICmsClassSite>.TableName => "CMS_ClassSite";
     static string ISourceModel<ICmsClassSite>.GuidColumnName => ""; //assumtion, class Guid column doesn't change between versions
-
     static ICmsClassSite ISourceModel<ICmsClassSite>.FromReader(IDataReader reader, SemanticVersion version) => version switch
     {
         { Major: 11 } => CmsClassSiteK11.FromReader(reader, version),
@@ -38,51 +33,43 @@ public interface ICmsClassSite : ISourceModel<ICmsClassSite>
         _ => throw new InvalidCastException($"Invalid version {version}")
     };
 }
-
-public record CmsClassSiteK11(int ClassID, int SiteID) : ICmsClassSite, ISourceModel<CmsClassSiteK11>
+public partial record CmsClassSiteK11(int ClassID, int SiteID) : ICmsClassSite, ISourceModel<CmsClassSiteK11>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
     public static string GetPrimaryKeyName(SemanticVersion version) => "ClassID";
     public static string TableName => "CMS_ClassSite";
     public static string GuidColumnName => "";
-
     static CmsClassSiteK11 ISourceModel<CmsClassSiteK11>.FromReader(IDataReader reader, SemanticVersion version) => new(
-        reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")
-    );
-
+            reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")
+        );
     public static CmsClassSiteK11 FromReader(IDataReader reader, SemanticVersion version) => new(
-        reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")
-    );
-}
-
-public record CmsClassSiteK12(int ClassID, int SiteID) : ICmsClassSite, ISourceModel<CmsClassSiteK12>
+            reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")
+        );
+};
+public partial record CmsClassSiteK12(int ClassID, int SiteID) : ICmsClassSite, ISourceModel<CmsClassSiteK12>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
     public static string GetPrimaryKeyName(SemanticVersion version) => "ClassID";
     public static string TableName => "CMS_ClassSite";
     public static string GuidColumnName => "";
-
     static CmsClassSiteK12 ISourceModel<CmsClassSiteK12>.FromReader(IDataReader reader, SemanticVersion version) => new(
-        reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")
-    );
-
+            reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")
+        );
     public static CmsClassSiteK12 FromReader(IDataReader reader, SemanticVersion version) => new(
-        reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")
-    );
-}
-
-public record CmsClassSiteK13(int ClassID, int SiteID) : ICmsClassSite, ISourceModel<CmsClassSiteK13>
+            reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")
+        );
+};
+public partial record CmsClassSiteK13(int ClassID, int SiteID) : ICmsClassSite, ISourceModel<CmsClassSiteK13>
 {
     public static bool IsAvailable(SemanticVersion version) => true;
     public static string GetPrimaryKeyName(SemanticVersion version) => "ClassID";
     public static string TableName => "CMS_ClassSite";
     public static string GuidColumnName => "";
-
     static CmsClassSiteK13 ISourceModel<CmsClassSiteK13>.FromReader(IDataReader reader, SemanticVersion version) => new(
-        reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")
-    );
-
+            reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")
+        );
     public static CmsClassSiteK13 FromReader(IDataReader reader, SemanticVersion version) => new(
-        reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")
-    );
-}
+            reader.Unbox<int>("ClassID"), reader.Unbox<int>("SiteID")
+        );
+};
+

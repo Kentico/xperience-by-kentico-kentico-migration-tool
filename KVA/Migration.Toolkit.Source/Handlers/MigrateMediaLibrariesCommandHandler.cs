@@ -16,6 +16,7 @@ using Migration.Toolkit.KXP.Api;
 using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Context;
 using Migration.Toolkit.KXP.Models;
+using Migration.Toolkit.Source.Auxiliary;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Helpers;
 using Migration.Toolkit.Source.Mappers;
@@ -32,6 +33,7 @@ public class MigrateMediaLibrariesCommandHandler(
     IEntityMapper<MediaLibraryInfoMapperSource, MediaLibraryInfo> mediaLibraryInfoMapper,
     ToolkitConfiguration toolkitConfiguration,
     PrimaryKeyMappingContext primaryKeyMappingContext,
+    EntityIdentityFacade entityIdentityFacade,
     IProtocol protocol)
     : IRequestHandler<MigrateMediaLibrariesCommand, CommandResult>, IDisposable
 {
@@ -43,56 +45,25 @@ public class MigrateMediaLibrariesCommandHandler(
 
     public async Task<CommandResult> Handle(MigrateMediaLibrariesCommand request, CancellationToken cancellationToken)
     {
-        var skippedMediaLibraries = new HashSet<Guid>();
-        var unsuitableMediaLibraries =
-            modelFacade.Select("""
-                               SELECT LibraryName, STRING_AGG(CAST(LibraryGUID AS NVARCHAR(max)), '|') as [LibraryGUIDs]
-                               FROM Media_Library
-                               GROUP BY LibraryName
-                               HAVING COUNT(*) > 1
-                               """,
-                (reader, _) => new { LibraryName = reader.Unbox<string>("LibraryName"), LibraryGuids = reader.Unbox<string?>("LibraryGUIDs")?.Split('|').Select(Guid.Parse).ToImmutableList() ?? [] });
-
-        foreach (var mlg in unsuitableMediaLibraries)
-        {
-            logger.LogError(
-                "Media libraries with LibraryGuid ({LibraryGuids}) have same LibraryName '{LibraryName}', due to removal of sites and media library globalization it is required to set unique LibraryName and LibraryFolder",
-                string.Join(",", mlg.LibraryGuids), mlg.LibraryName);
-
-            foreach (var libraryGuid in mlg.LibraryGuids)
-            {
-                skippedMediaLibraries.Add(libraryGuid);
-
-                protocol.Append(HandbookReferences.NotCurrentlySupportedSkip()
-                    .WithMessage($"Media library '{mlg.LibraryName}' with LibraryGuid '{libraryGuid}' doesn't satisfy unique LibraryName and LibraryFolder condition for migration")
-                    .WithData(new { LibraryGuid = libraryGuid, mlg.LibraryName })
-                );
-            }
-        }
-
         var ksMediaLibraries = modelFacade.SelectAll<IMediaLibrary>(" ORDER BY LibraryID");
+
+        var nonUniqueLibraryNames = modelFacade.Select("""
+                                                       SELECT LibraryName FROM Media_Library GROUP BY LibraryName HAVING COUNT(*) > 1
+                                                       """, (reader, version) => reader.Unbox<string>("LibraryName"))
+            .ToImmutableHashSet(StringComparer.InvariantCultureIgnoreCase);
 
         var migratedMediaLibraries = new List<(IMediaLibrary sourceLibrary, ICmsSite sourceSite, MediaLibraryInfo targetLibrary)>();
         foreach (var ksMediaLibrary in ksMediaLibraries)
         {
-            if (ksMediaLibrary.LibraryGUID is { } libraryGuid && skippedMediaLibraries.Contains(libraryGuid))
+            (bool isFixed, var libraryGuid) = entityIdentityFacade.Translate(ksMediaLibrary);
+            if (isFixed)
             {
-                continue;
+                logger.LogWarning("MediaLibrary {Library} has non-unique guid, new guid {Guid} was required", new { ksMediaLibrary.LibraryGUID, ksMediaLibrary.LibraryName, ksMediaLibrary.LibrarySiteID }, libraryGuid);
             }
 
             protocol.FetchedSource(ksMediaLibrary);
 
-            if (ksMediaLibrary.LibraryGUID is not { } mediaLibraryGuid)
-            {
-                protocol.Append(HandbookReferences
-                    .InvalidSourceData<MediaLibrary>()
-                    .WithId(nameof(MediaLibrary.LibraryId), ksMediaLibrary.LibraryID)
-                    .WithMessage("Media library has missing MediaLibraryGUID")
-                );
-                continue;
-            }
-
-            var mediaLibraryInfo = mediaFileFacade.GetMediaLibraryInfo(mediaLibraryGuid);
+            var mediaLibraryInfo = mediaFileFacade.GetMediaLibraryInfo(libraryGuid);
 
             protocol.FetchedTarget(mediaLibraryInfo);
 
@@ -107,7 +78,11 @@ public class MigrateMediaLibrariesCommandHandler(
                 continue;
             }
 
-            var mapped = mediaLibraryInfoMapper.Map(new MediaLibraryInfoMapperSource(ksMediaLibrary, ksSite), mediaLibraryInfo);
+            string safeLibraryName = nonUniqueLibraryNames.Contains(ksMediaLibrary.LibraryName)
+                ? $"{ksSite.SiteName}_{ksMediaLibrary.LibraryName}"
+                : ksMediaLibrary.LibraryName;
+
+            var mapped = mediaLibraryInfoMapper.Map(new MediaLibraryInfoMapperSource(ksMediaLibrary, ksSite, libraryGuid, safeLibraryName), mediaLibraryInfo);
             protocol.MappedTarget(mapped);
 
             if (mapped is { Success: true } result)
@@ -155,7 +130,7 @@ public class MigrateMediaLibrariesCommandHandler(
     {
         if (sourceMediaLibraryPath == null)
         {
-            return new LoadMediaFileResult(false, null);
+            return new LoadMediaFileResult(false, null, "<missing library path>");
         }
 
         string filePath = Path.Combine(sourceMediaLibraryPath, relativeFilePath);
@@ -163,10 +138,10 @@ public class MigrateMediaLibrariesCommandHandler(
         {
             byte[] data = File.ReadAllBytes(filePath);
             var dummyFile = DummyUploadedFile.FromByteArray(data, contentType, data.LongLength, Path.GetFileName(filePath));
-            return new LoadMediaFileResult(true, dummyFile);
+            return new LoadMediaFileResult(true, dummyFile, filePath);
         }
 
-        return new LoadMediaFileResult(false, null);
+        return new LoadMediaFileResult(false, null, filePath);
     }
 
     private async Task RequireMigratedMediaFiles(List<(IMediaLibrary sourceLibrary, ICmsSite sourceSite, MediaLibraryInfo targetLibrary)> migratedMediaLibraries, CancellationToken cancellationToken)
@@ -219,9 +194,10 @@ public class MigrateMediaLibrariesCommandHandler(
 
                     bool found = false;
                     IUploadedFile? uploadedFile = null;
+                    string fullMediaPath = "<uninitialized>";
                     if (loadMediaFileData)
                     {
-                        (found, uploadedFile) = LoadMediaFileBinary(sourceMediaLibraryPath, ksMediaFile.FilePath, ksMediaFile.FileMimeType);
+                        (found, uploadedFile, fullMediaPath) = LoadMediaFileBinary(sourceMediaLibraryPath, ksMediaFile.FilePath, ksMediaFile.FileMimeType);
                         if (!found)
                         {
                             // report missing file (currently reported in mapper)
@@ -230,12 +206,18 @@ public class MigrateMediaLibrariesCommandHandler(
 
                     string? librarySubfolder = Path.GetDirectoryName(ksMediaFile.FilePath);
 
-                    var kxoMediaFile = mediaFileFacade.GetMediaFile(ksMediaFile.FileGUID);
+                    (bool isFixed, var safeMediaFileGuid) = entityIdentityFacade.Translate(ksMediaFile);
+                    if (isFixed)
+                    {
+                        logger.LogWarning("MediaFile {File} has non-unique guid, new guid {Guid} was required", new { ksMediaFile.FileGUID, ksMediaFile.FileName, ksMediaFile.FileSiteID }, safeMediaFileGuid);
+                    }
+
+                    var kxoMediaFile = mediaFileFacade.GetMediaFile(safeMediaFileGuid);
 
                     protocol.FetchedTarget(kxoMediaFile);
 
-                    var source = new MediaFileInfoMapperSource(ksMediaFile, targetMediaLibrary.LibraryID, found ? uploadedFile : null,
-                        librarySubfolder, toolkitConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(false));
+                    var source = new MediaFileInfoMapperSource(fullMediaPath, ksMediaFile, targetMediaLibrary.LibraryID, found ? uploadedFile : null,
+                        librarySubfolder, toolkitConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(false), safeMediaFileGuid);
                     var mapped = mediaFileInfoMapper.Map(source, kxoMediaFile);
                     protocol.MappedTarget(mapped);
 
@@ -286,5 +268,5 @@ public class MigrateMediaLibrariesCommandHandler(
         }
     }
 
-    private record LoadMediaFileResult(bool Found, IUploadedFile? File);
+    private record LoadMediaFileResult(bool Found, IUploadedFile? File, string FullMediaFilePath);
 }
