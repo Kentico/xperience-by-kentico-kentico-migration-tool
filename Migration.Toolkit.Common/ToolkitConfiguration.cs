@@ -15,6 +15,8 @@ public enum AutofixEnum
 
 public class ToolkitConfiguration
 {
+    public bool MigrateMediaToAssets { get; set; } = true;
+    
     #region Path to CMS dir of source instance
 
     [ConfigurationKeyName(ConfigurationNames.KxCmsDirPath)]
@@ -97,4 +99,7 @@ public class ToolkitConfiguration
     public string? XbKDirPath { get; set; } = null;
 
     #endregion
+    
+    [ConfigurationKeyName(ConfigurationNames.UrlProtocol)]
+    public string? UrlProtocol { get; set; }
 }

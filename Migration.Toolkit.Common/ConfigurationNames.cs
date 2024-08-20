@@ -15,6 +15,7 @@ public class ConfigurationNames
     public const string MigrationProtocolPath = "MigrationProtocolPath";
     public const string Enabled = "Enabled";
     public const string Connections = "Connections";
+    public const string UrlProtocol = "UrlProtocol";
 
     public const string MemberIncludeUserSystemFields = "MemberIncludeUserSystemFields";
 
