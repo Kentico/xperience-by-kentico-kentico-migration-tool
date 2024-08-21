@@ -389,7 +389,6 @@ public class FormDefinitionPatcher
                 }
                 case TcaDirective.ClearMacroTable:
                 {
-                    // TODO tk: 2022-10-11 really needed?
                     break;
                 }
                 case TcaDirective.ConvertToAsset:
@@ -416,9 +415,17 @@ public class FormDefinitionPatcher
 
                     break;
                 }
-
-                default:
+                case TcaDirective.ConvertToRichText:
+                {
+                    field
+                        .EnsureElement(FieldElemSettings, settings => settings.EnsureElement("ConfigurationName", e => e.Value = "Kentico.Administration.StructuredContent"));
                     break;
+                }
+                // ReSharper disable once RedundantEmptySwitchSection - not redundant, IDE0010 required to specify default switch branch
+                default:
+                {
+                    break;
+                }
             }
         }
     }
