@@ -151,7 +151,7 @@ the `Settings.CreateReusableFieldSchemaForClasses` [configuration option](#conve
       the `DocumentUrlPath` or `NodeAliasPath`.
 * Linked pages are currently not supported in Xperience by Kentico. The migration creates standard page copies for any
   linked pages on the source instance.
-* Page permissions (ACLs) are currently not supported in Xperience by Kentico and are not migrated.
+* Page permissions (ACLs) are currently not migrated into Xperience by Kentico.
 * Migration of Page Builder content is only available for Kentico Xperience 13.
 
 #### Page Builder content
