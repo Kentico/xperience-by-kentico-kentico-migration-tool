@@ -261,7 +261,7 @@ Custom table migration does NOT include:
 
 - In Xperience by Kentico, Media libraries are global instead of site-specific.
 - The code name of each media library on the target instance is `{SiteName}_{LibraryCodeName}`.
-- Media library permissions are currently not supported in Xperience by Kentic and are not migrated.
+- Media library permissions are currently not supported in Xperience by Kentico and are not migrated.
 
 #### Attachments
 
