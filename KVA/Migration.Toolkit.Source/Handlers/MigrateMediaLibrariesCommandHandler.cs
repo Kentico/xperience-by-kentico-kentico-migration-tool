@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-
 using CMS.Base;
 using CMS.MediaLibrary;
 
@@ -46,14 +44,26 @@ public class MigrateMediaLibrariesCommandHandler(
         var skippedMediaLibraries = new HashSet<Guid>();
         var unsuitableMediaLibraries =
             modelFacade.Select("""
-                               SELECT LibraryName, STRING_AGG(CAST(LibraryGUID AS NVARCHAR(max)), '|') as [LibraryGUIDs]
-                               FROM Media_Library
-                               GROUP BY LibraryName
-                               HAVING COUNT(*) > 1
+                               SELECT LibraryName, LibraryGUID FROM Media_Library [ML]
+                               WHERE EXISTS(
+                               	SELECT 1
+                               	FROM Media_Library [MLI]
+                               	WHERE MLI.LibraryName = ML.LibraryName
+                               	GROUP BY LibraryName
+                               	HAVING COUNT(*) > 1
+                               )
                                """,
-                (reader, _) => new { LibraryName = reader.Unbox<string>("LibraryName"), LibraryGuids = reader.Unbox<string?>("LibraryGUIDs")?.Split('|').Select(Guid.Parse).ToImmutableList() ?? [] });
+                (reader, _) => new
+                {
+                    LibraryName = reader.Unbox<string>("LibraryName"),
+                    LibraryGuid = reader.Unbox<Guid?>("LibraryGUID")
+                });
 
-        foreach (var mlg in unsuitableMediaLibraries)
+        var groupedMls = unsuitableMediaLibraries
+            .GroupBy(x => x.LibraryName)
+            .Select(x => new { LibraryGuids = x.Select(y => y.LibraryGuid).ToArray(), LibraryName = x.Key });
+
+        foreach (var mlg in groupedMls)
         {
             logger.LogError(
                 "Media libraries with LibraryGuid ({LibraryGuids}) have same LibraryName '{LibraryName}', due to removal of sites and media library globalization it is required to set unique LibraryName and LibraryFolder",
@@ -61,12 +71,15 @@ public class MigrateMediaLibrariesCommandHandler(
 
             foreach (var libraryGuid in mlg.LibraryGuids)
             {
-                skippedMediaLibraries.Add(libraryGuid);
+                if (libraryGuid is { } lg)
+                {
+                    skippedMediaLibraries.Add(lg);
 
-                protocol.Append(HandbookReferences.NotCurrentlySupportedSkip()
-                    .WithMessage($"Media library '{mlg.LibraryName}' with LibraryGuid '{libraryGuid}' doesn't satisfy unique LibraryName and LibraryFolder condition for migration")
-                    .WithData(new { LibraryGuid = libraryGuid, mlg.LibraryName })
-                );
+                    protocol.Append(HandbookReferences.NotCurrentlySupportedSkip()
+                        .WithMessage($"Media library '{mlg.LibraryName}' with LibraryGuid '{libraryGuid}' doesn't satisfy unique LibraryName and LibraryFolder condition for migration")
+                        .WithData(new { LibraryGuid = libraryGuid, mlg.LibraryName })
+                    );
+                }
             }
         }
 
