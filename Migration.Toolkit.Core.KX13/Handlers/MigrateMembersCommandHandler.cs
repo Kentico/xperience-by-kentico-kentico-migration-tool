@@ -14,7 +14,6 @@ using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX13.Contexts;
 using Migration.Toolkit.Core.KX13.Mappers;
 using Migration.Toolkit.KX13.Context;
-using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Api.Enums;
 
 namespace Migration.Toolkit.Core.KX13.Handlers;
@@ -39,7 +38,7 @@ public class MigrateMembersCommandHandler(
 
         var kx13CmsUsers = kx13Context.CmsUsers
                 .Include(u => u.CmsUserSettingUserSettingsUserNavigation)
-                .Where(u => UserHelper.PrivilegeLevelsMigratedAsMemberUser.Contains(u.UserPrivilegeLevel))
+                .Where(u => u.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.None)
             ;
 
         foreach (var kx13User in kx13CmsUsers)

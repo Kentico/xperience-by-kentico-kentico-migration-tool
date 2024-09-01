@@ -13,7 +13,7 @@ using Migration.Toolkit.Core.K11.Contexts;
 using Migration.Toolkit.Core.K11.Mappers;
 using Migration.Toolkit.K11;
 using Migration.Toolkit.K11.Models;
-using Migration.Toolkit.KXP.Api.Auxiliary;
+using Migration.Toolkit.KXP.Api.Enums;
 
 namespace Migration.Toolkit.Core.K11.Handlers;
 
@@ -37,7 +37,7 @@ public class MigrateMembersCommandHandler(
 
         var k11CmsUsers = k11Context.CmsUsers
                 .Include(u => u.CmsUserSettingUserSettingsUserNavigation)
-                .Where(u => UserHelper.PrivilegeLevelsMigratedAsMemberUser.Contains(u.UserPrivilegeLevel))
+                .Where(u => u.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.None)
             ;
 
         foreach (var k11User in k11CmsUsers)
