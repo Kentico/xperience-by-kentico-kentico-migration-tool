@@ -12,7 +12,6 @@ using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.K11.Contexts;
 using Migration.Toolkit.K11;
 using Migration.Toolkit.K11.Models;
-using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Api.Enums;
 
 namespace Migration.Toolkit.Core.K11.Handlers;
@@ -38,7 +37,7 @@ public class MigrateUsersCommandHandler(
         await using var k11Context = await k11ContextFactory.CreateDbContextAsync(cancellationToken);
 
         var k11CmsUsers = k11Context.CmsUsers
-                .Where(u => UserHelper.PrivilegeLevelsMigratedAsAdminUser.Contains(u.UserPrivilegeLevel))
+                .Where(u => u.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.Admin || u.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.Editor || u.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.GlobalAdmin)
             ;
 
         foreach (var k11User in k11CmsUsers)
@@ -127,7 +126,7 @@ public class MigrateUsersCommandHandler(
     {
         var groupedRoles = k11Context.CmsRoles
             .Where(r =>
-                r.CmsUserRoles.Any(ur => UserHelper.PrivilegeLevelsMigratedAsAdminUser.Contains(ur.User.UserPrivilegeLevel))
+                r.CmsUserRoles.Any(ur => ur.User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.Editor || ur.User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.Admin || ur.User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.GlobalAdmin)
             )
             .GroupBy(x => x.RoleName)
             .AsNoTracking();
@@ -157,7 +156,7 @@ public class MigrateUsersCommandHandler(
 
         var k11CmsRoles = k11Context.CmsRoles
             .Where(r =>
-                r.CmsUserRoles.Any(ur => UserHelper.PrivilegeLevelsMigratedAsAdminUser.Contains(ur.User.UserPrivilegeLevel))
+                r.CmsUserRoles.Any(ur => ur.User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.Editor || ur.User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.Admin || ur.User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.GlobalAdmin)
             )
             .AsNoTracking()
             .AsAsyncEnumerable();
@@ -215,8 +214,9 @@ public class MigrateUsersCommandHandler(
         var k11Context = await k11ContextFactory.CreateDbContextAsync();
         var k11UserRoles = k11Context.CmsUserRoles
             .Where(ur =>
-                ur.RoleId == k11RoleId &&
-                UserHelper.PrivilegeLevelsMigratedAsAdminUser.Contains(ur.User.UserPrivilegeLevel)
+                ur.RoleId == k11RoleId && (
+                    ur.User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.Editor || ur.User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.Admin || ur.User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.GlobalAdmin
+                )
             )
             .AsNoTracking()
             .AsAsyncEnumerable();

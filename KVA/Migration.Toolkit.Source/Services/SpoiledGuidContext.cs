@@ -24,38 +24,49 @@ public class SpoiledGuidContext(ModelFacade modelFacade, ILogger<SpoiledGuidCont
 
     internal IDictionary<Guid, ImmutableList<SpoiledDocumentGuidInfo>> SpoiledDocumentGuids =>
         spoiledDocumentGuids ??= modelFacade.Select("""
-                                                     SELECT DocumentGUID, STRING_AGG(CONCAT(NodeSiteID, '-', NodeID), '|') [SiteID-NodeID]
+                                                     SELECT DocumentGUID, NodeSiteID, NodeID 
                                                      FROM View_CMS_Tree_Joined TJ
-                                                     GROUP BY DocumentGUID
-                                                     HAVING COUNT(DocumentID) > 1
+                                                     WHERE EXISTS(
+                                                     	SELECT 1
+                                                     	FROM View_CMS_Tree_Joined TJI
+                                                     	WHERE TJI.DocumentGUID = TJ.DocumentGUID
+                                                     	GROUP BY DocumentGUID
+                                                     	HAVING COUNT(DocumentID) > 1
+                                                     )
                                                      """,
-                (reader, version) => new { DocumentGUID = reader.Unbox<Guid>("DocumentGuid"), Info = reader.Unbox<string>("SiteID-NodeID") })
-            .ToFrozenDictionary(
-                x => x.DocumentGUID,
-                x => x.Info.Split('|').Select(i =>
+                (reader, version) => new
                 {
-                    string[] spl = i.Split('-');
-
-                    return new SpoiledDocumentGuidInfo(int.Parse(spl[0]), int.Parse(spl[1]));
-                }).ToImmutableList()
+                    DocumentGUID = reader.Unbox<Guid>("DocumentGUID"),
+                    NodeID = reader.Unbox<int>("NodeID"),
+                    NodeSiteID = reader.Unbox<int>("NodeSiteID"),
+                })
+            .GroupBy(x => x.DocumentGUID)
+            .ToFrozenDictionary(
+                x => x.Key,
+                x => x.Select(i => new SpoiledDocumentGuidInfo(i.NodeSiteID, i.NodeID)).ToImmutableList()
             );
 
     internal IDictionary<Guid, ImmutableList<SpoiledNodeGuidInfo>> SpoiledNodeGuids =>
         spoiledNodeGuids ??= modelFacade.Select("""
-                                                 SELECT NodeGUID, STRING_AGG(NodeSiteID, '|') [SiteID]
+                                                 SELECT NodeGUID, NodeSiteID 
                                                  FROM View_CMS_Tree_Joined TJ
-                                                 GROUP BY NodeGUID
-                                                 HAVING COUNT(NodeGUID) > 1
+                                                 WHERE EXISTS (
+                                                 	SELECT 1
+                                                 	FROM View_CMS_Tree_Joined TJI
+                                                 	WHERE TJI.NodeGUID = TJ.NodeGUID
+                                                 	GROUP BY NodeGUID
+                                                 	HAVING COUNT(NodeGUID) > 1
+                                                 )
                                                  """,
-                (reader, version) => new { DocumentGUID = reader.Unbox<Guid>("NodeGUID"), Info = reader.Unbox<string>("SiteID") })
-            .ToFrozenDictionary(
-                x => x.DocumentGUID,
-                x => x.Info.Split('|').Select(i =>
+                (reader, version) => new
                 {
-                    string[] spl = i.Split('-');
-
-                    return new SpoiledNodeGuidInfo(int.Parse(spl[0]));
-                }).ToImmutableList()
+                    NodeGUID = reader.Unbox<Guid>("NodeGUID"),
+                    NodeSiteID = reader.Unbox<int>("NodeSiteID")
+                })
+            .GroupBy(x => x.NodeGUID)
+            .ToFrozenDictionary(
+                x => x.Key,
+                x => x.Select(i => new SpoiledNodeGuidInfo(i.NodeSiteID)).ToImmutableList()
             );
 
     public Guid EnsureDocumentGuid(Guid documentGuid, int siteId, int nodeId, int documentId)

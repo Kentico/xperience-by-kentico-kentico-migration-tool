@@ -11,7 +11,6 @@ using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX12.Contexts;
 using Migration.Toolkit.KX12.Context;
-using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Api.Enums;
 using Migration.Toolkit.KXP.Models;
 
@@ -38,7 +37,7 @@ public class MigrateUsersCommandHandler(
         await using var kx12Context = await kx12ContextFactory.CreateDbContextAsync(cancellationToken);
 
         var k12CmsUsers = kx12Context.CmsUsers
-                .Where(u => UserHelper.PrivilegeLevelsMigratedAsAdminUser.Contains(u.UserPrivilegeLevel))
+                .Where(u => u.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.Admin || u.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.Editor || u.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.GlobalAdmin)
             ;
 
         foreach (var k12User in k12CmsUsers)
@@ -124,7 +123,7 @@ public class MigrateUsersCommandHandler(
     {
         var k12CmsRoles = kx12Context.CmsRoles
             .Where(r =>
-                r.CmsUserRoles.Any(ur => UserHelper.PrivilegeLevelsMigratedAsAdminUser.Contains(ur.User.UserPrivilegeLevel))
+                r.CmsUserRoles.Any(ur => ur.User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.Editor || ur.User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.Admin || ur.User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.GlobalAdmin)
             )
             .AsNoTracking()
             .AsAsyncEnumerable();
@@ -177,8 +176,9 @@ public class MigrateUsersCommandHandler(
         var kx12Context = await kx12ContextFactory.CreateDbContextAsync();
         var k12UserRoles = kx12Context.CmsUserRoles
             .Where(ur =>
-                ur.RoleId == k12RoleId &&
-                UserHelper.PrivilegeLevelsMigratedAsAdminUser.Contains(ur.User.UserPrivilegeLevel)
+                ur.RoleId == k12RoleId && (
+                    ur.User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.Editor || ur.User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.Admin || ur.User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.GlobalAdmin
+                )
             )
             .AsNoTracking()
             .AsAsyncEnumerable();

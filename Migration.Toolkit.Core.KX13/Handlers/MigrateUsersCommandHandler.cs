@@ -11,7 +11,6 @@ using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Core.KX13.Contexts;
 using Migration.Toolkit.KX13.Context;
-using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Api.Enums;
 using Migration.Toolkit.KXP.Models;
 
@@ -38,7 +37,7 @@ public class MigrateUsersCommandHandler(
         await using var kx13Context = await kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
         var kx13CmsUsers = kx13Context.CmsUsers
-                .Where(u => UserHelper.PrivilegeLevelsMigratedAsAdminUser.Contains(u.UserPrivilegeLevel))
+                .Where(u => u.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.Admin || u.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.Editor || u.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.GlobalAdmin)
             ;
 
         foreach (var kx13User in kx13CmsUsers)
@@ -127,7 +126,7 @@ public class MigrateUsersCommandHandler(
     {
         var kx13CmsRoles = kx13Context.CmsRoles
             .Where(r =>
-                r.CmsUserRoles.Any(ur => UserHelper.PrivilegeLevelsMigratedAsAdminUser.Contains(ur.User.UserPrivilegeLevel))
+                r.CmsUserRoles.Any(ur => ur.User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.Editor || ur.User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.Admin || ur.User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.GlobalAdmin)
             )
             .AsNoTracking()
             .AsAsyncEnumerable();
@@ -181,7 +180,7 @@ public class MigrateUsersCommandHandler(
         var kx13UserRoles = kx13Context.CmsUserRoles
             .Where(ur =>
                 ur.RoleId == kx13RoleId &&
-                UserHelper.PrivilegeLevelsMigratedAsAdminUser.Contains(ur.User.UserPrivilegeLevel)
+                (ur.User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.Editor || ur.User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.Admin || ur.User.UserPrivilegeLevel == (int)UserPrivilegeLevelEnum.GlobalAdmin)
             )
             .AsNoTracking()
             .AsAsyncEnumerable();

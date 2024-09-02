@@ -90,9 +90,10 @@ public class MigratePagesCommandHandler(
                     .SelectWhere<ICmsDocument>("DocumentNodeID = @nodeId", new SqlParameter("nodeId", ksNode.NodeID))
                     .ToList();
 
-                if (nodeLinkedNode != null)
+                bool isLinkedNode = nodeLinkedNode != null;
+                if (isLinkedNode)
                 {
-                    if (nodeLinkedNode.NodeSiteID != ksNode.NodeSiteID)
+                    if (nodeLinkedNode?.NodeSiteID != ksNode.NodeSiteID)
                     {
                         // skip & write to protocol
                         logger.LogWarning("Linked node with NodeGuid {NodeGuid} is linked from different site - unable to migrate", ksTreeOriginal.NodeGUID);
@@ -153,7 +154,8 @@ public class MigratePagesCommandHandler(
                             CmsTreeK13 node => node with { NodeLinkedNodeID = null, NodeLinkedNodeSiteID = null },
                             _ => ksNode
                         };
-                        logger.LogTrace("Linked node with NodeGuid {NodeGuid} was materialized", ksNode.NodeGUID);
+
+                        logger.LogWarning("Linked node with NodeGuid {NodeGuid} was materialized (Xperience by Kentico doesn't support links), it no longer serves as link to original document. This affect also routing, this document will have own link generated from node alias path", ksNode.NodeGUID);
                     }
                 }
 
@@ -254,7 +256,8 @@ public class MigratePagesCommandHandler(
                                 commonDataInfos,
                                 migratedDocument,
                                 ksNode,
-                                migratedDocument.DocumentCulture
+                                migratedDocument.DocumentCulture,
+                                isLinkedNode
                             );
 
                             existingDocumentLanguages.Add(languageGuid);
@@ -271,7 +274,8 @@ public class MigratePagesCommandHandler(
                                 commonDataInfos,
                                 null,
                                 ksNode,
-                                culture.ContentLanguageName
+                                culture.ContentLanguageName,
+                                isLinkedNode
                             );
                         }
 
@@ -335,7 +339,7 @@ public class MigratePagesCommandHandler(
     }
 
     private async Task MigratePageUrlPaths(Guid webPageItemGuid, int webPageItemId, Guid webSiteChannelGuid, Guid languageGuid,
-        List<ContentItemCommonDataInfo> contentItemCommonDataInfos, ICmsDocument? ksDocument, ICmsTree ksTree, string documentCulture)
+        List<ContentItemCommonDataInfo> contentItemCommonDataInfos, ICmsDocument? ksDocument, ICmsTree ksTree, string documentCulture, bool isLinkedNode)
     {
         var existingPaths = WebPageUrlPathInfo.Provider.Get()
                 .WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID), webPageItemId)
@@ -413,8 +417,8 @@ public class MigratePagesCommandHandler(
                     var webPageUrlPath = new WebPageUrlPathModel
                     {
                         WebPageUrlPathGUID = contentItemCommonDataInfo.ContentItemCommonDataVersionStatus == VersionStatus.Draft
-                            ? GuidHelper.CreateWebPageUrlPathGuid($"{ksDocument!.DocumentGUID}|{documentCulture}|{ksTree.NodeAliasPath}|DRAFT")
-                            : GuidHelper.CreateWebPageUrlPathGuid($"{ksDocument!.DocumentGUID}|{ksTree.NodeAliasPath}"),
+                            ? GuidHelper.CreateWebPageUrlPathGuid($"{ksDocument!.DocumentGUID}|{documentCulture}|{ksTree.NodeAliasPath}|DRAFT|{ksTree.NodeID}")
+                            : GuidHelper.CreateWebPageUrlPathGuid($"{ksDocument!.DocumentGUID}|{ksTree.NodeAliasPath}|{ksTree.NodeID}"),
                         WebPageUrlPath = ksTree.NodeAliasPath, //ksPath.PageUrlPathUrlPath,
                         // WebPageUrlPathHash = ksPath.PageUrlPathUrlPathHash,
                         WebPageUrlPathWebPageItemGuid = webPageItemGuid,
@@ -457,17 +461,16 @@ public class MigratePagesCommandHandler(
 
                 string urlPath = (ksDocument switch
                 {
-                    CmsDocumentK11 doc => doc.DocumentUrlPath,
-                    CmsDocumentK12 doc => doc.DocumentUrlPath,
+                    CmsDocumentK11 doc => isLinkedNode ? $"{languageInfo.ContentLanguageName}{ksTree.NodeAliasPath}" : doc.DocumentUrlPath,
+                    CmsDocumentK12 doc => isLinkedNode ? $"{languageInfo.ContentLanguageName}{ksTree.NodeAliasPath}" : doc.DocumentUrlPath,
                     null => $"{languageInfo.ContentLanguageName}{ksTree.NodeAliasPath}",
                     _ => null
-                }).NullIf(string.Empty) ?? ksTree.NodeAliasPath;
+                }).NullIf(string.Empty) ?? $"{ksTree.NodeAliasPath}";
 
                 var webPageUrlPath = new WebPageUrlPathModel
                 {
-                    WebPageUrlPathGUID = GuidHelper.CreateWebPageUrlPathGuid($"{urlPath}|{documentCulture}|{webSiteChannel.WebsiteChannelGUID}"),
+                    WebPageUrlPathGUID = GuidHelper.CreateWebPageUrlPathGuid($"{urlPath}|{documentCulture}|{webSiteChannel.WebsiteChannelGUID}|{ksTree.NodeID}"),
                     WebPageUrlPath = urlPath,
-                    // WebPageUrlPathHash = kx13PageUrlPath.PageUrlPathUrlPathHash,
                     WebPageUrlPathWebPageItemGuid = webPageItemGuid,
                     WebPageUrlPathWebsiteChannelGuid = webSiteChannelGuid,
                     WebPageUrlPathContentLanguageGuid = languageGuid,
@@ -496,7 +499,7 @@ public class MigratePagesCommandHandler(
 
         var webPageUrlPath = new WebPageUrlPathModel
         {
-            WebPageUrlPathGUID = GuidHelper.CreateWebPageUrlPathGuid($"{urlPath}|{documentCulture}|{webSiteChannel.WebsiteChannelGUID}"),
+            WebPageUrlPathGUID = GuidHelper.CreateWebPageUrlPathGuid($"{urlPath}|{documentCulture}|{webSiteChannel.WebsiteChannelGUID}|{ksTree.NodeID}"),
             WebPageUrlPath = urlPath,
             WebPageUrlPathWebPageItemGuid = webPageItemGuid,
             WebPageUrlPathWebsiteChannelGuid = webSiteChannelGuid,
