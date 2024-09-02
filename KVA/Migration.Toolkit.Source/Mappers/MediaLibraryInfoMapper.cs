@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using CMS.MediaLibrary;
 
 using Microsoft.Extensions.Logging;
@@ -17,10 +18,11 @@ public class MediaLibraryInfoMapper(ILogger<MediaLibraryInfoMapper> logger, Prim
     protected override MediaLibraryInfo? CreateNewInstance(MediaLibraryInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) =>
         MediaLibraryInfo.New();
 
+    private static readonly Regex allowedCharactersForLibraryName = new Regex(@"[^a-zA-Z0-9_]", RegexOptions.Compiled | RegexOptions.Singleline);
     protected override MediaLibraryInfo MapInternal(MediaLibraryInfoMapperSource s, MediaLibraryInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         var (ksLibrary, ksSite) = s;
-
+        string ksSiteNameSafe = allowedCharactersForLibraryName.Replace(ksSite.SiteName, "_");
         // Sets the library properties
         target.LibraryDisplayName = ksLibrary.LibraryDisplayName;
         target.LibraryName = ksLibrary.LibraryName;
@@ -30,9 +32,9 @@ public class MediaLibraryInfoMapper(ILogger<MediaLibraryInfoMapper> logger, Prim
         target.LibraryDisplayName = ksLibrary.LibraryDisplayName;
         target.LibraryDescription = ksLibrary.LibraryDescription;
 
-        if (!target.LibraryFolder.StartsWith($"{ksSite.SiteName}_", StringComparison.InvariantCultureIgnoreCase))
+        if (!target.LibraryFolder.StartsWith($"{ksSiteNameSafe}_", StringComparison.InvariantCultureIgnoreCase))
         {
-            target.LibraryFolder = $"{ksSite.SiteName}_{ksLibrary.LibraryFolder}";
+            target.LibraryFolder = $"{ksSiteNameSafe}_{ksLibrary.LibraryFolder}";
         }
 
         target.LibraryLastModified = mappingHelper.Require(ksLibrary.LibraryLastModified, nameof(ksLibrary.LibraryLastModified));
