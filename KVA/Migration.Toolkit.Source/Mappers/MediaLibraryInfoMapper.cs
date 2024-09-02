@@ -18,7 +18,7 @@ public class MediaLibraryInfoMapper(ILogger<MediaLibraryInfoMapper> logger, Prim
     protected override MediaLibraryInfo? CreateNewInstance(MediaLibraryInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) =>
         MediaLibraryInfo.New();
 
-    private static readonly Regex allowedCharactersForLibraryName = new Regex(@"[^a-zA-Z0-9_]", RegexOptions.Compiled | RegexOptions.Singleline);
+    private static readonly Regex allowedCharactersForLibraryName = new(@"[^a-zA-Z0-9_]", RegexOptions.Compiled | RegexOptions.Singleline);
     protected override MediaLibraryInfo MapInternal(MediaLibraryInfoMapperSource s, MediaLibraryInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         var (ksLibrary, ksSite) = s;
