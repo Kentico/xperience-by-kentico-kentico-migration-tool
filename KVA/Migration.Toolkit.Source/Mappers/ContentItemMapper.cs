@@ -64,6 +64,8 @@ public class ContentItemMapper(
     {
         (var cmsTree, string safeNodeName, var siteGuid, var nodeParentGuid, var cultureToLanguageGuid, string targetFormDefinition, string sourceFormDefinition, var migratedDocuments) = source;
 
+        logger.LogTrace("Mapping {Value}", new { cmsTree.NodeAliasPath, cmsTree.NodeName, cmsTree.NodeGUID, cmsTree.NodeSiteID });
+        
         var nodeClass = modelFacade.SelectById<ICmsClass>(cmsTree.NodeClassID) ?? throw new InvalidOperationException($"Fatal: node class is missing, class id '{cmsTree.NodeClassID}'");
 
         var contentItemGuid = spoiledGuidContext.EnsureNodeGuid(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsTree.NodeID);
@@ -530,6 +532,7 @@ public class ContentItemMapper(
                 columnName.Equals(CmsClassMapper.GetLegacyDocumentName(newFormInfo, nodeClass.ClassName), StringComparison.InvariantCultureIgnoreCase)
             )
             {
+                logger.LogTrace("Skipping '{FieldName}'", columnName);
                 continue;
             }
 
@@ -537,6 +540,7 @@ public class ContentItemMapper(
             if (oldFormInfo.GetFormField(columnName)?.External is true)
 #pragma warning restore CS0618 // Type or member is obsolete
             {
+                logger.LogTrace("Skipping '{FieldName}' - is external", columnName);
                 continue;
             }
 
@@ -568,7 +572,7 @@ public class ContentItemMapper(
             if (fieldMigration?.Actions?.Contains(TcaDirective.ConvertToAsset) ?? false)
             {
                 if (value is string link &&
-                    MediaHelper.MatchMediaLink(link) is (true, var mediaLinkKind, var mediaKind, var path, var mediaGuid))
+                    MediaHelper.MatchMediaLink(link) is (true, var mediaLinkKind, var mediaKind, var path, var mediaGuid) result)
                 {
                     if (mediaLinkKind == MediaLinkKind.Path)
                     {
@@ -581,11 +585,12 @@ public class ContentItemMapper(
                                 {
                                     mfis = new[] { mediaFileInfo };
                                     hasMigratedMediaFile = true;
+                                    logger.LogTrace("'{FieldName}' migrated Match={Value}", columnName, result);
                                     break;
                                 }
                                 default:
                                 {
-                                    logger.LogTrace("Unsuccessful attachment migration '{Field}': '{Value}'", columnName, path);
+                                    logger.LogTrace("Unsuccessful attachment migration '{Field}': '{Value}' - {Match}", columnName, path, result);
                                     break;
                                 }
                             }
@@ -596,6 +601,7 @@ public class ContentItemMapper(
                             // _mediaFileFacade.GetMediaFile()
                             // TODO tomas.krch: 2023-03-07 get media file by path
                             // attachmentDocument.DocumentNode.NodeAliasPath
+                            logger.LogTrace("'{FieldName}' Skipped Match={Value}", columnName, result);
                         }
                     }
 
@@ -632,6 +638,10 @@ public class ContentItemMapper(
                                     hasMigratedMediaFile = true;
                                     logger.LogTrace("MediaFile migrated from attachment '{Field}': '{Value}'", columnName, attachmentGuid);
                                 }
+                                else
+                                {
+                                    logger.LogTrace("'{FieldName}' UserControlForFile Success={Success} AttachmentGUID={attachmentGuid}", columnName, success, attachmentGuid);
+                                }
                             }
                             else if (value is string attachmentGuidStr && Guid.TryParse(attachmentGuidStr, out attachmentGuid))
                             {
@@ -642,6 +652,14 @@ public class ContentItemMapper(
                                     hasMigratedMediaFile = true;
                                     logger.LogTrace("MediaFile migrated from attachment '{Field}': '{Value}' (parsed)", columnName, attachmentGuid);
                                 }
+                                else
+                                {
+                                    logger.LogTrace("'{FieldName}' UserControlForFile Success={Success} AttachmentGUID={attachmentGuid}", columnName, success, attachmentGuid);
+                                }
+                            }
+                            else
+                            {
+                                logger.LogTrace("'{FieldName}' UserControlForFile AttachmentGUID={Value}", columnName, value);
                             }
 
                             break;
@@ -657,6 +675,10 @@ public class ContentItemMapper(
                                     .Where(x => x.MediaFileInfo != null)
                                     .Select(x => x.MediaFileInfo).ToArray();
                                 hasMigratedMediaFile = true;
+                            }
+                            else
+                            {
+                                logger.LogTrace("'{FieldName}' UserControlForDocAttachments DocumentID={Value}", columnName, documentId);
                             }
 
                             break;
@@ -677,6 +699,11 @@ public class ContentItemMapper(
                     target.SetValueAsJson(columnName,
                         mfis.Select(x => new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize })
                     );
+                    logger.LogTrace("'{FieldName}' setting '{Value}'", columnName, target.GetValueOrDefault(columnName));
+                }
+                else
+                {
+                    logger.LogTrace("'{FieldName}' leaving '{Value}'", columnName, target.GetValueOrDefault(columnName));
                 }
 
                 continue;

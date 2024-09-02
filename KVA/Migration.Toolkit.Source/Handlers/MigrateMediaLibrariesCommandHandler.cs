@@ -168,7 +168,7 @@ public class MigrateMediaLibrariesCommandHandler(
     {
         if (sourceMediaLibraryPath == null)
         {
-            return new LoadMediaFileResult(false, null);
+            return new LoadMediaFileResult(false, null, null);
         }
 
         string filePath = Path.Combine(sourceMediaLibraryPath, relativeFilePath);
@@ -176,10 +176,10 @@ public class MigrateMediaLibrariesCommandHandler(
         {
             byte[] data = File.ReadAllBytes(filePath);
             var dummyFile = DummyUploadedFile.FromByteArray(data, contentType, data.LongLength, Path.GetFileName(filePath));
-            return new LoadMediaFileResult(true, dummyFile);
+            return new LoadMediaFileResult(true, dummyFile, filePath);
         }
 
-        return new LoadMediaFileResult(false, null);
+        return new LoadMediaFileResult(false, null, filePath);
     }
 
     private async Task RequireMigratedMediaFiles(List<(IMediaLibrary sourceLibrary, ICmsSite sourceSite, MediaLibraryInfo targetLibrary)> migratedMediaLibraries, CancellationToken cancellationToken)
@@ -232,9 +232,10 @@ public class MigrateMediaLibrariesCommandHandler(
 
                     bool found = false;
                     IUploadedFile? uploadedFile = null;
+                    string? searchedPath = null;
                     if (loadMediaFileData)
                     {
-                        (found, uploadedFile) = LoadMediaFileBinary(sourceMediaLibraryPath, ksMediaFile.FilePath, ksMediaFile.FileMimeType);
+                        (found, uploadedFile, searchedPath) = LoadMediaFileBinary(sourceMediaLibraryPath, ksMediaFile.FilePath, ksMediaFile.FileMimeType);
                         if (!found)
                         {
                             // report missing file (currently reported in mapper)
@@ -248,7 +249,7 @@ public class MigrateMediaLibrariesCommandHandler(
                     protocol.FetchedTarget(kxoMediaFile);
 
                     var source = new MediaFileInfoMapperSource(ksMediaFile, targetMediaLibrary.LibraryID, found ? uploadedFile : null,
-                        librarySubfolder, toolkitConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(false));
+                        librarySubfolder, toolkitConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(false), searchedPath);
                     var mapped = mediaFileInfoMapper.Map(source, kxoMediaFile);
                     protocol.MappedTarget(mapped);
 
@@ -299,5 +300,5 @@ public class MigrateMediaLibrariesCommandHandler(
         }
     }
 
-    private record LoadMediaFileResult(bool Found, IUploadedFile? File);
+    private record LoadMediaFileResult(bool Found, IUploadedFile? File, string? SearchedPath);
 }

@@ -21,7 +21,8 @@ public record MediaFileInfoMapperSource(
     int TargetLibraryId,
     IUploadedFile? File,
     string? LibrarySubFolder,
-    bool MigrateOnlyMediaFileInfo);
+    bool MigrateOnlyMediaFileInfo,
+    string? SearchedPath);
 
 public class MediaFileInfoMapper(
     ILogger<MediaFileInfoMapper> logger,
@@ -47,7 +48,7 @@ public class MediaFileInfoMapper(
 
     protected override MediaFileInfo MapInternal(MediaFileInfoMapperSource args, MediaFileInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
-        (var mediaFile, int targetLibraryId, var file, _, bool migrateOnlyMediaFileInfo) = args;
+        (var mediaFile, int targetLibraryId, var file, _, bool migrateOnlyMediaFileInfo, string? searchedPath) = args;
 
         target.FileName = mediaFile.FileName;
         target.FileTitle = mediaFile.FileTitle;
@@ -97,7 +98,7 @@ public class MediaFileInfoMapper(
         {
             addFailure(HandbookReferences.MediaFileIsMissingOnSourceFilesystem
                 .WithId(nameof(mediaFile.FileID), mediaFile.FileID)
-                .WithData(new { mediaFile.FilePath, mediaFile.FileGUID, mediaFile.FileLibraryID, mediaFile.FileSiteID })
+                .WithData(new { mediaFile.FilePath, mediaFile.FileGUID, mediaFile.FileLibraryID, mediaFile.FileSiteID, SearchedPath = searchedPath })
                 .AsFailure<MediaFileInfo>()
             );
         }
