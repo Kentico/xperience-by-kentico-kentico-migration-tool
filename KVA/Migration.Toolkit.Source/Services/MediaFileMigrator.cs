@@ -1,7 +1,6 @@
 using System.Collections.Immutable;
 using CMS.Base;
 using CMS.MediaLibrary;
-using Kentico.Xperience.UMT.Services;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -32,14 +31,14 @@ public class MediaFileMigrator(
     PrimaryKeyMappingContext primaryKeyMappingContext,
     EntityIdentityFacade entityIdentityFacade,
     IProtocol protocol
-    ): IMediaFileMigrator, IDisposable
+    ) : IMediaFileMigrator, IDisposable
 {
     private const string DirMedia = "media";
 
     private KxpContext kxpContext = kxpContextFactory.CreateDbContext();
 
     public void Dispose() => kxpContext.Dispose();
-    
+
     public async Task<CommandResult> Handle(MigrateMediaLibrariesCommand request, CancellationToken cancellationToken)
     {
         //var skippedMediaLibraries = new HashSet<Guid>();
@@ -164,7 +163,7 @@ public class MediaFileMigrator(
 
         return new GenericCommandResult();
     }
-    
+
     private LoadMediaFileResult LoadMediaFileBinary(string? sourceMediaLibraryPath, string relativeFilePath, string contentType)
     {
         if (sourceMediaLibraryPath == null)

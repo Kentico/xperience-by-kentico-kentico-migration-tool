@@ -116,7 +116,7 @@ public class AttachmentMigratorToContentItem(
             await assetFacade.PreparePrerequisites();
             AssetFacadeInitialized = true;
         }
-        
+
         protocol.FetchedSource(ksAttachment);
 
         if (ksAttachment.AttachmentFormGUID != null)
@@ -141,7 +141,7 @@ public class AttachmentMigratorToContentItem(
         {
             logger.LogWarning("Attachment {Attachment} link will be broken, new guid {Guid} was required", new { ksAttachment.AttachmentSiteID, ksAttachment.AttachmentID, ksAttachment.AttachmentGUID }, newAttachmentGuid);
         }
-        
+
         if (ksAttachment.AttachmentBinary is null)
         {
             logger.LogError("Binary data is null, cannot migrate attachment: {Attachment}", ksAttachment);
@@ -150,7 +150,7 @@ public class AttachmentMigratorToContentItem(
 
         var contentLanguageRetriever = Service.Resolve<IContentLanguageRetriever>();
         var defaultContentLanguage = await contentLanguageRetriever.GetDefaultContentLanguage();
-        
+
         var asset = await assetFacade.FromAttachment(ksAttachment, site, ksNode, [defaultContentLanguage.ContentLanguageName]);
         switch (await importer.ImportAsync(asset))
         {

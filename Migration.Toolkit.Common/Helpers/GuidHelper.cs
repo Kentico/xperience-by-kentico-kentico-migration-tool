@@ -19,7 +19,7 @@ public static class GuidHelper
     public static Guid CreateDocumentNameFieldGuid(string name) => GuidV5.NewNameBased(GuidNsDocumentNameField, name);
     public static Guid CreateAssetGuid(Guid newMediaFileGuid, string contentLanguageCode) => GuidV5.NewNameBased(GuidNsAsset, $"{newMediaFileGuid}|{contentLanguageCode}");
     public static Guid CreateFolderGuid(string path) => GuidV5.NewNameBased(GuidNsDocumentNameField, path);
-    
+
 
     public static readonly Guid GuidNsLibraryFallback = new("8935FCE5-1BDC-4677-A4CA-6DFD32F65A0F");
     public static Guid CreateGuidFromLibraryAndSiteID(string libraryName, int siteId) => GuidV5.NewNameBased(GuidNsLibraryFallback, $"{libraryName}|{siteId}");

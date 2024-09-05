@@ -283,7 +283,7 @@ public class MigrateContactManagementCommandHandler(
 
         var bulkCopyRequest = new BulkCopyRequestExtended("OM_Activity",
             s => true,
-            reader => true, 
+            reader => true,
             50000,
             requiredColumnsForContactMigration,
             ActivityValueInterceptor,

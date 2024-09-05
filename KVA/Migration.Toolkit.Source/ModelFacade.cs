@@ -111,9 +111,9 @@ public class ModelFacade(ToolkitConfiguration configuration)
         T? result = default;
         if (reader.Read())
         {
-            result = T.FromReader(reader, semanticVersion);    
+            result = T.FromReader(reader, semanticVersion);
         }
-        
+
         if (reader.Read())
         {
             throw new InvalidOperationException("Multiple items were found by ID");

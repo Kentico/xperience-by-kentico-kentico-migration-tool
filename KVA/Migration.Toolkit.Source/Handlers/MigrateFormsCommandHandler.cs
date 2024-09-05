@@ -122,7 +122,7 @@ public class MigrateFormsCommandHandler(
                     .Select(x => x.Attribute("name")?.Value).ToImmutableHashSet();
 
                 Debug.Assert(autoIncrementColumns.Count == 1, "autoIncrementColumns.Count == 1");
-                
+
                 var r = (ksClass.ClassTableName, ksClass.ClassGUID, autoIncrementColumns);
                 logger.LogTrace("Class '{ClassGuild}' Resolved as: {Result}", ksClass.ClassGUID, r);
 

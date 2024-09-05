@@ -7,7 +7,6 @@ using CMS.FormEngine;
 using CMS.MediaLibrary;
 using CMS.Websites;
 using CMS.Websites.Internal;
-using Kentico.Xperience.Admin.DigitalMarketing.Internal;
 using Kentico.Xperience.UMT.Model;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
@@ -632,7 +631,7 @@ public class ContentItemMapper(
                 {
                     switch (await attachmentMigrator.TryMigrateAttachmentByPath(path, $"__{columnName}"))
                     {
-                        case MigrateAttachmentResultMediaFile (true, _, var x, _):
+                        case MigrateAttachmentResultMediaFile(true, _, var x, _):
                         {
                             mfis = [new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
                             hasMigratedAsset = true;
@@ -669,7 +668,7 @@ public class ContentItemMapper(
                 {
                     switch (await attachmentMigrator.MigrateAttachment(mg, $"__{columnName}", cmsTree.NodeSiteID))
                     {
-                        case MigrateAttachmentResultMediaFile (true, _, var x, _):
+                        case MigrateAttachmentResultMediaFile(true, _, var x, _):
                         {
                             mfis = [new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
                             hasMigratedAsset = true;
@@ -730,7 +729,7 @@ public class ContentItemMapper(
                     {
                         switch (await attachmentMigrator.MigrateAttachment(attachmentGuid, $"__{columnName}", cmsTree.NodeSiteID))
                         {
-                            case MigrateAttachmentResultMediaFile (true, _, var mfi, _):
+                            case MigrateAttachmentResultMediaFile(true, _, var mfi, _):
                             {
                                 mfis = [new AssetRelatedItem { Identifier = mfi.FileGUID, Dimensions = new AssetDimensions { Height = mfi.FileImageHeight, Width = mfi.FileImageWidth }, Name = mfi.FileName, Size = mfi.FileSize }];
                                 hasMigratedAsset = true;

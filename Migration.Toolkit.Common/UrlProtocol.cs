@@ -1,6 +1,6 @@
 namespace Migration.Toolkit.Common;
 
-public class UrlProtocol: IDisposable, IAsyncDisposable
+public class UrlProtocol : IDisposable, IAsyncDisposable
 {
     private readonly bool migrationToAssets;
     private readonly StreamWriter streamWriter;
@@ -31,7 +31,7 @@ public class UrlProtocol: IDisposable, IAsyncDisposable
 
         if (migrationToAssets)
         {
-            
+
         }
         else
         {
@@ -54,21 +54,21 @@ public class UrlProtocol: IDisposable, IAsyncDisposable
     #region Attachment file urls
 
     // https://docs.kentico.com/13/developing-websites/retrieving-content/displaying-page-attachments#getting-page-attachment-urls
-    
+
     public record AttachmentUrlInfo(Guid AttachmentGuid, string AttachmentFileName, int SiteId, Guid NewMediaGuid, string NewLibraryFolder);
-    
+
     public void AppendAttachmentUrlIfNeeded(AttachmentUrlInfo info)
     {
-        (var attachmentGuid, string? attachmentFileName, int siteId, var newMediaGuid, string? newLibraryFolder) = info;
+        (var attachmentGuid, string? attachmentFileName, int siteId, var newMediaGuid, _) = info;
         if (migrationToAssets)
         {
-                
+
         }
         else
         {
             // Relative path: ~/getattachment/0140bccc-9d47-41ea-94a9-ca5d35b2964c/sample_image.jpg
             FormatAndWriteUriRow($"~/getattachment/{attachmentGuid}/{attachmentFileName}", $"~/getmedia/{newMediaGuid}/{attachmentFileName}", "attachment", siteId);
-        
+
             // AbsoluteUrl:
         }
     }

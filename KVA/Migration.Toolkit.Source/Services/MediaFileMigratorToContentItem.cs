@@ -15,14 +15,14 @@ public class MediaFileMigratorToContentItem(
     ModelFacade modelFacade,
     IAssetFacade assetFacade,
     IImporter importer
-    ): IMediaFileMigrator
+    ) : IMediaFileMigrator
 {
     public async Task<CommandResult> Handle(MigrateMediaLibrariesCommand request, CancellationToken cancellationToken)
     {
         await MigrateToAssets();
         return new GenericCommandResult();
     }
-    
+
     private async Task MigrateToAssets()
     {
         var ksMediaFiles = modelFacade.SelectAll<IMediaFile>(" ORDER BY FileLibraryID");
@@ -32,7 +32,7 @@ public class MediaFileMigratorToContentItem(
         var defaultContentLanguage = await contentLanguageRetriever.GetDefaultContentLanguage();
 
         await assetFacade.PreparePrerequisites();
-        
+
         foreach (var ksMediaFile in ksMediaFiles)
         {
             if (ksSites.GetOrAdd(ksMediaFile.FileSiteID, siteId => modelFacade.SelectById<ICmsSite>(siteId)) is not { } ksSite)
@@ -40,14 +40,14 @@ public class MediaFileMigratorToContentItem(
                 logger.LogError("Media file '{File}' site not found", ksMediaFile);
                 continue;
             }
-            if(ksMediaLibraries.GetOrAdd(ksMediaFile.FileLibraryID, libraryId => modelFacade.SelectById<IMediaLibrary>(libraryId)) is not {} ksMediaLibrary)
+            if (ksMediaLibraries.GetOrAdd(ksMediaFile.FileLibraryID, libraryId => modelFacade.SelectById<IMediaLibrary>(libraryId)) is not { } ksMediaLibrary)
             {
                 logger.LogError("Media file '{File}' library not found", ksMediaFile);
                 continue;
             }
 
             var umtContentItem = await assetFacade.FromMediaFile(ksMediaFile, ksMediaLibrary, ksSite, [defaultContentLanguage.ContentLanguageName]);
-            
+
             switch (await importer.ImportAsync(umtContentItem))
             {
                 case { Success: true }:

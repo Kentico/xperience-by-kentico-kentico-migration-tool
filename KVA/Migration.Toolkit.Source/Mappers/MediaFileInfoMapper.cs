@@ -10,7 +10,6 @@ using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Api;
-using Migration.Toolkit.Source.Auxiliary;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Helpers;
 using Migration.Toolkit.Source.Model;

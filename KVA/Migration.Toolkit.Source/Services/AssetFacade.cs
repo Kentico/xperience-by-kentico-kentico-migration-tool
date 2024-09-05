@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using CMS.Base;
 using CMS.ContentEngine;
@@ -20,7 +19,7 @@ namespace Migration.Toolkit.Source.Services;
 public interface IAssetFacade
 {
     string DefaultContentLanguage { get; }
-    
+
     /// <summary>
     /// Translates legacy media file to new preferred storage - content item 
     /// </summary>
@@ -49,20 +48,21 @@ public interface IAssetFacade
     /// <param name="contentLanguageName"></param>
     /// <returns></returns>
     (Guid ownerContentItemGuid, Guid assetGuid) GetRef(ICmsAttachment attachment, string? contentLanguageName = null);
-    
+
     Task PreparePrerequisites();
 }
 
 public class AssetFacade(
-    EntityIdentityFacade entityIdentityFacade, 
-    ToolkitConfiguration toolkitConfiguration, 
+    EntityIdentityFacade entityIdentityFacade,
+    ToolkitConfiguration toolkitConfiguration,
     ModelFacade modelFacade,
-    IImporter importer, 
+    IImporter importer,
     ILogger<AssetFacade> logger,
     IProtocol protocol
     ) : IAssetFacade
 {
-    public string DefaultContentLanguage {
+    public string DefaultContentLanguage
+    {
         get
         {
             if (defaultContentLanguage == null)
@@ -79,7 +79,7 @@ public class AssetFacade(
     {
         Debug.Assert(mediaFile.FileLibraryID == mediaLibrary.LibraryID, "mediaFile.FileLibraryID == mediaLibrary.LibraryID");
         Debug.Assert(mediaLibrary.LibrarySiteID == site.SiteID, "mediaLibrary.LibrarySiteID == site.SiteID");
-        
+
         string? mediaLibraryAbsolutePath = GetMediaLibraryAbsolutePath(toolkitConfiguration, site, mediaLibrary, modelFacade);
         if (string.IsNullOrWhiteSpace(mediaLibraryAbsolutePath))
         {
@@ -97,7 +97,7 @@ public class AssetFacade(
             )
         );
         var createdByUser = createdByUserId.HasValue ? modelFacade.SelectById<ICmsUser>(createdByUserId) : null;
-        
+
         var (_, translatedMediaGuid) = entityIdentityFacade.Translate(mediaFile);
 
         List<ContentItemLanguageData> languageData = [];
@@ -118,14 +118,14 @@ public class AssetFacade(
                     Size = null,
                     LastModified = null,
                     FilePath = mediaFilePath
-                } 
+                }
             }
         }));
 
         string mediaFolder = Path.Combine(mediaLibrary.LibraryFolder, Path.GetDirectoryName(mediaFile.FilePath)!);
 
         var folder = GetAssetFolder(site);
-        
+
         var contentItem = new ContentItemSimplifiedModel
         {
             CustomProperties = [],
@@ -140,16 +140,16 @@ public class AssetFacade(
 
         // TODO tomas.krch: 2024-09-02 append url to protocol
         // urlProtocol.AppendMediaFileUrlIfNeeded();
-        
+
         return contentItem;
     }
 
     public async Task<ContentItemSimplifiedModel> FromAttachment(ICmsAttachment attachment, ICmsSite site, ICmsTree? referencedNode, string[] contentLanguageNames)
     {
         Debug.Assert(attachment.AttachmentSiteID == site.SiteID || attachment.AttachmentSiteID == 0, "attachment.AttachmentSiteID == site.SiteID || attachment.AttachmentSiteID == 0");
-        
+
         var (_, translatedAttachmentGuid) = entityIdentityFacade.Translate(attachment);
-        
+
         List<ContentItemLanguageData> languageData = [];
         languageData.AddRange(contentLanguageNames.Select(contentLanguageName => new ContentItemLanguageData
         {
@@ -179,7 +179,7 @@ public class AssetFacade(
         }
 
         var folder = GetAssetFolder(site);
-        
+
         var contentItem = new ContentItemSimplifiedModel
         {
             ContentItemGUID = translatedAttachmentGuid,
@@ -193,11 +193,11 @@ public class AssetFacade(
 
         // TODO tomas.krch: 2024-09-02 append url to protocol
         // urlProtocol.AppendMediaFileUrlIfNeeded();
-        
+
         return contentItem;
     }
 
-    private readonly Dictionary<string, ContentFolderModel> contentFolderModels = new();
+    private readonly Dictionary<string, ContentFolderModel> contentFolderModels = [];
     private ContentLanguageInfo? defaultContentLanguage;
 
     private async Task<ContentFolderModel?> EnsureFolderStructure(string folderPath, ContentFolderModel rootFolder)
@@ -235,7 +235,7 @@ public class AssetFacade(
             }
             contentFolderModels[rootKey] = rootFolder;
         }
-        
+
         string[] pathSplit = folderPath.Split(Path.DirectorySeparatorChar);
         ContentFolderModel? lastFolder = null;
         for (int i = 0; i < pathSplit.Length; i++)
@@ -292,7 +292,7 @@ public class AssetFacade(
         var (_, translatedMediaGuid) = entityIdentityFacade.Translate(mediaFile);
         return (translatedMediaGuid, GuidHelper.CreateAssetGuid(translatedMediaGuid, contentLanguageName ?? DefaultContentLanguage));
     }
-    
+
     /// <inheritdoc />
     public (Guid ownerContentItemGuid, Guid assetGuid) GetRef(ICmsAttachment attachment, string? contentLanguageName = null)
     {
@@ -306,10 +306,10 @@ public class AssetFacade(
     {
         foreach (var umtModel in prerequisites)
         {
-            AssertSuccess(await importer.ImportAsync(umtModel), umtModel);    
+            AssertSuccess(await importer.ImportAsync(umtModel), umtModel);
         }
     }
-    
+
     private void AssertSuccess(IImportResult importResult, IUmtModel model)
     {
         switch (importResult)
@@ -338,7 +338,7 @@ public class AssetFacade(
             }
         }
     }
-    
+
     internal static readonly DataClassModel LegacyMediaFileContentType = new()
     {
         ClassName = "Legacy.MediaFile",

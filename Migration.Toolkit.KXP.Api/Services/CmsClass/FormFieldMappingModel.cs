@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using CMS.DataEngine;
 using CMS.OnlineForms;
@@ -52,8 +51,6 @@ public static class SfcDirective
 
 public static class FieldMappingInstance
 {
-    private static FieldMigration[] migrations = null!;
-
     public static void PrepareFieldMigrations(ToolkitConfiguration configuration)
     {
         var m = new List<FieldMigration>();
@@ -95,7 +92,7 @@ public static class FieldMappingInstance
             m.AddRange([
                 new FieldMigration(KsFieldDataType.DocAttachments, FieldDataType.Assets, SfcDirective.CatchAnyNonMatching, FormComponents.AdminAssetSelectorComponent, [TcaDirective.ConvertToAsset]),
                 new FieldMigration(KsFieldDataType.File, FieldDataType.Assets, SfcDirective.CatchAnyNonMatching, FormComponents.AdminAssetSelectorComponent, [TcaDirective.ConvertToAsset]),
-            ]);    
+            ]);
         }
         else
         {
@@ -105,13 +102,13 @@ public static class FieldMappingInstance
             ]);
         }
 
-        migrations = [..m];
+        BuiltInFieldMigrations = [.. m];
     }
 
-    public static FieldMigration[] BuiltInFieldMigrations => migrations;
+    public static FieldMigration[] BuiltInFieldMigrations { get; private set; } = null!;
 
     public static DataTypeMigrationModel BuiltInModel => new(
-        migrations,
+        BuiltInFieldMigrations,
         [
             new FormComponentReplacement(Kx13FormComponents.Kentico_AttachmentSelector, FormComponents.AdminAssetSelectorComponent),
             new FormComponentReplacement(Kx13FormComponents.Kentico_PageSelector, FormComponents.Kentico_Xperience_Admin_Websites_WebPageSelectorComponent),
