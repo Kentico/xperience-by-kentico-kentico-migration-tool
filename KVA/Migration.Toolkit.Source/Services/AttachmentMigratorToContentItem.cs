@@ -108,13 +108,13 @@ public class AttachmentMigratorToContentItem(
         }
     }
 
-    private bool AssetFacadeInitialized = false;
+    private bool assetFacadeInitialized = false;
     public async Task<IMigrateAttachmentResult> MigrateAttachment(ICmsAttachment ksAttachment, string? additionalMediaPath = null)
     {
-        if (!AssetFacadeInitialized)
+        if (!assetFacadeInitialized)
         {
             await assetFacade.PreparePrerequisites();
-            AssetFacadeInitialized = true;
+            assetFacadeInitialized = true;
         }
 
         protocol.FetchedSource(ksAttachment);

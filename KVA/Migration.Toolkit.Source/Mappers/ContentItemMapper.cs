@@ -38,7 +38,7 @@ public record CmsTreeMapperSource(
     string TargetFormDefinition,
     string SourceFormDefinition,
     List<ICmsDocument> MigratedDocuments,
-    ICmsSite sourceSite
+    ICmsSite SourceSite
 );
 
 public class ContentItemMapper(
