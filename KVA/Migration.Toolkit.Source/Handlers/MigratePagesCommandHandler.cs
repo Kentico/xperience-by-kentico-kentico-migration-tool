@@ -202,7 +202,8 @@ public class MigratePagesCommandHandler(
                     cultureCodeToLanguageGuid,
                     targetClass.ClassFormDefinition,
                     ksNodeClass.ClassFormDefinition,
-                    migratedDocuments
+                    migratedDocuments,
+                    ksSite
                 ));
                 try
                 {

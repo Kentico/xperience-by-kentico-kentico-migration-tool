@@ -245,7 +245,7 @@ public class MigrateContactManagementCommandHandler(
 
     #region "Migrate contact activities"
 
-    private CommandResult? MigrateContactActivities() //(List<int> migratedSiteIds)
+    private CommandResult? MigrateContactActivities()
     {
         var requiredColumnsForContactMigration = new Dictionary<string, string>
         {
@@ -287,8 +287,8 @@ public class MigrateContactManagementCommandHandler(
         // _primaryKeyMappingContext.PreloadDependencies<OmContact>(u => u.ContactId);
 
         var bulkCopyRequest = new BulkCopyRequestExtended("OM_Activity",
-            s => true, // s => s != "ActivityID",
-            reader => true, // migratedSiteIds.Contains(reader.GetInt32(reader.GetOrdinal("ActivitySiteID"))), // TODO tk: 2022-07-07 move condition to source query
+            s => true,
+            reader => true,
             50000,
             requiredColumnsForContactMigration,
             ActivityValueInterceptor,

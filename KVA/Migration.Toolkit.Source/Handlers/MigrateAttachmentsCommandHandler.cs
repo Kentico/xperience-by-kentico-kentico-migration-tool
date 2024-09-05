@@ -10,10 +10,10 @@ namespace Migration.Toolkit.Source.Handlers;
 // ReSharper disable once UnusedMember.Global [implicit use]
 public class MigrateAttachmentsCommandHandler(
     ModelFacade modelFacade,
-    AttachmentMigrator attachmentMigrator
+    IAttachmentMigrator attachmentMigrator
 ) : IRequestHandler<MigrateAttachmentsCommand, CommandResult>
 {
-    public Task<CommandResult> Handle(MigrateAttachmentsCommand request, CancellationToken cancellationToken)
+    public async Task<CommandResult> Handle(MigrateAttachmentsCommand request, CancellationToken cancellationToken)
     {
         var ksCmsAttachments = modelFacade.SelectAll<ICmsAttachment>();
 
@@ -25,13 +25,13 @@ public class MigrateAttachmentsCommandHandler(
                 continue;
             }
 
-            (_, bool canContinue, _, _) = attachmentMigrator.MigrateAttachment(ksCmsAttachment);
+            (_, bool canContinue) = await attachmentMigrator.MigrateAttachment(ksCmsAttachment);
             if (!canContinue)
             {
                 break;
             }
         }
 
-        return Task.FromResult<CommandResult>(new GenericCommandResult());
+        return new GenericCommandResult();
     }
 }

@@ -282,8 +282,8 @@ public class MigrateContactManagementCommandHandler(
         }
 
         var bulkCopyRequest = new BulkCopyRequestExtended("OM_Activity",
-            s => true, // s => s != "ActivityID",
-            reader => true, // migratedSiteIds.Contains(reader.GetInt32(reader.GetOrdinal("ActivitySiteID"))), // TODO tk: 2022-07-07 move condition to source query
+            s => true,
+            reader => true, 
             50000,
             requiredColumnsForContactMigration,
             ActivityValueInterceptor,

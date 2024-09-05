@@ -226,7 +226,6 @@ public class BulkDataCopyService(ToolkitConfiguration configuration, ILogger<Bul
             {
                 logger.LogTrace("[{Table}].{ColumnName} SKIPPED", tableName, columnName);
             }
-            // TODO tk: 2022-05-31 IS_NULLABLE, DATA_TYPE, ... check column compatibility
         }
     }
 }

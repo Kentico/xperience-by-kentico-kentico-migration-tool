@@ -1,21 +1,22 @@
 using AngleSharp.Text;
-
+using CMS.ContentEngine;
 using CMS.MediaLibrary;
 using CMS.Websites;
-
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-
+using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Enumerations;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Common.Services.Ipc;
+using Migration.Toolkit.KXP.Api;
 using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Api.Services.CmsClass;
+using Migration.Toolkit.Source.Auxiliary;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Model;
 using Migration.Toolkit.Source.Services;
 using Migration.Toolkit.Source.Services.Model;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -26,7 +27,14 @@ public class PageTemplateConfigurationMapper(
     PrimaryKeyMappingContext pkContext,
     IProtocol protocol,
     SourceInstanceContext sourceInstanceContext,
-    SpoiledGuidContext spoiledGuidContext)
+    EntityIdentityFacade entityIdentityFacade,
+    SpoiledGuidContext spoiledGuidContext,
+    ModelFacade modelFacade,
+    IAttachmentMigrator attachmentMigrator,
+    IAssetFacade assetFacade,
+    ToolkitConfiguration configuration,
+    KxpMediaFileFacade mediaFileFacade
+    )
     : EntityMapperBase<ICmsPageTemplateConfiguration, PageTemplateConfigurationInfo>(logger, pkContext, protocol)
 {
     protected override PageTemplateConfigurationInfo? CreateNewInstance(ICmsPageTemplateConfiguration source, MappingHelper mappingHelper, AddFailure addFailure)
@@ -46,7 +54,7 @@ public class PageTemplateConfigurationMapper(
             target.PageTemplateConfigurationDescription = source.PageTemplateConfigurationDescription;
             target.PageTemplateConfigurationName = source.PageTemplateConfigurationName;
             target.PageTemplateConfigurationLastModified = source.PageTemplateConfigurationLastModified;
-            target.PageTemplateConfigurationIcon = "xp-custom-element"; // TODO tomas.krch: 2023-11-27 some better default icon pick?
+            target.PageTemplateConfigurationIcon = "xp-custom-element";
 
             if (newInstance)
             {
@@ -179,14 +187,44 @@ public class PageTemplateConfigurationMapper(
 
                     switch (oldFormComponent)
                     {
+                        case Kx13FormComponents.Kentico_MediaFilesSelector:
+                        {
+                            var mfis = new List<object>();
+                            if (value?.ToObject<List<MediaFilesSelectorItem>>() is { Count: > 0 } items)
+                            {
+                                foreach (var mfsi in items)
+                                {
+                                    if (configuration.MigrateMediaToMediaLibrary)
+                                    {
+                                        if (entityIdentityFacade.Translate<IMediaFile>(mfsi.FileGuid, siteId) is { } mf && mediaFileFacade.GetMediaFile(mf.Identity) is { } mfi)
+                                        {
+                                            mfis.Add(new Kentico.Components.Web.Mvc.FormComponents.MediaFilesSelectorItem { FileGuid = mfi.FileGUID });
+                                        }
+                                    }
+                                    else
+                                    {
+                                        var sourceMediaFile = modelFacade.SelectWhere<IMediaFile>("FileGUID = @mediaFileGuid AND FileSiteID = @fileSiteID", new SqlParameter("mediaFileGuid", mfsi.FileGuid), new SqlParameter("fileSiteID", siteId))
+                                            .FirstOrDefault();
+                                        if (sourceMediaFile != null)
+                                        {
+                                            var (ownerContentItemGuid, _) = assetFacade.GetRef(sourceMediaFile);
+                                            mfis.Add(new ContentItemReference { Identifier = ownerContentItemGuid });
+                                        }
+                                    }
+                                }
+
+
+                                properties[key] = JToken.FromObject(items.Select(x => new Kentico.Components.Web.Mvc.FormComponents.MediaFilesSelectorItem { FileGuid = entityIdentityFacade.Translate<IMediaFile>(x.FileGuid, siteId).Identity })
+                                    .ToList());
+                            }
+
+                            break;
+                        }
                         case Kx13FormComponents.Kentico_PathSelector:
                         {
                             if (value?.ToObject<List<PathSelectorItem>>() is { Count: > 0 } items)
                             {
-                                properties[key] = JToken.FromObject(items.Select(x => new Kentico.Components.Web.Mvc.FormComponents.PathSelectorItem
-                                {
-                                    TreePath = x.NodeAliasPath
-                                }).ToList());
+                                properties[key] = JToken.FromObject(items.Select(x => new Kentico.Components.Web.Mvc.FormComponents.PathSelectorItem { TreePath = x.NodeAliasPath }).ToList());
                             }
 
                             break;
@@ -195,7 +233,40 @@ public class PageTemplateConfigurationMapper(
                         {
                             if (value?.ToObject<List<AttachmentSelectorItem>>() is { Count: > 0 } items)
                             {
-                                properties[key] = JToken.FromObject(items.Select(x => new AssetRelatedItem { Identifier = x.FileGuid }).ToList());
+                                var nv = new List<object>();
+                                foreach (var asi in items)
+                                {
+                                    var attachment = modelFacade.SelectWhere<ICmsAttachment>("AttachmentSiteID = @siteId AND AttachmentGUID = @attachmentGUID", new SqlParameter("attachmentSiteID", siteId),
+                                            new SqlParameter("attachmentGUID", asi.FileGuid))
+                                        .FirstOrDefault();
+                                    if (attachment != null)
+                                    {
+                                        switch (attachmentMigrator.MigrateAttachment(attachment).GetAwaiter().GetResult())
+                                        {
+                                            case MigrateAttachmentResultMediaFile { Success: true, MediaFileInfo: { } x }:
+                                            {
+                                                nv.Add(new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize });
+                                                break;
+                                            }
+                                            case MigrateAttachmentResultContentItem { Success: true, ContentItemGuid: { } contentItemGuid }:
+                                            {
+                                                nv.Add(new ContentItemReference { Identifier = contentItemGuid });
+                                                break;
+                                            }
+                                            default:
+                                            {
+                                                logger.LogWarning("Attachment '{AttachmentGUID}' failed to migrate", asi.FileGuid);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        logger.LogWarning("Attachment '{AttachmentGUID}' not found", asi.FileGuid);
+                                    }
+                                }
+
+                                properties[key] = JToken.FromObject(nv);
                             }
 
                             logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
@@ -213,7 +284,6 @@ public class PageTemplateConfigurationMapper(
                         }
                         case Kx13FormComponents.Kentico_FileUploader:
                         {
-                            // TODO tomas.krch 2024-03-27: implement!
                             break;
                         }
 

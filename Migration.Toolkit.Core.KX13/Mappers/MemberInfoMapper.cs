@@ -56,9 +56,6 @@ public class MemberInfoMapper(
         // target.UserName = source.UserName;
         target.MemberName = user.UserName;
 
-        // target.FirstName = source.FirstName; // TODO tomas.krch: 2023-04-11 configurable autocreate
-        // target.LastName = source.LastName; // TODO tomas.krch: 2023-04-11 configurable autocreate
-
         // target.Email = source.Email;
         target.MemberEmail = user.Email;
 
@@ -71,20 +68,16 @@ public class MemberInfoMapper(
         target.SetValue("UserCreated", user.UserCreated);
         target.MemberCreated = user.UserCreated.GetValueOrDefault();
 
-        // target.SetValue("LastLogon", source.LastLogon); // TODO tomas.krch: 2023-04-11 configurable autocreate
-
         // target.UserGUID = source.UserGuid;
         target.MemberGuid = user.UserGuid;
 
-        // target.UserLastModified = source.UserLastModified; // TODO tomas.krch: 2023-04-11 configurable autocreate
-        target.MemberSecurityStamp = user.UserSecurityStamp; // TODO tomas.krch: 2023-04-11 still relevant?
+        target.MemberSecurityStamp = user.UserSecurityStamp;
 
         // OBSOLETE: target.UserAdministrationAccess = source.UserPrivilegeLevel == 3;
         // OBSOLETE: target.UserIsPendingRegistration = false;
         // OBSOLETE: target.UserPasswordLastChanged = null;
         // OBSOLETE: target.UserRegistrationLinkExpiration = DateTime.Now.AddDays(365);
 
-        // TODO tomas.krch: 2023-04-11 migrate customized fields
         var customized = kxpClassFacade.GetCustomizedFieldInfosAll(MemberInfo.TYPEINFO.ObjectClassName);
         foreach (var customizedFieldInfo in customized)
         {

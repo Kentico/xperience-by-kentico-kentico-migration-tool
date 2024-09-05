@@ -10,6 +10,7 @@ using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Api;
+using Migration.Toolkit.Source.Auxiliary;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Helpers;
 using Migration.Toolkit.Source.Model;
@@ -17,20 +18,21 @@ using Migration.Toolkit.Source.Model;
 namespace Migration.Toolkit.Source.Mappers;
 
 public record MediaFileInfoMapperSource(
+    string? FullMediaFilePath,
     IMediaFile MediaFile,
     int TargetLibraryId,
     IUploadedFile? File,
     string? LibrarySubFolder,
     bool MigrateOnlyMediaFileInfo,
-    string? SearchedPath);
+    Guid SafeMediaFileGuid
+);
 
 public class MediaFileInfoMapper(
     ILogger<MediaFileInfoMapper> logger,
     PrimaryKeyMappingContext primaryKeyMappingContext,
     KxpClassFacade classFacade,
     IProtocol protocol,
-    ToolkitConfiguration toolkitConfiguration,
-    ModelFacade modelFacade
+    ToolkitConfiguration toolkitConfiguration
 )
     : EntityMapperBase<MediaFileInfoMapperSource, MediaFileInfo>(logger, primaryKeyMappingContext, protocol)
 {
@@ -48,7 +50,7 @@ public class MediaFileInfoMapper(
 
     protected override MediaFileInfo MapInternal(MediaFileInfoMapperSource args, MediaFileInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
-        (var mediaFile, int targetLibraryId, var file, _, bool migrateOnlyMediaFileInfo, string? searchedPath) = args;
+        (string fullMediaFilePath, var mediaFile, int targetLibraryId, var file, _, bool migrateOnlyMediaFileInfo, var safeMediaFileGuid) = args;
 
         target.FileName = mediaFile.FileName;
         target.FileTitle = mediaFile.FileTitle;
@@ -58,7 +60,7 @@ public class MediaFileInfoMapper(
         target.FileSize = mediaFile.FileSize;
         target.FileImageWidth = mediaFile.FileImageWidth ?? 0;
         target.FileImageHeight = mediaFile.FileImageHeight ?? 0;
-        target.FileGUID = mediaFile.FileGUID;
+        target.FileGUID = safeMediaFileGuid;
         target.FileCreatedWhen = mediaFile.FileCreatedWhen;
         target.FileModifiedWhen = mediaFile.FileModifiedWhen;
         KenticoHelper.CopyCustomData(target.FileCustomData, mediaFile.FileCustomData);
@@ -98,7 +100,7 @@ public class MediaFileInfoMapper(
         {
             addFailure(HandbookReferences.MediaFileIsMissingOnSourceFilesystem
                 .WithId(nameof(mediaFile.FileID), mediaFile.FileID)
-                .WithData(new { mediaFile.FilePath, mediaFile.FileGUID, mediaFile.FileLibraryID, mediaFile.FileSiteID, SearchedPath = searchedPath })
+                .WithData(new { mediaFile.FilePath, mediaFile.FileGUID, mediaFile.FileLibraryID, mediaFile.FileSiteID, SearchedPath = fullMediaFilePath })
                 .AsFailure<MediaFileInfo>()
             );
         }

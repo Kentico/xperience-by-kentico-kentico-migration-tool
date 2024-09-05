@@ -47,13 +47,8 @@ public class UserInfoMapper(
         target.UserLastModified = source.UserLastModified;
         target.UserSecurityStamp = source.UserSecurityStamp;
 
-        // TODO tk: 2022-05-18 deduced - check
         target.UserAdministrationAccess = source.UserPrivilegeLevel == 3;
-        // TODO tk: 2022-05-18 deduce info
         target.UserIsPendingRegistration = false;
-        // TODO tk: 2022-05-18 deduce info
-        // target.UserPasswordLastChanged = null;
-        // TODO tk: 2022-05-18 deduce info
         target.UserRegistrationLinkExpiration = DateTime.Now.AddDays(365);
 
         var customizedFields = kxpClassFacade.GetCustomizedFieldInfos(UserInfo.TYPEINFO.ObjectClassName).ToList();

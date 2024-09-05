@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Data;
 
 using Migration.Toolkit.Common;
@@ -11,4 +12,11 @@ public interface ISourceModel<out T>
     static abstract bool IsAvailable(SemanticVersion version);
     static abstract string GetPrimaryKeyName(SemanticVersion version);
     static abstract T FromReader(IDataReader reader, SemanticVersion version);
+}
+
+public interface ISourceGuidEntity
+{
+    (Guid EntityGuid, int? SiteId) GetIdentity();
+    static abstract FrozenDictionary<Guid, int[]> Load(ModelFacade modelFacade);
+    static abstract Guid NewGuidNs { get; }
 }

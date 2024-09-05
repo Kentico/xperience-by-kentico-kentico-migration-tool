@@ -21,6 +21,7 @@ using Migration.Toolkit.KX12;
 using Migration.Toolkit.KX13;
 using Migration.Toolkit.KXP;
 using Migration.Toolkit.KXP.Api;
+using Migration.Toolkit.KXP.Api.Services.CmsClass;
 using Migration.Toolkit.KXP.Context;
 using Migration.Toolkit.Source;
 
@@ -36,6 +37,8 @@ var config = new ConfigurationBuilder()
         .AddJsonFile("appsettings.local.json", true, false)
         .Build()
     ;
+
+Directory.SetCurrentDirectory(config.GetValue<string>("Settings:XbKDirPath") ?? throw new InvalidOperationException("Settings:XbKDirPath must be set to valid directory path"));
 
 var validationErrors = ConfigurationValidator.GetValidationErrors(config);
 bool anyValidationErrors = false;
@@ -91,6 +94,8 @@ var settings = settingsSection.Get<ToolkitConfiguration>() ?? new ToolkitConfigu
 var kxpApiSettings = settingsSection.GetSection(ConfigurationNames.XbKApiSettings);
 settings.SetXbKConnectionStringIfNotEmpty(kxpApiSettings["ConnectionStrings:CMSConnectionString"]);
 
+FieldMappingInstance.PrepareFieldMigrations(settings);
+
 var services = new ServiceCollection();
 
 services
@@ -107,7 +112,7 @@ services
     });
 
 
-services.UseKsToolkitCore();
+services.UseKsToolkitCore(settings.MigrateMediaToMediaLibrary);
 await using var conn = new SqlConnection(settings.KxConnectionString);
 try
 {
