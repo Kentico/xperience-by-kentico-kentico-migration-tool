@@ -1,10 +1,6 @@
-
-using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Text.RegularExpressions;
 using CMS.ContentEngine.Internal;
 using CMS.Core;
-using CMS.Helpers;
 using Kentico.Xperience.UMT.Services;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
@@ -23,15 +19,6 @@ public class AttachmentMigratorToContentItem(
     IImporter importer
 ) : IAttachmentMigrator
 {
-    private static readonly Regex sanitizationRegex =
-        RegexHelper.GetRegex("[^-_a-z0-9]", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.CultureInvariant);
-
-    private static readonly Regex libraryPathValidationRegex =
-        RegexHelper.GetRegex("^[-_a-z0-9]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.CultureInvariant);
-
-
-    private readonly ConcurrentDictionary<(string libraryName, int siteId), int> mediaLibraryIdCache = new();
-
     public async Task<IMigrateAttachmentResult> TryMigrateAttachmentByPath(string documentPath, string additionalPath)
     {
         if (string.IsNullOrWhiteSpace(documentPath))
@@ -108,7 +95,7 @@ public class AttachmentMigratorToContentItem(
         }
     }
 
-    private bool assetFacadeInitialized = false;
+    private bool assetFacadeInitialized;
     public async Task<IMigrateAttachmentResult> MigrateAttachment(ICmsAttachment ksAttachment, string? additionalMediaPath = null)
     {
         if (!assetFacadeInitialized)
@@ -151,7 +138,7 @@ public class AttachmentMigratorToContentItem(
         var contentLanguageRetriever = Service.Resolve<IContentLanguageRetriever>();
         var defaultContentLanguage = await contentLanguageRetriever.GetDefaultContentLanguage();
 
-        var asset = await assetFacade.FromAttachment(ksAttachment, site, ksNode, [defaultContentLanguage.ContentLanguageName]);
+        var asset = await assetFacade.FromAttachment(ksAttachment, site, ksNode, [ksAttachmentDocument?.DocumentCulture ?? defaultContentLanguage.ContentLanguageName]);
         switch (await importer.ImportAsync(asset))
         {
             case { Success: true }:

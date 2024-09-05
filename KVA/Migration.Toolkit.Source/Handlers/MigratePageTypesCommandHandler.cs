@@ -47,7 +47,7 @@ public class MigratePageTypesCommandHandler(
         {
             var (_, ksClass) = di;
 
-            if (ksClass.ClassInheritsFromClassID is { } classInheritsFromClassId && !primaryKeyMappingContext.HasMapping<CmsClass>(c => c.ClassId, classInheritsFromClassId))
+            if (ksClass.ClassInheritsFromClassID is { } classInheritsFromClassId && !primaryKeyMappingContext.HasMapping<ICmsClass>(c => c.ClassID, classInheritsFromClassId))
             {
                 // defer migration to later stage
                 if (ksClasses.TryDeferItem(di))
