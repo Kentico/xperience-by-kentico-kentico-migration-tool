@@ -108,8 +108,12 @@ public class ModelFacade(ToolkitConfiguration configuration)
         var cmd = conn.CreateCommand();
         cmd.CommandText = $"SELECT * FROM {T.TableName} WHERE {T.GetPrimaryKeyName(semanticVersion)}={id}";
         using var reader = cmd.ExecuteReader();
-        reader.Read();
-        var result = T.FromReader(reader, semanticVersion);
+        T? result = default;
+        if (reader.Read())
+        {
+            result = T.FromReader(reader, semanticVersion);
+        }
+
         if (reader.Read())
         {
             throw new InvalidOperationException("Multiple items were found by ID");

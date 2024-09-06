@@ -122,8 +122,6 @@ public class MigrateFormsCommandHandler(
                     .Select(x => x.Attribute("name")?.Value).ToImmutableHashSet();
 
                 Debug.Assert(autoIncrementColumns.Count == 1, "autoIncrementColumns.Count == 1");
-                // TODO tk: 2022-07-08 not true : autoIncrementColumns.First() == csi.IDColumn
-                // Debug.Assert(autoIncrementColumns.First() == csi.IDColumn, "autoIncrementColumns.First() == csi.IDColumn");
 
                 var r = (ksClass.ClassTableName, ksClass.ClassGUID, autoIncrementColumns);
                 logger.LogTrace("Class '{ClassGuild}' Resolved as: {Result}", ksClass.ClassGUID, r);

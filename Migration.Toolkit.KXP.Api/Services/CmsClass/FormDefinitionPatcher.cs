@@ -227,7 +227,6 @@ public class FormDefinitionPatcher
                     visibleAttr?.SetValue(false);
                     break;
                 case TfcDirective.CopySourceControl:
-                    // TODO tk: 2022-10-06 support only for custom controls
                     logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective} => {ControlName}", fieldDescriptor, targetFormComponent, controlName);
                     controlNameElem?.SetValue(controlName);
                     PerformActionsOnField(field, fieldDescriptor, actions);
@@ -404,10 +403,10 @@ public class FormDefinitionPatcher
                         .EnsureElement(FieldElemSettings, settings =>
                         {
                             settings.EnsureElement(SettingsMaximumpages, maxAssets => maxAssets.Value = SettingsMaximumpagesFallback);
-                            settings.EnsureElement(SettingsRootpath, maxAssets => maxAssets.Value = SettingsRootpathFallback); // TODO tk: 2022-08-31 describe why?
+                            settings.EnsureElement(SettingsRootpath, maxAssets => maxAssets.Value = SettingsRootpathFallback);
                         });
 
-                    field.SetAttributeValue(FieldAttrSize, FieldAttrSizeZero); // TODO tk: 2022-08-31 describe why?
+                    field.SetAttributeValue(FieldAttrSize, FieldAttrSizeZero);
 
                     var settings = field.EnsureElement(FieldElemSettings);
                     settings.EnsureElement("TreePath", element => element.Value = settings.Element("RootPath")?.Value ?? "");

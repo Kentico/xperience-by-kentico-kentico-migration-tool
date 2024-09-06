@@ -40,6 +40,9 @@ public class ToolkitConfiguration
     [ConfigurationKeyName(ConfigurationNames.MemberIncludeUserSystemFields)]
     public string? MemberIncludeUserSystemFields { get; set; }
 
+    [ConfigurationKeyName(ConfigurationNames.MigrateMediaToMediaLibrary)]
+    public bool MigrateMediaToMediaLibrary { get; set; }
+
     [ConfigurationKeyName(ConfigurationNames.CreateReusableFieldSchemaForClasses)]
     public string? CreateReusableFieldSchemaForClasses { get; set; }
 
@@ -97,4 +100,7 @@ public class ToolkitConfiguration
     public string? XbKDirPath { get; set; } = null;
 
     #endregion
+
+    [ConfigurationKeyName(ConfigurationNames.UrlProtocol)]
+    public string? UrlProtocol { get; set; }
 }

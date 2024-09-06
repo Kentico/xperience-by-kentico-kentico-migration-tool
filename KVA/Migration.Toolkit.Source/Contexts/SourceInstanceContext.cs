@@ -12,6 +12,9 @@ public class SourceInstanceContext(
     ToolkitConfiguration configuration,
     ModelFacade modelFacade)
 {
+    /// <summary>
+    /// key is SiteName
+    /// </summary>
     private readonly Dictionary<string, SourceInstanceDiscoveredInfo> cachedInfos = new(StringComparer.InvariantCultureIgnoreCase);
 
     private bool sourceInfoLoaded;

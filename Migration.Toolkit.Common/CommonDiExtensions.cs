@@ -11,6 +11,7 @@ public static class CommonDiExtensions
         services.AddSingleton<IProtocol, Protocol>();
         services.AddSingleton<IMigrationProtocol, TextMigrationProtocol>();
         services.AddSingleton<IMigrationProtocol, DebugMigrationProtocol>();
+        services.AddSingleton<UrlProtocol>();
         return services;
     }
 }

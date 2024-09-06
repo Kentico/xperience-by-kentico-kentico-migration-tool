@@ -11,7 +11,7 @@ using Migration.Toolkit.Source.Model;
 
 namespace Migration.Toolkit.Source.Mappers;
 
-public record CmsAttachmentMapperSource(ICmsAttachment Attachment, int TargetLibraryId, IUploadedFile File, string LibrarySubFolder, ICmsTree? AttachmentNode);
+public record CmsAttachmentMapperSource(ICmsAttachment Attachment, Guid NewAttachmentGuid, int TargetLibraryId, IUploadedFile File, string LibrarySubFolder, ICmsTree? AttachmentNode);
 
 public class CmsAttachmentMapper(ILogger<CmsAttachmentMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol)
     : EntityMapperBase<CmsAttachmentMapperSource, MediaFileInfo>(logger, pkContext, protocol)
@@ -24,7 +24,7 @@ public class CmsAttachmentMapper(ILogger<CmsAttachmentMapper> logger, PrimaryKey
 
     protected override MediaFileInfo MapInternal(CmsAttachmentMapperSource args, MediaFileInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
-        (var cmsAttachment, int targetLibraryId, _, _, var attachmentNode) = args;
+        (var cmsAttachment, var newAttachmentGuid, int targetLibraryId, _, _, var attachmentNode) = args;
 
         target.FileName = Path.GetFileNameWithoutExtension(cmsAttachment.AttachmentName);
         target.FileTitle = cmsAttachment.AttachmentTitle ?? cmsAttachment.AttachmentName;
@@ -34,7 +34,7 @@ public class CmsAttachmentMapper(ILogger<CmsAttachmentMapper> logger, PrimaryKey
         target.FileSize = cmsAttachment.AttachmentSize;
         target.FileImageWidth = cmsAttachment.AttachmentImageWidth ?? 0;
         target.FileImageHeight = cmsAttachment.AttachmentImageHeight ?? 0;
-        target.FileGUID = cmsAttachment.AttachmentGUID;
+        target.FileGUID = newAttachmentGuid;
         target.FileLibraryID = targetLibraryId;
 
         // target.FileCreatedByUserID = cmsAttachment.?;

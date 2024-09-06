@@ -19,6 +19,7 @@ using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.Common.Services.BulkCopy;
 using Migration.Toolkit.Common.Services.Ipc;
 using Migration.Toolkit.KXP.Models;
+using Migration.Toolkit.Source.Auxiliary;
 using Migration.Toolkit.Source.Behaviors;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Helpers;
@@ -33,7 +34,7 @@ public static class KsCoreDiExtensions
     public static IServiceProvider ServiceProvider { get; private set; } = null!;
     public static void InitServiceProvider(IServiceProvider serviceProvider) => ServiceProvider = serviceProvider;
 
-    public static IServiceCollection UseKsToolkitCore(this IServiceCollection services)
+    public static IServiceCollection UseKsToolkitCore(this IServiceCollection services, bool? migrateMediaToMediaLibrary = false)
     {
         var printService = new PrintService();
         services.AddSingleton<IPrintService>(printService);
@@ -46,10 +47,24 @@ public static class KsCoreDiExtensions
         services.AddSingleton<ISpoiledGuidContext, SpoiledGuidContext>();
         services.AddSingleton(s => s.GetRequiredService<ISpoiledGuidContext>() as SpoiledGuidContext ?? throw new InvalidOperationException());
 
+        services.AddSingleton<ISourceGuidContext, SourceGuidContext>();
+        services.AddSingleton<EntityIdentityFacade>();
+        services.AddSingleton<IdentityLocator>();
+        services.AddSingleton<IAssetFacade, AssetFacade>();
+
         services.AddTransient<BulkDataCopyService>();
         services.AddTransient<CmsRelationshipService>();
         services.AddTransient<CoupledDataService>();
-        services.AddScoped<AttachmentMigrator>();
+        if (migrateMediaToMediaLibrary ?? false)
+        {
+            services.AddScoped<IAttachmentMigrator, AttachmentMigratorToMediaLibrary>();
+            services.AddScoped<IMediaFileMigrator, MediaFileMigrator>();
+        }
+        else
+        {
+            services.AddScoped<IAttachmentMigrator, AttachmentMigratorToContentItem>();
+            services.AddScoped<IMediaFileMigrator, MediaFileMigratorToContentItem>();
+        }
         services.AddScoped<PageTemplateMigrator>();
         services.AddScoped<ClassService>();
 

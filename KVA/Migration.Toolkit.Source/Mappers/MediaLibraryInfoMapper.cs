@@ -10,7 +10,7 @@ using Migration.Toolkit.Source.Model;
 
 namespace Migration.Toolkit.Source.Mappers;
 
-public record MediaLibraryInfoMapperSource(IMediaLibrary MediaLibrary, ICmsSite Site);
+public record MediaLibraryInfoMapperSource(IMediaLibrary MediaLibrary, ICmsSite Site, Guid SafeLibraryGuid, string SafeLibraryName);
 
 public class MediaLibraryInfoMapper(ILogger<MediaLibraryInfoMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext, IProtocol protocol)
     : EntityMapperBase<MediaLibraryInfoMapperSource, MediaLibraryInfo>(logger, primaryKeyMappingContext, protocol)
@@ -21,14 +21,14 @@ public class MediaLibraryInfoMapper(ILogger<MediaLibraryInfoMapper> logger, Prim
     private static readonly Regex allowedCharactersForLibraryName = new(@"[^a-zA-Z0-9_]", RegexOptions.Compiled | RegexOptions.Singleline);
     protected override MediaLibraryInfo MapInternal(MediaLibraryInfoMapperSource s, MediaLibraryInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
-        var (ksLibrary, ksSite) = s;
+        var (ksLibrary, ksSite, safeLibraryGuid, safeLibraryName) = s;
         string ksSiteNameSafe = allowedCharactersForLibraryName.Replace(ksSite.SiteName, "_");
         // Sets the library properties
         target.LibraryDisplayName = ksLibrary.LibraryDisplayName;
-        target.LibraryName = ksLibrary.LibraryName;
+        target.LibraryName = safeLibraryName;
         target.LibraryDescription = ksLibrary.LibraryDescription;
         target.LibraryFolder = ksLibrary.LibraryFolder;
-        target.LibraryGUID = mappingHelper.Require(ksLibrary.LibraryGUID, nameof(ksLibrary.LibraryGUID));
+        target.LibraryGUID = safeLibraryGuid;
         target.LibraryDisplayName = ksLibrary.LibraryDisplayName;
         target.LibraryDescription = ksLibrary.LibraryDescription;
 

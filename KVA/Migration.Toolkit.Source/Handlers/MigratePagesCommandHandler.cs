@@ -202,7 +202,8 @@ public class MigratePagesCommandHandler(
                     cultureCodeToLanguageGuid,
                     targetClass.ClassFormDefinition,
                     ksNodeClass.ClassFormDefinition,
-                    migratedDocuments
+                    migratedDocuments,
+                    ksSite
                 ));
                 try
                 {
@@ -378,7 +379,7 @@ public class MigratePagesCommandHandler(
                             WebPageUrlPathGUID = contentItemCommonDataInfo.ContentItemCommonDataVersionStatus == VersionStatus.Draft
                                 ? Guid.NewGuid()
                                 : ksPath.PageUrlPathGUID,
-                            WebPageUrlPath = ksPath.PageUrlPathUrlPath,
+                            WebPageUrlPath = ksPath.PageUrlPathUrlPath.TrimStart('/'),
                             WebPageUrlPathHash = ksPath.PageUrlPathUrlPathHash,
                             WebPageUrlPathWebPageItemGuid = webPageItemGuid,
                             WebPageUrlPathWebsiteChannelGuid = webSiteChannelGuid,
@@ -419,7 +420,7 @@ public class MigratePagesCommandHandler(
                         WebPageUrlPathGUID = contentItemCommonDataInfo.ContentItemCommonDataVersionStatus == VersionStatus.Draft
                             ? GuidHelper.CreateWebPageUrlPathGuid($"{ksDocument!.DocumentGUID}|{documentCulture}|{ksTree.NodeAliasPath}|DRAFT|{ksTree.NodeID}")
                             : GuidHelper.CreateWebPageUrlPathGuid($"{ksDocument!.DocumentGUID}|{ksTree.NodeAliasPath}|{ksTree.NodeID}"),
-                        WebPageUrlPath = ksTree.NodeAliasPath, //ksPath.PageUrlPathUrlPath,
+                        WebPageUrlPath = ksTree.NodeAliasPath.TrimStart('/'), //ksPath.PageUrlPathUrlPath,
                         // WebPageUrlPathHash = ksPath.PageUrlPathUrlPathHash,
                         WebPageUrlPathWebPageItemGuid = webPageItemGuid,
                         WebPageUrlPathWebsiteChannelGuid = webSiteChannelGuid,
@@ -459,13 +460,13 @@ public class MigratePagesCommandHandler(
                 logger.LogTrace("Page url path common data info: CIID={ContentItemId} CLID={Language} ID={Id}", contentItemCommonDataInfo.ContentItemCommonDataContentItemID,
                     contentItemCommonDataInfo.ContentItemCommonDataContentLanguageID, contentItemCommonDataInfo.ContentItemCommonDataID);
 
-                string urlPath = (ksDocument switch
+                string urlPath = ((ksDocument switch
                 {
                     CmsDocumentK11 doc => isLinkedNode ? $"{languageInfo.ContentLanguageName}{ksTree.NodeAliasPath}" : doc.DocumentUrlPath,
                     CmsDocumentK12 doc => isLinkedNode ? $"{languageInfo.ContentLanguageName}{ksTree.NodeAliasPath}" : doc.DocumentUrlPath,
                     null => $"{languageInfo.ContentLanguageName}{ksTree.NodeAliasPath}",
                     _ => null
-                }).NullIf(string.Empty) ?? $"{ksTree.NodeAliasPath}";
+                }).NullIf(string.Empty) ?? $"{ksTree.NodeAliasPath}").TrimStart('/');
 
                 var webPageUrlPath = new WebPageUrlPathModel
                 {

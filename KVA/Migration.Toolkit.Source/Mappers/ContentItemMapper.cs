@@ -1,5 +1,4 @@
 using System.Diagnostics;
-
 using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
 using CMS.Core;
@@ -9,9 +8,8 @@ using CMS.MediaLibrary;
 using CMS.Websites;
 using CMS.Websites.Internal;
 using Kentico.Xperience.UMT.Model;
-
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
 using Migration.Toolkit.Common.Enumerations;
@@ -26,7 +24,6 @@ using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Model;
 using Migration.Toolkit.Source.Services;
 using Migration.Toolkit.Source.Services.Model;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -40,14 +37,15 @@ public record CmsTreeMapperSource(
     Dictionary<string, Guid> CultureToLanguageGuid,
     string TargetFormDefinition,
     string SourceFormDefinition,
-    List<ICmsDocument> MigratedDocuments
+    List<ICmsDocument> MigratedDocuments,
+    ICmsSite SourceSite
 );
 
 public class ContentItemMapper(
     ILogger<ContentItemMapper> logger,
     CoupledDataService coupledDataService,
     ClassService classService,
-    AttachmentMigrator attachmentMigrator,
+    IAttachmentMigrator attachmentMigrator,
     CmsRelationshipService relationshipService,
     SourceInstanceContext sourceInstanceContext,
     FieldMigrationService fieldMigrationService,
@@ -55,14 +53,19 @@ public class ContentItemMapper(
     ModelFacade modelFacade,
     ReusableSchemaService reusableSchemaService,
     DeferredPathService deferredPathService,
-    SpoiledGuidContext spoiledGuidContext
+    SpoiledGuidContext spoiledGuidContext,
+    EntityIdentityFacade entityIdentityFacade,
+    IAssetFacade assetFacade,
+    ToolkitConfiguration configuration
 ) : UmtMapperBase<CmsTreeMapperSource>
 {
     private const string CLASS_FIELD_CONTROL_NAME = "controlname";
 
     protected override IEnumerable<IUmtModel> MapInternal(CmsTreeMapperSource source)
     {
-        (var cmsTree, string safeNodeName, var siteGuid, var nodeParentGuid, var cultureToLanguageGuid, string targetFormDefinition, string sourceFormDefinition, var migratedDocuments) = source;
+        (var cmsTree, string safeNodeName, var siteGuid, var nodeParentGuid, var cultureToLanguageGuid, string targetFormDefinition, string sourceFormDefinition, var migratedDocuments, var sourceSite) = source;
+
+        logger.LogTrace("Mapping {Value}", new { cmsTree.NodeAliasPath, cmsTree.NodeName, cmsTree.NodeGUID, cmsTree.NodeSiteID });
 
         var nodeClass = modelFacade.SelectById<ICmsClass>(cmsTree.NodeClassID) ?? throw new InvalidOperationException($"Fatal: node class is missing, class id '{cmsTree.NodeClassID}'");
 
@@ -97,7 +100,7 @@ public class ContentItemMapper(
         {
             if (!cultureToLanguageGuid.TryGetValue(cmsDocument.DocumentCulture, out var languageGuid))
             {
-                // TODO tomas.krch: 2023-11-15 WARN about skipped document
+                logger.LogWarning("Document '{DocumentGUID}' was skipped, unknown culture", cmsDocument.DocumentGUID);
                 continue;
             }
 
@@ -114,7 +117,7 @@ public class ContentItemMapper(
                 List<IUmtModel>? migratedDraft = null;
                 try
                 {
-                    migratedDraft = MigrateDraft(draftVersion, cmsTree, sourceFormDefinition, targetFormDefinition, contentItemGuid, languageGuid, nodeClass, websiteChannelInfo).ToList();
+                    migratedDraft = MigrateDraft(draftVersion, cmsTree, sourceFormDefinition, targetFormDefinition, contentItemGuid, languageGuid, nodeClass, websiteChannelInfo, sourceSite).ToList();
                     draftMigrated = true;
                 }
                 catch
@@ -253,11 +256,12 @@ public class ContentItemMapper(
                     .ToList();
 
                 var coupledDataRow = coupledDataService.GetSourceCoupledDataRow(nodeClass.ClassTableName, primaryKeyName, cmsDocument.DocumentForeignKeyValue);
+                // TODO tomas.krch: 2024-09-05 propagate async to root
                 MapCoupledDataFieldValues(dataModel.CustomProperties,
                     columnName => coupledDataRow?[columnName],
                     columnName => coupledDataRow?.ContainsKey(columnName) ?? false,
-                    cmsTree, cmsDocument.DocumentID, sourceColumns, sfi, fi, false, nodeClass
-                );
+                    cmsTree, cmsDocument.DocumentID, sourceColumns, sfi, fi, false, nodeClass, sourceSite
+                ).GetAwaiter().GetResult();
 
                 foreach (var formFieldInfo in commonFields)
                 {
@@ -379,7 +383,7 @@ public class ContentItemMapper(
     }
 
     private IEnumerable<IUmtModel> MigrateDraft(ICmsVersionHistory checkoutVersion, ICmsTree cmsTree, string sourceFormClassDefinition, string targetFormDefinition, Guid contentItemGuid,
-        Guid contentLanguageGuid, ICmsClass nodeClass, WebsiteChannelInfo websiteChannelInfo)
+        Guid contentLanguageGuid, ICmsClass nodeClass, WebsiteChannelInfo websiteChannelInfo, ICmsSite sourceSite)
     {
         var adapter = new NodeXmlAdapter(checkoutVersion.NodeXML);
 
@@ -460,10 +464,11 @@ public class ContentItemMapper(
                     .Except([CmsClassMapper.GetLegacyDocumentName(fi, nodeClass.ClassName)])
                     .ToList();
 
+                // TODO tomas.krch: 2024-09-05 propagate async to root
                 MapCoupledDataFieldValues(dataModel.CustomProperties,
                     s => adapter.GetValue(s),
                     s => adapter.HasValueSet(s)
-                    , cmsTree, adapter.DocumentID, sourceColumns, sfi, fi, true, nodeClass);
+                    , cmsTree, adapter.DocumentID, sourceColumns, sfi, fi, true, nodeClass, sourceSite).GetAwaiter().GetResult();
 
                 foreach (var formFieldInfo in commonFields)
                 {
@@ -506,7 +511,7 @@ public class ContentItemMapper(
         }
     }
 
-    private void MapCoupledDataFieldValues(
+    private async Task MapCoupledDataFieldValues(
         Dictionary<string, object?> target,
         Func<string, object?> getSourceValue,
         Func<string, bool> containsSourceValue,
@@ -516,7 +521,8 @@ public class ContentItemMapper(
         FormInfo oldFormInfo,
         FormInfo newFormInfo,
         bool migratingFromVersionHistory,
-        ICmsClass nodeClass
+        ICmsClass nodeClass,
+        ICmsSite site
     )
     {
         Debug.Assert(nodeClass.ClassTableName != null, "cmsTree.NodeClass.ClassTableName != null");
@@ -530,6 +536,7 @@ public class ContentItemMapper(
                 columnName.Equals(CmsClassMapper.GetLegacyDocumentName(newFormInfo, nodeClass.ClassName), StringComparison.InvariantCultureIgnoreCase)
             )
             {
+                logger.LogTrace("Skipping '{FieldName}'", columnName);
                 continue;
             }
 
@@ -537,6 +544,7 @@ public class ContentItemMapper(
             if (oldFormInfo.GetFormField(columnName)?.External is true)
 #pragma warning restore CS0618 // Type or member is obsolete
             {
+                logger.LogTrace("Skipping '{FieldName}' - is external", columnName);
                 continue;
             }
 
@@ -561,124 +569,10 @@ public class ContentItemMapper(
             object? value = getSourceValue(columnName);
             target[columnName] = value;
 
-            MediaFileInfo?[]? mfis = null;
-            bool hasMigratedMediaFile = false;
-
             var fieldMigration = fieldMigrationService.GetFieldMigration(field.DataType, controlName, columnName);
             if (fieldMigration?.Actions?.Contains(TcaDirective.ConvertToAsset) ?? false)
             {
-                if (value is string link &&
-                    MediaHelper.MatchMediaLink(link) is (true, var mediaLinkKind, var mediaKind, var path, var mediaGuid))
-                {
-                    if (mediaLinkKind == MediaLinkKind.Path)
-                    {
-                        // path needs to be converted to GUID
-                        if (mediaKind == MediaKind.Attachment && path != null)
-                        {
-                            switch (attachmentMigrator.TryMigrateAttachmentByPath(path, $"__{columnName}"))
-                            {
-                                case (true, _, var mediaFileInfo, _):
-                                {
-                                    mfis = new[] { mediaFileInfo };
-                                    hasMigratedMediaFile = true;
-                                    break;
-                                }
-                                default:
-                                {
-                                    logger.LogTrace("Unsuccessful attachment migration '{Field}': '{Value}'", columnName, path);
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (mediaKind == MediaKind.MediaFile)
-                        {
-                            // _mediaFileFacade.GetMediaFile()
-                            // TODO tomas.krch: 2023-03-07 get media file by path
-                            // attachmentDocument.DocumentNode.NodeAliasPath
-                        }
-                    }
-
-                    if (mediaGuid is { } mg)
-                    {
-                        if (mediaKind == MediaKind.Attachment &&
-                            attachmentMigrator.MigrateAttachment(mg, $"__{columnName}") is (_, _, var mediaFileInfo, _) { Success: true })
-                        {
-                            mfis = new[] { mediaFileInfo };
-                            hasMigratedMediaFile = true;
-                            logger.LogTrace("MediaFile migrated from attachment '{Field}': '{Value}'", columnName, mg);
-                        }
-
-                        if (mediaKind == MediaKind.MediaFile && mediaFileFacade.GetMediaFile(mg) is { } mfi)
-                        {
-                            mfis = new[] { mfi };
-                            hasMigratedMediaFile = true;
-                            logger.LogTrace("MediaFile migrated from media file '{Field}': '{Value}'", columnName, mg);
-                        }
-                    }
-                }
-                else if (classService.GetFormControlDefinition(controlName) is { } formControl)
-                {
-                    switch (formControl)
-                    {
-                        case { UserControlForFile: true }:
-                        {
-                            if (value is Guid attachmentGuid)
-                            {
-                                (bool success, _, var mediaFileInfo, var mediaLibraryInfo) = attachmentMigrator.MigrateAttachment(attachmentGuid, $"__{columnName}");
-                                if (success && mediaFileInfo != null)
-                                {
-                                    mfis = new[] { mediaFileInfo };
-                                    hasMigratedMediaFile = true;
-                                    logger.LogTrace("MediaFile migrated from attachment '{Field}': '{Value}'", columnName, attachmentGuid);
-                                }
-                            }
-                            else if (value is string attachmentGuidStr && Guid.TryParse(attachmentGuidStr, out attachmentGuid))
-                            {
-                                (bool success, _, var mediaFileInfo, var mediaLibraryInfo) = attachmentMigrator.MigrateAttachment(attachmentGuid, $"__{columnName}");
-                                if (success && mediaFileInfo != null)
-                                {
-                                    mfis = new[] { mediaFileInfo };
-                                    hasMigratedMediaFile = true;
-                                    logger.LogTrace("MediaFile migrated from attachment '{Field}': '{Value}' (parsed)", columnName, attachmentGuid);
-                                }
-                            }
-
-                            break;
-                        }
-                        case { UserControlForDocAttachments: true }:
-                        {
-                            if (documentId is { } docId)
-                            {
-                                var migratedAttachments =
-                                    attachmentMigrator.MigrateGroupedAttachments(docId, field.Guid, field.Name);
-
-                                mfis = migratedAttachments
-                                    .Where(x => x.MediaFileInfo != null)
-                                    .Select(x => x.MediaFileInfo).ToArray();
-                                hasMigratedMediaFile = true;
-                            }
-
-                            break;
-                        }
-
-                        default:
-                            break;
-                    }
-                }
-                else
-                {
-                    logger.LogWarning("Unable to map value based on selected migration '{Migration}', value: '{Value}'", fieldMigration, value);
-                    continue;
-                }
-
-                if (hasMigratedMediaFile && mfis is { Length: > 0 })
-                {
-                    target.SetValueAsJson(columnName,
-                        mfis.Select(x => new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize })
-                    );
-                }
-
+                await ConvertToAsset(target, cmsTree, documentId, value, columnName, controlName, field, fieldMigration, site);
                 continue;
             }
 
@@ -723,6 +617,242 @@ public class ContentItemMapper(
         }
     }
 
+    private async Task ConvertToAsset(Dictionary<string, object?> target, ICmsTree cmsTree, int? documentId, object? value, string columnName, string? controlName, FormFieldInfo field, FieldMigration fieldMigration, ICmsSite site)
+    {
+        List<object> mfis = [];
+        bool hasMigratedAsset = false;
+        if (value is string link &&
+            MediaHelper.MatchMediaLink(link) is (true, var mediaLinkKind, var mediaKind, var path, var mediaGuid) result)
+        {
+            if (mediaLinkKind == MediaLinkKind.Path)
+            {
+                // path needs to be converted to GUID
+                if (mediaKind == MediaKind.Attachment && path != null)
+                {
+                    switch (await attachmentMigrator.TryMigrateAttachmentByPath(path, $"__{columnName}"))
+                    {
+                        case MigrateAttachmentResultMediaFile(true, _, var x, _):
+                        {
+                            mfis = [new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
+                            hasMigratedAsset = true;
+                            logger.LogTrace("'{FieldName}' migrated Match={Value}", columnName, result);
+                            break;
+                        }
+                        case MigrateAttachmentResultContentItem { Success: true, ContentItemGuid: { } contentItemGuid }:
+                        {
+                            mfis =
+                            [
+                                new ContentItemReference { Identifier = contentItemGuid }
+                            ];
+                            hasMigratedAsset = true;
+                            logger.LogTrace("'{FieldName}' migrated Match={Value}", columnName, result);
+                            break;
+                        }
+                        default:
+                        {
+                            logger.LogTrace("Unsuccessful attachment migration '{Field}': '{Value}' - {Match}", columnName, path, result);
+                            break;
+                        }
+                    }
+                }
+
+                if (mediaKind == MediaKind.MediaFile)
+                {
+                    logger.LogTrace("'{FieldName}' Skipped Match={Value}", columnName, result);
+                }
+            }
+
+            if (mediaGuid is { } mg)
+            {
+                if (mediaKind == MediaKind.Attachment)
+                {
+                    switch (await attachmentMigrator.MigrateAttachment(mg, $"__{columnName}", cmsTree.NodeSiteID))
+                    {
+                        case MigrateAttachmentResultMediaFile(true, _, var x, _):
+                        {
+                            mfis = [new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
+                            hasMigratedAsset = true;
+                            logger.LogTrace("MediaFile migrated from attachment '{Field}': '{Value}'", columnName, mg);
+                            break;
+                        }
+                        case MigrateAttachmentResultContentItem { Success: true, ContentItemGuid: { } contentItemGuid }:
+                        {
+                            mfis =
+                            [
+                                new ContentItemReference { Identifier = contentItemGuid }
+                            ];
+                            hasMigratedAsset = true;
+                            logger.LogTrace("Content item migrated from attachment '{Field}': '{Value}' to {ContentItemGUID}", columnName, mg, contentItemGuid);
+                            break;
+                        }
+                        default:
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                if (mediaKind == MediaKind.MediaFile)
+                {
+                    var sourceMediaFile = modelFacade.SelectWhere<IMediaFile>("FileGUID = @mediaFileGuid AND FileSiteID = @fileSiteID", new SqlParameter("mediaFileGuid", mg), new SqlParameter("fileSiteID", site.SiteID))
+                        .FirstOrDefault();
+                    if (sourceMediaFile != null)
+                    {
+                        if (configuration.MigrateMediaToMediaLibrary)
+                        {
+                            if (entityIdentityFacade.Translate(sourceMediaFile) is { } mf && mediaFileFacade.GetMediaFile(mf.Identity) is { } mfi)
+                            {
+                                mfis = [mfi];
+                            }
+                        }
+                        else
+                        {
+                            var (ownerContentItemGuid, _) = assetFacade.GetRef(sourceMediaFile);
+                            mfis =
+                            [
+                                new ContentItemReference { Identifier = ownerContentItemGuid }
+                            ];
+                            hasMigratedAsset = true;
+                            logger.LogTrace("MediaFile migrated from media file '{Field}': '{Value}'", columnName, mg);
+                        }
+                    }
+                }
+            }
+        }
+        else if (classService.GetFormControlDefinition(controlName) is { } formControl)
+        {
+            switch (formControl)
+            {
+                case { UserControlForFile: true }:
+                {
+                    if (value is Guid attachmentGuid)
+                    {
+                        switch (await attachmentMigrator.MigrateAttachment(attachmentGuid, $"__{columnName}", cmsTree.NodeSiteID))
+                        {
+                            case MigrateAttachmentResultMediaFile(true, _, var mfi, _):
+                            {
+                                mfis = [new AssetRelatedItem { Identifier = mfi.FileGUID, Dimensions = new AssetDimensions { Height = mfi.FileImageHeight, Width = mfi.FileImageWidth }, Name = mfi.FileName, Size = mfi.FileSize }];
+                                hasMigratedAsset = true;
+                                logger.LogTrace("MediaFile migrated from attachment '{Field}': '{Value}'", columnName, attachmentGuid);
+                                break;
+                            }
+                            case MigrateAttachmentResultContentItem { Success: true, ContentItemGuid: { } contentItemGuid }:
+                            {
+                                mfis =
+                                [
+                                    new ContentItemReference { Identifier = contentItemGuid }
+                                ];
+                                hasMigratedAsset = true;
+                                logger.LogTrace("Content item migrated from attachment '{Field}': '{Value}' to {ContentItemGUID}", columnName, attachmentGuid, contentItemGuid);
+                                break;
+                            }
+                            default:
+                            {
+                                logger.LogTrace("'{FieldName}' UserControlForFile Success={Success} AttachmentGUID={attachmentGuid}", columnName, false, attachmentGuid);
+                                break;
+                            }
+                        }
+                    }
+                    else if (value is string attachmentGuidStr && Guid.TryParse(attachmentGuidStr, out attachmentGuid))
+                    {
+                        switch (await attachmentMigrator.MigrateAttachment(attachmentGuid, $"__{columnName}", cmsTree.NodeSiteID))
+                        {
+                            case MigrateAttachmentResultMediaFile { Success: true, MediaFileInfo: { } x }:
+                            {
+                                mfis = [new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
+                                hasMigratedAsset = true;
+                                logger.LogTrace("MediaFile migrated from attachment '{Field}': '{Value}' (parsed)", columnName, attachmentGuid);
+                                break;
+                            }
+                            case MigrateAttachmentResultContentItem { Success: true, ContentItemGuid: { } contentItemGuid }:
+                            {
+                                mfis =
+                                [
+                                    new ContentItemReference { Identifier = contentItemGuid }
+                                ];
+                                hasMigratedAsset = true;
+                                logger.LogTrace("Content item migrated from attachment '{Field}': '{Value}' to {ContentItemGUID}", columnName, attachmentGuid, contentItemGuid);
+                                break;
+                            }
+                            default:
+                            {
+                                logger.LogTrace("'{FieldName}' UserControlForFile Success={Success} AttachmentGUID={attachmentGuid}", columnName, false, attachmentGuid);
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        logger.LogTrace("'{FieldName}' UserControlForFile AttachmentGUID={Value}", columnName, value);
+                    }
+
+                    break;
+                }
+                case { UserControlForDocAttachments: true }:
+                {
+                    // new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }
+                    if (documentId is { } docId)
+                    {
+                        var mfisl = new List<object>();
+                        await foreach (var migResult in attachmentMigrator.MigrateGroupedAttachments(docId, field.Guid, field.Name))
+                        {
+                            switch (migResult)
+                            {
+                                case MigrateAttachmentResultMediaFile { Success: true, MediaFileInfo: { } x }:
+                                {
+                                    mfisl.Add(new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize });
+                                    hasMigratedAsset = true;
+                                    break;
+                                }
+                                case MigrateAttachmentResultContentItem { Success: true, ContentItemGuid: { } contentItemGuid }:
+                                {
+                                    mfis =
+                                    [
+                                        new ContentItemReference { Identifier = contentItemGuid }
+                                    ];
+                                    hasMigratedAsset = true;
+                                    logger.LogTrace("Content item migrated from document '{DocumentID}' attachment '{FiledName}' to {ContentItemGUID}", docId, field.Name, contentItemGuid);
+                                    break;
+                                }
+                                default:
+                                {
+                                    hasMigratedAsset = false;
+                                    break;
+                                }
+                            }
+                        }
+
+                        mfis = mfisl;
+                    }
+                    else
+                    {
+                        logger.LogTrace("'{FieldName}' UserControlForDocAttachments DocumentID={Value}", columnName, documentId);
+                    }
+
+                    break;
+                }
+
+                default:
+                    break;
+            }
+        }
+        else
+        {
+            logger.LogWarning("Unable to map value based on selected migration '{Migration}', value: '{Value}'", fieldMigration, value);
+            return;
+        }
+
+        if (hasMigratedAsset && mfis is { Count: > 0 })
+        {
+            target.SetValueAsJson(columnName, mfis);
+            logger.LogTrace("'{FieldName}' setting '{Value}'", columnName, target.GetValueOrDefault(columnName));
+        }
+        else
+        {
+            logger.LogTrace("'{FieldName}' leaving '{Value}'", columnName, target.GetValueOrDefault(columnName));
+        }
+    }
+
     private static IEnumerable<FormFieldInfo> UnpackReusableFieldSchemas(IEnumerable<FormSchemaInfo> schemaInfos)
     {
         using var siEnum = schemaInfos.GetEnumerator();
@@ -747,8 +877,6 @@ public class ContentItemMapper(
 
     #region "Page template & page widget walkers"
 
-    private record WalkerContext(int SiteId);
-
     private void WalkAreas(int siteId, List<EditableAreaConfiguration> areas, out bool needsDeferredPatch)
     {
         needsDeferredPatch = false;
@@ -771,7 +899,6 @@ public class ContentItemMapper(
         {
             logger.LogTrace("Walk section {TypeIdentifier}|{Identifier}", section.TypeIdentifier, section.Identifier);
 
-            // TODO tk: 2022-09-14 find other acronym for FormComponents
             var sectionFcs = sourceInstanceContext.GetSectionFormComponents(siteId, section.TypeIdentifier);
             WalkProperties(siteId, section.Properties, sectionFcs, out bool ndp1);
             needsDeferredPatch = ndp1 || needsDeferredPatch;
@@ -837,14 +964,44 @@ public class ContentItemMapper(
 
                     switch (oldFormComponent)
                     {
+                        case Kx13FormComponents.Kentico_MediaFilesSelector:
+                        {
+                            var mfis = new List<object>();
+                            if (value?.ToObject<List<MediaFilesSelectorItem>>() is { Count: > 0 } items)
+                            {
+                                foreach (var mfsi in items)
+                                {
+                                    if (configuration.MigrateMediaToMediaLibrary)
+                                    {
+                                        if (entityIdentityFacade.Translate<IMediaFile>(mfsi.FileGuid, siteId) is { } mf && mediaFileFacade.GetMediaFile(mf.Identity) is { } mfi)
+                                        {
+                                            mfis.Add(new Kentico.Components.Web.Mvc.FormComponents.MediaFilesSelectorItem { FileGuid = mfi.FileGUID });
+                                        }
+                                    }
+                                    else
+                                    {
+                                        var sourceMediaFile = modelFacade.SelectWhere<IMediaFile>("FileGUID = @mediaFileGuid AND FileSiteID = @fileSiteID", new SqlParameter("mediaFileGuid", mfsi.FileGuid), new SqlParameter("fileSiteID", siteId))
+                                            .FirstOrDefault();
+                                        if (sourceMediaFile != null)
+                                        {
+                                            var (ownerContentItemGuid, _) = assetFacade.GetRef(sourceMediaFile);
+                                            mfis.Add(new ContentItemReference { Identifier = ownerContentItemGuid });
+                                        }
+                                    }
+                                }
+
+
+                                properties[key] = JToken.FromObject(items.Select(x => new Kentico.Components.Web.Mvc.FormComponents.MediaFilesSelectorItem { FileGuid = entityIdentityFacade.Translate<IMediaFile>(x.FileGuid, siteId).Identity })
+                                    .ToList());
+                            }
+
+                            break;
+                        }
                         case Kx13FormComponents.Kentico_PathSelector:
                         {
                             if (value?.ToObject<List<PathSelectorItem>>() is { Count: > 0 } items)
                             {
-                                properties[key] = JToken.FromObject(items.Select(x => new Kentico.Components.Web.Mvc.FormComponents.PathSelectorItem
-                                {
-                                    TreePath = x.NodeAliasPath
-                                }).ToList());
+                                properties[key] = JToken.FromObject(items.Select(x => new Kentico.Components.Web.Mvc.FormComponents.PathSelectorItem { TreePath = x.NodeAliasPath }).ToList());
                             }
 
                             break;
@@ -853,7 +1010,40 @@ public class ContentItemMapper(
                         {
                             if (value?.ToObject<List<AttachmentSelectorItem>>() is { Count: > 0 } items)
                             {
-                                properties[key] = JToken.FromObject(items.Select(x => new AssetRelatedItem { Identifier = x.FileGuid }).ToList());
+                                var nv = new List<object>();
+                                foreach (var asi in items)
+                                {
+                                    var attachment = modelFacade.SelectWhere<ICmsAttachment>("AttachmentSiteID = @siteId AND AttachmentGUID = @attachmentGUID", new SqlParameter("attachmentSiteID", siteId),
+                                            new SqlParameter("attachmentGUID", asi.FileGuid))
+                                        .FirstOrDefault();
+                                    if (attachment != null)
+                                    {
+                                        switch (attachmentMigrator.MigrateAttachment(attachment).GetAwaiter().GetResult())
+                                        {
+                                            case MigrateAttachmentResultMediaFile { Success: true, MediaFileInfo: { } x }:
+                                            {
+                                                nv.Add(new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize });
+                                                break;
+                                            }
+                                            case MigrateAttachmentResultContentItem { Success: true, ContentItemGuid: { } contentItemGuid }:
+                                            {
+                                                nv.Add(new ContentItemReference { Identifier = contentItemGuid });
+                                                break;
+                                            }
+                                            default:
+                                            {
+                                                logger.LogWarning("Attachment '{AttachmentGUID}' failed to migrate", asi.FileGuid);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        logger.LogWarning("Attachment '{AttachmentGUID}' not found", asi.FileGuid);
+                                    }
+                                }
+
+                                properties[key] = JToken.FromObject(nv);
                             }
 
                             logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
