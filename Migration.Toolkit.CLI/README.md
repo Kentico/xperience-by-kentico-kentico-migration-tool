@@ -34,6 +34,7 @@ To perform the migration:
 6. Run the `Migration.Toolkit.CLI.exe migrate` command with parameters according to your requirements.
 7. Observe the command line output and review the [migration protocol](./MIGRATION_PROTOCOL_REFERENCE.md), which
    provides information about the result of the migration, lists required manual steps, etc.
+8. On SaaS projects, you need to manually move content item asset files. See [Content items](#content-items) for more information.
 
 ### Migrate command parameters
 
@@ -134,6 +135,10 @@ most common components and selectors.
 You can create [reusable field schemas](https://docs.kentico.com/x/D4_OD) from page types from which other page types
 inherit, by setting
 the `Settings.CreateReusableFieldSchemaForClasses` [configuration option](#convert-page-types-to-reusable-field-schemas).
+
+#### Content items
+
+If the target instance is a [SaaS project](https://docs.kentico.com/x/saas_xp) ([installed](https://docs.kentico.com/x/DQKQC) with the `--cloud` option) you need to manually move any content item asset binary files from the default location (`~/assets`) to the location specified in the `StorageInitializationModule.cs` file, which is `~/$StorageAssets/default/assets` by default. This is necessary to enable the system to map the asset binary files to the [Azure Blob storage](https://docs.kentico.com/x/5IfWCQ).
 
 #### Pages
 
@@ -665,6 +670,8 @@ _Media files_ data type and use the _Media file selector_ form component.
     type (internally stored as
     e.g., `[{"Identifier":"CCEAD0F0-E2BF-459B-814A-36699E5C773E","Some file":"somefile.jpeg","Size":11803,"Dimensions":{"Width":300,"Height":100}}]`).
     The value of the field now needs to be [retrieved as a media library file](https://docs.xperience.io/x/LA2RBg).
+> * If the target instance is a [SaaS project](https://docs.kentico.com/x/saas_xp), you need to manually move content
+	item asset files. See [Content items](#content-items) for more information.
 
 To enable this feature, configure the `OptInFeatures.CustomMigration.FieldMigrations` [options](#configuration) for this
 tool. Use the values in the code snippet below:
