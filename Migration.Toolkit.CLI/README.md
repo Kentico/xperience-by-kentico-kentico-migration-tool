@@ -87,10 +87,6 @@ Xperience by Kentico currently does not support:
 * Page type inheritance. You cannot migrate page types that inherit fields from other types.
 * Categories for page type fields. Field categories are not migrated with page types.
 
-> :warning: **Note**
->
-> On [SaaS projects](https://docs.kentico.com/x/saas_xp) ([installed](https://docs.kentico.com/x/DQKQC) with the `--cloud` option) you need to manually move any content item asset binary files from the default location (`~/assets`) to the location specified in the `StorageInitializationModule.cs` file, which is `~/$StorageAssets/default/assets` by default. This is necessary to enable the system to map the asset binary files to the [Azure Blob storage](https://docs.kentico.com/x/5IfWCQ).
-
 The Kentico Migration Tool attempts to map the *Data type* and *Form control* of page type fields to an appropriate
 equivalent in Xperience by Kentico. This is not always possible, and cannot be done for custom data types or form
 controls. We recommend that you check your content type fields after the migration and adjust them if necessary.
@@ -138,6 +134,10 @@ most common components and selectors.
 You can create [reusable field schemas](https://docs.kentico.com/x/D4_OD) from page types from which other page types
 inherit, by setting
 the `Settings.CreateReusableFieldSchemaForClasses` [configuration option](#convert-page-types-to-reusable-field-schemas).
+
+#### Content items
+
+On [SaaS projects](https://docs.kentico.com/x/saas_xp) ([installed](https://docs.kentico.com/x/DQKQC) with the `--cloud` option) you need to manually move any content item asset binary files from the default location (`~/assets`) to the location specified in the `StorageInitializationModule.cs` file, which is `~/$StorageAssets/default/assets` by default. This is necessary to enable the system to map the asset binary files to the [Azure Blob storage](https://docs.kentico.com/x/5IfWCQ).
 
 #### Pages
 
