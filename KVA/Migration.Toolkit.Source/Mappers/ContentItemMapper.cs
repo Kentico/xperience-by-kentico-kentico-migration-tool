@@ -700,9 +700,10 @@ public class ContentItemMapper(
                     {
                         if (configuration.MigrateMediaToMediaLibrary)
                         {
-                            if (entityIdentityFacade.Translate(sourceMediaFile) is { } mf && mediaFileFacade.GetMediaFile(mf.Identity) is { } mfi)
+                            if (entityIdentityFacade.Translate(sourceMediaFile) is { } mf && mediaFileFacade.GetMediaFile(mf.Identity) is { } x)
                             {
-                                mfis = [mfi];
+                                mfis = [new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
+                                hasMigratedAsset = true;
                             }
                         }
                         else
@@ -1013,8 +1014,10 @@ public class ContentItemMapper(
                                 var nv = new List<object>();
                                 foreach (var asi in items)
                                 {
-                                    var attachment = modelFacade.SelectWhere<ICmsAttachment>("AttachmentSiteID = @siteId AND AttachmentGUID = @attachmentGUID", new SqlParameter("attachmentSiteID", siteId),
-                                            new SqlParameter("attachmentGUID", asi.FileGuid))
+                                    var attachment = modelFacade.SelectWhere<ICmsAttachment>("AttachmentSiteID = @attachmentSiteId AND AttachmentGUID = @attachmentGUID",
+                                            new SqlParameter("attachmentSiteID", siteId),
+                                            new SqlParameter("attachmentGUID", asi.FileGuid)
+                                        )
                                         .FirstOrDefault();
                                     if (attachment != null)
                                     {
