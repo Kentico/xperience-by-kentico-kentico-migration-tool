@@ -1,3 +1,4 @@
+// ReSharper disable InconsistentNaming
 namespace Migration.Toolkit.Common.Services.Ipc;
 
 public class SourceInstanceDiscoveredInfo
@@ -5,8 +6,21 @@ public class SourceInstanceDiscoveredInfo
     public Dictionary<string, List<EditingFormControlModel>>? WidgetProperties { get; set; }
     public Dictionary<string, List<EditingFormControlModel>>? PageTemplateProperties { get; set; }
     public Dictionary<string, List<EditingFormControlModel>>? SectionProperties { get; set; }
+    public List<PageModel> PageModels { get; set; } = new();
     public string SiteName { get; set; }
 }
+
+public record PageModel(
+    int? NodeId,
+    string NodeSiteName,
+    int DocumentID,
+    string DocumentCulture,
+    Guid DocumentGUID,
+    Guid NodeGUID,
+    string CultureUrl,
+    string Url
+);
+
 
 public class EditingFormControlModel
 {

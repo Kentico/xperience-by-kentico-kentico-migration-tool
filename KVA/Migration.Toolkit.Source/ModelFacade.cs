@@ -153,6 +153,11 @@ public class ModelFacade(ToolkitConfiguration configuration)
 
     public SemanticVersion SelectVersion()
     {
+        if (semanticVersion != null)
+        {
+            return semanticVersion;
+        }
+        
         using var conn = GetConnection();
         conn.Open();
 

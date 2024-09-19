@@ -2,7 +2,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Web.Mvc;
+using CMS.Core;
+using CMS.DocumentEngine;
 using CMS.SiteProvider;
+using Kentico.Content.Web.Mvc;
 using Kentico.Forms.Web.Mvc;
 using Kentico.PageBuilder.Web.Mvc;
 using Kentico.PageBuilder.Web.Mvc.PageTemplates;
@@ -20,7 +23,7 @@ public class ToolkitApiController : Controller
         public Dictionary<string, List<EditingFormControlModel>> WidgetProperties { get; set; }
         public Dictionary<string, List<EditingFormControlModel>> PageTemplateProperties { get; set; }
         public Dictionary<string, List<EditingFormControlModel>> SectionProperties { get; set; }
-
+        public List<object> PageModels { get; set; }
         public string SiteName { get; set; }
     }
 
@@ -150,6 +153,18 @@ public class ToolkitApiController : Controller
                 }
             }
         }
+
+        result.PageModels = Service.Resolve<IPageRetriever>().RetrieveMultiple(q => q.AllCultures()).Select(x => (object)new
+        {
+            x.NodeSiteName,
+            x.DocumentID,
+            x.DocumentCulture,
+            x.DocumentGUID,
+            x.NodeGUID,
+            x.NodeID,
+            CultureUrl = DocumentURLProvider.GetUrlForCulture(x, x.DocumentCulture),
+            Url = DocumentURLProvider.GetUrl(x),
+        }).ToList();
 
         return ToJsonResult(result);
     }
