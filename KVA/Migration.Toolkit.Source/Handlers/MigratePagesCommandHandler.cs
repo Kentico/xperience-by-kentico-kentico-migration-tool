@@ -4,6 +4,7 @@ using System.Diagnostics;
 using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
 using CMS.Core;
+using CMS.Core.Internal;
 using CMS.DataEngine;
 using CMS.DataEngine.Query;
 using CMS.Websites;
@@ -366,7 +367,7 @@ public class MigratePagesCommandHandler(
             }
             else if (GetCmsClass(ksTree.NodeClassID) is { } cmsClass && string.IsNullOrWhiteSpace(cmsClass.ClassURLPattern))
             {
-                logger.LogError("Cannot migrate url for document '{DocumentID}' / node '{NodeID}', class {ClassName} has no url pattern set - default fallback will be used.", ksDocument?.DocumentID, ksTree.NodeID, cmsClass.ClassName);
+                logger.LogWarning("Cannot migrate url for document '{DocumentID}' / node '{NodeID}', class {ClassName} has no url pattern set - cannot migrate to former url.", ksDocument?.DocumentID, ksTree.NodeID, cmsClass.ClassName);
             }
             else if (sourceInstanceContext.GetNodeUrls(ksTree.NodeID, site.SiteName) is not { Count: > 0 } pageModels)
             {
@@ -383,44 +384,18 @@ public class MigratePagesCommandHandler(
             else
             {
                 string patchedUrl = pageModel.CultureUrl.TrimStart(['~']).TrimStart(['/']);
-
-                foreach (var contentItemCommonDataInfo in contentItemCommonDataInfos.Where(x => x.ContentItemCommonDataContentLanguageID == languageInfo.ContentLanguageID))
+                string urlHash = modelFacade.HashPath(patchedUrl);
+                var webPageFormerUrlPathInfo = new WebPageFormerUrlPathInfo
                 {
-                    logger.LogTrace("Page url path common data info: CIID={ContentItemId} CLID={Language} ID={Id} IPC", contentItemCommonDataInfo.ContentItemCommonDataContentItemID, contentItemCommonDataInfo.ContentItemCommonDataContentLanguageID, contentItemCommonDataInfo.ContentItemCommonDataID);
-
-                    // decision - if change in url occurs in source instance, it is desirable to overwrite migrated one.
-                    var webPageUrlPathGuid = contentItemCommonDataInfo.ContentItemCommonDataVersionStatus == VersionStatus.Draft
-                        ? GuidHelper.CreateWebPageUrlPathGuid($"{ksDocument!.DocumentGUID}|{documentCulture}|{ksTree.NodeAliasPath}|DRAFT|{ksTree.NodeID}")
-                        : GuidHelper.CreateWebPageUrlPathGuid($"{ksDocument!.DocumentGUID}|{documentCulture}|{ksTree.NodeAliasPath}|{ksTree.NodeID}");
-
-                    string urlHash = modelFacade.HashPath(patchedUrl);
-
-                    var webPageUrlPath = new WebPageUrlPathModel
-                    {
-                        WebPageUrlPathGUID = webPageUrlPathGuid,
-                        WebPageUrlPath = patchedUrl,
-                        WebPageUrlPathHash = urlHash,
-                        WebPageUrlPathWebPageItemGuid = webPageItemInfo.WebPageItemGUID,
-                        WebPageUrlPathWebsiteChannelGuid = webSiteChannelGuid,
-                        WebPageUrlPathContentLanguageGuid = languageGuid,
-                        WebPageUrlPathIsLatest = contentItemCommonDataInfo.ContentItemCommonDataIsLatest,
-                        WebPageUrlPathIsDraft = contentItemCommonDataInfo.ContentItemCommonDataVersionStatus switch
-                        {
-                            VersionStatus.InitialDraft => false,
-                            VersionStatus.Draft => true,
-                            VersionStatus.Published => false,
-                            VersionStatus.Unpublished => false,
-                            _ => throw new ArgumentOutOfRangeException()
-                        }
-                    };
-
-                    CheckPathAlreadyExists(webPageUrlPath, languageInfo, webSiteChannel, webPageItemInfo.WebPageItemID);
-
-                    var importResult = await importer.ImportAsync(webPageUrlPath);
-
-                    LogImportResult(importResult);
-                }
-
+                    WebPageFormerUrlPath = patchedUrl,
+                    WebPageFormerUrlPathHash = urlHash,
+                    WebPageFormerUrlPathWebPageItemID = webPageItemInfo.WebPageItemID,
+                    WebPageFormerUrlPathWebsiteChannelID = webSiteChannel.WebsiteChannelID,
+                    WebPageFormerUrlPathContentLanguageID = languageInfo.ContentLanguageID,
+                    WebPageFormerUrlPathLastModified = Service.Resolve<IDateTimeNowService>().GetDateTimeNow()
+                };
+                WebPageFormerUrlPathInfo.Provider.Set(webPageFormerUrlPathInfo);
+                logger.LogEntitySetAction(true, webPageItemInfo);
                 return;
             }
         }
