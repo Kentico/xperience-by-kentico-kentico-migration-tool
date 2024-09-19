@@ -247,7 +247,7 @@ public class MigratePagesCommandHandler(
                     if (webPageItemInfo != null && targetClass is { ClassWebPageHasUrl: true })
                     {
                         await GenerateDefaultPageUrlPath(ksNode, webPageItemInfo, wasLinkedNode);
-                        
+
                         foreach (var migratedDocument in migratedDocuments)
                         {
                             var languageGuid = cultureCodeToLanguageGuid[migratedDocument.DocumentCulture];
@@ -289,7 +289,7 @@ public class MigratePagesCommandHandler(
             }
         }
 
-        await ExecDeferredPageBuilderPatch(); 
+        await ExecDeferredPageBuilderPatch();
 
         return new GenericCommandResult();
     }
@@ -394,7 +394,7 @@ public class MigratePagesCommandHandler(
                         : GuidHelper.CreateWebPageUrlPathGuid($"{ksDocument!.DocumentGUID}|{documentCulture}|{ksTree.NodeAliasPath}|{ksTree.NodeID}");
 
                     string urlHash = modelFacade.HashPath(patchedUrl);
-                    
+
                     var webPageUrlPath = new WebPageUrlPathModel
                     {
                         WebPageUrlPathGUID = webPageUrlPathGuid,
@@ -536,8 +536,8 @@ public class MigratePagesCommandHandler(
         ContentLanguageInfo languageInfo,
         WebsiteChannelInfo webSiteChannel, int webPageItemId)
     {
-        Debug.Assert(webPageUrlPath is not { WebPageUrlPathIsLatest: false, WebPageUrlPathIsDraft: true },"webPageUrlPath is not { WebPageUrlPathIsLatest: false, WebPageUrlPathIsDraft: true }");
-        
+        Debug.Assert(webPageUrlPath is not { WebPageUrlPathIsLatest: false, WebPageUrlPathIsDraft: true }, "webPageUrlPath is not { WebPageUrlPathIsLatest: false, WebPageUrlPathIsDraft: true }");
+
         var existingPaths = WebPageUrlPathInfo.Provider.Get()
             .WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID), webPageItemId)
             .ToList();
