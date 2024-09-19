@@ -6,7 +6,7 @@ public class SourceInstanceDiscoveredInfo
     public Dictionary<string, List<EditingFormControlModel>>? WidgetProperties { get; set; }
     public Dictionary<string, List<EditingFormControlModel>>? PageTemplateProperties { get; set; }
     public Dictionary<string, List<EditingFormControlModel>>? SectionProperties { get; set; }
-    public List<PageModel> PageModels { get; set; } = new();
+    public List<PageModel> PageModels { get; set; } = [];
     public string SiteName { get; set; }
 }
 

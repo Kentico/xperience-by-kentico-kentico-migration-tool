@@ -157,7 +157,7 @@ public class ModelFacade(ToolkitConfiguration configuration)
         {
             return semanticVersion;
         }
-        
+
         using var conn = GetConnection();
         conn.Open();
 
