@@ -202,7 +202,7 @@ public class MigratePagesCommandHandler(
                     ksSite.SiteGUID,
                     nodeParentGuid,
                     cultureCodeToLanguageGuid,
-                    targetClass.ClassFormDefinition,
+                    targetClass?.ClassFormDefinition,
                     ksNodeClass.ClassFormDefinition,
                     migratedDocuments,
                     ksSite
