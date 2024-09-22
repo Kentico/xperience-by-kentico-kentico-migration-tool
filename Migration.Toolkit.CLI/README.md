@@ -5,6 +5,10 @@ The [Xperience by Kentico: Kentico Migration Tool](/README.md) transfers content
 
 The migration is performed by running a command for the .NET CLI.
 
+## Set up the source instance
+
+The source instance of Kentico must **not** use a [separated contact management database](https://docs.kentico.com/x/4giRBg), it is recommended that you [rejoin the contact management database](https://docs.kentico.com/x/5giRBg) before proceeding with the migration.
+
 ## Set up the target instance
 
 The target of the migration must be an Xperience by Kentico instance that fulfills the following requirements:
