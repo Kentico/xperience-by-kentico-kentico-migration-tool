@@ -71,7 +71,7 @@ public class MigratePageTypesCommandHandler(
             if (entityConfiguration.ExcludeCodeNames.Contains(ksClass.ClassName, StringComparer.InvariantCultureIgnoreCase))
             {
                 protocol.Warning(HandbookReferences.EntityExplicitlyExcludedByCodeName(ksClass.ClassName, "PageType"), ksClass);
-                logger.LogWarning("CmsClass: {ClassName} was skipped => it is explicitly excluded in configuration", ksClass.ClassName);
+                logger.LogInformation("CmsClass: {ClassName} was skipped => it is explicitly excluded in configuration", ksClass.ClassName);
                 continue;
             }
 
@@ -85,6 +85,17 @@ public class MigratePageTypesCommandHandler(
             if (string.Equals(ksClass.ClassName, "cms.site", StringComparison.InvariantCultureIgnoreCase))
             {
                 continue;
+            }
+
+            if (ksClass.ClassName.Equals("cms.folder", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (!toolkitConfiguration.UseDeprecatedFolderPageType.GetValueOrDefault(false))
+                {
+                    logger.LogInformation("Class {Class} is deprecated, skipping", Printer.GetEntityIdentityPrint(ksClass));
+                    continue;
+                }
+
+                logger.LogWarning("Class {Class} is deprecated, but migration is enabled with configuration flag 'UseDeprecatedFolderPageType'", Printer.GetEntityIdentityPrint(ksClass));
             }
 
             var kxoDataClass = kxpClassFacade.GetClass(ksClass.ClassGUID);

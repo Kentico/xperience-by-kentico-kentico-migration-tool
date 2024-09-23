@@ -19,6 +19,7 @@ public class ConfigurationNames
 
     public const string MemberIncludeUserSystemFields = "MemberIncludeUserSystemFields";
     public const string MigrateMediaToMediaLibrary = "MigrateMediaToMediaLibrary";
+    public const string UseDeprecatedFolderPageType = "UseDeprecatedFolderPageType";
 
     public const string ExcludeCodeNames = "ExcludeCodeNames";
     public const string ExplicitPrimaryKeyMapping = "ExplicitPrimaryKeyMapping";

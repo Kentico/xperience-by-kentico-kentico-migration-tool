@@ -35,7 +35,7 @@ public record CmsTreeMapperSource(
     Guid SiteGuid,
     Guid? NodeParentGuid,
     Dictionary<string, Guid> CultureToLanguageGuid,
-    string TargetFormDefinition,
+    string? TargetFormDefinition,
     string SourceFormDefinition,
     List<ICmsDocument> MigratedDocuments,
     ICmsSite SourceSite
@@ -69,6 +69,8 @@ public class ContentItemMapper(
 
         var nodeClass = modelFacade.SelectById<ICmsClass>(cmsTree.NodeClassID) ?? throw new InvalidOperationException($"Fatal: node class is missing, class id '{cmsTree.NodeClassID}'");
 
+        bool migratedAsContentFolder = nodeClass.ClassName.Equals("cms.folder", StringComparison.InvariantCultureIgnoreCase) && !configuration.UseDeprecatedFolderPageType.GetValueOrDefault(false);
+
         var contentItemGuid = spoiledGuidContext.EnsureNodeGuid(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsTree.NodeID);
         yield return new ContentItemModel
         {
@@ -76,7 +78,7 @@ public class ContentItemMapper(
             ContentItemName = safeNodeName,
             ContentItemIsReusable = false, // page is not reusable
             ContentItemIsSecured = cmsTree.IsSecuredNode ?? false,
-            ContentItemDataClassGuid = nodeClass.ClassGUID,
+            ContentItemDataClassGuid = migratedAsContentFolder ? null : nodeClass.ClassGUID,
             ContentItemChannelGuid = siteGuid
         };
 
@@ -112,7 +114,7 @@ public class ContentItemMapper(
                 : null;
 
             bool draftMigrated = false;
-            if (checkoutVersion is { PublishFrom: null } draftVersion)
+            if (checkoutVersion is { PublishFrom: null } draftVersion && !migratedAsContentFolder)
             {
                 List<IUmtModel>? migratedDraft = null;
                 try
@@ -144,62 +146,70 @@ public class ContentItemMapper(
                 { DocumentPublishedVersionHistoryID: null, DocumentCheckedOutVersionHistoryID: not null } => VersionStatus.InitialDraft,
                 _ => draftMigrated ? VersionStatus.Published : VersionStatus.InitialDraft
             };
+            if (migratedAsContentFolder)
+            {
+                versionStatus = VersionStatus.Published; // folder is automatically published
+            }
 
             DateTime? scheduledPublishWhen = null;
             DateTime? scheduleUnpublishWhen = null;
-
-            if (cmsDocument.DocumentPublishFrom is { } publishFrom)
-            {
-                var now = Service.Resolve<IDateTimeNowService>().GetDateTimeNow();
-                if (publishFrom > now)
-                {
-                    versionStatus = VersionStatus.Unpublished;
-                }
-                else
-                {
-                    scheduledPublishWhen = publishFrom;
-                }
-            }
-
-            if (cmsDocument.DocumentPublishTo is { } publishTo)
-            {
-                var now = Service.Resolve<IDateTimeNowService>().GetDateTimeNow();
-                if (publishTo < now)
-                {
-                    versionStatus = VersionStatus.Unpublished;
-                }
-                else
-                {
-                    scheduleUnpublishWhen = publishTo;
-                }
-            }
-
             string? contentItemCommonDataPageBuilderWidgets = null;
             string? contentItemCommonDataPageTemplateConfiguration = null;
-            switch (cmsDocument)
+
+            bool ndp = false;
+            if (!migratedAsContentFolder)
             {
-                case CmsDocumentK11:
+                if (cmsDocument.DocumentPublishFrom is { } publishFrom)
                 {
-                    break;
-                }
-                case CmsDocumentK12 doc:
-                {
-                    contentItemCommonDataPageBuilderWidgets = doc.DocumentPageBuilderWidgets;
-                    contentItemCommonDataPageTemplateConfiguration = doc.DocumentPageTemplateConfiguration;
-                    break;
-                }
-                case CmsDocumentK13 doc:
-                {
-                    contentItemCommonDataPageBuilderWidgets = doc.DocumentPageBuilderWidgets;
-                    contentItemCommonDataPageTemplateConfiguration = doc.DocumentPageTemplateConfiguration;
-                    break;
+                    var now = Service.Resolve<IDateTimeNowService>().GetDateTimeNow();
+                    if (publishFrom > now)
+                    {
+                        versionStatus = VersionStatus.Unpublished;
+                    }
+                    else
+                    {
+                        scheduledPublishWhen = publishFrom;
+                    }
                 }
 
-                default:
-                    break;
+                if (cmsDocument.DocumentPublishTo is { } publishTo)
+                {
+                    var now = Service.Resolve<IDateTimeNowService>().GetDateTimeNow();
+                    if (publishTo < now)
+                    {
+                        versionStatus = VersionStatus.Unpublished;
+                    }
+                    else
+                    {
+                        scheduleUnpublishWhen = publishTo;
+                    }
+                }
+
+                switch (cmsDocument)
+                {
+                    case CmsDocumentK11:
+                    {
+                        break;
+                    }
+                    case CmsDocumentK12 doc:
+                    {
+                        contentItemCommonDataPageBuilderWidgets = doc.DocumentPageBuilderWidgets;
+                        contentItemCommonDataPageTemplateConfiguration = doc.DocumentPageTemplateConfiguration;
+                        break;
+                    }
+                    case CmsDocumentK13 doc:
+                    {
+                        contentItemCommonDataPageBuilderWidgets = doc.DocumentPageBuilderWidgets;
+                        contentItemCommonDataPageTemplateConfiguration = doc.DocumentPageTemplateConfiguration;
+                        break;
+                    }
+
+                    default:
+                        break;
+                }
+
+                PatchJsonDefinitions(source.CmsTree.NodeSiteID, ref contentItemCommonDataPageTemplateConfiguration, ref contentItemCommonDataPageBuilderWidgets, out ndp);
             }
-
-            PatchJsonDefinitions(source.CmsTree.NodeSiteID, ref contentItemCommonDataPageTemplateConfiguration, ref contentItemCommonDataPageBuilderWidgets, out bool ndp);
 
             var documentGuid = spoiledGuidContext.EnsureDocumentGuid(
                 cmsDocument.DocumentGUID ?? throw new InvalidOperationException("DocumentGUID is null"),
@@ -228,73 +238,76 @@ public class ContentItemMapper(
                 );
             }
 
-            var dataModel = new ContentItemDataModel { ContentItemDataGUID = commonDataModel.ContentItemCommonDataGUID, ContentItemDataCommonDataGuid = commonDataModel.ContentItemCommonDataGUID, ContentItemContentTypeName = nodeClass.ClassName };
-
-            var fi = new FormInfo(targetFormDefinition);
-            if (nodeClass.ClassIsCoupledClass)
+            if (!migratedAsContentFolder)
             {
-                var sfi = new FormInfo(sourceFormDefinition);
-                string primaryKeyName = "";
-                foreach (var sourceFieldInfo in sfi.GetFields(true, true))
+                var dataModel = new ContentItemDataModel { ContentItemDataGUID = commonDataModel.ContentItemCommonDataGUID, ContentItemDataCommonDataGuid = commonDataModel.ContentItemCommonDataGUID, ContentItemContentTypeName = nodeClass.ClassName };
+
+                var fi = new FormInfo(targetFormDefinition);
+                if (nodeClass.ClassIsCoupledClass)
                 {
-                    if (sourceFieldInfo.PrimaryKey)
+                    var sfi = new FormInfo(sourceFormDefinition);
+                    string primaryKeyName = "";
+                    foreach (var sourceFieldInfo in sfi.GetFields(true, true))
                     {
-                        primaryKeyName = sourceFieldInfo.Name;
+                        if (sourceFieldInfo.PrimaryKey)
+                        {
+                            primaryKeyName = sourceFieldInfo.Name;
+                        }
+                    }
+
+                    if (string.IsNullOrWhiteSpace(primaryKeyName))
+                    {
+                        throw new Exception("Error, unable to find coupled data primary key");
+                    }
+
+                    var commonFields = UnpackReusableFieldSchemas(fi.GetFields<FormSchemaInfo>()).ToArray();
+                    var sourceColumns = commonFields
+                        .Select(cf => ReusableSchemaService.RemoveClassPrefix(nodeClass.ClassName, cf.Name))
+                        .Union(fi.GetColumnNames(false))
+                        .Except([CmsClassMapper.GetLegacyDocumentName(fi, nodeClass.ClassName)])
+                        .ToList();
+
+                    var coupledDataRow = coupledDataService.GetSourceCoupledDataRow(nodeClass.ClassTableName, primaryKeyName, cmsDocument.DocumentForeignKeyValue);
+                    // TODO tomas.krch: 2024-09-05 propagate async to root
+                    MapCoupledDataFieldValues(dataModel.CustomProperties,
+                        columnName => coupledDataRow?[columnName],
+                        columnName => coupledDataRow?.ContainsKey(columnName) ?? false,
+                        cmsTree, cmsDocument.DocumentID, sourceColumns, sfi, fi, false, nodeClass, sourceSite
+                    ).GetAwaiter().GetResult();
+
+                    foreach (var formFieldInfo in commonFields)
+                    {
+                        string originalFieldName = ReusableSchemaService.RemoveClassPrefix(nodeClass.ClassName, formFieldInfo.Name);
+                        if (dataModel.CustomProperties.TryGetValue(originalFieldName, out object? value))
+                        {
+                            commonDataModel.CustomProperties ??= [];
+                            logger.LogTrace("Reusable schema field '{FieldName}' from schema '{SchemaGuid}' populated", formFieldInfo.Name, formFieldInfo.Properties[ReusableFieldSchemaConstants.SCHEMA_IDENTIFIER_KEY]);
+                            commonDataModel.CustomProperties[formFieldInfo.Name] = value;
+                            dataModel.CustomProperties.Remove(originalFieldName);
+                        }
+                        else
+                        {
+                            logger.LogTrace("Reusable schema field '{FieldName}' from schema '{SchemaGuid}' missing", formFieldInfo.Name, formFieldInfo.Properties[ReusableFieldSchemaConstants.SCHEMA_IDENTIFIER_KEY]);
+                        }
                     }
                 }
 
-                if (string.IsNullOrWhiteSpace(primaryKeyName))
+                if (CmsClassMapper.GetLegacyDocumentName(fi, nodeClass.ClassName) is { } legacyDocumentNameFieldName)
                 {
-                    throw new Exception("Error, unable to find coupled data primary key");
-                }
-
-                var commonFields = UnpackReusableFieldSchemas(fi.GetFields<FormSchemaInfo>()).ToArray();
-                var sourceColumns = commonFields
-                    .Select(cf => ReusableSchemaService.RemoveClassPrefix(nodeClass.ClassName, cf.Name))
-                    .Union(fi.GetColumnNames(false))
-                    .Except([CmsClassMapper.GetLegacyDocumentName(fi, nodeClass.ClassName)])
-                    .ToList();
-
-                var coupledDataRow = coupledDataService.GetSourceCoupledDataRow(nodeClass.ClassTableName, primaryKeyName, cmsDocument.DocumentForeignKeyValue);
-                // TODO tomas.krch: 2024-09-05 propagate async to root
-                MapCoupledDataFieldValues(dataModel.CustomProperties,
-                    columnName => coupledDataRow?[columnName],
-                    columnName => coupledDataRow?.ContainsKey(columnName) ?? false,
-                    cmsTree, cmsDocument.DocumentID, sourceColumns, sfi, fi, false, nodeClass, sourceSite
-                ).GetAwaiter().GetResult();
-
-                foreach (var formFieldInfo in commonFields)
-                {
-                    string originalFieldName = ReusableSchemaService.RemoveClassPrefix(nodeClass.ClassName, formFieldInfo.Name);
-                    if (dataModel.CustomProperties.TryGetValue(originalFieldName, out object? value))
+                    if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(nodeClass.ClassName))
                     {
-                        commonDataModel.CustomProperties ??= [];
-                        logger.LogTrace("Reusable schema field '{FieldName}' from schema '{SchemaGuid}' populated", formFieldInfo.Name, formFieldInfo.Properties[ReusableFieldSchemaConstants.SCHEMA_IDENTIFIER_KEY]);
-                        commonDataModel.CustomProperties[formFieldInfo.Name] = value;
-                        dataModel.CustomProperties.Remove(originalFieldName);
+                        string fieldName = ReusableSchemaService.GetUniqueFieldName(nodeClass.ClassName, legacyDocumentNameFieldName);
+                        commonDataModel.CustomProperties.Add(fieldName, cmsDocument.DocumentName);
                     }
                     else
                     {
-                        logger.LogTrace("Reusable schema field '{FieldName}' from schema '{SchemaGuid}' missing", formFieldInfo.Name, formFieldInfo.Properties[ReusableFieldSchemaConstants.SCHEMA_IDENTIFIER_KEY]);
+                        dataModel.CustomProperties.Add(legacyDocumentNameFieldName, cmsDocument.DocumentName);
                     }
                 }
-            }
 
-            if (CmsClassMapper.GetLegacyDocumentName(fi, nodeClass.ClassName) is { } legacyDocumentNameFieldName)
-            {
-                if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(nodeClass.ClassName))
-                {
-                    string fieldName = ReusableSchemaService.GetUniqueFieldName(nodeClass.ClassName, legacyDocumentNameFieldName);
-                    commonDataModel.CustomProperties.Add(fieldName, cmsDocument.DocumentName);
-                }
-                else
-                {
-                    dataModel.CustomProperties.Add(legacyDocumentNameFieldName, cmsDocument.DocumentName);
-                }
+                yield return commonDataModel;
+                yield return dataModel;
             }
-
-            yield return commonDataModel;
-            yield return dataModel;
 
             Guid? documentCreatedByUserGuid = null;
             if (modelFacade.TrySelectGuid<ICmsUser>(cmsDocument.DocumentCreatedByUserID, out var createdByUserGuid))

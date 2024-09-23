@@ -43,6 +43,9 @@ public class ToolkitConfiguration
     [ConfigurationKeyName(ConfigurationNames.MigrateMediaToMediaLibrary)]
     public bool MigrateMediaToMediaLibrary { get; set; }
 
+    [ConfigurationKeyName(ConfigurationNames.UseDeprecatedFolderPageType)]
+    public bool? UseDeprecatedFolderPageType { get; set; }
+
     [ConfigurationKeyName(ConfigurationNames.CreateReusableFieldSchemaForClasses)]
     public string? CreateReusableFieldSchemaForClasses { get; set; }
 
