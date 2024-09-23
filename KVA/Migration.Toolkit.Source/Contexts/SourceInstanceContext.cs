@@ -97,4 +97,16 @@ public class SourceInstanceContext(
 
         throw new InvalidOperationException($"No info was loaded for site '{siteName}'");
     }
+
+    public IList<PageModel> GetNodeUrls(int nodeId, string siteName)
+    {
+        if (cachedInfos.TryGetValue(siteName, out var info) && info?.PageModels is { Count: > 0 } pageModels)
+        {
+            return pageModels.Where(pm => pm.NodeId == nodeId).ToList();
+        }
+        else
+        {
+            return [];
+        }
+    }
 }

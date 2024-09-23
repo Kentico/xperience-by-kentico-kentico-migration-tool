@@ -4,7 +4,7 @@ using CMS.Globalization;
 using CMS.MediaLibrary;
 using CMS.Membership;
 using CMS.Modules;
-
+using CMS.Websites;
 using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.KXP.Models;
@@ -61,6 +61,7 @@ public class Printer
             UserInfo item => FormatModel($"ID={item.UserID}, Guid={item.UserGUID} Name={item.UserName}"),
             RoleInfo item => FormatModel($"ID={item.RoleID}, Guid={item.RoleGUID} Name={item.RoleName}"),
             MemberInfo item => FormatModel($"ID={item.MemberID}, Guid={item.MemberGuid} Name={item.MemberName}"),
+            WebPageFormerUrlPathInfo item => FormatModel($"ID={item.WebPageFormerUrlPathID}, Guid=N/A Name={item.WebPageFormerUrlPath}"),
 
             CmsForm item => FormatModel($"ID={item.FormId}, GUID={item.FormGuid}, Name={item.FormName}"),
             CmsUser item => FormatModel($"ID={item.UserId}, GUID={item.UserGuid}, Name={item.UserName}"),
