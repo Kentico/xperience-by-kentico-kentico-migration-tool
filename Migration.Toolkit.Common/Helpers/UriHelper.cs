@@ -2,7 +2,7 @@ using System.Text;
 
 namespace Migration.Toolkit.Common.Helpers;
 
-public static class UriHelperXbyk
+public static class UriHelper
 {
     public static string BuildXbyKDomainString(Uri uri, int expectedSize)
     {

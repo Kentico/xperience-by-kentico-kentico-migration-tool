@@ -15,17 +15,23 @@ public enum MediaLinkKind
     Guid
 }
 
+public record MediaHelperContext(string[] SiteNames, string[] MediaDirectoryNames)
+{
+    public HashSet<string> SiteNamesSet { get; init; } = new(SiteNames, StringComparer.InvariantCultureIgnoreCase);
+    public HashSet<string> MediaDirectoryNamesSet { get; init; } = new(MediaDirectoryNames, StringComparer.InvariantCultureIgnoreCase);
+};
+
+[Obsolete("replaced with MediaLinkService")]
 public class MediaHelper
 {
-    public static MatchMediaLinkResult MatchMediaLink(string? linkStr)
+    public static MatchMediaLinkResult MatchMediaLink(string? linkStr, MediaHelperContext? context = null)
     {
-        if (linkStr == null)
+        if (string.IsNullOrEmpty(linkStr))
         {
             return MatchMediaLinkResult.None;
         }
-
+        
         string link = linkStr.TrimStart(new[] { '~' });
-
 
         Guid? mediaId = null;
         var mediaLinkKind = MediaLinkKind.None;

@@ -56,7 +56,8 @@ public class ContentItemMapper(
     SpoiledGuidContext spoiledGuidContext,
     EntityIdentityFacade entityIdentityFacade,
     IAssetFacade assetFacade,
-    ToolkitConfiguration configuration
+    ToolkitConfiguration configuration,
+    MediaLinkServiceFactory mediaLinkServiceFactory
 ) : UmtMapperBase<CmsTreeMapperSource>
 {
     private const string CLASS_FIELD_CONTROL_NAME = "controlname";
@@ -626,6 +627,64 @@ public class ContentItemMapper(
             else
             {
                 target[columnName] = value;
+            }
+
+
+            var newField = newFormInfo.GetFormField(columnName);
+            if (newField == null)
+            {
+                var commonFields = UnpackReusableFieldSchemas(newFormInfo.GetFields<FormSchemaInfo>()).ToArray();
+                newField = commonFields
+                    .FirstOrDefault(cf => ReusableSchemaService.RemoveClassPrefix(nodeClass.ClassName, cf.Name).Equals(columnName, StringComparison.InvariantCultureIgnoreCase));
+            }
+            string? newControlName = newField?.Settings[CLASS_FIELD_CONTROL_NAME]?.ToString()?.ToLowerInvariant();
+            if (newControlName?.Equals(FormComponents.AdminRichTextEditorComponent, StringComparison.InvariantCultureIgnoreCase) == true && target[columnName] is string { } html && !string.IsNullOrWhiteSpace(html) &&
+                !configuration.MigrateMediaToMediaLibrary)
+            {
+                var mediaLinkService = mediaLinkServiceFactory.Create();
+                var htmlProcessor = new HtmlProcessor(html, mediaLinkService);
+
+                target[columnName] = htmlProcessor.ProcessHtml(site.SiteID, (result, original) =>
+                {
+                    switch (result)
+                    {
+                        case { LinkKind: MediaLinkKind.DirectMediaPath }:
+                        {
+                            return original;
+                        }
+                        case { LinkKind: MediaLinkKind.Guid, MediaKind: MediaKind.MediaFile, MediaGuid: { } mediaGuid, LinkSiteId: var linkSiteId }:
+                        {
+                            var mediaFile = modelFacade.SelectWhere<IMediaFile>("FileGUID = @mediaFileGuid AND FileSiteID = @fileSiteID",
+                                    new SqlParameter("mediaFileGuid", mediaGuid),
+                                    new SqlParameter("fileSiteID", linkSiteId)
+                                )
+                                .FirstOrDefault();
+                            if (mediaFile is null)
+                            {
+                                return original;
+                            }
+
+                            return assetFacade.GetAssetUri(mediaFile);
+                        }
+                        case { LinkKind: MediaLinkKind.Guid, MediaKind: MediaKind.Attachment, MediaGuid: { } mediaGuid, LinkSiteId: var linkSiteId }:
+                        {
+                            var attachment = modelFacade.SelectWhere<ICmsAttachment>("AttachmentSiteID = @attachmentSiteID AND AttachmentGUID = @attachmentGUID",
+                                    new SqlParameter("attachmentSiteID", linkSiteId),
+                                    new SqlParameter("attachmentGUID", mediaGuid)
+                                )
+                                .FirstOrDefault();
+
+                            if (attachment is null)
+                            {
+                                return original;
+                            }
+
+                            return assetFacade.GetAssetUri(attachment);
+                        }
+                    }
+
+                    return original;
+                });
             }
         }
     }

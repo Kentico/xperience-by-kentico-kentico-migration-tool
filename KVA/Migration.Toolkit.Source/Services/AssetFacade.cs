@@ -50,6 +50,9 @@ public interface IAssetFacade
     (Guid ownerContentItemGuid, Guid assetGuid) GetRef(ICmsAttachment attachment, string? contentLanguageName = null);
 
     Task PreparePrerequisites();
+
+    string GetAssetUri(IMediaFile mediaFile, string? contentLanguageName = null);
+    string GetAssetUri(ICmsAttachment attachment, string? contentLanguageName = null);
 }
 
 public class AssetFacade(
@@ -310,6 +313,20 @@ public class AssetFacade(
         }
     }
 
+    public string GetAssetUri(IMediaFile mediaFile, string? contentLanguageName = null)
+    {
+        string contentLanguageSafe = contentLanguageName ?? DefaultContentLanguage;
+        var (ownerContentItemGuid, _) = GetRef(mediaFile, contentLanguageName);
+        return $"/getContentAsset/{ownerContentItemGuid}/{LegacyMediaFileAssetField.Guid}/{mediaFile.FileName}?language={contentLanguageSafe}";
+    }
+
+    public string GetAssetUri(ICmsAttachment attachment, string? contentLanguageName = null)
+    {
+        string contentLanguageSafe = contentLanguageName ?? DefaultContentLanguage;
+        var (ownerContentItemGuid, _) = GetRef(attachment, contentLanguageName);
+        return $"/getContentAsset/{ownerContentItemGuid}/{LegacyAttachmentAssetField.Guid}/{attachment.AttachmentName}?language={contentLanguageSafe}";
+    }
+
     private void AssertSuccess(IImportResult importResult, IUmtModel model)
     {
         switch (importResult)
@@ -339,6 +356,17 @@ public class AssetFacade(
         }
     }
 
+    internal static readonly FormField LegacyMediaFileAssetField = new()
+    {
+        Column = "Asset",
+        ColumnType = "contentitemasset",
+        AllowEmpty = true,
+        Visible = true,
+        Enabled = true,
+        Guid = new Guid("DFC3D011-8F63-43F6-9ED8-4B444333A1D0"),
+        Properties = new FormFieldProperties { FieldCaption = "Asset", },
+        Settings = new FormFieldSettings { CustomProperties = new Dictionary<string, object?> { { "AllowedExtensions", "_INHERITED_" } }, ControlName = "Kentico.Administration.ContentItemAssetUploader" }
+    };
     internal static readonly DataClassModel LegacyMediaFileContentType = new()
     {
         ClassName = "Legacy.MediaFile",
@@ -352,20 +380,21 @@ public class AssetFacade(
         ClassWebPageHasUrl = false,
         Fields =
         [
-            new()
-            {
-                Column = "Asset",
-                ColumnType = "contentitemasset",
-                AllowEmpty = true,
-                Visible = true,
-                Enabled = true,
-                Guid = new Guid("DFC3D011-8F63-43F6-9ED8-4B444333A1D0"),
-                Properties = new FormFieldProperties { FieldCaption = "Asset", },
-                Settings = new FormFieldSettings { CustomProperties = new Dictionary<string, object?> { { "AllowedExtensions", "_INHERITED_" } }, ControlName = "Kentico.Administration.ContentItemAssetUploader" }
-            }
+            LegacyMediaFileAssetField
         ]
     };
 
+    internal static readonly FormField LegacyAttachmentAssetField = new()
+    {
+        Column = "Asset",
+        ColumnType = "contentitemasset",
+        AllowEmpty = true,
+        Visible = true,
+        Enabled = true,
+        Guid = new Guid("50C2BC4C-A8FF-46BA-95C2-0E74752D147F"),
+        Properties = new FormFieldProperties { FieldCaption = "Asset", },
+        Settings = new FormFieldSettings { CustomProperties = new Dictionary<string, object?> { { "AllowedExtensions", "_INHERITED_" } }, ControlName = "Kentico.Administration.ContentItemAssetUploader" }
+    };
     internal static readonly DataClassModel LegacyAttachmentContentType = new()
     {
         ClassName = "Legacy.Attachment",
@@ -379,17 +408,7 @@ public class AssetFacade(
         ClassWebPageHasUrl = false,
         Fields =
         [
-            new()
-            {
-                Column = "Asset",
-                ColumnType = "contentitemasset",
-                AllowEmpty = true,
-                Visible = true,
-                Enabled = true,
-                Guid = new Guid("50C2BC4C-A8FF-46BA-95C2-0E74752D147F"),
-                Properties = new FormFieldProperties { FieldCaption = "Asset", },
-                Settings = new FormFieldSettings { CustomProperties = new Dictionary<string, object?> { { "AllowedExtensions", "_INHERITED_" } }, ControlName = "Kentico.Administration.ContentItemAssetUploader" }
-            }
+            LegacyAttachmentAssetField
         ]
     };
 

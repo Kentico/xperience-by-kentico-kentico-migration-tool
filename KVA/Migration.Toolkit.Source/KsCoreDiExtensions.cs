@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.Common.Services;
 using Migration.Toolkit.Common.Services.BulkCopy;
@@ -51,6 +52,7 @@ public static class KsCoreDiExtensions
         services.AddSingleton<EntityIdentityFacade>();
         services.AddSingleton<IdentityLocator>();
         services.AddSingleton<IAssetFacade, AssetFacade>();
+        services.AddSingleton<MediaLinkServiceFactory>();
 
         services.AddTransient<BulkDataCopyService>();
         services.AddTransient<CmsRelationshipService>();
