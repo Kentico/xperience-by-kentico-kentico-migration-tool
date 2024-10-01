@@ -39,7 +39,7 @@ public class MediaHelperTest
     {
         Guid? expectedMediaId = Guid.TryParse(expectedGuid ?? "", out var eg) ? eg : null;
 
-        (bool success, var mediaLinkKind, var mediaKind, string? path, var mediaGuid) = MediaHelper.MatchMediaLink(mediaUri);
+        (bool success, var mediaLinkKind, var mediaKind, string? path, var mediaGuid, int? _, string? _) = new MediaLinkService([], [], [], []).MatchMediaLink(mediaUri, 1);
 
         Assert.Equal(expectedMediaKind, mediaKind);
         Assert.Equal(expectedMediaLinkKind, mediaLinkKind);

@@ -2,6 +2,21 @@ using System.Collections.Immutable;
 
 namespace Migration.Toolkit.Common.Helpers;
 
+public enum MediaKind
+{
+    None,
+    Attachment,
+    MediaFile
+}
+
+public enum MediaLinkKind
+{
+    None,
+    Path,
+    DirectMediaPath,
+    Guid
+}
+
 public class MediaLinkService(
     ImmutableList<(int siteId, string siteName, string siteLiveSiteUrl)> sites,
     ImmutableList<(int? siteId, string? value)> cmsMediaLibrariesFolder, 
@@ -190,8 +205,6 @@ public class MediaLinkService(
 
         return new MatchMediaLinkResult(true, mediaLinkKind, mediaKind, copyPath ? $"/{string.Join("/", mediaPathResult)}" : null, mediaId, linkSiteId, null);
     }
-
-    
 }
 
 public record MatchMediaLinkResult(bool Success, MediaLinkKind LinkKind, MediaKind MediaKind, string? Path, Guid? MediaGuid, int? LinkSiteId, string? LibraryDir)

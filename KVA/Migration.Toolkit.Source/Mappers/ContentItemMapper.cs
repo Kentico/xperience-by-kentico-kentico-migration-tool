@@ -21,6 +21,7 @@ using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Api.Services.CmsClass;
 using Migration.Toolkit.Source.Auxiliary;
 using Migration.Toolkit.Source.Contexts;
+using Migration.Toolkit.Source.Helpers;
 using Migration.Toolkit.Source.Model;
 using Migration.Toolkit.Source.Services;
 using Migration.Toolkit.Source.Services.Model;
@@ -644,21 +645,13 @@ public class ContentItemMapper(
                 var mediaLinkService = mediaLinkServiceFactory.Create();
                 var htmlProcessor = new HtmlProcessor(html, mediaLinkService);
 
-                target[columnName] = htmlProcessor.ProcessHtml(site.SiteID, (result, original) =>
+                target[columnName] = await htmlProcessor.ProcessHtml(site.SiteID, async (result, original) =>
                 {
                     switch (result)
                     {
-                        case { LinkKind: MediaLinkKind.DirectMediaPath }:
+                        case { LinkKind: MediaLinkKind.Guid or MediaLinkKind.DirectMediaPath, MediaKind: MediaKind.MediaFile}:
                         {
-                            return original;
-                        }
-                        case { LinkKind: MediaLinkKind.Guid, MediaKind: MediaKind.MediaFile, MediaGuid: { } mediaGuid, LinkSiteId: var linkSiteId }:
-                        {
-                            var mediaFile = modelFacade.SelectWhere<IMediaFile>("FileGUID = @mediaFileGuid AND FileSiteID = @fileSiteID",
-                                    new SqlParameter("mediaFileGuid", mediaGuid),
-                                    new SqlParameter("fileSiteID", linkSiteId)
-                                )
-                                .FirstOrDefault();
+                            var mediaFile = MediaHelper.GetMediaFile(result, modelFacade);
                             if (mediaFile is null)
                             {
                                 return original;
@@ -668,18 +661,21 @@ public class ContentItemMapper(
                         }
                         case { LinkKind: MediaLinkKind.Guid, MediaKind: MediaKind.Attachment, MediaGuid: { } mediaGuid, LinkSiteId: var linkSiteId }:
                         {
-                            var attachment = modelFacade.SelectWhere<ICmsAttachment>("AttachmentSiteID = @attachmentSiteID AND AttachmentGUID = @attachmentGUID",
-                                    new SqlParameter("attachmentSiteID", linkSiteId),
-                                    new SqlParameter("attachmentGUID", mediaGuid)
-                                )
-                                .FirstOrDefault();
-
+                            var attachment = MediaHelper.GetAttachment(result, modelFacade);
                             if (attachment is null)
                             {
                                 return original;
                             }
+                            
+                            await attachmentMigrator.MigrateAttachment(attachment);
 
-                            return assetFacade.GetAssetUri(attachment);
+                            string? culture = null;
+                            if (attachment.AttachmentDocumentID is {} attachmentDocumentId)
+                            {
+                                culture = modelFacade.SelectById<ICmsDocument>(attachmentDocumentId)?.DocumentCulture;
+                            }
+                            
+                            return assetFacade.GetAssetUri(attachment, culture);
                         }
                     }
 
@@ -694,7 +690,7 @@ public class ContentItemMapper(
         List<object> mfis = [];
         bool hasMigratedAsset = false;
         if (value is string link &&
-            MediaHelper.MatchMediaLink(link) is (true, var mediaLinkKind, var mediaKind, var path, var mediaGuid) result)
+            mediaLinkServiceFactory.Create().MatchMediaLink(link, site.SiteID) is (true, var mediaLinkKind, var mediaKind, var path, var mediaGuid, var linkSiteId, var libraryDir) result)
         {
             if (mediaLinkKind == MediaLinkKind.Path)
             {

@@ -30,7 +30,7 @@ public class HtmlProcessor
         }
     }
 
-    public string ProcessHtml(int currentSiteId, Func<MatchMediaLinkResult, string, string> mediaLinkTransformer)
+    public async Task<string> ProcessHtml(int currentSiteId, Func<MatchMediaLinkResult, string, Task<string>> mediaLinkTransformer)
     {
         bool anythingChanged = false;
         foreach (var imgNode in document.DocumentNode.SelectNodes("//img[@src]") ?? Enumerable.Empty<HtmlNode>())
@@ -41,9 +41,9 @@ public class HtmlProcessor
 
                 imgNode.Attributes["src"].Value = matchedLink switch
                 {
-                    { Success: true, MediaKind: MediaKind.MediaFile, LinkKind: MediaLinkKind.Guid } => mediaLinkTransformer(matchedLink, src),
-                    { Success: true, MediaKind: MediaKind.Attachment, LinkKind: MediaLinkKind.Guid } => mediaLinkTransformer(matchedLink, src),
-                    { Success: true, MediaKind: MediaKind.MediaFile, LinkKind: MediaLinkKind.DirectMediaPath } => mediaLinkTransformer(matchedLink, src),
+                    { Success: true, MediaKind: MediaKind.MediaFile, LinkKind: MediaLinkKind.Guid } => await mediaLinkTransformer(matchedLink, src),
+                    { Success: true, MediaKind: MediaKind.Attachment, LinkKind: MediaLinkKind.Guid } => await mediaLinkTransformer(matchedLink, src),
+                    { Success: true, MediaKind: MediaKind.MediaFile, LinkKind: MediaLinkKind.DirectMediaPath } => await mediaLinkTransformer(matchedLink, src),
                     { Success: true, MediaKind: MediaKind.Attachment, LinkKind: MediaLinkKind.DirectMediaPath } => throw new InvalidOperationException($"Invalid image link encountered: {matchedLink}"),
                     _ => imgNode.Attributes["src"].Value
                 };
