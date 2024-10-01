@@ -22,7 +22,7 @@ public class MediaLinkServiceFactory(ModelFacade modelFacade)
             var cmsMediaLibrariesFolder = modelFacade
                 .SelectWhere<ICmsSettingsKey>("KeyName = N'CMSMediaLibrariesFolder'").Select(x => (x.SiteID, x.KeyValue))
                 .ToImmutableList();
-        
+
             var cmsUseMediaLibrariesSiteFolder = modelFacade
                 .SelectWhere<ICmsSettingsKey>("KeyName = N'CMSUseMediaLibrariesSiteFolder'").Select(x => (x.SiteID, x.KeyValue))
                 .ToImmutableList();
@@ -30,7 +30,7 @@ public class MediaLinkServiceFactory(ModelFacade modelFacade)
             var mediaLibraries = modelFacade.SelectAll<IMediaLibrary>()
                 .GroupBy(x => x.LibrarySiteID)
                 .ToDictionary(x => x.Key, x => new HashSet<string>(x.Select(l => l.LibraryFolder)));
-        
+
             instance = new MediaLinkService(
                 sites,
                 cmsMediaLibrariesFolder,

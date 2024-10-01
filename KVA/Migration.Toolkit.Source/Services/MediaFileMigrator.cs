@@ -32,8 +32,6 @@ public class MediaFileMigrator(
     IProtocol protocol
     ) : IMediaFileMigrator, IDisposable
 {
-    private const string DirMedia = "media";
-
     private KxpContext kxpContext = kxpContextFactory.CreateDbContext();
 
     public void Dispose() => kxpContext.Dispose();

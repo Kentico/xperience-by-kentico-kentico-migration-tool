@@ -26,7 +26,7 @@ public static class MediaHelper
                 {
                     throw new InvalidOperationException($"Cannot determine media file for link match {matchResult}");
                 }
-                
+
                 var mediaLibraries = modelFacade.SelectWhere<IMediaLibrary>(
                     "LibraryUseDirectPathForContent = 1 AND LibraryFolder = @libraryFolder AND LibrarySiteID = @librarySiteID",
                     new SqlParameter("libraryFolder", libraryDir),
@@ -37,19 +37,19 @@ public static class MediaHelper
                     case [var mediaLibrary]:
                     {
                         string filePath = path.Replace($"/{mediaLibrary.LibraryFolder}/", "", StringComparison.InvariantCultureIgnoreCase);
-                        return modelFacade.SelectWhere<IMediaFile>("FileLibraryID = @fileLibraryID AND FilePath = @filePath AND FileSiteID = @fileSiteID", 
-                                    new SqlParameter("fileLibraryID", mediaLibrary.LibraryID), 
+                        return modelFacade.SelectWhere<IMediaFile>("FileLibraryID = @fileLibraryID AND FilePath = @filePath AND FileSiteID = @fileSiteID",
+                                    new SqlParameter("fileLibraryID", mediaLibrary.LibraryID),
                                     new SqlParameter("filePath", filePath),
                                     new SqlParameter("fileSiteID", linkSiteId))
                                 .ToList() switch
-                            {
-                                [var mediaFile] => mediaFile,
-                                { Count: > 1 } => throw new InvalidOperationException($"Multiple media file were found for path {path}, site {linkSiteId} and library {libraryDir}"),
-                                { Count: 0 } =>
-                                    // this may happen and is valid scenaria
-                                    null,
-                                _ => null
-                            };
+                        {
+                            [var mediaFile] => mediaFile,
+                            { Count: > 1 } => throw new InvalidOperationException($"Multiple media file were found for path {path}, site {linkSiteId} and library {libraryDir}"),
+                            { Count: 0 } =>
+                                // this may happen and is valid scenaria
+                                null,
+                            _ => null
+                        };
                     }
                     case { Count: > 1 }:
                     {
@@ -70,7 +70,7 @@ public static class MediaHelper
             }
         }
     }
-    
+
     public static ICmsAttachment? GetAttachment(MatchMediaLinkResult matchResult, ModelFacade modelFacade) =>
         modelFacade.SelectWhere<ICmsAttachment>("AttachmentSiteID = @attachmentSiteID AND AttachmentGUID = @attachmentGUID",
                 new SqlParameter("attachmentSiteID", matchResult.LinkSiteId),

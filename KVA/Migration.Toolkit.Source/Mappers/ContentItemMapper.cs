@@ -649,7 +649,7 @@ public class ContentItemMapper(
                 {
                     switch (result)
                     {
-                        case { LinkKind: MediaLinkKind.Guid or MediaLinkKind.DirectMediaPath, MediaKind: MediaKind.MediaFile}:
+                        case { LinkKind: MediaLinkKind.Guid or MediaLinkKind.DirectMediaPath, MediaKind: MediaKind.MediaFile }:
                         {
                             var mediaFile = MediaHelper.GetMediaFile(result, modelFacade);
                             if (mediaFile is null)
@@ -666,17 +666,20 @@ public class ContentItemMapper(
                             {
                                 return original;
                             }
-                            
+
                             await attachmentMigrator.MigrateAttachment(attachment);
 
                             string? culture = null;
-                            if (attachment.AttachmentDocumentID is {} attachmentDocumentId)
+                            if (attachment.AttachmentDocumentID is { } attachmentDocumentId)
                             {
                                 culture = modelFacade.SelectById<ICmsDocument>(attachmentDocumentId)?.DocumentCulture;
                             }
-                            
+
                             return assetFacade.GetAssetUri(attachment, culture);
                         }
+
+                        default:
+                            break;
                     }
 
                     return original;

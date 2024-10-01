@@ -437,7 +437,7 @@ public class AssetFacade(
     {
         string? cmsMediaLibrariesFolder = KenticoHelper.GetSettingsKey(modelFacade, ksSite.SiteID, "CMSMediaLibrariesFolder");
         bool cmsUseMediaLibrariesSiteFolder = !"false".Equals(KenticoHelper.GetSettingsKey(modelFacade, ksSite.SiteID, "CMSUseMediaLibrariesSiteFolder"), StringComparison.InvariantCultureIgnoreCase);
-        
+
         string? sourceMediaLibraryPath = null;
         if (!toolkitConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(true) &&
             !string.IsNullOrWhiteSpace(toolkitConfiguration.KxCmsDirPath))
@@ -448,7 +448,7 @@ public class AssetFacade(
                 if (Path.IsPathRooted(cmsMediaLibrariesFolder))
                 {
                     pathParts.Add(cmsMediaLibrariesFolder);
-                    if(cmsUseMediaLibrariesSiteFolder)
+                    if (cmsUseMediaLibrariesSiteFolder)
                     {
                         pathParts.Add(ksSite.SiteName);
                     }
@@ -462,7 +462,7 @@ public class AssetFacade(
                         string cleared = $"{cmsMediaLibrariesFolder[2..]}".Replace("/", "\\");
                         pathParts.Add(toolkitConfiguration.KxCmsDirPath);
                         pathParts.Add(cleared);
-                        if(cmsUseMediaLibrariesSiteFolder)
+                        if (cmsUseMediaLibrariesSiteFolder)
                         {
                             pathParts.Add(ksSite.SiteName);
                         }
@@ -473,7 +473,7 @@ public class AssetFacade(
                     {
                         pathParts.Add(toolkitConfiguration.KxCmsDirPath);
                         pathParts.Add(cmsMediaLibrariesFolder);
-                        if(cmsUseMediaLibrariesSiteFolder)
+                        if (cmsUseMediaLibrariesSiteFolder)
                         {
                             pathParts.Add(ksSite.SiteName);
                         }
@@ -485,7 +485,7 @@ public class AssetFacade(
             else
             {
                 pathParts.Add(toolkitConfiguration.KxCmsDirPath);
-                if(cmsUseMediaLibrariesSiteFolder)
+                if (cmsUseMediaLibrariesSiteFolder)
                 {
                     pathParts.Add(ksSite.SiteName);
                 }

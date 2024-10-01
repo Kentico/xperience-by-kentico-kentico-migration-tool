@@ -130,7 +130,7 @@ public class MediaHelperTest
             Assert.Equal(1, a.LinkSiteId);
             Assert.Null(a.LibraryDir);
         }
-        
+
         // * Site 2: ~/getmedia/CCEAD0F0-E2BF-459B-814A-36699E5C773E/myfile.jpg
         {
             var a = mediaLinkService.MatchMediaLink("~/getmedia/CCEAD0F0-E2BF-459B-814A-36699E5C773E/myfile.jpg", 2);
@@ -177,7 +177,7 @@ public class MediaHelperTest
             Assert.Equal(2, a.LinkSiteId);
             Assert.Equal("MediaLibraryS2", a.LibraryDir);
         }
-        
+
         // * Site 3: ~/getmedia/CCEAD0F0-E2BF-459B-814A-36699E5C773E/myfile.jpg
         {
             var a = mediaLinkService.MatchMediaLink("~/getmedia/CCEAD0F0-E2BF-459B-814A-36699E5C773E/myfile.jpg", 3);
@@ -222,7 +222,7 @@ public class MediaHelperTest
             Assert.Equal(3, a.LinkSiteId);
             Assert.Equal("MediaLibraryS3", a.LibraryDir);
         }
-        
+
         // * Site 4: ~/getmedia/CCEAD0F0-E2BF-459B-814A-36699E5C773E/myfile.jpg
         {
             var a = mediaLinkService.MatchMediaLink("~/getmedia/CCEAD0F0-E2BF-459B-814A-36699E5C773E/myfile.jpg", 4);
@@ -267,7 +267,7 @@ public class MediaHelperTest
             Assert.Equal(4, a.LinkSiteId);
             Assert.Equal("MediaLibraryS4", a.LibraryDir);
         }
-        
+
         // refs from other site
         // * Site 2: http://localhost:5004/Site4MediaFolder/Site4/media/MediaLibraryS4/myfile.jpg
         {
@@ -280,7 +280,7 @@ public class MediaHelperTest
             Assert.Equal(4, a.LinkSiteId);
             Assert.Equal("MediaLibraryS4", a.LibraryDir);
         }
-        
+
         // {sitepath}/{SiteName}/media/{LibraryFolder}/{LibrarySubFolder}/{FileName}
         {
             var a = mediaLinkService.MatchMediaLink("http://localhost:5003/Site3/media/MediaLibraryS3/myfile.jpg", 3);

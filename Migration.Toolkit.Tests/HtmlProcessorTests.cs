@@ -47,7 +47,7 @@ public class HtmlProcessorTests
                 {2, new (["MediaWithDirectPath"],StringComparer.InvariantCultureIgnoreCase)},
             }
         );
-        
+
         var processor = new HtmlProcessor(HtmlFragmentSample1, mediaLinkService);
 
         var actual = processor.GetImages(2).ToArray();
@@ -75,7 +75,7 @@ public class HtmlProcessorTests
                 Assert.Equal(MediaKind.MediaFile, r.MediaKind);
                 Assert.Null(r.LibraryDir);
                 Assert.Equal(new Guid("f393c1be-9b65-47bb-a246-f00f1e8b1ce0"), r.MediaGuid);
-            }, 
+            },
             r =>
             {
                 Assert.True(r.Success);
@@ -83,7 +83,7 @@ public class HtmlProcessorTests
                 Assert.Equal(MediaKind.Attachment, r.MediaKind);
                 Assert.Null(r.LibraryDir);
                 Assert.Equal(new Guid("7c0fa1fd-f099-4516-8818-538bf8128244"), r.MediaGuid);
-            }, 
+            },
             r =>
             {
                 Assert.True(r.Success);

@@ -11,7 +11,7 @@ public class HtmlProcessor
     public HtmlProcessor(string html, MediaLinkService mediaLinkService)
     {
         this.mediaLinkService = mediaLinkService;
-        
+
         var doc = new HtmlDocument();
         doc.LoadHtml(html);
         this.html = html;
@@ -23,7 +23,7 @@ public class HtmlProcessor
     {
         foreach (var imgNode in document.DocumentNode.SelectNodes("//img[@src]"))
         {
-            if (imgNode?.Attributes["src"].Value is {} src)
+            if (imgNode?.Attributes["src"].Value is { } src)
             {
                 yield return mediaLinkService.MatchMediaLink(src, currentSiteId);
             }
@@ -35,7 +35,7 @@ public class HtmlProcessor
         bool anythingChanged = false;
         foreach (var imgNode in document.DocumentNode.SelectNodes("//img[@src]") ?? Enumerable.Empty<HtmlNode>())
         {
-            if (imgNode?.Attributes["src"].Value is {} src)
+            if (imgNode?.Attributes["src"].Value is { } src)
             {
                 var matchedLink = mediaLinkService.MatchMediaLink(src, currentSiteId);
 
@@ -47,7 +47,7 @@ public class HtmlProcessor
                     { Success: true, MediaKind: MediaKind.Attachment, LinkKind: MediaLinkKind.DirectMediaPath } => throw new InvalidOperationException($"Invalid image link encountered: {matchedLink}"),
                     _ => imgNode.Attributes["src"].Value
                 };
-                
+
                 anythingChanged = true;
             }
         }

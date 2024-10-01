@@ -19,18 +19,18 @@ public enum MediaLinkKind
 
 public class MediaLinkService(
     ImmutableList<(int siteId, string siteName, string siteLiveSiteUrl)> sites,
-    ImmutableList<(int? siteId, string? value)> cmsMediaLibrariesFolder, 
+    ImmutableList<(int? siteId, string? value)> cmsMediaLibrariesFolder,
     ImmutableList<(int? siteId, string? value)> cmsUseMediaLibrariesSiteFolder,
     Dictionary<int, HashSet<string>> siteLibraryNames
     )
-{   
+{
     public MatchMediaLinkResult MatchMediaLink(string? linkStr, int currentSiteId)
     {
         if (string.IsNullOrEmpty(linkStr))
         {
             return MatchMediaLinkResult.None;
         }
-        
+
         string link = linkStr.TrimStart(['~']);
 
         Guid? mediaId = null;
@@ -64,9 +64,9 @@ public class MediaLinkService(
                 path = link;
             }
         }
-        
+
         int inspectionIndex = 0;
-        
+
         // assuming that link is from current site
         int? linkSiteId = currentSiteId;
         if (uri != null)
@@ -89,7 +89,7 @@ public class MediaLinkService(
 
         string[] spl = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
         var site = sites.FirstOrDefault(s => s.siteId == linkSiteId);
-        
+
         // match site sub path
         if (site != default && uri is not null)
         {
@@ -98,13 +98,13 @@ public class MediaLinkService(
             if (uri.LocalPath.StartsWith(siteLiveSiteUri.LocalPath, StringComparison.InvariantCultureIgnoreCase))
             {
                 inspectionIndex += subPathLength;
-            }   
+            }
         }
-        
+
         // custom lib dir + custom global media dir + subdir:   /CustomMediaFolder/CDWCLN2/Subdir1/unnamed.jpg 
         // custom lib dir + custom global media dir:            /CustomMediaFolder/CDWCLN2/84693449_B.png
         // standard site dir:                                   /MTExtensibilityTests/media/MediaWithDirectPath/84693449_B.png
-        
+
         string? globalMediaLibraryFolder = cmsMediaLibrariesFolder.OrderBy(x => x.siteId ?? -1).FirstOrDefault(x => x.siteId == linkSiteId || x.siteId == null).value;
         if (!string.IsNullOrWhiteSpace(globalMediaLibraryFolder))
         {
@@ -116,7 +116,7 @@ public class MediaLinkService(
                 inspectionIndex++;
             }
         }
-        
+
         bool siteMediaFolder = "True".Equals(cmsUseMediaLibrariesSiteFolder.OrderBy(x => x.siteId ?? -1).FirstOrDefault(x => x.siteId == linkSiteId || x.siteId == null).value, StringComparison.InvariantCultureIgnoreCase);
         if (siteMediaFolder)
         {
@@ -128,27 +128,27 @@ public class MediaLinkService(
                     mediaKind = MediaKind.MediaFile;
                     mediaLinkKind = MediaLinkKind.DirectMediaPath;
                     inspectionIndex++;
-                } 
+                }
             }
         }
-        
+
         if ("media".Equals(spl[inspectionIndex], StringComparison.InvariantCultureIgnoreCase))
         {
             mediaKind = MediaKind.MediaFile;
             mediaLinkKind = MediaLinkKind.DirectMediaPath;
             inspectionIndex++;
         }
-        
+
         if (mediaLinkKind is MediaLinkKind.DirectMediaPath)
         {
             // try match libreary name
-            if(linkSiteId is {} lsid && siteLibraryNames.TryGetValue(lsid, out var libraryNames) && libraryNames.Contains(spl[inspectionIndex]))
+            if (linkSiteId is { } lsid && siteLibraryNames.TryGetValue(lsid, out var libraryNames) && libraryNames.Contains(spl[inspectionIndex]))
             {
-                return new MatchMediaLinkResult(true, mediaLinkKind, mediaKind, $"/{string.Join("/", spl[inspectionIndex..])}", null, linkSiteId, spl[inspectionIndex]);                    
+                return new MatchMediaLinkResult(true, mediaLinkKind, mediaKind, $"/{string.Join("/", spl[inspectionIndex..])}", null, linkSiteId, spl[inspectionIndex]);
             }
             else
             {
-                return new MatchMediaLinkResult(true, mediaLinkKind, mediaKind, $"/{string.Join("/", spl[inspectionIndex..])}", null, linkSiteId, null);   
+                return new MatchMediaLinkResult(true, mediaLinkKind, mediaKind, $"/{string.Join("/", spl[inspectionIndex..])}", null, linkSiteId, null);
             }
         }
 
