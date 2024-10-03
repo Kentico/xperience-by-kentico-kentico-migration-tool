@@ -26,7 +26,7 @@ public class ToolkitConfiguration
     public EntityConfigurations EntityConfigurations { get; set; } = [];
 
     [ConfigurationKeyName(ConfigurationNames.MigrateOnlyMediaFileInfo)]
-    public bool? MigrateOnlyMediaFileInfo { get; set; } = true;
+    public bool? MigrateOnlyMediaFileInfo { get; set; } = false;
 
     [ConfigurationKeyName(ConfigurationNames.UseOmActivityNodeRelationAutofix)]
     public AutofixEnum? UseOmActivityNodeRelationAutofix { get; set; } = AutofixEnum.Error;

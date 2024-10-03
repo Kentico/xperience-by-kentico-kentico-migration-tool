@@ -84,6 +84,10 @@ public class AssetFacade(
         Debug.Assert(mediaLibrary.LibrarySiteID == site.SiteID, "mediaLibrary.LibrarySiteID == site.SiteID");
 
         string? mediaLibraryAbsolutePath = GetMediaLibraryAbsolutePath(toolkitConfiguration, site, mediaLibrary, modelFacade);
+        if (toolkitConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(false))
+        {
+            throw new InvalidOperationException($"Configuration 'Settings.MigrateOnlyMediaFileInfo' is set to to 'true', for migration of media files to content items this setting is required to be 'false'");
+        }
         if (string.IsNullOrWhiteSpace(mediaLibraryAbsolutePath))
         {
             throw new InvalidOperationException($"Invalid media file path generated for {mediaFile} and {mediaLibrary} on {site}");
@@ -439,7 +443,7 @@ public class AssetFacade(
         bool cmsUseMediaLibrariesSiteFolder = !"false".Equals(KenticoHelper.GetSettingsKey(modelFacade, ksSite.SiteID, "CMSUseMediaLibrariesSiteFolder"), StringComparison.InvariantCultureIgnoreCase);
 
         string? sourceMediaLibraryPath = null;
-        if (!toolkitConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(true) &&
+        if (!toolkitConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(false) &&
             !string.IsNullOrWhiteSpace(toolkitConfiguration.KxCmsDirPath))
         {
             var pathParts = new List<string>();
@@ -453,7 +457,6 @@ public class AssetFacade(
                         pathParts.Add(ksSite.SiteName);
                     }
                     pathParts.Add(ksMediaLibrary.LibraryFolder);
-                    // sourceMediaLibraryPath = Path.Combine(cmsMediaLibrariesFolder, ksSite.SiteName, ksMediaLibrary.LibraryFolder);
                 }
                 else
                 {
@@ -467,7 +470,6 @@ public class AssetFacade(
                             pathParts.Add(ksSite.SiteName);
                         }
                         pathParts.Add(ksMediaLibrary.LibraryFolder);
-                        // sourceMediaLibraryPath = Path.Combine(toolkitConfiguration.KxCmsDirPath, cleared, ksSite.SiteName, ksMediaLibrary.LibraryFolder);
                     }
                     else
                     {
@@ -478,7 +480,6 @@ public class AssetFacade(
                             pathParts.Add(ksSite.SiteName);
                         }
                         pathParts.Add(ksMediaLibrary.LibraryFolder);
-                        // sourceMediaLibraryPath = Path.Combine(toolkitConfiguration.KxCmsDirPath, cmsMediaLibrariesFolder, ksSite.SiteName, ksMediaLibrary.LibraryFolder);
                     }
                 }
             }
@@ -491,7 +492,6 @@ public class AssetFacade(
                 }
                 pathParts.Add(DirMedia);
                 pathParts.Add(ksMediaLibrary.LibraryFolder);
-                // sourceMediaLibraryPath = Path.Combine(toolkitConfiguration.KxCmsDirPath, ksSite.SiteName, DirMedia, ksMediaLibrary.LibraryFolder);
             }
 
             sourceMediaLibraryPath = Path.Combine(pathParts.ToArray());
