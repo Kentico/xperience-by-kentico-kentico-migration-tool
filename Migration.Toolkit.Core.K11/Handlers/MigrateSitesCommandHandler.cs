@@ -99,7 +99,7 @@ public class MigrateSitesCommandHandler(
                 ? bool.TryParse(storeFormerUrlsStr, out bool sfu) ? sfu : null
                 : true;
 
-            var result = UriHelperXbyk.GetUniqueDomainCandidate(
+            var result = UriHelper.GetUniqueDomainCandidate(
                 k11CmsSite.SiteDomainName,
                 ref fallbackDomainPort,
                 candidate => !migratedDomains.Contains(candidate)

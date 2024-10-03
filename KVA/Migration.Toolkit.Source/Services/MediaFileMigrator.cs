@@ -14,7 +14,6 @@ using Migration.Toolkit.KXP.Models;
 using Migration.Toolkit.Source.Auxiliary;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Handlers;
-using Migration.Toolkit.Source.Helpers;
 using Migration.Toolkit.Source.Mappers;
 using Migration.Toolkit.Source.Model;
 
@@ -33,56 +32,12 @@ public class MediaFileMigrator(
     IProtocol protocol
     ) : IMediaFileMigrator, IDisposable
 {
-    private const string DirMedia = "media";
-
     private KxpContext kxpContext = kxpContextFactory.CreateDbContext();
 
     public void Dispose() => kxpContext.Dispose();
 
     public async Task<CommandResult> Handle(MigrateMediaLibrariesCommand request, CancellationToken cancellationToken)
     {
-        //var skippedMediaLibraries = new HashSet<Guid>();
-        // var unsuitableMediaLibraries =
-        //     modelFacade.Select("""
-        //                        SELECT LibraryName, LibraryGUID FROM Media_Library [ML]
-        //                        WHERE EXISTS(
-        //                        	SELECT 1
-        //                        	FROM Media_Library [MLI]
-        //                        	WHERE MLI.LibraryName = ML.LibraryName
-        //                        	GROUP BY LibraryName
-        //                        	HAVING COUNT(*) > 1
-        //                        )
-        //                        """,
-        //         (reader, _) => new
-        //         {
-        //             LibraryName = reader.Unbox<string>("LibraryName"),
-        //             LibraryGuid = reader.Unbox<Guid?>("LibraryGUID")
-        //         });
-        //
-        // var groupedMls = unsuitableMediaLibraries
-        //     .GroupBy(x => x.LibraryName)
-        //     .Select(x => new { LibraryGuids = x.Select(y => y.LibraryGuid).ToArray(), LibraryName = x.Key });
-        //
-        // foreach (var mlg in groupedMls)
-        // {
-        //     logger.LogError(
-        //         "Media libraries with LibraryGuid ({LibraryGuids}) have same LibraryName '{LibraryName}', due to removal of sites and media library globalization it is required to set unique LibraryName and LibraryFolder",
-        //         string.Join(",", mlg.LibraryGuids), mlg.LibraryName);
-        //
-        //     foreach (var libraryGuid in mlg.LibraryGuids)
-        //     {
-        //         if (libraryGuid is { } lg)
-        //         {
-        //             // skippedMediaLibraries.Add(lg);
-        //
-        //             protocol.Append(HandbookReferences.NotCurrentlySupportedSkip()
-        //                 .WithMessage($"Media library '{mlg.LibraryName}' with LibraryGuid '{libraryGuid}' doesn't satisfy unique LibraryName and LibraryFolder condition for migration")
-        //                 .WithData(new { LibraryGuid = libraryGuid, mlg.LibraryName })
-        //             );
-        //         }
-        //     }
-        // }
-
         var ksMediaLibraries = modelFacade.SelectAll<IMediaLibrary>(" ORDER BY LibraryID");
 
         var nonUniqueLibraryNames = modelFacade.Select("""
@@ -189,41 +144,8 @@ public class MediaFileMigrator(
         {
             foreach (var (ksMediaLibrary, ksSite, targetMediaLibrary) in migratedMediaLibraries)
             {
-                string? sourceMediaLibraryPath = null;
                 bool loadMediaFileData = false;
-                if (!toolkitConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(true) &&
-                    !string.IsNullOrWhiteSpace(toolkitConfiguration.KxCmsDirPath))
-                {
-                    string? cmsMediaLibrariesFolder = KenticoHelper.GetSettingsKey(modelFacade, ksSite.SiteID, "CMSMediaLibrariesFolder");
-                    if (cmsMediaLibrariesFolder != null)
-                    {
-                        if (Path.IsPathRooted(cmsMediaLibrariesFolder))
-                        {
-                            sourceMediaLibraryPath = Path.Combine(cmsMediaLibrariesFolder, ksSite.SiteName, ksMediaLibrary.LibraryFolder);
-                            loadMediaFileData = true;
-                        }
-                        else
-                        {
-                            if (cmsMediaLibrariesFolder.StartsWith("~/"))
-                            {
-                                string cleared = $"{cmsMediaLibrariesFolder[2..]}".Replace("/", "\\");
-                                sourceMediaLibraryPath = Path.Combine(toolkitConfiguration.KxCmsDirPath, cleared, ksSite.SiteName, ksMediaLibrary.LibraryFolder);
-                                loadMediaFileData = true;
-                            }
-                            else
-                            {
-                                sourceMediaLibraryPath = Path.Combine(toolkitConfiguration.KxCmsDirPath, cmsMediaLibrariesFolder, ksSite.SiteName, ksMediaLibrary.LibraryFolder);
-                                loadMediaFileData = true;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        sourceMediaLibraryPath = Path.Combine(toolkitConfiguration.KxCmsDirPath, ksSite.SiteName, DirMedia, ksMediaLibrary.LibraryFolder);
-                        loadMediaFileData = true;
-                    }
-                }
-
+                string? sourceMediaLibraryPath = AssetFacade.GetMediaLibraryAbsolutePath(toolkitConfiguration, ksSite, ksMediaLibrary, modelFacade);
                 var ksMediaFiles = modelFacade.SelectWhere<IMediaFile>("FileLibraryID = @FileLibraryId", new SqlParameter("FileLibraryId", ksMediaLibrary.LibraryID));
 
                 foreach (var ksMediaFile in ksMediaFiles)

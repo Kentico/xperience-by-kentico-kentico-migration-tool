@@ -236,7 +236,7 @@ public class PageTemplateConfigurationMapper(
                                 var nv = new List<object>();
                                 foreach (var asi in items)
                                 {
-                                    var attachment = modelFacade.SelectWhere<ICmsAttachment>("AttachmentSiteID = @siteId AND AttachmentGUID = @attachmentGUID", new SqlParameter("attachmentSiteID", siteId),
+                                    var attachment = modelFacade.SelectWhere<ICmsAttachment>("AttachmentSiteID = @attachmentSiteID AND AttachmentGUID = @attachmentGUID", new SqlParameter("attachmentSiteID", siteId),
                                             new SqlParameter("attachmentGUID", asi.FileGuid))
                                         .FirstOrDefault();
                                     if (attachment != null)

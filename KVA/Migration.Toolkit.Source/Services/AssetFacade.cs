@@ -47,9 +47,12 @@ public interface IAssetFacade
     /// <param name="attachment"></param>
     /// <param name="contentLanguageName"></param>
     /// <returns></returns>
-    (Guid ownerContentItemGuid, Guid assetGuid) GetRef(ICmsAttachment attachment, string? contentLanguageName = null);
+    (Guid ownerContentItemGuid, Guid assetGuid) GetRef(ICmsAttachment attachment, string? contentLanguageName);
 
     Task PreparePrerequisites();
+
+    string GetAssetUri(IMediaFile mediaFile, string? contentLanguageName = null);
+    string GetAssetUri(ICmsAttachment attachment, string? contentLanguageName);
 }
 
 public class AssetFacade(
@@ -81,6 +84,10 @@ public class AssetFacade(
         Debug.Assert(mediaLibrary.LibrarySiteID == site.SiteID, "mediaLibrary.LibrarySiteID == site.SiteID");
 
         string? mediaLibraryAbsolutePath = GetMediaLibraryAbsolutePath(toolkitConfiguration, site, mediaLibrary, modelFacade);
+        if (toolkitConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(false))
+        {
+            throw new InvalidOperationException($"Configuration 'Settings.MigrateOnlyMediaFileInfo' is set to to 'true', for migration of media files to content items this setting is required to be 'false'");
+        }
         if (string.IsNullOrWhiteSpace(mediaLibraryAbsolutePath))
         {
             throw new InvalidOperationException($"Invalid media file path generated for {mediaFile} and {mediaLibrary} on {site}");
@@ -185,7 +192,7 @@ public class AssetFacade(
             ContentItemGUID = translatedAttachmentGuid,
             ContentItemContentFolderGUID = (await EnsureFolderStructure(mediaFolder, folder))?.ContentFolderGUID ?? folder.ContentFolderGUID,
             IsSecured = null,
-            ContentTypeName = LegacyMediaFileContentType.ClassName,
+            ContentTypeName = LegacyAttachmentContentType.ClassName,
             Name = $"{attachment.AttachmentGUID}_{translatedAttachmentGuid}",
             IsReusable = true,
             LanguageData = languageData,
@@ -294,7 +301,7 @@ public class AssetFacade(
     }
 
     /// <inheritdoc />
-    public (Guid ownerContentItemGuid, Guid assetGuid) GetRef(ICmsAttachment attachment, string? contentLanguageName = null)
+    public (Guid ownerContentItemGuid, Guid assetGuid) GetRef(ICmsAttachment attachment, string? contentLanguageName)
     {
         var (_, translatedAttachmentGuid) = entityIdentityFacade.Translate(attachment);
         return (translatedAttachmentGuid, GuidHelper.CreateAssetGuid(translatedAttachmentGuid, contentLanguageName ?? DefaultContentLanguage));
@@ -308,6 +315,19 @@ public class AssetFacade(
         {
             AssertSuccess(await importer.ImportAsync(umtModel), umtModel);
         }
+    }
+
+    public string GetAssetUri(IMediaFile mediaFile, string? contentLanguageName = null)
+    {
+        string contentLanguageSafe = contentLanguageName ?? DefaultContentLanguage;
+        var (ownerContentItemGuid, _) = GetRef(mediaFile, contentLanguageName);
+        return $"/getContentAsset/{ownerContentItemGuid}/{LegacyMediaFileAssetField.Guid}/{mediaFile.FileName}?language={contentLanguageSafe}";
+    }
+
+    public string GetAssetUri(ICmsAttachment attachment, string? contentLanguageName)
+    {
+        var (ownerContentItemGuid, _) = GetRef(attachment, contentLanguageName ?? DefaultContentLanguage);
+        return $"/getContentAsset/{ownerContentItemGuid}/{LegacyAttachmentAssetField.Guid}/{attachment.AttachmentName}?language={contentLanguageName ?? DefaultContentLanguage}";
     }
 
     private void AssertSuccess(IImportResult importResult, IUmtModel model)
@@ -339,6 +359,17 @@ public class AssetFacade(
         }
     }
 
+    internal static readonly FormField LegacyMediaFileAssetField = new()
+    {
+        Column = "Asset",
+        ColumnType = "contentitemasset",
+        AllowEmpty = true,
+        Visible = true,
+        Enabled = true,
+        Guid = new Guid("DFC3D011-8F63-43F6-9ED8-4B444333A1D0"),
+        Properties = new FormFieldProperties { FieldCaption = "Asset", },
+        Settings = new FormFieldSettings { CustomProperties = new Dictionary<string, object?> { { "AllowedExtensions", "_INHERITED_" } }, ControlName = "Kentico.Administration.ContentItemAssetUploader" }
+    };
     internal static readonly DataClassModel LegacyMediaFileContentType = new()
     {
         ClassName = "Legacy.MediaFile",
@@ -352,20 +383,21 @@ public class AssetFacade(
         ClassWebPageHasUrl = false,
         Fields =
         [
-            new()
-            {
-                Column = "Asset",
-                ColumnType = "contentitemasset",
-                AllowEmpty = true,
-                Visible = true,
-                Enabled = true,
-                Guid = new Guid("DFC3D011-8F63-43F6-9ED8-4B444333A1D0"),
-                Properties = new FormFieldProperties { FieldCaption = "Asset", },
-                Settings = new FormFieldSettings { CustomProperties = new Dictionary<string, object?> { { "AllowedExtensions", "_INHERITED_" } }, ControlName = "Kentico.Administration.ContentItemAssetUploader" }
-            }
+            LegacyMediaFileAssetField
         ]
     };
 
+    internal static readonly FormField LegacyAttachmentAssetField = new()
+    {
+        Column = "Asset",
+        ColumnType = "contentitemasset",
+        AllowEmpty = true,
+        Visible = true,
+        Enabled = true,
+        Guid = new Guid("50C2BC4C-A8FF-46BA-95C2-0E74752D147F"),
+        Properties = new FormFieldProperties { FieldCaption = "Asset", },
+        Settings = new FormFieldSettings { CustomProperties = new Dictionary<string, object?> { { "AllowedExtensions", "_INHERITED_" } }, ControlName = "Kentico.Administration.ContentItemAssetUploader" }
+    };
     internal static readonly DataClassModel LegacyAttachmentContentType = new()
     {
         ClassName = "Legacy.Attachment",
@@ -379,17 +411,7 @@ public class AssetFacade(
         ClassWebPageHasUrl = false,
         Fields =
         [
-            new()
-            {
-                Column = "Asset",
-                ColumnType = "contentitemasset",
-                AllowEmpty = true,
-                Visible = true,
-                Enabled = true,
-                Guid = new Guid("50C2BC4C-A8FF-46BA-95C2-0E74752D147F"),
-                Properties = new FormFieldProperties { FieldCaption = "Asset", },
-                Settings = new FormFieldSettings { CustomProperties = new Dictionary<string, object?> { { "AllowedExtensions", "_INHERITED_" } }, ControlName = "Kentico.Administration.ContentItemAssetUploader" }
-            }
+            LegacyAttachmentAssetField
         ]
     };
 
@@ -417,34 +439,62 @@ public class AssetFacade(
     private const string DirMedia = "media";
     public static string? GetMediaLibraryAbsolutePath(ToolkitConfiguration toolkitConfiguration, ICmsSite ksSite, IMediaLibrary ksMediaLibrary, ModelFacade modelFacade)
     {
+        string? cmsMediaLibrariesFolder = KenticoHelper.GetSettingsKey(modelFacade, ksSite.SiteID, "CMSMediaLibrariesFolder");
+        bool cmsUseMediaLibrariesSiteFolder = !"false".Equals(KenticoHelper.GetSettingsKey(modelFacade, ksSite.SiteID, "CMSUseMediaLibrariesSiteFolder"), StringComparison.InvariantCultureIgnoreCase);
+
         string? sourceMediaLibraryPath = null;
-        if (!toolkitConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(true) &&
+        if (!toolkitConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(false) &&
             !string.IsNullOrWhiteSpace(toolkitConfiguration.KxCmsDirPath))
         {
-            string? cmsMediaLibrariesFolder = KenticoHelper.GetSettingsKey(modelFacade, ksSite.SiteID, "CMSMediaLibrariesFolder");
+            var pathParts = new List<string>();
             if (cmsMediaLibrariesFolder != null)
             {
                 if (Path.IsPathRooted(cmsMediaLibrariesFolder))
                 {
-                    sourceMediaLibraryPath = Path.Combine(cmsMediaLibrariesFolder, ksSite.SiteName, ksMediaLibrary.LibraryFolder);
+                    pathParts.Add(cmsMediaLibrariesFolder);
+                    if (cmsUseMediaLibrariesSiteFolder)
+                    {
+                        pathParts.Add(ksSite.SiteName);
+                    }
+                    pathParts.Add(ksMediaLibrary.LibraryFolder);
                 }
                 else
                 {
                     if (cmsMediaLibrariesFolder.StartsWith("~/"))
                     {
                         string cleared = $"{cmsMediaLibrariesFolder[2..]}".Replace("/", "\\");
-                        sourceMediaLibraryPath = Path.Combine(toolkitConfiguration.KxCmsDirPath, cleared, ksSite.SiteName, ksMediaLibrary.LibraryFolder);
+                        pathParts.Add(toolkitConfiguration.KxCmsDirPath);
+                        pathParts.Add(cleared);
+                        if (cmsUseMediaLibrariesSiteFolder)
+                        {
+                            pathParts.Add(ksSite.SiteName);
+                        }
+                        pathParts.Add(ksMediaLibrary.LibraryFolder);
                     }
                     else
                     {
-                        sourceMediaLibraryPath = Path.Combine(toolkitConfiguration.KxCmsDirPath, cmsMediaLibrariesFolder, ksSite.SiteName, ksMediaLibrary.LibraryFolder);
+                        pathParts.Add(toolkitConfiguration.KxCmsDirPath);
+                        pathParts.Add(cmsMediaLibrariesFolder);
+                        if (cmsUseMediaLibrariesSiteFolder)
+                        {
+                            pathParts.Add(ksSite.SiteName);
+                        }
+                        pathParts.Add(ksMediaLibrary.LibraryFolder);
                     }
                 }
             }
             else
             {
-                sourceMediaLibraryPath = Path.Combine(toolkitConfiguration.KxCmsDirPath, ksSite.SiteName, DirMedia, ksMediaLibrary.LibraryFolder);
+                pathParts.Add(toolkitConfiguration.KxCmsDirPath);
+                if (cmsUseMediaLibrariesSiteFolder)
+                {
+                    pathParts.Add(ksSite.SiteName);
+                }
+                pathParts.Add(DirMedia);
+                pathParts.Add(ksMediaLibrary.LibraryFolder);
             }
+
+            sourceMediaLibraryPath = Path.Combine(pathParts.ToArray());
         }
 
         return sourceMediaLibraryPath;

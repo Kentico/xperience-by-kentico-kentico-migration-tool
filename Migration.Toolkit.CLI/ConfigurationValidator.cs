@@ -90,8 +90,6 @@ public static class ConfigurationValidator
                     var connections = querySourceInstanceApi.GetSection(ConfigurationNames.Connections).GetChildren();
                     foreach (var connection in connections)
                     {
-#warning EXTEND SITENAME
-                        // var siteName = connection.GetValue<string>(ConfigurationNames.SiteName);
                         string? siteUri = connection.GetValue<string>(ConfigurationNames.SourceInstanceUri);
                         string? secret = connection.GetValue<string>(ConfigurationNames.Secret);
 

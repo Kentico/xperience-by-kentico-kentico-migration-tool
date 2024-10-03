@@ -21,6 +21,7 @@ using Migration.Toolkit.KXP.Api.Auxiliary;
 using Migration.Toolkit.KXP.Api.Services.CmsClass;
 using Migration.Toolkit.Source.Auxiliary;
 using Migration.Toolkit.Source.Contexts;
+using Migration.Toolkit.Source.Helpers;
 using Migration.Toolkit.Source.Model;
 using Migration.Toolkit.Source.Services;
 using Migration.Toolkit.Source.Services.Model;
@@ -56,7 +57,8 @@ public class ContentItemMapper(
     SpoiledGuidContext spoiledGuidContext,
     EntityIdentityFacade entityIdentityFacade,
     IAssetFacade assetFacade,
-    ToolkitConfiguration configuration
+    ToolkitConfiguration configuration,
+    MediaLinkServiceFactory mediaLinkServiceFactory
 ) : UmtMapperBase<CmsTreeMapperSource>
 {
     private const string CLASS_FIELD_CONTROL_NAME = "controlname";
@@ -627,6 +629,62 @@ public class ContentItemMapper(
             {
                 target[columnName] = value;
             }
+
+
+            var newField = newFormInfo.GetFormField(columnName);
+            if (newField == null)
+            {
+                var commonFields = UnpackReusableFieldSchemas(newFormInfo.GetFields<FormSchemaInfo>()).ToArray();
+                newField = commonFields
+                    .FirstOrDefault(cf => ReusableSchemaService.RemoveClassPrefix(nodeClass.ClassName, cf.Name).Equals(columnName, StringComparison.InvariantCultureIgnoreCase));
+            }
+            string? newControlName = newField?.Settings[CLASS_FIELD_CONTROL_NAME]?.ToString()?.ToLowerInvariant();
+            if (newControlName?.Equals(FormComponents.AdminRichTextEditorComponent, StringComparison.InvariantCultureIgnoreCase) == true && target[columnName] is string { } html && !string.IsNullOrWhiteSpace(html) &&
+                !configuration.MigrateMediaToMediaLibrary)
+            {
+                var mediaLinkService = mediaLinkServiceFactory.Create();
+                var htmlProcessor = new HtmlProcessor(html, mediaLinkService);
+
+                target[columnName] = await htmlProcessor.ProcessHtml(site.SiteID, async (result, original) =>
+                {
+                    switch (result)
+                    {
+                        case { LinkKind: MediaLinkKind.Guid or MediaLinkKind.DirectMediaPath, MediaKind: MediaKind.MediaFile }:
+                        {
+                            var mediaFile = MediaHelper.GetMediaFile(result, modelFacade);
+                            if (mediaFile is null)
+                            {
+                                return original;
+                            }
+
+                            return assetFacade.GetAssetUri(mediaFile);
+                        }
+                        case { LinkKind: MediaLinkKind.Guid, MediaKind: MediaKind.Attachment, MediaGuid: { } mediaGuid, LinkSiteId: var linkSiteId }:
+                        {
+                            var attachment = MediaHelper.GetAttachment(result, modelFacade);
+                            if (attachment is null)
+                            {
+                                return original;
+                            }
+
+                            await attachmentMigrator.MigrateAttachment(attachment);
+
+                            string? culture = null;
+                            if (attachment.AttachmentDocumentID is { } attachmentDocumentId)
+                            {
+                                culture = modelFacade.SelectById<ICmsDocument>(attachmentDocumentId)?.DocumentCulture;
+                            }
+
+                            return assetFacade.GetAssetUri(attachment, culture);
+                        }
+
+                        default:
+                            break;
+                    }
+
+                    return original;
+                });
+            }
         }
     }
 
@@ -635,7 +693,7 @@ public class ContentItemMapper(
         List<object> mfis = [];
         bool hasMigratedAsset = false;
         if (value is string link &&
-            MediaHelper.MatchMediaLink(link) is (true, var mediaLinkKind, var mediaKind, var path, var mediaGuid) result)
+            mediaLinkServiceFactory.Create().MatchMediaLink(link, site.SiteID) is (true, var mediaLinkKind, var mediaKind, var path, var mediaGuid, var linkSiteId, var libraryDir) result)
         {
             if (mediaLinkKind == MediaLinkKind.Path)
             {
