@@ -57,6 +57,7 @@ View the [Usage Guide](./docs/Usage-Guide.md) for more detailed instructions.
 
 - **September 4, 2024**
   - Migration of media libraries and attachments to assets is available
+  - Media libraries and attachments are now [migrated](/Migration.Toolkit.CLI/README.md#media-libraries) to content item assets by default
 - **June 13, 2024**
   - Migration of categories to taxonomies is available
 - **March 11, 2024**

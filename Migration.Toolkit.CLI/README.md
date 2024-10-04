@@ -270,9 +270,13 @@ Custom table migration does NOT include:
 
 Media library files are migrated as content item assets to the [content hub](https://docs.kentico.com/x/barWCQ) into a content folder `<site_name>/<library_folder>`. All assets are created in the default language of the respective site. Migrated assets are created as content items of a *Legacy media file* content type (code name `Legacy.Mediafile`) created by the tool.
 
+You can [configure the tool](#convert-attachments-and-media-library-files-to-media-libraries-instead-of-content-item-assets) to migrate media libraries as media libraries to the target instance.
+
 #### Attachments
 
 Attachment files are migrated as content item assets to the [content hub](https://docs.kentico.com/x/barWCQ) into a content folder `<site_name>/__Attachments`. Assets are created in the specified language if the language is available (e.g., attachments of pages). Migrated assets are created as content items of a *Legacy attachment* content type (code name `Legacy.Attachment`) created by the tool.
+
+You can [configure the tool](#convert-attachments-and-media-library-files-to-media-libraries-instead-of-content-item-assets) to migrate attachments as media libraries to the target instance.
 
 #### Forms
 
