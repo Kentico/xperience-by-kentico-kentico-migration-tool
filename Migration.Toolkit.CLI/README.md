@@ -124,9 +124,9 @@ type fields:
 | Unique identifier (Guid) | Unique identifier (Guid) | *any*                   | None (not supported)                                                                    |
 | Pages                    | Pages                    | *any* (Pages)           | Page selector                                                                           |
 
-Additionally, you can enable the Conversion of text fields with media links (*Media selection* form control) to media
+Additionally, you can enable the Conversion of text fields with media links (*Media selection* form control) to content item assets or media
 library files by setting
-the `OptInFeatures.CustomMigration.FieldMigrations` [configuration option](#convert-text-fields-with-media-links-to-media-libraries).
+the `OptInFeatures.CustomMigration.FieldMigrations` [configuration option](#convert-text-fields-with-media-links).
 
 Some [Form components](https://docs.xperience.io/x/5ASiCQ) used by content type fields in Xperience by Kentico store
 data differently than their equivalent Form control in Xperience 13. To ensure that content is displayed correctly on
@@ -274,8 +274,6 @@ Media library files are migrated as content item assets to the [content hub](htt
 
 Attachment files are migrated as content item assets to the [content hub](https://docs.kentico.com/x/barWCQ) into a content folder `<site_name>/__Attachments`. Assets are created in the specified language if the language is available (e.g., attachments of pages). Migrated assets are created as content items of a *Legacy attachment* content type (code name `Legacy.Attachment`) created by the tool.
 
-The following is an example of a media library created by the Kentico Migration Tool for page attachments:
-
 #### Forms
 
 The migration does not include the content of form autoresponder and notification emails.
@@ -396,7 +394,7 @@ Add the options under the `Settings` section in the configuration file.
 | CreateReusableFieldSchemaForClasses                               | Specifies which page types are also converted to [reusable field schemas](#convert-page-types-to-reusable-field-schemas).                                                                                                                                                                                                                                                                                                                                        |
 | OptInFeatures.QuerySourceInstanceApi.Enabled                      | If `true`, [source instance API discovery](#source-instance-api-discovery) is enabled to allow advanced migration of Page Builder content for pages and page templates.                                                                                                                                                                                                                                                                                          |
 | OptInFeatures.QuerySourceInstanceApi.Connections                  | To use [source instance API discovery](#source-instance-api-discovery), you need to add a connection JSON object containing the following values:<br />`SourceInstanceUri` - the base URI where the source instance's live site application is running.<br />`Secret` - the secret that you set in the *ToolkitApiController.cs* file on the source instance.                                                                                                    |
-| OptInFeatures.CustomMigration.FieldMigrations                     | Enables conversion of media selection text fields to media library files. See [Convert text fields with media links to media libraries](#convert-text-fields-with-media-links-to-media-libraries) for more information.                                                                                                                                                                                                                                          |
+| OptInFeatures.CustomMigration.FieldMigrations                     | Enables conversion of media selection text fields to content item assets or media library files. See [Convert text fields with media links](#convert-text-fields-with-media-links) for more information.                                                                                                                                                                                                                                          |
 
 ### Example
 
@@ -621,12 +619,54 @@ The following example specifies two page types from which reusable schemas are c
     same code name, the code name is prefixed with the content type name in the converted reusable field schemas.
 > * Page types specified by this configuration option are also migrated as content types into to the target instance.
 
-## Convert text fields with media links to media libraries
+## Convert text fields with media links
 
 By default, page type and module class fields with the _Text_ data type and the _Media
 selection_ [form control](https://docs.xperience.io/x/0A_RBg) from the source instance are converted to plain _Text_
 fields in the target instance. You can instead configure the Kentico Migration Tool to convert these fields to the
-_Media files_ data type and use the _Media file selector_ form component.
+_Content items_ data type and use the _Content item selector_ form component, or _Media files_ data type and use the _Media file selector_ form component if you choose to [convert attachments and media library files to media libraries instead of content item assets](#convert-attachments-and-media-library-files-to-media-libraries-instead-of-content-item-assets).
+
+### Convert to content item assets
+
+> :warning: **Notes**
+>
+> * Only media libraries using the **Permanent** [file URL format](https://docs.xperience.io/x/xQ_RBg) are supported.
+    Content from media libraries with enabled **Use direct path for files in content** setting will not be converted.
+> * If you enable this feature, you also need to change retrieval and handling of affected files in your code, as the
+    structure of the stored data changes from a text path (
+    e.g.,`~/getmedia/CCEAD0F0-E2BF-459B-814A-36699E5C773E/somefile.jpeg?width=300&height=100`) to a _Media files_ data
+    type (internally stored as
+    e.g., `[{"Identifier":"CCEAD0F0-E2BF-459B-814A-36699E5C773E","Some file":"somefile.jpeg","Size":11803,"Dimensions":{"Width":300,"Height":100}}]`).
+    The value of the field now needs to be [retrieved as a media library file](https://docs.xperience.io/x/LA2RBg).
+> * If the target instance is a [SaaS project](https://docs.kentico.com/x/saas_xp), you need to manually move content
+	item asset files. See [Content items](#content-items) for more information.
+
+To enable this feature, configure the `OptInFeatures.CustomMigration.FieldMigrations` [options](#configuration) for this
+tool. Use the values in the code snippet below:
+
+```json
+"OptInFeatures":{
+  "CustomMigration":{
+    "FieldMigrations": [
+      {
+        "SourceDataType": "text",
+        "TargetDataType": "contentitemreference",
+        "SourceFormControl": "MediaSelectionControl",
+        "TargetFormComponent": "Kentico.Administration.ContentItemSelector",
+        "Actions": [
+          "convert to asset"
+        ],
+        "FieldNameRegex": ".*"
+      }
+    ]
+  }
+}
+```
+
+`FieldNameRegex` - a regular expression used to filter what fields are converted. Only fields with field names that
+match the regular expressions are converted. Use `.*` to match all fields.
+
+### Convert to media libraries
 
 * Attachment links (containing a `getattachment` handler) are migrated as [attachments](#attachments) and changed to the
   _Media files_ data type.
@@ -686,6 +726,8 @@ By default, media libraries and attachments are migrated as content item assets 
   * The migration does not include temporary attachments (created when a file upload is not finished correctly). If any are present on the source instance, a warning is logged in the [migration protocol](./MIGRATION_PROTOCOL_REFERENCE.md).
 
 ### Media library "Attachments for site DancingGoat"
+
+The following is an example of a media library created by the Kentico Migration Tool for page attachments:
 
 * **Articles** (empty parent folder)
   * **Coffee-processing-techniques** (contains any unsorted attachments of the '/Articles/Coffee-processing-techniques' page)
