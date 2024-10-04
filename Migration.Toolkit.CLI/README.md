@@ -626,8 +626,6 @@ selection_ [form control](https://docs.xperience.io/x/0A_RBg) from the source in
 fields in the target instance. You can instead configure the Kentico Migration Tool to convert these fields to the
 _Content items_ data type and use the _Content item selector_ form component, or _Media files_ data type and use the _Media file selector_ form component if you choose to [convert attachments and media library files to media libraries instead of content item assets](#convert-attachments-and-media-library-files-to-media-libraries-instead-of-content-item-assets).
 
-### Convert to content item assets
-
 > :warning: **Notes**
 >
 > * Only media libraries using the **Permanent** [file URL format](https://docs.xperience.io/x/xQ_RBg) are supported.
@@ -640,6 +638,8 @@ _Content items_ data type and use the _Content item selector_ form component, or
     The value of the field now needs to be [retrieved as a media library file](https://docs.xperience.io/x/LA2RBg).
 > * If the target instance is a [SaaS project](https://docs.kentico.com/x/saas_xp), you need to manually move content
 	item asset files. See [Content items](#content-items) for more information.
+
+### Convert to content item assets
 
 To enable this feature, configure the `OptInFeatures.CustomMigration.FieldMigrations` [options](#configuration) for this
 tool. Use the values in the code snippet below:
@@ -672,19 +672,6 @@ match the regular expressions are converted. Use `.*` to match all fields.
   _Media files_ data type.
 * Media file links (containing a `getmedia` handler) are changed to the _Media files_ data type. It is expected that the
   media library containing the targeted file has been migrated.
-
-> :warning: **Notes**
->
-> * Only media libraries using the **Permanent** [file URL format](https://docs.xperience.io/x/xQ_RBg) are supported.
-    Content from media libraries with enabled **Use direct path for files in content** setting will not be converted.
-> * If you enable this feature, you also need to change retrieval and handling of affected files in your code, as the
-    structure of the stored data changes from a text path (
-    e.g.,`~/getmedia/CCEAD0F0-E2BF-459B-814A-36699E5C773E/somefile.jpeg?width=300&height=100`) to a _Media files_ data
-    type (internally stored as
-    e.g., `[{"Identifier":"CCEAD0F0-E2BF-459B-814A-36699E5C773E","Some file":"somefile.jpeg","Size":11803,"Dimensions":{"Width":300,"Height":100}}]`).
-    The value of the field now needs to be [retrieved as a media library file](https://docs.xperience.io/x/LA2RBg).
-> * If the target instance is a [SaaS project](https://docs.kentico.com/x/saas_xp), you need to manually move content
-	item asset files. See [Content items](#content-items) for more information.
 
 To enable this feature, configure the `OptInFeatures.CustomMigration.FieldMigrations` [options](#configuration) for this
 tool. Use the values in the code snippet below:
