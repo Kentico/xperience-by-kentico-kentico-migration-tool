@@ -268,46 +268,13 @@ Custom table migration does NOT include:
 
 #### Media libraries
 
-* In Xperience by Kentico, Media libraries are global instead of site-specific.
-* The code name of each media library on the target instance is `{SiteName}_{LibraryCodeName}`.
-* Media library permissions are currently not supported in Xperience by Kentic and are not migrated.
+Media library files are migrated as content item assets to the [content hub](https://docs.kentico.com/x/barWCQ) into a content folder `<site_name>/<library_folder>`. All assets are created in the default language of the respective site. Migrated assets are created as content items of a *Legacy media file* content type (code name `Legacy.Mediafile`) created by the tool.
 
 #### Attachments
 
-Page attachments are not supported in Xperience by Kentico. Attachment files are instead migrated
-into [media libraries](https://docs.xperience.io/x/agKiCQ).
-
-* Page attachments are migrated into a media library named: *"Attachments for site \<sitename\>"*
-* The media library contains folders matching the content tree structure for all pages with attachments (including empty
-  folders for parent pages without attachments). The folders are named after the *node alias* of the source pages.
-    * Each page's folder directly contains all unsorted attachments (files added on the *Attachments* tab in the
-      source's *Pages* application).
-    * Attachments stored in specific page fields are placed into subfolders, named in format: *"__fieldname"*. These
-      subfolders can include multiple files for fields of the *Attachments* type, or a single file for *File* type
-      fields.
-* Any "floating" attachments without an associated page are migrated into the media library root folder.
-* The migration does not include temporary attachments (created when a file upload is not finished correctly). If any
-  are present on the source instance, a warning is logged in
-  the [migration protocol](./MIGRATION_PROTOCOL_REFERENCE.md).
+Attachment files are migrated as content item assets to the [content hub](https://docs.kentico.com/x/barWCQ) into a content folder `<site_name>/__Attachments`. Assets are created in the specified language if the language is available (e.g., attachments of pages). Migrated assets are created as content items of a *Legacy attachment* content type (code name `Legacy.Attachment`) created by the tool.
 
 The following is an example of a media library created by the Kentico Migration Tool for page attachments:
-
-#### Media library "Attachments for site DancingGoat"
-
-* **Articles** (empty parent folder)
-    * **Coffee-processing-techniques** (contains any unsorted attachments of the '
-      /Articles/Coffee-processing-techniques' page)
-        * **__Teaser** (contains attachments stored in the page's 'Teaser' field)
-    * **Which-brewing-fits-you**
-        * **__Teaser**
-    * ...
-
-Additionally, any attachments placed into the content of migrated pages **will no longer work** in Xperience by Kentico.
-This includes images and file download links that use **/getattachment** and **/getimage** URLs.
-
-If you wish to continue using these legacy attachment URLs from earlier Kentico versions, you need to add a custom
-handler to your Xperience by Kentico project.
-See [`Migration.Toolkit.KXP.Extensions/README.MD`](/Migration.Toolkit.KXP.Extensions/README.MD) for instructions.
 
 #### Forms
 
@@ -420,7 +387,7 @@ Add the options under the `Settings` section in the configuration file.
 | XbKApiSettings                                                    | Configuration options set for the API when creating migrated objects in the target application.<br /><br />The `ConnectionStrings.CMSConnectionString`option is required - set the connection string to the target Xperience by Kentico database (the same value as `XbKConnectionString`).                                                                                                                                                                      |
 | MigrationProtocolPath                                             | The absolute file system path of the location where the [migration protocol file](./MIGRATION_PROTOCOL_REFERENCE.md) is generated.<br /><br />For example: `"C:\\Logs\\Migration.Toolkit.Protocol.log"`                                                                                                                                                                                                                                                          |
 | MigrateOnlyMediaFileInfo                                          | If set to `true`, only the database representations of media files are migrated, without the files in the media folder in the project's file system. For example, enable this option if your media library files are mapped to a shared directory or Cloud storage.<br /><br />If `false`, media files are migrated based on the `KxCmsDirPath` location.                                                                                                        |
-| MigrateMediaToMediaLibrary | Determines whether media files (media library files and optionally attachments) from the source instance are migrated to the target instance as media libraries or as assets in the content hub. <br /><br /> See [Convert attachments and media library files to assets](#convert-attachments-and-media-library-files-to-assets) |
+| MigrateMediaToMediaLibrary | Determines whether media library files and attachments from the source instance are migrated to the target instance as media libraries or as [content item assets](https://docs.kentico.com/x/barWCQ) in the content hub. The default value is `false` – media files and attachments are migrated as content item assets. <br /><br /> See [Convert attachments and media library files to media libraries instad of content item assets](#convert-attachments-and-media-library-files-to-media-libraries-instead-of-content-item-assets) |
 | MemberIncludeUserSystemFields                                     | Determines which system fields from the *CMS_User* and *CMS_UserSettings* tables are migrated to *CMS_Member* in Xperience by Kentico. Fields that do not exist in *CMS_Member* are automatically created. <br /><br />The sample `appsettings.json` file included with the tool by default includes all user fields that can be migrated from Kentico Xperience 13. Exclude specific fields from the migration by removing them from this configuration option. |
 | UseOmActivityNodeRelationAutofix                                  | Determines how the migration handles references from Contact management activities to non-existing pages.<br /><br />Possible options:<br />`DiscardData` - faulty references are removed,<br />`AttemptFix` - references are updated to the IDs of corresponding pages created by the migration,<br />`Error` - an error is reported and the reference can be translated or otherwise handled manually                                                          |
 | UseOmActivitySiteRelationAutofix                                  | Determines how the migration handles site references from Contact management activities.<br /><br />Possible options: `DiscardData`,`AttemptFix`,`Error`                                                                                                                                                                                                                                                                                                         |
@@ -702,28 +669,34 @@ tool. Use the values in the code snippet below:
 `FieldNameRegex` - a regular expression used to filter what fields are converted. Only fields with field names that
 match the regular expressions are converted. Use `.*` to match all fields.
 
-## Convert attachments and media library files to assets
+## Convert attachments and media library files to media libraries instead of content item assets
 
-By default, media libraries and attachments (if the `--attachments` parameter is enabled) are migrated to media libraries in the target instance. You can modify this behavior by configuring the value of the `MigrateMediaToMediaLibrary` setting to `false` and convert media library files and attachments to assets in the content hub. When set to `true`, media libraries and attachments are migrated into media libraries in the target instance.
+By default, media libraries and attachments are migrated as content item assets in the target instance. You can modify this behavior by configuring the value of the `MigrateMediaToMediaLibrary` setting to `true` and convert media library files and attachments to media libraries if you want to continue using media libraries. When set to `false`, media libraries and attachments are migrated as content item assets in the target instance.
 
-- Media library files are migrated to content hub into a content folder `<site_name>/<library_folder>`. All assets are created in the default language of the respective site.
-- Attachment files are migrated to content hub into a content folder `<site_name>/__Attachments`. Assets are created in the specified language if the language is available (e.g., attachments of pages).
+* Media libraries
+  * In Xperience by Kentico, Media libraries are global instead of site-specific.
+  * The code name of each media library on the target instance is `{SiteName}_{LibraryCodeName}`.
+  * Media library permissions are currently not supported in Xperience by Kentico and are not migrated.
+* Attachments
+  * Page attachments are migrated into a media library named: *"Attachments for site \<sitename\>"*
+  * The media library contains folders matching the content tree structure for all pages with attachments (including empty folders for parent pages without attachments). The folders are named after the *node alias* of the source pages.
+  * Each page's folder directly contains all unsorted attachments (files added on the *Attachments* tab in the source's *Pages* application).
+  * Attachments stored in specific page fields are placed into subfolders, named in format: *"__fieldname"*. These subfolders can include multiple files for fields of the *Attachments* type, or a single file for *File* type fields.
+  * Any "floating" attachments without an associated page are migrated into the media library root folder.
+  * The migration does not include temporary attachments (created when a file upload is not finished correctly). If any are present on the source instance, a warning is logged in the [migration protocol](./MIGRATION_PROTOCOL_REFERENCE.md).
 
-```json
-"OptInFeatures":{
-  "CustomMigration":{
-    "FieldMigrations": [
-      {
-        "SourceDataType": "text",
-        "TargetDataType": "contentitemreference",
-        "SourceFormControl": "MediaSelectionControl",
-        "TargetFormComponent": "Kentico.Administration.ContentItemSelector",
-        "Actions": [
-          "convert to asset"
-        ],
-        "FieldNameRegex": ".*"
-      }
-    ]
-  }
-}
-```
+### Media library "Attachments for site DancingGoat"
+
+* **Articles** (empty parent folder)
+  * **Coffee-processing-techniques** (contains any unsorted attachments of the '/Articles/Coffee-processing-techniques' page)
+    * **__Teaser** (contains attachments stored in the page's 'Teaser' field)
+  * **Which-brewing-fits-you**
+    * **__Teaser**
+  * ...
+
+Additionally, any attachments placed into the content of migrated pages **will no longer work** in Xperience by Kentico.
+This includes images and file download links that use **/getattachment** and **/getimage** URLs.
+
+If you wish to continue using these legacy attachment URLs from earlier Kentico versions, you need to add a custom
+handler to your Xperience by Kentico project.
+See [`Migration.Toolkit.KXP.Extensions/README.MD`](/Migration.Toolkit.KXP.Extensions/README.MD) for instructions.
