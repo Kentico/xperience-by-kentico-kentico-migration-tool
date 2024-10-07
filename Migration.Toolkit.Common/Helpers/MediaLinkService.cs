@@ -93,11 +93,14 @@ public class MediaLinkService(
         // match site sub path
         if (site != default && uri is not null)
         {
-            var siteLiveSiteUri = new Uri(site.siteLiveSiteUrl, UriKind.Absolute);
-            int subPathLength = siteLiveSiteUri.LocalPath.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries).Length;
-            if (uri.LocalPath.StartsWith(siteLiveSiteUri.LocalPath, StringComparison.InvariantCultureIgnoreCase))
+            if (Uri.IsWellFormedUriString(site.siteLiveSiteUrl, UriKind.Absolute))
             {
-                inspectionIndex += subPathLength;
+                var siteLiveSiteUri = new Uri(site.siteLiveSiteUrl, UriKind.Absolute);
+                int subPathLength = siteLiveSiteUri.LocalPath.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries).Length;
+                if (uri.LocalPath.StartsWith(siteLiveSiteUri.LocalPath, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    inspectionIndex += subPathLength;
+                }
             }
         }
 

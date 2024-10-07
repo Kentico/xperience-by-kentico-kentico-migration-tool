@@ -58,6 +58,7 @@ public class MediaHelperTest
                 (2, "Site2", "http://localhost:5002/SiteSubPath"), // site with custom global dir & subpath
                 (3, "Site3", "http://localhost:5003"), // site without custom global media library dir
                 (4, "Site4", "http://localhost:5004"), // site with custom global media library dir & without media sites folder
+                // add sile with live site url "localhost" - that was valid in K11
             ],
             [
                 // (null, null), not set globally
