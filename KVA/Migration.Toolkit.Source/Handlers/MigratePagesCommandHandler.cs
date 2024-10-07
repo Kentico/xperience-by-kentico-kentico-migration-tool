@@ -45,7 +45,8 @@ public class MigratePagesCommandHandler(
     ModelFacade modelFacade,
     DeferredPathService deferredPathService,
     SpoiledGuidContext spoiledGuidContext,
-    SourceInstanceContext sourceInstanceContext
+    SourceInstanceContext sourceInstanceContext,
+    ClassMappingProvider classMappingProvider
 )
     : IRequestHandler<MigratePagesCommand, CommandResult>
 {
@@ -194,7 +195,11 @@ public class MigratePagesCommandHandler(
                     ? (Guid?)null
                     : spoiledGuidContext.EnsureNodeGuid(ksNodeParent);
 
-                var targetClass = DataClassInfoProvider.ProviderObject.Get(ksNodeClass.ClassGUID);
+                DataClassInfo targetClass = null!;
+                var classMapping = classMappingProvider.GetMapping(ksNodeClass.ClassName);
+                targetClass = classMapping != null
+                    ? DataClassInfoProvider.ProviderObject.Get(classMapping.TargetClassName)
+                    : DataClassInfoProvider.ProviderObject.Get(ksNodeClass.ClassGUID);
 
                 var results = mapper.Map(new CmsTreeMapperSource(
                     ksNode,

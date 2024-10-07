@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-
+using Migration.Tool.Extensions;
 using Migration.Toolkit.CLI;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
@@ -113,6 +113,8 @@ services
 
 
 services.UseKsToolkitCore(settings.MigrateMediaToMediaLibrary);
+services.UseCustomizations();
+
 await using var conn = new SqlConnection(settings.KxConnectionString);
 try
 {

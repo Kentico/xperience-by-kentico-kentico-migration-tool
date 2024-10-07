@@ -3,6 +3,7 @@ using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
 using CMS.Core;
 using CMS.Core.Internal;
+using CMS.DataEngine;
 using CMS.FormEngine;
 using CMS.MediaLibrary;
 using CMS.Websites;
@@ -12,6 +13,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Migration.Toolkit.Common;
 using Migration.Toolkit.Common.Abstractions;
+using Migration.Toolkit.Common.Builders;
 using Migration.Toolkit.Common.Enumerations;
 using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.Common.Services;
@@ -23,6 +25,7 @@ using Migration.Toolkit.Source.Auxiliary;
 using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Helpers;
 using Migration.Toolkit.Source.Model;
+using Migration.Toolkit.Source.Providers;
 using Migration.Toolkit.Source.Services;
 using Migration.Toolkit.Source.Services.Model;
 using Newtonsoft.Json;
@@ -57,21 +60,28 @@ public class ContentItemMapper(
     SpoiledGuidContext spoiledGuidContext,
     EntityIdentityFacade entityIdentityFacade,
     IAssetFacade assetFacade,
+    MediaLinkServiceFactory mediaLinkServiceFactory,
     ToolkitConfiguration configuration,
-    MediaLinkServiceFactory mediaLinkServiceFactory
+    ClassMappingProvider classMappingProvider
 ) : UmtMapperBase<CmsTreeMapperSource>
 {
     private const string CLASS_FIELD_CONTROL_NAME = "controlname";
 
     protected override IEnumerable<IUmtModel> MapInternal(CmsTreeMapperSource source)
     {
-        (var cmsTree, string safeNodeName, var siteGuid, var nodeParentGuid, var cultureToLanguageGuid, string targetFormDefinition, string sourceFormDefinition, var migratedDocuments, var sourceSite) = source;
+        (var cmsTree, string safeNodeName, var siteGuid, var nodeParentGuid, var cultureToLanguageGuid, string? targetFormDefinition, string sourceFormDefinition, var migratedDocuments, var sourceSite) = source;
 
         logger.LogTrace("Mapping {Value}", new { cmsTree.NodeAliasPath, cmsTree.NodeName, cmsTree.NodeGUID, cmsTree.NodeSiteID });
 
-        var nodeClass = modelFacade.SelectById<ICmsClass>(cmsTree.NodeClassID) ?? throw new InvalidOperationException($"Fatal: node class is missing, class id '{cmsTree.NodeClassID}'");
+        var sourceNodeClass = modelFacade.SelectById<ICmsClass>(cmsTree.NodeClassID) ?? throw new InvalidOperationException($"Fatal: node class is missing, class id '{cmsTree.NodeClassID}'");
+        var mapping = classMappingProvider.GetMapping(sourceNodeClass.ClassName);
+        var targetClassGuid = sourceNodeClass.ClassGUID;
+        if (mapping != null)
+        {
+            targetClassGuid = DataClassInfoProvider.ProviderObject.Get(mapping.TargetClassName)?.ClassGUID ?? throw new InvalidOperationException($"Unable to find target class '{mapping.TargetClassName}'");
+        }
 
-        bool migratedAsContentFolder = nodeClass.ClassName.Equals("cms.folder", StringComparison.InvariantCultureIgnoreCase) && !configuration.UseDeprecatedFolderPageType.GetValueOrDefault(false);
+        bool migratedAsContentFolder = sourceNodeClass.ClassName.Equals("cms.folder", StringComparison.InvariantCultureIgnoreCase) && !configuration.UseDeprecatedFolderPageType.GetValueOrDefault(false);
 
         var contentItemGuid = spoiledGuidContext.EnsureNodeGuid(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsTree.NodeID);
         yield return new ContentItemModel
@@ -80,7 +90,7 @@ public class ContentItemMapper(
             ContentItemName = safeNodeName,
             ContentItemIsReusable = false, // page is not reusable
             ContentItemIsSecured = cmsTree.IsSecuredNode ?? false,
-            ContentItemDataClassGuid = migratedAsContentFolder ? null : nodeClass.ClassGUID,
+            ContentItemDataClassGuid = migratedAsContentFolder ? null : targetClassGuid,
             ContentItemChannelGuid = siteGuid
         };
 
@@ -121,7 +131,7 @@ public class ContentItemMapper(
                 List<IUmtModel>? migratedDraft = null;
                 try
                 {
-                    migratedDraft = MigrateDraft(draftVersion, cmsTree, sourceFormDefinition, targetFormDefinition, contentItemGuid, languageGuid, nodeClass, websiteChannelInfo, sourceSite).ToList();
+                    migratedDraft = MigrateDraft(draftVersion, cmsTree, sourceFormDefinition, targetFormDefinition, contentItemGuid, languageGuid, sourceNodeClass, websiteChannelInfo, sourceSite, mapping).ToList();
                     draftMigrated = true;
                 }
                 catch
@@ -235,17 +245,17 @@ public class ContentItemMapper(
             {
                 deferredPathService.AddPatch(
                     commonDataModel.ContentItemCommonDataGUID ?? throw new InvalidOperationException("DocumentGUID is null"),
-                    nodeClass.ClassName,
+                    ContentItemCommonDataInfo.TYPEINFO.ObjectClassName,
                     websiteChannelInfo.WebsiteChannelID
                 );
             }
 
             if (!migratedAsContentFolder)
             {
-                var dataModel = new ContentItemDataModel { ContentItemDataGUID = commonDataModel.ContentItemCommonDataGUID, ContentItemDataCommonDataGuid = commonDataModel.ContentItemCommonDataGUID, ContentItemContentTypeName = nodeClass.ClassName };
+                var dataModel = new ContentItemDataModel { ContentItemDataGUID = commonDataModel.ContentItemCommonDataGUID, ContentItemDataCommonDataGuid = commonDataModel.ContentItemCommonDataGUID, ContentItemContentTypeName = mapping?.TargetClassName ?? sourceNodeClass.ClassName };
 
                 var fi = new FormInfo(targetFormDefinition);
-                if (nodeClass.ClassIsCoupledClass)
+                if (sourceNodeClass.ClassIsCoupledClass)
                 {
                     var sfi = new FormInfo(sourceFormDefinition);
                     string primaryKeyName = "";
@@ -263,23 +273,25 @@ public class ContentItemMapper(
                     }
 
                     var commonFields = UnpackReusableFieldSchemas(fi.GetFields<FormSchemaInfo>()).ToArray();
-                    var sourceColumns = commonFields
-                        .Select(cf => ReusableSchemaService.RemoveClassPrefix(nodeClass.ClassName, cf.Name))
+                    var targetColumns = commonFields
+                        .Select(cf => ReusableSchemaService.RemoveClassPrefix(sourceNodeClass.ClassName, cf.Name))
                         .Union(fi.GetColumnNames(false))
-                        .Except([CmsClassMapper.GetLegacyDocumentName(fi, nodeClass.ClassName)])
+                        .Except([CmsClassMapper.GetLegacyDocumentName(fi, sourceNodeClass.ClassName)])
                         .ToList();
 
-                    var coupledDataRow = coupledDataService.GetSourceCoupledDataRow(nodeClass.ClassTableName, primaryKeyName, cmsDocument.DocumentForeignKeyValue);
+                    var coupledDataRow = coupledDataService.GetSourceCoupledDataRow(sourceNodeClass.ClassTableName, primaryKeyName, cmsDocument.DocumentForeignKeyValue);
                     // TODO tomas.krch: 2024-09-05 propagate async to root
                     MapCoupledDataFieldValues(dataModel.CustomProperties,
                         columnName => coupledDataRow?[columnName],
                         columnName => coupledDataRow?.ContainsKey(columnName) ?? false,
-                        cmsTree, cmsDocument.DocumentID, sourceColumns, sfi, fi, false, nodeClass, sourceSite
+                        cmsTree, cmsDocument.DocumentID,
+                        targetColumns, sfi, fi,
+                        false, sourceNodeClass, sourceSite, mapping
                     ).GetAwaiter().GetResult();
 
                     foreach (var formFieldInfo in commonFields)
                     {
-                        string originalFieldName = ReusableSchemaService.RemoveClassPrefix(nodeClass.ClassName, formFieldInfo.Name);
+                        string originalFieldName = ReusableSchemaService.RemoveClassPrefix(sourceNodeClass.ClassName, formFieldInfo.Name);
                         if (dataModel.CustomProperties.TryGetValue(originalFieldName, out object? value))
                         {
                             commonDataModel.CustomProperties ??= [];
@@ -294,11 +306,12 @@ public class ContentItemMapper(
                     }
                 }
 
-                if (CmsClassMapper.GetLegacyDocumentName(fi, nodeClass.ClassName) is { } legacyDocumentNameFieldName)
+                string targetClassName = mapping?.TargetClassName ?? sourceNodeClass.ClassName;
+                if (CmsClassMapper.GetLegacyDocumentName(fi, targetClassName) is { } legacyDocumentNameFieldName)
                 {
-                    if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(nodeClass.ClassName))
+                    if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(targetClassName))
                     {
-                        string fieldName = ReusableSchemaService.GetUniqueFieldName(nodeClass.ClassName, legacyDocumentNameFieldName);
+                        string fieldName = ReusableSchemaService.GetUniqueFieldName(targetClassName, legacyDocumentNameFieldName);
                         commonDataModel.CustomProperties.Add(fieldName, cmsDocument.DocumentName);
                     }
                     else
@@ -398,7 +411,7 @@ public class ContentItemMapper(
     }
 
     private IEnumerable<IUmtModel> MigrateDraft(ICmsVersionHistory checkoutVersion, ICmsTree cmsTree, string sourceFormClassDefinition, string targetFormDefinition, Guid contentItemGuid,
-        Guid contentLanguageGuid, ICmsClass nodeClass, WebsiteChannelInfo websiteChannelInfo, ICmsSite sourceSite)
+        Guid contentLanguageGuid, ICmsClass sourceNodeClass, WebsiteChannelInfo websiteChannelInfo, ICmsSite sourceSite, IClassMapping mapping)
     {
         var adapter = new NodeXmlAdapter(checkoutVersion.NodeXML);
 
@@ -447,14 +460,19 @@ public class ContentItemMapper(
             {
                 deferredPathService.AddPatch(
                     commonDataModel.ContentItemCommonDataGUID ?? throw new InvalidOperationException("DocumentGUID is null"),
-                    nodeClass.ClassName,
+                    ContentItemCommonDataInfo.TYPEINFO.ObjectClassName,// sourceNodeClass.ClassName,
                     websiteChannelInfo.WebsiteChannelID
                 );
             }
 
-            dataModel = new ContentItemDataModel { ContentItemDataGUID = commonDataModel.ContentItemCommonDataGUID, ContentItemDataCommonDataGuid = commonDataModel.ContentItemCommonDataGUID, ContentItemContentTypeName = nodeClass.ClassName };
+            dataModel = new ContentItemDataModel
+            {
+                ContentItemDataGUID = commonDataModel.ContentItemCommonDataGUID,
+                ContentItemDataCommonDataGuid = commonDataModel.ContentItemCommonDataGUID,
+                ContentItemContentTypeName = mapping?.TargetClassName ?? sourceNodeClass.ClassName
+            };
 
-            if (nodeClass.ClassIsCoupledClass)
+            if (sourceNodeClass.ClassIsCoupledClass)
             {
                 var fi = new FormInfo(targetFormDefinition);
                 var sfi = new FormInfo(sourceFormClassDefinition);
@@ -474,20 +492,20 @@ public class ContentItemMapper(
 
                 var commonFields = UnpackReusableFieldSchemas(fi.GetFields<FormSchemaInfo>()).ToArray();
                 var sourceColumns = commonFields
-                    .Select(cf => ReusableSchemaService.RemoveClassPrefix(nodeClass.ClassName, cf.Name))
+                    .Select(cf => ReusableSchemaService.RemoveClassPrefix(sourceNodeClass.ClassName, cf.Name))
                     .Union(fi.GetColumnNames(false))
-                    .Except([CmsClassMapper.GetLegacyDocumentName(fi, nodeClass.ClassName)])
+                    .Except([CmsClassMapper.GetLegacyDocumentName(fi, sourceNodeClass.ClassName)])
                     .ToList();
 
                 // TODO tomas.krch: 2024-09-05 propagate async to root
                 MapCoupledDataFieldValues(dataModel.CustomProperties,
                     s => adapter.GetValue(s),
                     s => adapter.HasValueSet(s)
-                    , cmsTree, adapter.DocumentID, sourceColumns, sfi, fi, true, nodeClass, sourceSite).GetAwaiter().GetResult();
+                    , cmsTree, adapter.DocumentID, sourceColumns, sfi, fi, true, sourceNodeClass, sourceSite, mapping).GetAwaiter().GetResult();
 
                 foreach (var formFieldInfo in commonFields)
                 {
-                    string originalFieldName = ReusableSchemaService.RemoveClassPrefix(nodeClass.ClassName, formFieldInfo.Name);
+                    string originalFieldName = ReusableSchemaService.RemoveClassPrefix(sourceNodeClass.ClassName, formFieldInfo.Name);
                     if (dataModel.CustomProperties.TryGetValue(originalFieldName, out object? value))
                     {
                         commonDataModel.CustomProperties ??= [];
@@ -503,9 +521,9 @@ public class ContentItemMapper(
             }
 
             // supply document name
-            if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(nodeClass.ClassName))
+            if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(sourceNodeClass.ClassName))
             {
-                string fieldName = ReusableSchemaService.GetUniqueFieldName(nodeClass.ClassName, "DocumentName");
+                string fieldName = ReusableSchemaService.GetUniqueFieldName(sourceNodeClass.ClassName, "DocumentName");
                 commonDataModel.CustomProperties.Add(fieldName, adapter.DocumentName);
             }
             else
@@ -536,116 +554,166 @@ public class ContentItemMapper(
         FormInfo oldFormInfo,
         FormInfo newFormInfo,
         bool migratingFromVersionHistory,
-        ICmsClass nodeClass,
-        ICmsSite site
+        ICmsClass sourceNodeClass,
+        ICmsSite site,
+        IClassMapping mapping
     )
     {
-        Debug.Assert(nodeClass.ClassTableName != null, "cmsTree.NodeClass.ClassTableName != null");
+        Debug.Assert(sourceNodeClass.ClassTableName != null, "sourceNodeClass.ClassTableName != null");
 
-        foreach (string columnName in newColumnNames)
+        foreach (string targetColumnName in newColumnNames)
         {
+            string targetFieldName = null!;
+            Func<object?, object?> valueConvertor = sourceValue => sourceValue;
+            switch (mapping?.GetMapping(targetColumnName, sourceNodeClass.ClassName))
+            {
+                case FieldMappingWithConversion fieldMappingWithConversion:
+                {
+                    targetFieldName = fieldMappingWithConversion.TargetFieldName;
+                    valueConvertor = fieldMappingWithConversion.Converter;
+                    break;
+                }
+                case FieldMapping fieldMapping:
+                {
+                    targetFieldName = fieldMapping.TargetFieldName;
+                    valueConvertor = sourceValue => sourceValue;
+                    break;
+                }
+                case null:
+                {
+                    targetFieldName = targetColumnName;
+                    valueConvertor = sourceValue => sourceValue;
+                    break;
+                }
+
+                default:
+                    break;
+            }
+
             if (
-                columnName.Equals("ContentItemDataID", StringComparison.InvariantCultureIgnoreCase) ||
-                columnName.Equals("ContentItemDataCommonDataID", StringComparison.InvariantCultureIgnoreCase) ||
-                columnName.Equals("ContentItemDataGUID", StringComparison.InvariantCultureIgnoreCase) ||
-                columnName.Equals(CmsClassMapper.GetLegacyDocumentName(newFormInfo, nodeClass.ClassName), StringComparison.InvariantCultureIgnoreCase)
+                targetFieldName.Equals("ContentItemDataID", StringComparison.InvariantCultureIgnoreCase) ||
+                targetFieldName.Equals("ContentItemDataCommonDataID", StringComparison.InvariantCultureIgnoreCase) ||
+                targetFieldName.Equals("ContentItemDataGUID", StringComparison.InvariantCultureIgnoreCase) ||
+                targetFieldName.Equals(CmsClassMapper.GetLegacyDocumentName(newFormInfo, sourceNodeClass.ClassName), StringComparison.InvariantCultureIgnoreCase)
             )
             {
-                logger.LogTrace("Skipping '{FieldName}'", columnName);
+                logger.LogTrace("Skipping '{FieldName}'", targetFieldName);
                 continue;
             }
 
 #pragma warning disable CS0618 // Type or member is obsolete
-            if (oldFormInfo.GetFormField(columnName)?.External is true)
+            if (oldFormInfo.GetFormField(targetFieldName)?.External is true)
 #pragma warning restore CS0618 // Type or member is obsolete
             {
-                logger.LogTrace("Skipping '{FieldName}' - is external", columnName);
+                logger.LogTrace("Skipping '{FieldName}' - is external", targetFieldName);
                 continue;
             }
 
-            if (!containsSourceValue(columnName))
+            string sourceFieldName = mapping?.GetSourceFieldName(targetColumnName, sourceNodeClass.ClassName) ?? targetColumnName;
+            if (!containsSourceValue(sourceFieldName))
             {
                 if (migratingFromVersionHistory)
                 {
-                    logger.LogDebug("Value is not contained in source, field '{Field}' (possibly because version existed before field was added to class form)", columnName);
+                    logger.LogDebug("Value is not contained in source, field '{Field}' (possibly because version existed before field was added to class form)", targetColumnName);
                 }
                 else
                 {
-                    logger.LogWarning("Value is not contained in source, field '{Field}'", columnName);
+                    logger.LogWarning("Value is not contained in source, field '{Field}'", targetColumnName);
                 }
 
                 continue;
             }
 
 
-            var field = oldFormInfo.GetFormField(columnName);
+            var field = oldFormInfo.GetFormField(sourceFieldName);
             string? controlName = field.Settings[CLASS_FIELD_CONTROL_NAME]?.ToString()?.ToLowerInvariant();
 
-            object? value = getSourceValue(columnName);
-            target[columnName] = value;
-
-            var fieldMigration = fieldMigrationService.GetFieldMigration(field.DataType, controlName, columnName);
-            if (fieldMigration?.Actions?.Contains(TcaDirective.ConvertToAsset) ?? false)
+            object? sourceValue = getSourceValue(sourceFieldName);
+            target[targetFieldName] = valueConvertor.Invoke(sourceValue);
+            var fvmc = new FieldMigrationContext(field.DataType, controlName, targetColumnName, new DocumentSourceObjectContext(cmsTree, sourceNodeClass, site, oldFormInfo, newFormInfo, documentId));
+            var fmb = fieldMigrationService.GetFieldMigration(fvmc);
+            if (fmb is FieldMigration fieldMigration)
             {
-                await ConvertToAsset(target, cmsTree, documentId, value, columnName, controlName, field, fieldMigration, site);
-                continue;
-            }
-
-            if (controlName != null)
-            {
-                if (fieldMigration.Actions?.Contains(TcaDirective.ConvertToPages) ?? false)
+                if (controlName != null)
                 {
-                    // relation to other document
-                    var convertedRelation = relationshipService.GetNodeRelationships(cmsTree.NodeID, nodeClass.ClassName, field.Guid)
-                        .Select(r => new WebPageRelatedItem { WebPageGuid = spoiledGuidContext.EnsureNodeGuid(r.RightNode.NodeGUID, r.RightNode.NodeSiteID, r.RightNode.NodeID) });
+                    if (fieldMigration.Actions?.Contains(TcaDirective.ConvertToPages) ?? false)
+                    {
+                        // relation to other document
+                        var convertedRelation = relationshipService.GetNodeRelationships(cmsTree.NodeID, sourceNodeClass.ClassName, field.Guid)
+                            .Select(r => new WebPageRelatedItem { WebPageGuid = spoiledGuidContext.EnsureNodeGuid(r.RightNode.NodeGUID, r.RightNode.NodeSiteID, r.RightNode.NodeID) });
 
-                    target.SetValueAsJson(columnName, convertedRelation);
+                        target.SetValueAsJson(targetFieldName, valueConvertor.Invoke(convertedRelation));
+                    }
+                    else
+                    {
+                        // leave as is
+                        target[targetFieldName] = valueConvertor.Invoke(sourceValue);
+                    }
+
+                    if (fieldMigration.TargetFormComponent == "webpages")
+                    {
+                        if (sourceValue is string pageReferenceJson)
+                        {
+                            var parsed = JObject.Parse(pageReferenceJson);
+                            foreach (var jToken in parsed.DescendantsAndSelf())
+                            {
+                                if (jToken.Path.EndsWith("NodeGUID", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    var patchedGuid = spoiledGuidContext.EnsureNodeGuid(jToken.Value<Guid>(), cmsTree.NodeSiteID);
+                                    jToken.Replace(JToken.FromObject(patchedGuid));
+                                }
+                            }
+
+                            target[targetFieldName] = valueConvertor.Invoke(parsed.ToString().Replace("\"NodeGuid\"", "\"WebPageGuid\""));
+                        }
+                    }
                 }
                 else
                 {
-                    // leave as is
-                    target[columnName] = value;
+                    target[targetFieldName] = valueConvertor.Invoke(sourceValue);
                 }
-
-                if (fieldMigration.TargetFormComponent == "webpages")
+            }
+            else if (fmb != null)
+            {
+                switch (await fmb.MigrateValue(sourceValue, fvmc))
                 {
-                    if (value is string pageReferenceJson)
+                    case { Success: true } result:
                     {
-                        var parsed = JObject.Parse(pageReferenceJson);
-                        foreach (var jToken in parsed.DescendantsAndSelf())
-                        {
-                            if (jToken.Path.EndsWith("NodeGUID", StringComparison.InvariantCultureIgnoreCase))
-                            {
-                                var patchedGuid = spoiledGuidContext.EnsureNodeGuid(jToken.Value<Guid>(), cmsTree.NodeSiteID);
-                                jToken.Replace(JToken.FromObject(patchedGuid));
-                            }
-                        }
-
-                        target[columnName] = parsed.ToString().Replace("\"NodeGuid\"", "\"WebPageGuid\"");
+                        target[targetFieldName] = valueConvertor.Invoke(result.MigratedValue);
+                        break;
                     }
+                    case { Success: false }:
+                    {
+                        logger.LogError("Error while migrating field '{Field}' value {Value}", targetFieldName, sourceValue);
+                        break;
+                    }
+
+                    default:
+                        break;
                 }
             }
             else
             {
-                target[columnName] = value;
+                target[targetFieldName] = valueConvertor?.Invoke(sourceValue);
             }
 
 
-            var newField = newFormInfo.GetFormField(columnName);
+            var newField = newFormInfo.GetFormField(targetColumnName);
             if (newField == null)
             {
+
                 var commonFields = UnpackReusableFieldSchemas(newFormInfo.GetFields<FormSchemaInfo>()).ToArray();
                 newField = commonFields
-                    .FirstOrDefault(cf => ReusableSchemaService.RemoveClassPrefix(nodeClass.ClassName, cf.Name).Equals(columnName, StringComparison.InvariantCultureIgnoreCase));
+                    .FirstOrDefault(cf => ReusableSchemaService.RemoveClassPrefix(mapping?.TargetClassName ?? sourceNodeClass.ClassName, cf.Name).Equals(targetColumnName, StringComparison.InvariantCultureIgnoreCase));
             }
             string? newControlName = newField?.Settings[CLASS_FIELD_CONTROL_NAME]?.ToString()?.ToLowerInvariant();
-            if (newControlName?.Equals(FormComponents.AdminRichTextEditorComponent, StringComparison.InvariantCultureIgnoreCase) == true && target[columnName] is string { } html && !string.IsNullOrWhiteSpace(html) &&
+            if (newControlName?.Equals(FormComponents.AdminRichTextEditorComponent, StringComparison.InvariantCultureIgnoreCase) == true && target[targetColumnName] is string { } html && !string.IsNullOrWhiteSpace(html) &&
                 !configuration.MigrateMediaToMediaLibrary)
             {
                 var mediaLinkService = mediaLinkServiceFactory.Create();
                 var htmlProcessor = new HtmlProcessor(html, mediaLinkService);
 
-                target[columnName] = await htmlProcessor.ProcessHtml(site.SiteID, async (result, original) =>
+                target[targetColumnName] = await htmlProcessor.ProcessHtml(site.SiteID, async (result, original) =>
                 {
                     switch (result)
                     {
@@ -685,243 +753,6 @@ public class ContentItemMapper(
                     return original;
                 });
             }
-        }
-    }
-
-    private async Task ConvertToAsset(Dictionary<string, object?> target, ICmsTree cmsTree, int? documentId, object? value, string columnName, string? controlName, FormFieldInfo field, FieldMigration fieldMigration, ICmsSite site)
-    {
-        List<object> mfis = [];
-        bool hasMigratedAsset = false;
-        if (value is string link &&
-            mediaLinkServiceFactory.Create().MatchMediaLink(link, site.SiteID) is (true, var mediaLinkKind, var mediaKind, var path, var mediaGuid, var linkSiteId, var libraryDir) result)
-        {
-            if (mediaLinkKind == MediaLinkKind.Path)
-            {
-                // path needs to be converted to GUID
-                if (mediaKind == MediaKind.Attachment && path != null)
-                {
-                    switch (await attachmentMigrator.TryMigrateAttachmentByPath(path, $"__{columnName}"))
-                    {
-                        case MigrateAttachmentResultMediaFile(true, _, var x, _):
-                        {
-                            mfis = [new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
-                            hasMigratedAsset = true;
-                            logger.LogTrace("'{FieldName}' migrated Match={Value}", columnName, result);
-                            break;
-                        }
-                        case MigrateAttachmentResultContentItem { Success: true, ContentItemGuid: { } contentItemGuid }:
-                        {
-                            mfis =
-                            [
-                                new ContentItemReference { Identifier = contentItemGuid }
-                            ];
-                            hasMigratedAsset = true;
-                            logger.LogTrace("'{FieldName}' migrated Match={Value}", columnName, result);
-                            break;
-                        }
-                        default:
-                        {
-                            logger.LogTrace("Unsuccessful attachment migration '{Field}': '{Value}' - {Match}", columnName, path, result);
-                            break;
-                        }
-                    }
-                }
-
-                if (mediaKind == MediaKind.MediaFile)
-                {
-                    logger.LogTrace("'{FieldName}' Skipped Match={Value}", columnName, result);
-                }
-            }
-
-            if (mediaGuid is { } mg)
-            {
-                if (mediaKind == MediaKind.Attachment)
-                {
-                    switch (await attachmentMigrator.MigrateAttachment(mg, $"__{columnName}", cmsTree.NodeSiteID))
-                    {
-                        case MigrateAttachmentResultMediaFile(true, _, var x, _):
-                        {
-                            mfis = [new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
-                            hasMigratedAsset = true;
-                            logger.LogTrace("MediaFile migrated from attachment '{Field}': '{Value}'", columnName, mg);
-                            break;
-                        }
-                        case MigrateAttachmentResultContentItem { Success: true, ContentItemGuid: { } contentItemGuid }:
-                        {
-                            mfis =
-                            [
-                                new ContentItemReference { Identifier = contentItemGuid }
-                            ];
-                            hasMigratedAsset = true;
-                            logger.LogTrace("Content item migrated from attachment '{Field}': '{Value}' to {ContentItemGUID}", columnName, mg, contentItemGuid);
-                            break;
-                        }
-                        default:
-                        {
-                            break;
-                        }
-                    }
-                }
-
-                if (mediaKind == MediaKind.MediaFile)
-                {
-                    var sourceMediaFile = modelFacade.SelectWhere<IMediaFile>("FileGUID = @mediaFileGuid AND FileSiteID = @fileSiteID", new SqlParameter("mediaFileGuid", mg), new SqlParameter("fileSiteID", site.SiteID))
-                        .FirstOrDefault();
-                    if (sourceMediaFile != null)
-                    {
-                        if (configuration.MigrateMediaToMediaLibrary)
-                        {
-                            if (entityIdentityFacade.Translate(sourceMediaFile) is { } mf && mediaFileFacade.GetMediaFile(mf.Identity) is { } x)
-                            {
-                                mfis = [new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
-                                hasMigratedAsset = true;
-                            }
-                        }
-                        else
-                        {
-                            var (ownerContentItemGuid, _) = assetFacade.GetRef(sourceMediaFile);
-                            mfis =
-                            [
-                                new ContentItemReference { Identifier = ownerContentItemGuid }
-                            ];
-                            hasMigratedAsset = true;
-                            logger.LogTrace("MediaFile migrated from media file '{Field}': '{Value}'", columnName, mg);
-                        }
-                    }
-                }
-            }
-        }
-        else if (classService.GetFormControlDefinition(controlName) is { } formControl)
-        {
-            switch (formControl)
-            {
-                case { UserControlForFile: true }:
-                {
-                    if (value is Guid attachmentGuid)
-                    {
-                        switch (await attachmentMigrator.MigrateAttachment(attachmentGuid, $"__{columnName}", cmsTree.NodeSiteID))
-                        {
-                            case MigrateAttachmentResultMediaFile(true, _, var mfi, _):
-                            {
-                                mfis = [new AssetRelatedItem { Identifier = mfi.FileGUID, Dimensions = new AssetDimensions { Height = mfi.FileImageHeight, Width = mfi.FileImageWidth }, Name = mfi.FileName, Size = mfi.FileSize }];
-                                hasMigratedAsset = true;
-                                logger.LogTrace("MediaFile migrated from attachment '{Field}': '{Value}'", columnName, attachmentGuid);
-                                break;
-                            }
-                            case MigrateAttachmentResultContentItem { Success: true, ContentItemGuid: { } contentItemGuid }:
-                            {
-                                mfis =
-                                [
-                                    new ContentItemReference { Identifier = contentItemGuid }
-                                ];
-                                hasMigratedAsset = true;
-                                logger.LogTrace("Content item migrated from attachment '{Field}': '{Value}' to {ContentItemGUID}", columnName, attachmentGuid, contentItemGuid);
-                                break;
-                            }
-                            default:
-                            {
-                                logger.LogTrace("'{FieldName}' UserControlForFile Success={Success} AttachmentGUID={attachmentGuid}", columnName, false, attachmentGuid);
-                                break;
-                            }
-                        }
-                    }
-                    else if (value is string attachmentGuidStr && Guid.TryParse(attachmentGuidStr, out attachmentGuid))
-                    {
-                        switch (await attachmentMigrator.MigrateAttachment(attachmentGuid, $"__{columnName}", cmsTree.NodeSiteID))
-                        {
-                            case MigrateAttachmentResultMediaFile { Success: true, MediaFileInfo: { } x }:
-                            {
-                                mfis = [new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
-                                hasMigratedAsset = true;
-                                logger.LogTrace("MediaFile migrated from attachment '{Field}': '{Value}' (parsed)", columnName, attachmentGuid);
-                                break;
-                            }
-                            case MigrateAttachmentResultContentItem { Success: true, ContentItemGuid: { } contentItemGuid }:
-                            {
-                                mfis =
-                                [
-                                    new ContentItemReference { Identifier = contentItemGuid }
-                                ];
-                                hasMigratedAsset = true;
-                                logger.LogTrace("Content item migrated from attachment '{Field}': '{Value}' to {ContentItemGUID}", columnName, attachmentGuid, contentItemGuid);
-                                break;
-                            }
-                            default:
-                            {
-                                logger.LogTrace("'{FieldName}' UserControlForFile Success={Success} AttachmentGUID={attachmentGuid}", columnName, false, attachmentGuid);
-                                break;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        logger.LogTrace("'{FieldName}' UserControlForFile AttachmentGUID={Value}", columnName, value);
-                    }
-
-                    break;
-                }
-                case { UserControlForDocAttachments: true }:
-                {
-                    // new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }
-                    if (documentId is { } docId)
-                    {
-                        var mfisl = new List<object>();
-                        await foreach (var migResult in attachmentMigrator.MigrateGroupedAttachments(docId, field.Guid, field.Name))
-                        {
-                            switch (migResult)
-                            {
-                                case MigrateAttachmentResultMediaFile { Success: true, MediaFileInfo: { } x }:
-                                {
-                                    mfisl.Add(new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize });
-                                    hasMigratedAsset = true;
-                                    break;
-                                }
-                                case MigrateAttachmentResultContentItem { Success: true, ContentItemGuid: { } contentItemGuid }:
-                                {
-                                    mfis =
-                                    [
-                                        new ContentItemReference { Identifier = contentItemGuid }
-                                    ];
-                                    hasMigratedAsset = true;
-                                    logger.LogTrace("Content item migrated from document '{DocumentID}' attachment '{FiledName}' to {ContentItemGUID}", docId, field.Name, contentItemGuid);
-                                    break;
-                                }
-                                default:
-                                {
-                                    hasMigratedAsset = false;
-                                    break;
-                                }
-                            }
-                        }
-
-                        mfis = mfisl;
-                    }
-                    else
-                    {
-                        logger.LogTrace("'{FieldName}' UserControlForDocAttachments DocumentID={Value}", columnName, documentId);
-                    }
-
-                    break;
-                }
-
-                default:
-                    break;
-            }
-        }
-        else
-        {
-            logger.LogWarning("Unable to map value based on selected migration '{Migration}', value: '{Value}'", fieldMigration, value);
-            return;
-        }
-
-        if (hasMigratedAsset && mfis is { Count: > 0 })
-        {
-            target.SetValueAsJson(columnName, mfis);
-            logger.LogTrace("'{FieldName}' setting '{Value}'", columnName, target.GetValueOrDefault(columnName));
-        }
-        else
-        {
-            logger.LogTrace("'{FieldName}' leaving '{Value}'", columnName, target.GetValueOrDefault(columnName));
         }
     }
 

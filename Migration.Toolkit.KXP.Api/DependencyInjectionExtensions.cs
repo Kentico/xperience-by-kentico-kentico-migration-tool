@@ -18,8 +18,10 @@ public static class DependencyInjectionExtensions
             SystemContext.WebApplicationPhysicalPath = applicationPhysicalPath;
         }
 
+
+        services.AddSingleton<IFieldMigrationService, FieldMigrationService>();
         services.AddSingleton<KxpApiInitializer>();
-        services.AddSingleton<FieldMigrationService>();
+        services.AddSingleton(s => (s.GetService<IFieldMigrationService>() as FieldMigrationService)!);
 
         services.AddSingleton<KxpClassFacade>();
         services.AddSingleton<KxpMediaFileFacade>();

@@ -15,6 +15,7 @@ using Migration.Toolkit.Common.Helpers;
 using Migration.Toolkit.Common.MigrationProtocol;
 using Migration.Toolkit.KXP.Api.Services.CmsClass;
 using Migration.Toolkit.Source.Contexts;
+using Migration.Toolkit.Source.Helpers;
 using Migration.Toolkit.Source.Model;
 
 namespace Migration.Toolkit.Source.Mappers;
@@ -53,7 +54,7 @@ public class CmsClassMapper(
             logger.LogDebug("{ClassName} is {@Properties}", source.ClassName, new { isCustomizableSystemClass, classIsCustom, source.ClassResourceID, classResource?.ResourceName });
         }
 
-        MapFormDefinitionFields(source, target, isCustomizableSystemClass, classIsCustom);
+        FormDefinitionHelper.MapFormDefinitionFields(logger, fieldMigrationService, source, target, isCustomizableSystemClass, classIsCustom);
 
         target.ClassHasUnmanagedDbSchema = false;
         if (!string.IsNullOrWhiteSpace(source.ClassTableName))
@@ -200,39 +201,7 @@ public class CmsClassMapper(
         return target;
     }
 
-    private void MapFormDefinitionFields(ICmsClass source, DataClassInfo target, bool isCustomizableSystemClass, bool classIsCustom)
-    {
-        if (!string.IsNullOrWhiteSpace(source.ClassFormDefinition))
-        {
-            var patcher = new FormDefinitionPatcher(
-                logger,
-                source.ClassFormDefinition,
-                fieldMigrationService,
-                source.ClassIsForm.GetValueOrDefault(false),
-                source.ClassIsDocumentType,
-                isCustomizableSystemClass,
-                classIsCustom
-            );
-
-            patcher.PatchFields();
-            patcher.RemoveCategories(); // TODO tk: 2022-10-11 remove when supported
-
-            string? result = patcher.GetPatched();
-            if (isCustomizableSystemClass)
-            {
-                result = FormHelper.MergeFormDefinitions(target.ClassFormDefinition, result);
-            }
-
-            var formInfo = new FormInfo(result);
-            target.ClassFormDefinition = formInfo.GetXmlDefinition();
-        }
-        else
-        {
-            target.ClassFormDefinition = new FormInfo().GetXmlDefinition();
-        }
-    }
-
-    private DataClassInfo PatchDataClassInfo(DataClassInfo dataClass, out string? oldPrimaryKeyName, out string? documentNameField)
+    public static DataClassInfo PatchDataClassInfo(DataClassInfo dataClass, out string? oldPrimaryKeyName, out string? documentNameField)
     {
         oldPrimaryKeyName = null;
         documentNameField = null;
@@ -335,7 +304,7 @@ public class CmsClassMapper(
         });
     }
 
-    private string AppendRequiredValidationRule(string rulesXml)
+    private static string AppendRequiredValidationRule(string rulesXml)
     {
         if (string.IsNullOrWhiteSpace(rulesXml))
         {

@@ -25,6 +25,7 @@ using Migration.Toolkit.Source.Contexts;
 using Migration.Toolkit.Source.Helpers;
 using Migration.Toolkit.Source.Mappers;
 using Migration.Toolkit.Source.Model;
+using Migration.Toolkit.Source.Providers;
 using Migration.Toolkit.Source.Services;
 
 namespace Migration.Toolkit.Source;
@@ -52,6 +53,7 @@ public static class KsCoreDiExtensions
         services.AddSingleton<IdentityLocator>();
         services.AddSingleton<IAssetFacade, AssetFacade>();
         services.AddSingleton<MediaLinkServiceFactory>();
+        services.AddSingleton<ClassMappingProvider>();
 
         services.AddTransient<BulkDataCopyService>();
         services.AddTransient<CmsRelationshipService>();

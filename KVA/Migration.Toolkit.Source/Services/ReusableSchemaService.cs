@@ -84,9 +84,29 @@ public class ReusableSchemaService(ILogger<ReusableSchemaService> logger, Toolki
         dataClassInfo.ClassFormDefinition = formInfo.GetXmlDefinition();
     }
 
-    public Guid EnsureReusableFieldSchema(string name, string displayName, string description, params FormFieldInfo[] fields)
+    public void AddReusableSchemaToDataClass(DataClassInfo dataClassInfo, string reusableFieldSchemaName)
     {
-        var reusableSchemaGuid = GuidHelper.CreateReusableSchemaGuid($"{name}|{displayName}");
+        var formInfo = new FormInfo(dataClassInfo.ClassFormDefinition);
+        var schema = reusableFieldSchemaManager.Get(reusableFieldSchemaName);
+        formInfo.AddFormItem(new FormSchemaInfo { Name = dataClassInfo.ClassName, Guid = schema.Guid });
+        dataClassInfo.ClassFormDefinition = formInfo.GetXmlDefinition();
+    }
+
+    public IEnumerable<FormFieldInfo> GetFieldsFromReusableSchema(DataClassInfo dataClassInfo)
+    {
+        var formInfo = new FormInfo(dataClassInfo.ClassFormDefinition);
+        foreach (var formSchemaInfo in formInfo.GetFields<FormSchemaInfo>())
+        {
+            foreach (var formFieldInfo in reusableFieldSchemaManager.GetSchemaFields(formSchemaInfo.Name))
+            {
+                yield return formFieldInfo;
+            }
+        }
+    }
+
+    public Guid EnsureReusableFieldSchema(string name, string displayName, string? description, params FormFieldInfo[] fields)
+    {
+        var reusableSchemaGuid = GuidHelper.CreateReusableSchemaGuid($"{name}");
         var schema = reusableFieldSchemaManager.Get(reusableSchemaGuid);
         if (schema == null)
         {

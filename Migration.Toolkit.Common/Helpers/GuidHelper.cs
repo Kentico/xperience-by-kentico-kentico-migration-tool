@@ -10,6 +10,7 @@ public static class GuidHelper
     public static readonly Guid GuidNsDocumentNameField = new("8935FCE5-1BDC-4677-A4CA-6DFD32F65A0F");
     public static readonly Guid GuidNsAsset = new("9CC6DE90-8993-42D8-B4C1-1429B2F780A2");
     public static readonly Guid GuidNsFolder = new("E21255AC-70F3-4A95-881A-E4AD908AF27C");
+    public static readonly Guid GuidNsDataClass = new("E21255AC-70F3-4A95-881A-E4AD908AF27C");
 
     public static Guid CreateWebPageUrlPathGuid(string hash) => GuidV5.NewNameBased(GuidNsWebPageUrlPathInfo, hash);
     public static Guid CreateReusableSchemaGuid(string name) => GuidV5.NewNameBased(GuidNsReusableSchema, name);
@@ -18,7 +19,8 @@ public static class GuidHelper
     public static Guid CreateTaxonomyGuid(string name) => GuidV5.NewNameBased(GuidNsTaxonomy, name);
     public static Guid CreateDocumentNameFieldGuid(string name) => GuidV5.NewNameBased(GuidNsDocumentNameField, name);
     public static Guid CreateAssetGuid(Guid newMediaFileGuid, string contentLanguageCode) => GuidV5.NewNameBased(GuidNsAsset, $"{newMediaFileGuid}|{contentLanguageCode}");
-    public static Guid CreateFolderGuid(string path) => GuidV5.NewNameBased(GuidNsDocumentNameField, path);
+    public static Guid CreateFolderGuid(string path) => GuidV5.NewNameBased(GuidNsFolder, path);
+    public static Guid CreateDataClassGuid(string key) => GuidV5.NewNameBased(GuidNsDataClass, key);
 
 
     public static readonly Guid GuidNsLibraryFallback = new("8935FCE5-1BDC-4677-A4CA-6DFD32F65A0F");
