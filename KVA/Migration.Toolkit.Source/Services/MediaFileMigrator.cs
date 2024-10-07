@@ -144,8 +144,8 @@ public class MediaFileMigrator(
         {
             foreach (var (ksMediaLibrary, ksSite, targetMediaLibrary) in migratedMediaLibraries)
             {
-                bool loadMediaFileData = false;
                 string? sourceMediaLibraryPath = AssetFacade.GetMediaLibraryAbsolutePath(toolkitConfiguration, ksSite, ksMediaLibrary, modelFacade);
+                bool loadMediaFileData = !string.IsNullOrWhiteSpace(sourceMediaLibraryPath);
                 var ksMediaFiles = modelFacade.SelectWhere<IMediaFile>("FileLibraryID = @FileLibraryId", new SqlParameter("FileLibraryId", ksMediaLibrary.LibraryID));
 
                 foreach (var ksMediaFile in ksMediaFiles)
