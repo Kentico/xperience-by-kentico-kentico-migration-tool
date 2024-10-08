@@ -163,7 +163,7 @@ public static class ClassMappingSample
             .BuildField("Phone")
             .CreateFrom(sourceClassName, "CafePhone");
 
-        
+
         var sb2 = new ReusableSchemaBuilder(schemaNameDgcName, "Common name", "Reusable schema that defines name field");
 
         sb2
@@ -180,7 +180,7 @@ public static class ClassMappingSample
                     ["controlname"] = FormComponents.AdminTextInputComponent
                 }
             });
-        
+
         var m = new MultiClassMapping("DancingGoatCore.CafeRS", target =>
         {
             target.ClassName = "DancingGoatCore.CafeRS";
@@ -202,7 +202,7 @@ public static class ClassMappingSample
 
         m.UseResusableSchema(schemaNameDgcName);
         m.BuildField("Name").SetFrom(sourceClassName, "CafeName");
-        
+
         // old fields we leave in data class
         m.BuildField("CafePhoto").SetFrom(sourceClassName, "CafePhoto", isTemplate: true);
         m.BuildField("CafeAdditionalNotes").SetFrom(sourceClassName, "CafeAdditionalNotes", isTemplate: true);
