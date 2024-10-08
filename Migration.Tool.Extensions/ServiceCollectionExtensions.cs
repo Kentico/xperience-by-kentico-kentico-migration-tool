@@ -13,9 +13,9 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IFieldMigration, AssetMigration>();
         services.AddTransient<IFieldMigration, SampleTextMigration>();
 
-        services.AddClassMergeExample();
-        services.AddSimpleRemodelingSample();
-        services.AddReusableSchemaIntegrationSample();
+        // services.AddClassMergeExample();
+        // services.AddSimpleRemodelingSample();
+        // services.AddReusableSchemaIntegrationSample();
         return services;
     }
 }

@@ -119,6 +119,7 @@ public static class ClassMappingSample
     public static IServiceCollection AddReusableSchemaIntegrationSample(this IServiceCollection serviceCollection)
     {
         const string schemaNameDgcCommon = "DGC.Address";
+        const string schemaNameDgcName = "DGC.Name";
         const string sourceClassName = "DancingGoatCore.Cafe";
 
         // create instance of reusable schema builder - class will help us with definition of new reusable schema
@@ -162,7 +163,24 @@ public static class ClassMappingSample
             .BuildField("Phone")
             .CreateFrom(sourceClassName, "CafePhone");
 
+        
+        var sb2 = new ReusableSchemaBuilder(schemaNameDgcName, "Common name", "Reusable schema that defines name field");
 
+        sb2
+            .BuildField("Name")
+            .WithFactory(() => new FormFieldInfo
+            {
+                Name = "Name",
+                Caption = "Name",
+                Guid = new Guid("3213B67F-23F1-4F6F-9E5F-C74DE5F84BC5"),
+                DataType = FieldDataType.Text,
+                Size = 400,
+                Settings =
+                {
+                    ["controlname"] = FormComponents.AdminTextInputComponent
+                }
+            });
+        
         var m = new MultiClassMapping("DancingGoatCore.CafeRS", target =>
         {
             target.ClassName = "DancingGoatCore.CafeRS";
@@ -182,8 +200,10 @@ public static class ClassMappingSample
         m.BuildField("ZipCode").SetFrom(sourceClassName, "CafeZipCode");
         m.BuildField("Phone").SetFrom(sourceClassName, "CafePhone");
 
+        m.UseResusableSchema(schemaNameDgcName);
+        m.BuildField("Name").SetFrom(sourceClassName, "CafeName");
+        
         // old fields we leave in data class
-        m.BuildField("CafeName").SetFrom(sourceClassName, "CafeName", isTemplate: true);
         m.BuildField("CafePhoto").SetFrom(sourceClassName, "CafePhoto", isTemplate: true);
         m.BuildField("CafeAdditionalNotes").SetFrom(sourceClassName, "CafeAdditionalNotes", isTemplate: true);
 
@@ -198,8 +218,8 @@ public static class ClassMappingSample
         serviceCollection.AddSingleton<IClassMapping>(m);
         // register reusable schema builder
         serviceCollection.AddSingleton<IReusableSchemaBuilder>(sb);
+        serviceCollection.AddSingleton<IReusableSchemaBuilder>(sb2);
 
         return serviceCollection;
     }
 }
-
