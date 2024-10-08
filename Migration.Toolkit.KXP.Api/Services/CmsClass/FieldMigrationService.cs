@@ -7,13 +7,16 @@ using Migration.Toolkit.Common;
 namespace Migration.Toolkit.KXP.Api.Services.CmsClass;
 
 public class FieldMigrationService // shall be singleton to cache necessary data
+    : IFieldMigrationService
 {
     private readonly ILogger<FieldMigrationService> logger;
+    private readonly IList<IFieldMigration> fieldMigrations;
     private readonly FieldMigration[] userDefinedMigrations;
 
-    public FieldMigrationService(ToolkitConfiguration configuration, ILogger<FieldMigrationService> logger)
+    public FieldMigrationService(ToolkitConfiguration configuration, ILogger<FieldMigrationService> logger, IEnumerable<IFieldMigration> fieldMigrations)
     {
         this.logger = logger;
+        this.fieldMigrations = fieldMigrations.OrderBy(x => x.Rank).ToList();
 
         var allUserDefinedMigrations = configuration.OptInFeatures?.CustomMigration?.FieldMigrations?.Select(fm =>
             new FieldMigration(
@@ -24,12 +27,21 @@ public class FieldMigrationService // shall be singleton to cache necessary data
                 fm.Actions,
                 fm.FieldNameRegex != null ? new Regex(fm.FieldNameRegex, RegexOptions.Compiled | RegexOptions.IgnoreCase) : null
             )
-        ).ToArray() ?? Array.Empty<FieldMigration>();
+        ).ToArray() ?? [];
         userDefinedMigrations = allUserDefinedMigrations;
     }
 
-    public FieldMigration? GetFieldMigration(string sourceDataType, string? sourceFormControl, string? fieldName)
+    public IFieldMigration? GetFieldMigration(FieldMigrationContext fieldMigrationContext)
     {
+        foreach (var fieldMigrator in fieldMigrations)
+        {
+            if (fieldMigrator.ShallMigrate(fieldMigrationContext))
+            {
+                return fieldMigrator;
+            }
+        }
+
+        (string? sourceDataType, string? sourceFormControl, string? fieldName, _) = fieldMigrationContext;
         if (sourceFormControl == null)
         {
             logger.LogDebug("Source field has no control defined '{SourceDataType}', field '{FieldName}'", sourceDataType, fieldName);

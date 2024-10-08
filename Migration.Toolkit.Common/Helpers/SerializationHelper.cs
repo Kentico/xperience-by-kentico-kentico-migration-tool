@@ -11,6 +11,8 @@ public class SerializationHelper
     public static string SerializeOnlyNonComplexProperties<T>(T obj) => JsonConvert.SerializeObject(obj, Formatting.Indented,
         new JsonSerializerSettings { ContractResolver = new ShouldSerializeContractResolver(), ReferenceLoopHandling = ReferenceLoopHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore, MaxDepth = 1 });
 
+    public static string Serialize<T>(T obj) => JsonConvert.SerializeObject(obj);
+
     public class ShouldSerializeContractResolver : DefaultContractResolver
     {
         public static readonly ShouldSerializeContractResolver Instance = new();

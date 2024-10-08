@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using CMS.DataEngine;
 using CMS.OnlineForms;
 using Migration.Toolkit.Common;
@@ -17,7 +18,49 @@ public record DataTypeMigrationModel(
     [property: Obsolete("Legacy mode is no longer supported")] string[] SupportedInKxpLegacyMode
 );
 
-public record FieldMigration(string SourceDataType, string TargetDataType, string SourceFormControl, string? TargetFormComponent, string[]? Actions = null, Regex? FieldNameRegex = null);
+public interface ISourceObjectContext;
+
+public record EmptySourceObjectContext : ISourceObjectContext;
+public record FieldMigrationContext(string SourceDataType, string? SourceFormControl, string? FieldName, ISourceObjectContext SourceObjectContext);
+public record FieldMigrationResult(bool Success, object? MigratedValue);
+public interface IFieldMigration
+{
+    /// <summary>
+    /// custom migrations are sorted by this number, first encountered migration wins. Values higher than 100 000 are set to default migrations, set number bellow 100 000 for custom migrations
+    /// </summary>
+    int Rank { get; }
+
+    /// <summary>
+    /// Methods determines if this migration is usable in context 
+    /// </summary>
+    /// <param name="context">Expect multiple context types: <see cref="FieldMigrationContext"/> for pages, <see cref="EmptySourceObjectContext"/> for data class</param>
+    /// <returns></returns>
+    bool ShallMigrate(FieldMigrationContext context);
+
+    /// <summary>
+    /// Performs migration of FormField, result is mutated property field
+    /// </summary>
+    /// <param name="formDefinitionPatcher">Helper class for execution of common functionalities</param>
+    /// <param name="field">Field for migration</param>
+    /// <param name="columnTypeAttr">field type - in xml "columntype"</param>
+    /// <param name="fieldDescriptor">field name or field GUID if field name is not specified</param>
+    void MigrateFieldDefinition(FormDefinitionPatcher formDefinitionPatcher, XElement field, XAttribute? columnTypeAttr, string fieldDescriptor);
+    /// <summary>
+    /// Performs migration of field value
+    /// </summary>
+    /// <param name="sourceValue">Value from source instance for migration directly from database reader (DBNull may be encountered)</param>
+    /// <param name="context">Context <see cref="FieldMigrationContext"/> for pages</param>
+    /// <returns>If migration of field succeeds, returns success and migrated value. If not, returns false as success and null reference as value</returns>
+    Task<FieldMigrationResult> MigrateValue(object? sourceValue, FieldMigrationContext context);
+}
+
+public record FieldMigration(string SourceDataType, string TargetDataType, string SourceFormControl, string? TargetFormComponent, string[]? Actions = null, Regex? FieldNameRegex = null) : IFieldMigration
+{
+    public int Rank => 100_000;
+    public bool ShallMigrate(FieldMigrationContext context) => throw new NotImplementedException();
+    public Task<FieldMigrationResult> MigrateValue(object? sourceValue, FieldMigrationContext context) => throw new NotImplementedException();
+    public void MigrateFieldDefinition(FormDefinitionPatcher formDefinitionPatcher, XElement field, XAttribute? columnTypeAttr, string fieldDescriptor) => throw new NotImplementedException();
+}
 
 /// <summary>
 ///     Tca = target control action
@@ -83,7 +126,7 @@ public static class FieldMappingInstance
             new FieldMigration(KsFieldDataType.Xml, FieldDataType.Xml, SfcDirective.CatchAnyNonMatching, FormComponents.AdminNumberWithLabelComponent),
             new FieldMigration(KsFieldDataType.DocRelationships, FieldDataType.WebPages, SfcDirective.CatchAnyNonMatching, FormComponents.Kentico_Xperience_Admin_Websites_WebPageSelectorComponent, [TcaDirective.ConvertToPages]),
 
-            new FieldMigration(KsFieldDataType.TimeSpan, FieldDataType.TimeSpan, SfcDirective.CatchAnyNonMatching, FormComponents.AdminTextInputComponent, [TcaDirective.ConvertToPages]),
+            new FieldMigration(KsFieldDataType.TimeSpan, FieldDataType.TimeSpan, SfcDirective.CatchAnyNonMatching, FormComponents.AdminTextInputComponent, []),
             new FieldMigration(KsFieldDataType.BizFormFile, BizFormUploadFile.DATATYPE_FORMFILE, SfcDirective.CatchAnyNonMatching, FormComponents.MvcFileUploaderComponent, [])
         ]);
 

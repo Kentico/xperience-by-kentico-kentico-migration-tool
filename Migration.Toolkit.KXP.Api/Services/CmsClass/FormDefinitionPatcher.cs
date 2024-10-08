@@ -9,29 +9,29 @@ namespace Migration.Toolkit.KXP.Api.Services.CmsClass;
 
 public class FormDefinitionPatcher
 {
-    private const string CategoryElem = "category";
-    private const string CategoryAttrName = FieldAttrName;
-    private const string FieldAttrColumn = "column";
-    private const string FieldAttrColumntype = "columntype";
-    private const string FieldAttrEnabled = "enabled";
-    private const string FieldAttrGuid = "guid";
-    private const string FieldAttrIspk = "isPK";
-    private const string FieldAttrName = "name";
-    private const string FieldAttrSize = "size";
-    private const int FieldAttrSizeZero = 0;
-    private const string FieldAttrSystem = "system";
-    private const string FieldAttrVisible = "visible";
-    private const string FieldElem = "field";
-    private const string FieldElemProperties = "properties";
-    private const string FieldElemSettings = "settings";
-    private const string PropertiesElemDefaultvalue = "defaultvalue";
-    private const string SettingsElemControlname = "controlname";
-    private const string SettingsMaximumassets = "MaximumAssets";
-    private const string SettingsMaximumassetsFallback = "99";
-    private const string SettingsMaximumpages = "MaximumPages";
-    private const string SettingsMaximumpagesFallback = "99";
-    private const string SettingsRootpath = "RootPath";
-    private const string SettingsRootpathFallback = "/";
+    public const string CategoryElem = "category";
+    public const string CategoryAttrName = FieldAttrName;
+    public const string FieldAttrColumn = "column";
+    public const string FieldAttrColumntype = "columntype";
+    public const string FieldAttrEnabled = "enabled";
+    public const string FieldAttrGuid = "guid";
+    public const string FieldAttrIspk = "isPK";
+    public const string FieldAttrName = "name";
+    public const string FieldAttrSize = "size";
+    public const int FieldAttrSizeZero = 0;
+    public const string FieldAttrSystem = "system";
+    public const string FieldAttrVisible = "visible";
+    public const string FieldElem = "field";
+    public const string FieldElemProperties = "properties";
+    public const string FieldElemSettings = "settings";
+    public const string PropertiesElemDefaultvalue = "defaultvalue";
+    public const string SettingsElemControlname = "controlname";
+    public const string SettingsMaximumassets = "MaximumAssets";
+    public const string SettingsMaximumassetsFallback = "99";
+    public const string SettingsMaximumpages = "MaximumPages";
+    public const string SettingsMaximumpagesFallback = "99";
+    public const string SettingsRootpath = "RootPath";
+    public const string SettingsRootpathFallback = "/";
 
     private readonly IReadOnlySet<string> allowedFieldAttributes = new HashSet<string>([
         // taken from FormFieldInfo.GetAttributes() method
@@ -60,7 +60,7 @@ public class FormDefinitionPatcher
     private readonly bool classIsDocumentType;
     private readonly bool classIsForm;
     private readonly bool discardSysFields;
-    private readonly FieldMigrationService fieldMigrationService;
+    private readonly IFieldMigrationService fieldMigrationService;
     private readonly string formDefinitionXml;
 
     private readonly ILogger logger;
@@ -68,7 +68,7 @@ public class FormDefinitionPatcher
 
     public FormDefinitionPatcher(ILogger logger,
         string formDefinitionXml,
-        FieldMigrationService fieldMigrationService,
+        IFieldMigrationService fieldMigrationService,
         bool classIsForm,
         bool classIsDocumentType,
         bool discardSysFields,
@@ -162,7 +162,7 @@ public class FormDefinitionPatcher
 
     public string? GetPatched() => xDoc.Root?.ToString();
 
-    private void PatchField(XElement field)
+    public void PatchField(XElement field)
     {
         var columnAttr = field.Attribute(FieldAttrColumn);
         var systemAttr = field.Attribute(FieldAttrSystem);
@@ -211,36 +211,48 @@ public class FormDefinitionPatcher
         var controlNameElem = field.XPathSelectElement($"{FieldElemSettings}/{SettingsElemControlname}");
         string? controlName = controlNameElem?.Value;
 
-        if (fieldMigrationService.GetFieldMigration(columnType, controlName, columnAttr?.Value) is var (_, targetDataType, _, targetFormComponent, actions, _))
+        var fieldMigrationContext = new FieldMigrationContext(columnType, controlName, columnAttr?.Value, new EmptySourceObjectContext());
+        switch (fieldMigrationService.GetFieldMigration(fieldMigrationContext))
         {
-            logger.LogDebug("Field {FieldDescriptor} DataType: {SourceDataType} => {TargetDataType}", fieldDescriptor, columnType, targetDataType);
-            columnTypeAttr?.SetValue(targetDataType);
-            switch (targetFormComponent)
+            case FieldMigration(_, var targetDataType, _, var targetFormComponent, var actions, _):
             {
-                case TfcDirective.DoNothing:
-                    logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective}", fieldDescriptor, targetFormComponent);
-                    PerformActionsOnField(field, fieldDescriptor, actions);
-                    break;
-                case TfcDirective.Clear:
-                    logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective}", fieldDescriptor, targetFormComponent);
-                    field.RemoveNodes();
-                    visibleAttr?.SetValue(false);
-                    break;
-                case TfcDirective.CopySourceControl:
-                    logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective} => {ControlName}", fieldDescriptor, targetFormComponent, controlName);
-                    controlNameElem?.SetValue(controlName);
-                    PerformActionsOnField(field, fieldDescriptor, actions);
-                    break;
-                default:
+                logger.LogDebug("Field {FieldDescriptor} DataType: {SourceDataType} => {TargetDataType}", fieldDescriptor, columnType, targetDataType);
+                columnTypeAttr?.SetValue(targetDataType);
+                switch (targetFormComponent)
                 {
-                    logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:NONE => from control '{ControlName}' => {TargetFormComponent}", fieldDescriptor, controlName, targetFormComponent);
-                    controlNameElem?.SetValue(targetFormComponent);
-                    PerformActionsOnField(field, fieldDescriptor, actions);
-                    break;
+                    case TfcDirective.DoNothing:
+                        logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective}", fieldDescriptor, targetFormComponent);
+                        PerformActionsOnField(field, fieldDescriptor, actions);
+                        break;
+                    case TfcDirective.Clear:
+                        logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective}", fieldDescriptor, targetFormComponent);
+                        field.RemoveNodes();
+                        visibleAttr?.SetValue(false);
+                        break;
+                    case TfcDirective.CopySourceControl:
+                        logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective} => {ControlName}", fieldDescriptor, targetFormComponent, controlName);
+                        controlNameElem?.SetValue(controlName);
+                        PerformActionsOnField(field, fieldDescriptor, actions);
+                        break;
+                    default:
+                    {
+                        logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:NONE => from control '{ControlName}' => {TargetFormComponent}", fieldDescriptor, controlName, targetFormComponent);
+                        controlNameElem?.SetValue(targetFormComponent);
+                        PerformActionsOnField(field, fieldDescriptor, actions);
+                        break;
+                    }
                 }
+                break;
             }
-        }
+            case { } fieldMigration when fieldMigration.ShallMigrate(fieldMigrationContext):
+            {
+                fieldMigration.MigrateFieldDefinition(this, field, columnTypeAttr, fieldDescriptor);
+                break;
+            }
 
+            default:
+                break;
+        }
 
         if (!classIsForm && !classIsDocumentType)
         {
@@ -308,7 +320,7 @@ public class FormDefinitionPatcher
 
         if (classIsForm || classIsDocumentType)
         {
-            if (field.Attribute(FieldAttrVisible) is { } visible)
+            if (field.Attribute(FieldAttrVisible) is { } visible && field.Attribute(FieldAttrEnabled) is null)
             {
                 field.Add(new XAttribute(FieldAttrEnabled, visible.Value));
                 logger.LogDebug("Set field '{Field}' attribute '{Attribute}' to value '{Value}' from attribute '{SourceAttribute}'", fieldDescriptor, FieldAttrEnabled, visible, FieldAttrVisible);

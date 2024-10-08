@@ -6,6 +6,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\KVA\Migration.Toolkit.Source\Migration.Toolkit.Source.csproj"/>
+        <ProjectReference Include="..\Migration.Tool.Extensions\Migration.Tool.Extensions.csproj" />
         <ProjectReference Include="..\Migration.Toolkit.Common\Migration.Toolkit.Common.csproj"/>
         <ProjectReference Include="..\Migration.Toolkit.Core.K11\Migration.Toolkit.Core.K11.csproj"/>
         <ProjectReference Include="..\Migration.Toolkit.Core.KX12\Migration.Toolkit.Core.KX12.csproj"/>
