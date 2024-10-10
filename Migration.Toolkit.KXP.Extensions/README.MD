@@ -1,5 +1,7 @@
 ## Handler for legacy attachment URLs
 
+> :warning: **Note**: This handler is only available when attachments are migrated as media libraries using the `MigrateMediaToMediaLibrary` configuration option.
+
 Page attachments are not supported in Xperience by Kentico. Instead, the [Migration toolkit](/README.md) transfers
 attachment files into [media libraries](https://docs.xperience.io/x/agKiCQ).
 
