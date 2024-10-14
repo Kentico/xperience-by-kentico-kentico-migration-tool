@@ -1,13 +1,10 @@
 using System.Reflection;
-
 using MediatR;
-
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Migration.Tool.Extensions;
 using Migration.Tool.CLI;
 using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
@@ -16,6 +13,7 @@ using Migration.Tool.Common.Services;
 using Migration.Tool.Core.K11;
 using Migration.Tool.Core.KX12;
 using Migration.Tool.Core.KX13;
+using Migration.Tool.Extensions;
 using Migration.Tool.K11;
 using Migration.Tool.KX12;
 using Migration.Tool.KX13;
@@ -24,7 +22,6 @@ using Migration.Tool.KXP.Api;
 using Migration.Tool.KXP.Api.Services.CmsClass;
 using Migration.Tool.KXP.Context;
 using Migration.Tool.Source;
-
 using static Migration.Tool.Common.Helpers.ConsoleHelper;
 
 EnableVirtualTerminalProcessing();
