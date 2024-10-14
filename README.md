@@ -17,6 +17,7 @@ The Kentico Migration Tool transfers content and other data from **Kentico Xperi
 | == 29.1.0         | == 1.0.0        |
 | == 29.2.0         | == 1.1.0        |
 | == 29.3.3         | == 1.2.0        |
+| == 29.5.2         | == 1.3.0        |
 
 ## Dependencies
 
@@ -55,6 +56,9 @@ View the [Usage Guide](./docs/Usage-Guide.md) for more detailed instructions.
 
 ## Changelog of recent updates
 
+- **September 4, 2024**
+  - Migration of media libraries and attachments to assets is available
+  - Media libraries and attachments are now [migrated](/Migration.Toolkit.CLI/README.md#media-libraries) to content item assets by default
 - **June 13, 2024**
   - Migration of categories to taxonomies is available
 - **March 11, 2024**
