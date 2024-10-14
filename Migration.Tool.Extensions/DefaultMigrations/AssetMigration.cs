@@ -4,18 +4,18 @@ using CMS.DataEngine;
 using CMS.MediaLibrary;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Common;
-using Migration.Toolkit.Common.Enumerations;
-using Migration.Toolkit.Common.Helpers;
-using Migration.Toolkit.KXP.Api;
-using Migration.Toolkit.KXP.Api.Auxiliary;
-using Migration.Toolkit.KXP.Api.Services.CmsClass;
-using Migration.Toolkit.Source;
-using Migration.Toolkit.Source.Auxiliary;
-using Migration.Toolkit.Source.Contexts;
-using Migration.Toolkit.Source.Helpers;
-using Migration.Toolkit.Source.Model;
-using Migration.Toolkit.Source.Services;
+using Migration.Tool.Common;
+using Migration.Tool.Common.Enumerations;
+using Migration.Tool.Common.Helpers;
+using Migration.Tool.KXP.Api;
+using Migration.Tool.KXP.Api.Auxiliary;
+using Migration.Tool.KXP.Api.Services.CmsClass;
+using Migration.Tool.Source;
+using Migration.Tool.Source.Auxiliary;
+using Migration.Tool.Source.Contexts;
+using Migration.Tool.Source.Helpers;
+using Migration.Tool.Source.Model;
+using Migration.Tool.Source.Services;
 
 namespace Migration.Tool.Extensions.DefaultMigrations;
 
@@ -25,7 +25,7 @@ public class AssetMigration(
     IAttachmentMigrator attachmentMigrator,
     ModelFacade modelFacade,
     KxpMediaFileFacade mediaFileFacade,
-    ToolkitConfiguration configuration,
+    ToolConfiguration configuration,
     EntityIdentityFacade entityIdentityFacade,
     IAssetFacade assetFacade,
     MediaLinkServiceFactory mediaLinkServiceFactory

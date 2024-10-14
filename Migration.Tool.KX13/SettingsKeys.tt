@@ -1,0 +1,29 @@
+<#@ template language="C#" #>
+<#@ assembly name="System.Data" #>
+<#@ import namespace="System.Data.SqlClient" #>
+// ReSharper disable InconsistentNaming
+// ReSharper disable IdentifierTypo
+namespace Migration.Tool.KX13;
+
+public static class SettingsKeys {
+<#
+    var connectionString = Environment.GetEnvironmentVariable("KENTICO_MT_DEV_KX13_CONNECTION_STRING");
+    using var connection = new SqlConnection(connectionString);
+    using var cmd = connection.CreateCommand();
+    cmd.CommandText = """
+                      SELECT KeyName
+                      FROM CMS_SettingsKey
+                      WHERE KeyName LIKE 'CMS%'
+                      GROUP BY KeyName
+                      ORDER BY KeyName
+                      """;
+    connection.Open();
+    using var reader = cmd.ExecuteReader();
+    while (reader.Read())
+    {
+        WriteLine($"""
+                      public const string {reader[0]} = "{reader[0]}";
+                  """);
+    }
+#>
+}

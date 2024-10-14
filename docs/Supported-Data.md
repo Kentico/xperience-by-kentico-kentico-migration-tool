@@ -17,7 +17,7 @@ Currently, the Kentico Migration Tool supports the following types of data:
     - Macro expressions in page type field default values or other settings. Content type fields containing macros will not work correctly after the migration.
     - Categories for page type fields. Field categories are not migrated with page types.
     - Page type inheritance. Page types that inherit fields are migrated including all inherited fields but the binding to the parent page type is not preserved.
-      - However, you can create [reusable field schemas](../Migration.Toolkit.CLI/README.md#convert-page-types-to-reusable-field-schemas) for page types from which other page types inherit.
+      - However, you can create [reusable field schemas](../Migration.Tool.CLI/README.md#convert-page-types-to-reusable-field-schemas) for page types from which other page types inherit.
   - All migrated Content types have the **Include in routing** option enabled (the migration never creates pages without URL and routing).
 - **Pages**
   - The migration includes the following versions of pages:
@@ -29,11 +29,11 @@ Currently, the Kentico Migration Tool supports the following types of data:
   - Page permissions (ACLs) are currently not supported in Xperience by Kentico and are not migrated.
   - Migration of Page Builder content is only available for Kentico Xperience 13.
 - **Page attachments**
-  - Page attachments are not supported in Xperience by Kentico. Attachments are migrated into media libraries. See [`Migration.Toolkit.CLI/README.md - Attachments`](../Migration.Toolkit.CLI/README.md#Attachments) for detailed information about the conversion process.
+  - Page attachments are not supported in Xperience by Kentico. Attachments are migrated into media libraries. See [`Migration.Tool.CLI/README.md - Attachments`](../Migration.Tool.CLI/README.md#Attachments) for detailed information about the conversion process.
 - **Preset page templates** (_Custom page templates_ in Kentico Xperience 13)
   - Migration of custom page templates is only available for Kentico Xperience 13.
 - **Categories**
-  - Xperience by Kentico uses a different approach to categorization. Categories are migrated to [taxonomies](https://docs.kentico.com/x/taxonomies_xp) and selected categories for each page are assigned to pages in the target instance via a [reusable field schema](https://docs.kentico.com/x/D4_OD). See [`Migration.Toolkit.CLI/README.md - Categories`](../Migration.Toolkit.CLI/README.md#categories).
+  - Xperience by Kentico uses a different approach to categorization. Categories are migrated to [taxonomies](https://docs.kentico.com/x/taxonomies_xp) and selected categories for each page are assigned to pages in the target instance via a [reusable field schema](https://docs.kentico.com/x/D4_OD). See [`Migration.Tool.CLI/README.md - Categories`](../Migration.Tool.CLI/README.md#categories).
   - [Categories stored as a field of pages](https://docs.kentico.com/x/wA_RBg) and [personal categories](https://docs.kentico.com/x/IgqRBg) are not supported.
 - **Media libraries and media files**
   - Media library permissions are currently not supported in Xperience by Kentico and are not migrated.

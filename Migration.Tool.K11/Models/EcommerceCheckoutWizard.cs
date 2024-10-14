@@ -1,0 +1,15 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Migration.Tool.K11.Models;
+
+[Table("Ecommerce_CheckoutWizard")]
+public class EcommerceCheckoutWizard
+{
+    [Key]
+    [Column("CheckoutWizardID")]
+    public int CheckoutWizardId { get; set; }
+
+    [StringLength(1000)]
+    public string? WizardName { get; set; }
+}

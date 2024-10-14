@@ -1,8 +1,8 @@
 using CMS.DataEngine;
 using CMS.FormEngine;
 using Microsoft.Extensions.DependencyInjection;
-using Migration.Toolkit.Common.Builders;
-using Migration.Toolkit.KXP.Api.Auxiliary;
+using Migration.Tool.Common.Builders;
+using Migration.Tool.KXP.Api.Auxiliary;
 
 // ReSharper disable ArrangeMethodOrOperatorBody
 
