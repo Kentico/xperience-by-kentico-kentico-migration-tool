@@ -7,4 +7,4 @@ appsettings.local.json
 .idea/
 .vs/
 *.sln.DotSettings.user
-Migration.Toolkit.CLI/appsettings.local.json_
+Migration.Tool.CLI/appsettings.local.json_
