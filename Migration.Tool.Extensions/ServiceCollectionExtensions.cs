@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Migration.Tool.Extensions.CommunityMigrations;
 using Migration.Tool.Extensions.DefaultMigrations;
-using Migration.Toolkit.KXP.Api.Services.CmsClass;
+using Migration.Tool.KXP.Api.Services.CmsClass;
 
 namespace Migration.Tool.Extensions;
 

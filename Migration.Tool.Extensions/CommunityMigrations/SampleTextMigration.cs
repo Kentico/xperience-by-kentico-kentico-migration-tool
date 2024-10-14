@@ -1,11 +1,11 @@
 using System.Xml.Linq;
 using CMS.DataEngine;
 using Microsoft.Extensions.Logging;
-using Migration.Toolkit.Common;
-using Migration.Toolkit.KXP.Api.Auxiliary;
-using Migration.Toolkit.KXP.Api.Services.CmsClass;
-using Migration.Toolkit.Source.Contexts;
-using Migration.Toolkit.Source.Services;
+using Migration.Tool.Common;
+using Migration.Tool.KXP.Api.Auxiliary;
+using Migration.Tool.KXP.Api.Services.CmsClass;
+using Migration.Tool.Source.Contexts;
+using Migration.Tool.Source.Services;
 
 namespace Migration.Tool.Extensions.CommunityMigrations;
 

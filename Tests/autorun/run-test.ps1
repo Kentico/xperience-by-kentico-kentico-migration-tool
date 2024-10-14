@@ -32,8 +32,8 @@ function Get-ScriptDirectory {
 $runDate = Get-Date -Format "yyyyMMdd_HH-mm"
 
 $currentDir = Get-ScriptDirectory
-$toolkitDir = Join-Path -Path $currentDir -ChildPath "../../Migration.Toolkit.CLI/"
-$toolkitBuildDir = Join-Path -Path $currentDir -ChildPath "mt_build"
+$toolDir = Join-Path -Path $currentDir -ChildPath "../../Migration.Tool.CLI/"
+$toolBuildDir = Join-Path -Path $currentDir -ChildPath "mt_build"
 $commandOutputDir = Join-Path -Path $currentDir -ChildPath "run-$runDate/"
 $commandOutputLog = Join-Path -Path $currentDir -ChildPath "run-$runDate/run.log"
 $results = Join-Path -Path $currentDir -ChildPath "run-$runDate/results.log"
@@ -50,15 +50,15 @@ if ($ProjectName -eq $null -or $ProjectName -eq '') {
 [System.IO.Directory]::CreateDirectory($commandOutputDir) | Out-Null;
 
 try {
-    Write-Output "Set location $toolkitDir"
-    set-location $toolkitDir   
+    Write-Output "Set location $toolDir"
+    set-location $toolDir   
 
     Write-Output "Starting transcript"
     Start-Transcript -Path $commandOutputLog -NoClobber -Append 
 
-    # build toolkit
-    Write-Output "dotnet publish -c Release -f net6.0 --self-contained false --runtime win-x64 -o '$toolkitBuildDir'"    
-    dotnet publish -c Release -f net6.0 --self-contained false --runtime win-x64 -o "$toolkitBuildDir" 
+    # build tool
+    Write-Output "dotnet publish -c Release -f net6.0 --self-contained false --runtime win-x64 -o '$toolBuildDir'"    
+    dotnet publish -c Release -f net6.0 --self-contained false --runtime win-x64 -o "$toolBuildDir" 
 
     # install XbK
     if($InstallXbK -eq $true) {
@@ -68,8 +68,8 @@ try {
         Invoke-Expression $installCmd
     }
 
-    set-location $toolkitBuildDir
-    .\Migration.Toolkit.CLI.exe migrate --nowait --siteId 1 --contact-management --custom-modules --settings-keys --page-types --pages --forms --attachments --culture en-US  --sites --media-libraries --users | Out-Host # forcing transcript to pick up stream with Out-Host
+    set-location $toolBuildDir
+    .\Migration.Tool.CLI.exe migrate --nowait --siteId 1 --contact-management --custom-modules --settings-keys --page-types --pages --forms --attachments --culture en-US  --sites --media-libraries --users | Out-Host # forcing transcript to pick up stream with Out-Host
         
     Write-Output "Reading log"
 

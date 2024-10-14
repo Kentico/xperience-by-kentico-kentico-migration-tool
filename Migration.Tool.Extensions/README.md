@@ -6,7 +6,7 @@ Samples:
 
 To create custom migration:
 - create new file in `Migration.Tool.Extensions/CommunityMigrations` (directory if you need more files for single migration)
-- implement interface `Migration.Toolkit.KXP.Api.Services.CmsClass.IFieldMigration`
+- implement interface `Migration.Tool.KXP.Api.Services.CmsClass.IFieldMigration`
   - implement property rank, set number bellow 100 000 - for example 5000
   - implement method shall migrate (if method returns true, migration will be used)
   - implement `MigrateFieldDefinition`, where objective is to mutate argument `XElement field` that represents one particular field
