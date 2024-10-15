@@ -92,6 +92,6 @@ To create custom widget property migration:
 - finally register in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as `Transient` dependency into service collection. For example `services.AddTransient<IWidgetPropertyMigration, WidgetPathSelectorMigration>()`
 
 Samples:
-- [Path selector migration](Migration.Tool.Extensions/DefaultMigrations/WidgetPathSelectorMigration.cs)
-- [Page selector migration](Migration.Tool.Extensions/DefaultMigrations/WidgetPageSelectorMigration.cs)
-- [File selector migration](Migration.Tool.Extensions/DefaultMigrations/WidgetFileMigration.cs)
+- [Path selector migration](./DefaultMigrations/WidgetPathSelectorMigration.cs)
+- [Page selector migration](./DefaultMigrations/WidgetPageSelectorMigration.cs)
+- [File selector migration](./DefaultMigrations/WidgetFileMigration.cs)
