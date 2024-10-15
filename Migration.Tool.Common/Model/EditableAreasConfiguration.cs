@@ -1,9 +1,8 @@
 using System.Runtime.Serialization;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Migration.Tool.Source.Services.Model;
+namespace Migration.Tool.Common.Model;
 
 #region Copied from Kentico assembly
 
@@ -156,7 +155,7 @@ public sealed class WidgetConfiguration
     /// <summary>List of widget variants.</summary>
     [DataMember]
     [JsonProperty("variants")]
-    public List<WidgetVariantConfiguration> Variants { get; set; }
+    public List<WidgetVariantConfiguration?> Variants { get; set; }
 }
 
 /// <summary>

@@ -5,20 +5,15 @@ using CMS.Core;
 using CMS.Core.Internal;
 using CMS.DataEngine;
 using CMS.FormEngine;
-using CMS.MediaLibrary;
 using CMS.Websites;
 using CMS.Websites.Internal;
 using Kentico.Xperience.UMT.Model;
-using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.Builders;
-using Migration.Tool.Common.Enumerations;
 using Migration.Tool.Common.Helpers;
 using Migration.Tool.Common.Services;
-using Migration.Tool.Common.Services.Ipc;
-using Migration.Tool.KXP.Api;
 using Migration.Tool.KXP.Api.Auxiliary;
 using Migration.Tool.KXP.Api.Services.CmsClass;
 using Migration.Tool.Source.Auxiliary;
@@ -27,8 +22,6 @@ using Migration.Tool.Source.Helpers;
 using Migration.Tool.Source.Model;
 using Migration.Tool.Source.Providers;
 using Migration.Tool.Source.Services;
-using Migration.Tool.Source.Services.Model;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Migration.Tool.Source.Mappers;
@@ -48,22 +41,19 @@ public record CmsTreeMapperSource(
 public class ContentItemMapper(
     ILogger<ContentItemMapper> logger,
     CoupledDataService coupledDataService,
-    ClassService classService,
     IAttachmentMigrator attachmentMigrator,
     CmsRelationshipService relationshipService,
-    SourceInstanceContext sourceInstanceContext,
     FieldMigrationService fieldMigrationService,
-    KxpMediaFileFacade mediaFileFacade,
     ModelFacade modelFacade,
     ReusableSchemaService reusableSchemaService,
     DeferredPathService deferredPathService,
     SpoiledGuidContext spoiledGuidContext,
-    EntityIdentityFacade entityIdentityFacade,
     IAssetFacade assetFacade,
     MediaLinkServiceFactory mediaLinkServiceFactory,
     ToolConfiguration configuration,
-    ClassMappingProvider classMappingProvider
-) : UmtMapperBase<CmsTreeMapperSource>
+    ClassMappingProvider classMappingProvider,
+    PageBuilderPatcher pageBuilderPatcher
+    ) : UmtMapperBase<CmsTreeMapperSource>
 {
     private const string CLASS_FIELD_CONTROL_NAME = "controlname";
 
@@ -220,7 +210,7 @@ public class ContentItemMapper(
                         break;
                 }
 
-                PatchJsonDefinitions(source.CmsTree.NodeSiteID, ref contentItemCommonDataPageTemplateConfiguration, ref contentItemCommonDataPageBuilderWidgets, out ndp);
+                (contentItemCommonDataPageTemplateConfiguration, contentItemCommonDataPageBuilderWidgets, ndp) = pageBuilderPatcher.PatchJsonDefinitions(source.CmsTree.NodeSiteID, contentItemCommonDataPageTemplateConfiguration, contentItemCommonDataPageBuilderWidgets).GetAwaiter().GetResult();
             }
 
             var documentGuid = spoiledGuidContext.EnsureDocumentGuid(
@@ -372,44 +362,6 @@ public class ContentItemMapper(
         };
     }
 
-    private void PatchJsonDefinitions(int sourceSiteId, ref string? pageTemplateConfiguration, ref string? pageBuilderWidgets, out bool needsDeferredPatch)
-    {
-        needsDeferredPatch = false;
-        if (sourceInstanceContext.HasInfo)
-        {
-            if (pageTemplateConfiguration != null)
-            {
-                var pageTemplateConfigurationObj = JsonConvert.DeserializeObject<Services.Model.PageTemplateConfiguration>(pageTemplateConfiguration);
-                if (pageTemplateConfigurationObj?.Identifier != null)
-                {
-                    logger.LogTrace("Walk page template configuration {Identifier}", pageTemplateConfigurationObj.Identifier);
-
-                    var pageTemplateConfigurationFcs =
-                        sourceInstanceContext.GetPageTemplateFormComponents(sourceSiteId, pageTemplateConfigurationObj?.Identifier);
-                    if (pageTemplateConfigurationObj.Properties is { Count: > 0 })
-                    {
-                        WalkProperties(sourceSiteId, pageTemplateConfigurationObj.Properties, pageTemplateConfigurationFcs, out bool ndp);
-                        needsDeferredPatch = ndp || needsDeferredPatch;
-                    }
-
-                    pageTemplateConfiguration = JsonConvert.SerializeObject(pageTemplateConfigurationObj);
-                }
-            }
-
-            if (pageBuilderWidgets != null)
-            {
-                var areas = JsonConvert.DeserializeObject<EditableAreasConfiguration>(pageBuilderWidgets);
-                if (areas?.EditableAreas is { Count: > 0 })
-                {
-                    WalkAreas(sourceSiteId, areas.EditableAreas, out bool ndp);
-                    needsDeferredPatch = ndp || needsDeferredPatch;
-                }
-
-                pageBuilderWidgets = JsonConvert.SerializeObject(areas);
-            }
-        }
-    }
-
     private IEnumerable<IUmtModel> MigrateDraft(ICmsVersionHistory checkoutVersion, ICmsTree cmsTree, string sourceFormClassDefinition, string targetFormDefinition, Guid contentItemGuid,
         Guid contentLanguageGuid, ICmsClass sourceNodeClass, WebsiteChannelInfo websiteChannelInfo, ICmsSite sourceSite, IClassMapping mapping)
     {
@@ -421,7 +373,7 @@ public class ContentItemMapper(
         {
             string? pageTemplateConfiguration = adapter.DocumentPageTemplateConfiguration;
             string? pageBuildWidgets = adapter.DocumentPageBuilderWidgets;
-            PatchJsonDefinitions(checkoutVersion.NodeSiteID, ref pageTemplateConfiguration, ref pageBuildWidgets, out bool ndp);
+            (pageTemplateConfiguration, pageBuildWidgets, bool ndp) = pageBuilderPatcher.PatchJsonDefinitions(checkoutVersion.NodeSiteID, pageTemplateConfiguration, pageBuildWidgets).GetAwaiter().GetResult();
 
             #region Find existing guid
 
@@ -778,217 +730,5 @@ public class ContentItemMapper(
         }
     }
 
-    #region "Page template & page widget walkers"
 
-    private void WalkAreas(int siteId, List<EditableAreaConfiguration> areas, out bool needsDeferredPatch)
-    {
-        needsDeferredPatch = false;
-        foreach (var area in areas)
-        {
-            logger.LogTrace("Walk area {Identifier}", area.Identifier);
-
-            if (area.Sections is { Count: > 0 })
-            {
-                WalkSections(siteId, area.Sections, out bool ndp);
-                needsDeferredPatch = ndp || needsDeferredPatch;
-            }
-        }
-    }
-
-    private void WalkSections(int siteId, List<SectionConfiguration> sections, out bool needsDeferredPatch)
-    {
-        needsDeferredPatch = false;
-        foreach (var section in sections)
-        {
-            logger.LogTrace("Walk section {TypeIdentifier}|{Identifier}", section.TypeIdentifier, section.Identifier);
-
-            var sectionFcs = sourceInstanceContext.GetSectionFormComponents(siteId, section.TypeIdentifier);
-            WalkProperties(siteId, section.Properties, sectionFcs, out bool ndp1);
-            needsDeferredPatch = ndp1 || needsDeferredPatch;
-
-            if (section.Zones is { Count: > 0 })
-            {
-                WalkZones(siteId, section.Zones, out bool ndp);
-                needsDeferredPatch = ndp || needsDeferredPatch;
-            }
-        }
-    }
-
-    private void WalkZones(int siteId, List<ZoneConfiguration> zones, out bool needsDeferredPatch)
-    {
-        needsDeferredPatch = false;
-        foreach (var zone in zones)
-        {
-            logger.LogTrace("Walk zone {Name}|{Identifier}", zone.Name, zone.Identifier);
-
-            if (zone.Widgets is { Count: > 0 })
-            {
-                WalkWidgets(siteId, zone.Widgets, out bool ndp);
-                needsDeferredPatch = ndp || needsDeferredPatch;
-            }
-        }
-    }
-
-    private void WalkWidgets(int siteId, List<WidgetConfiguration> widgets, out bool needsDeferredPatch)
-    {
-        needsDeferredPatch = false;
-        foreach (var widget in widgets)
-        {
-            logger.LogTrace("Walk widget {TypeIdentifier}|{Identifier}", widget.TypeIdentifier, widget.Identifier);
-
-            var widgetFcs = sourceInstanceContext.GetWidgetPropertyFormComponents(siteId, widget.TypeIdentifier);
-            foreach (var variant in widget.Variants)
-            {
-                logger.LogTrace("Walk widget variant {Name}|{Identifier}", variant.Name, variant.Identifier);
-
-                if (variant.Properties is { Count: > 0 })
-                {
-                    WalkProperties(siteId, variant.Properties, widgetFcs, out bool ndp);
-                    needsDeferredPatch = ndp || needsDeferredPatch;
-                }
-            }
-        }
-    }
-
-    private void WalkProperties(int siteId, JObject properties, List<EditingFormControlModel>? formControlModels, out bool needsDeferredPatch)
-    {
-        needsDeferredPatch = false;
-        foreach ((string key, var value) in properties)
-        {
-            logger.LogTrace("Walk property {Name}|{Identifier}", key, value?.ToString());
-
-            var editingFcm = formControlModels?.FirstOrDefault(x => x.PropertyName.Equals(key, StringComparison.InvariantCultureIgnoreCase));
-            if (editingFcm != null)
-            {
-                if (FieldMappingInstance.BuiltInModel.NotSupportedInKxpLegacyMode
-                        .SingleOrDefault(x => x.OldFormComponent == editingFcm.FormComponentIdentifier) is var (oldFormComponent, newFormComponent))
-                {
-                    logger.LogTrace("Editing form component found {FormComponentName} => no longer supported {Replacement}", editingFcm.FormComponentIdentifier, newFormComponent);
-
-                    switch (oldFormComponent)
-                    {
-                        case Kx13FormComponents.Kentico_MediaFilesSelector:
-                        {
-                            var mfis = new List<object>();
-                            if (value?.ToObject<List<MediaFilesSelectorItem>>() is { Count: > 0 } items)
-                            {
-                                foreach (var mfsi in items)
-                                {
-                                    if (configuration.MigrateMediaToMediaLibrary)
-                                    {
-                                        if (entityIdentityFacade.Translate<IMediaFile>(mfsi.FileGuid, siteId) is { } mf && mediaFileFacade.GetMediaFile(mf.Identity) is { } mfi)
-                                        {
-                                            mfis.Add(new Kentico.Components.Web.Mvc.FormComponents.MediaFilesSelectorItem { FileGuid = mfi.FileGUID });
-                                        }
-                                    }
-                                    else
-                                    {
-                                        var sourceMediaFile = modelFacade.SelectWhere<IMediaFile>("FileGUID = @mediaFileGuid AND FileSiteID = @fileSiteID", new SqlParameter("mediaFileGuid", mfsi.FileGuid), new SqlParameter("fileSiteID", siteId))
-                                            .FirstOrDefault();
-                                        if (sourceMediaFile != null)
-                                        {
-                                            var (ownerContentItemGuid, _) = assetFacade.GetRef(sourceMediaFile);
-                                            mfis.Add(new ContentItemReference { Identifier = ownerContentItemGuid });
-                                        }
-                                    }
-                                }
-
-
-                                properties[key] = JToken.FromObject(items.Select(x => new Kentico.Components.Web.Mvc.FormComponents.MediaFilesSelectorItem { FileGuid = entityIdentityFacade.Translate<IMediaFile>(x.FileGuid, siteId).Identity })
-                                    .ToList());
-                            }
-
-                            break;
-                        }
-                        case Kx13FormComponents.Kentico_PathSelector:
-                        {
-                            if (value?.ToObject<List<PathSelectorItem>>() is { Count: > 0 } items)
-                            {
-                                properties[key] = JToken.FromObject(items.Select(x => new Kentico.Components.Web.Mvc.FormComponents.PathSelectorItem { TreePath = x.NodeAliasPath }).ToList());
-                            }
-
-                            break;
-                        }
-                        case Kx13FormComponents.Kentico_AttachmentSelector when newFormComponent == FormComponents.AdminAssetSelectorComponent:
-                        {
-                            if (value?.ToObject<List<AttachmentSelectorItem>>() is { Count: > 0 } items)
-                            {
-                                var nv = new List<object>();
-                                foreach (var asi in items)
-                                {
-                                    var attachment = modelFacade.SelectWhere<ICmsAttachment>("AttachmentSiteID = @attachmentSiteId AND AttachmentGUID = @attachmentGUID",
-                                            new SqlParameter("attachmentSiteID", siteId),
-                                            new SqlParameter("attachmentGUID", asi.FileGuid)
-                                        )
-                                        .FirstOrDefault();
-                                    if (attachment != null)
-                                    {
-                                        switch (attachmentMigrator.MigrateAttachment(attachment).GetAwaiter().GetResult())
-                                        {
-                                            case MigrateAttachmentResultMediaFile { Success: true, MediaFileInfo: { } x }:
-                                            {
-                                                nv.Add(new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize });
-                                                break;
-                                            }
-                                            case MigrateAttachmentResultContentItem { Success: true, ContentItemGuid: { } contentItemGuid }:
-                                            {
-                                                nv.Add(new ContentItemReference { Identifier = contentItemGuid });
-                                                break;
-                                            }
-                                            default:
-                                            {
-                                                logger.LogWarning("Attachment '{AttachmentGUID}' failed to migrate", asi.FileGuid);
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        logger.LogWarning("Attachment '{AttachmentGUID}' not found", asi.FileGuid);
-                                    }
-                                }
-
-                                properties[key] = JToken.FromObject(nv);
-                            }
-
-                            logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
-                            break;
-                        }
-                        case Kx13FormComponents.Kentico_PageSelector when newFormComponent == FormComponents.Kentico_Xperience_Admin_Websites_WebPageSelectorComponent:
-                        {
-                            if (value?.ToObject<List<PageSelectorItem>>() is { Count: > 0 } items)
-                            {
-                                properties[key] = JToken.FromObject(items.Select(x => new WebPageRelatedItem { WebPageGuid = spoiledGuidContext.EnsureNodeGuid(x.NodeGuid, siteId) }).ToList());
-                            }
-
-                            logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
-                            break;
-                        }
-
-                        default:
-                            break;
-                    }
-                }
-                else if (FieldMappingInstance.BuiltInModel.SupportedInKxpLegacyMode.Contains(editingFcm.FormComponentIdentifier))
-                {
-                    // OK
-                    logger.LogTrace("Editing form component found {FormComponentName} => supported in legacy mode", editingFcm.FormComponentIdentifier);
-                }
-                else
-                {
-                    // unknown control, probably custom
-                    logger.LogTrace("Editing form component found {FormComponentName} => custom or inlined component, don't forget to migrate code accordingly", editingFcm.FormComponentIdentifier);
-                }
-            }
-
-            if ("NodeAliasPath".Equals(key, StringComparison.InvariantCultureIgnoreCase))
-            {
-                needsDeferredPatch = true;
-                properties["TreePath"] = value;
-                properties.Remove(key);
-            }
-        }
-    }
-
-    #endregion
 }
