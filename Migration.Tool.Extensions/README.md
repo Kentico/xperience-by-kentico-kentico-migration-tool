@@ -79,3 +79,19 @@ serviceCollection.AddSingleton<IClassMapping>(m);
 ### Inject and use reusable schema
 
 demonstrated in method `AddReusableSchemaIntegrationSample`, goal is to take single data class and assign reusable schema.
+
+
+## Custom widget property migrations
+
+To create custom widget property migration:
+- create new file in `Migration.Tool.Extensions/CommunityMigrations` (directory if you need more files for single migration)
+- implement interface `Migration.Tool.KXP.Api.Services.CmsClass.IWidgetPropertyMigration`
+  - implement property rank, set number bellow 100 000 - for example 5000
+  - implement method shall migrate (if method returns true, migration will be used)
+  - implement `MigrateWidgetProperty`, where objective is to convert old JToken representing json value to new converted JToken value  
+- finally register in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as `Transient` dependency into service collection. For example `services.AddTransient<IWidgetPropertyMigration, WidgetPathSelectorMigration>()`
+
+Samples:
+- [Path selector migration](./DefaultMigrations/WidgetPathSelectorMigration.cs)
+- [Page selector migration](./DefaultMigrations/WidgetPageSelectorMigration.cs)
+- [File selector migration](./DefaultMigrations/WidgetFileMigration.cs)

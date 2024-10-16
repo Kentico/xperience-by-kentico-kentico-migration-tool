@@ -12,6 +12,10 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IFieldMigration, AssetMigration>();
         services.AddTransient<IFieldMigration, SampleTextMigration>();
 
+        services.AddTransient<IWidgetPropertyMigration, WidgetFileMigration>();
+        services.AddTransient<IWidgetPropertyMigration, WidgetPathSelectorMigration>();
+        services.AddTransient<IWidgetPropertyMigration, WidgetPageSelectorMigration>();
+
         // services.AddClassMergeExample();
         // services.AddSimpleRemodelingSample();
         // services.AddReusableSchemaIntegrationSample();
