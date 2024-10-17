@@ -22,12 +22,13 @@ Currently, the Kentico Migration Tool supports the following types of data:
 - **Pages**
   - The migration includes the following versions of pages:
     - _Published_
-    - _Latest draft version_ - for published pages, the version is migrated to the _Draft_ [workflow step](https://docs.kentico.com/x/JwKQC); for pages that do not have a published version, the version is migrated to the _Draft (initial)_ workflow step.
-    - _Archived_
+    - _Latest draft version_ - for published pages, the version is migrated to the _Draft_ [status](https://docs.kentico.com/x/JwKQC); for pages that do not have a published version, the version is migrated to the _Draft (initial)_ workflow step.
+    - _Archived_ pages are migrated to the _Unpublished_ status.
   - Each page gets assigned under its corresponding website channel.
   - Linked pages are currently not supported in Xperience by Kentico. The migration creates standard page copies for any linked pages on the source instance.
-  - Page permissions (ACLs) are currently not supported in Xperience by Kentico and are not migrated.
+  - Page permissions are currently not supported by the Kentico Migration Tool and are not migrated. If you need page ACLs to be migrated, please [open an issue and request the feature](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/issues/new?assignees=&labels=&projects=&template=feature_request.md).
   - Migration of Page Builder content is only available for Kentico Xperience 13.
+    - If you are [migrating a Kentico 12 MVC application](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/blob/master/docs/Usage-Guide.md#kentico-12-mvc) you can upgrade it to Kentico Xperience 13 using the Kentico Installation Manager (KIM) and then upgrade to Xperience by Kentico with Page Builder content.
 - **Page attachments**
   - Page attachments are not supported in Xperience by Kentico. Attachments are migrated into media libraries. See [`Migration.Tool.CLI/README.md - Attachments`](../Migration.Tool.CLI/README.md#Attachments) for detailed information about the conversion process.
 - **Preset page templates** (_Custom page templates_ in Kentico Xperience 13)
