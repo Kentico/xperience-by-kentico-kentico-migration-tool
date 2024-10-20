@@ -25,7 +25,7 @@ using Migration.Tool.Source;
 using static Migration.Tool.Common.Helpers.ConsoleHelper;
 
 EnableVirtualTerminalProcessing();
-
+//dummy change
 // https://docs.microsoft.com/en-us/dotnet/core/extensions/configuration
 
 var config = new ConfigurationBuilder()
