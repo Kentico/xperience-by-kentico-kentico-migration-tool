@@ -22,6 +22,7 @@ using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.Helpers;
 using Migration.Tool.Common.MigrationProtocol;
+using Migration.Tool.Common.Model;
 using Migration.Tool.KXP.Models;
 using Migration.Tool.Source.Contexts;
 using Migration.Tool.Source.Helpers;
@@ -29,7 +30,6 @@ using Migration.Tool.Source.Mappers;
 using Migration.Tool.Source.Model;
 using Migration.Tool.Source.Providers;
 using Migration.Tool.Source.Services;
-using Migration.Tool.Source.Services.Model;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;

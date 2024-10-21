@@ -1,6 +1,5 @@
 using Migration.Tool.Common.Helpers;
-using Migration.Tool.Source.Services.Model;
-
+using Migration.Tool.Common.Model;
 using Newtonsoft.Json.Linq;
 
 namespace Migration.Tool.Source.Helpers;
@@ -28,7 +27,7 @@ public static class PageBuilderWidgetsPatcher
         return configuration;
     }
 
-    private static void DeferredPatchWidget(WidgetConfiguration configurationZoneWidget, TreePathConvertor convertor, out bool anythingChanged)
+    private static void DeferredPatchWidget(WidgetConfiguration? configurationZoneWidget, TreePathConvertor convertor, out bool anythingChanged)
     {
         anythingChanged = false;
         if (configurationZoneWidget == null)
@@ -39,11 +38,14 @@ public static class PageBuilderWidgetsPatcher
         var list = configurationZoneWidget.Variants ?? [];
         for (int i = 0; i < list.Count; i++)
         {
-            var variant = JObject.FromObject(list[i]);
-            DeferredPatchProperties(variant, convertor, out bool anythingChangedTmp);
+            if (list[i] is { } variantJson)
+            {
+                var variant = JObject.FromObject(variantJson);
+                DeferredPatchProperties(variant, convertor, out bool anythingChangedTmp);
 
-            list[i] = variant.ToObject<WidgetVariantConfiguration>();
-            anythingChanged = anythingChanged || anythingChangedTmp;
+                list[i] = variant.ToObject<WidgetVariantConfiguration>();
+                anythingChanged = anythingChanged || anythingChangedTmp;
+            }
         }
     }
 
@@ -56,9 +58,8 @@ public static class PageBuilderWidgetsPatcher
             {
                 switch (key)
                 {
-                    case "TreePath":
+                    case "TreePath" when value?.Value<string>() is { } nodeAliasPath:
                     {
-                        string? nodeAliasPath = value?.Value<string>();
                         string treePath = convertor.GetConvertedOrUnchangedAssumingChannel(nodeAliasPath);
                         if (!TreePathConvertor.TreePathComparer.Equals(nodeAliasPath, treePath))
                         {
