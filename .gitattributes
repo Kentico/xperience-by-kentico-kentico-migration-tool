@@ -1,4 +1,13 @@
-* text eol=crlf
+# Auto detect text files and perform LF normalization
+*        text=auto
+
+*.cs     text=CRLF diff=csharp
+*.html   text diff=html
+*.sql    text
+*.md     text
+
+*.csproj text merge=union
+*.sln    text merge=union eol=crlf
 
 # Ensure binary files are not treated as text https://stackoverflow.com/a/32278635/939634
 *.png binary
