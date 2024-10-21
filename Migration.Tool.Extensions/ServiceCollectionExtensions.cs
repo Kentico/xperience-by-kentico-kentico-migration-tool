@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Migration.Tool.Extensions.CommunityMigrations;
 using Migration.Tool.Extensions.DefaultMigrations;
 using Migration.Tool.KXP.Api.Services.CmsClass;
@@ -11,6 +11,10 @@ public static class ServiceCollectionExtensions
     {
         services.AddTransient<IFieldMigration, AssetMigration>();
         services.AddTransient<IFieldMigration, SampleTextMigration>();
+
+        services.AddTransient<IWidgetPropertyMigration, WidgetFileMigration>();
+        services.AddTransient<IWidgetPropertyMigration, WidgetPathSelectorMigration>();
+        services.AddTransient<IWidgetPropertyMigration, WidgetPageSelectorMigration>();
 
         // services.AddClassMergeExample();
         // services.AddSimpleRemodelingSample();
