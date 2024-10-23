@@ -6,18 +6,19 @@
 
 ## Description
 
-This repository is part of the [Xperience by Kentico Migration Toolkit](https://github.com/Kentico/xperience-by-kentico-migration-toolkit).
+This repository is part of the [Xperience by Kentico Migration Tool](https://github.com/Kentico/xperience-by-kentico-migration-tool).
 
 The Kentico Migration Tool transfers content and other data from **Kentico Xperience 13**, **Kentico 12** or **Kentico 11** to **Xperience by Kentico**.
 
 ## Library Version Matrix
 
 | Xperience Version | Library Version |
-| ----------------- | --------------- |
+| ----------------- |-----------------|
 | == 29.1.0         | == 1.0.0        |
 | == 29.2.0         | == 1.1.0        |
 | == 29.3.3         | == 1.2.0        |
 | == 29.5.2         | == 1.3.0        |
+| == 29.5.2         | == 1.4.0        |
 
 ## Dependencies
 
@@ -28,27 +29,27 @@ The Kentico Migration Tool transfers content and other data from **Kentico Xperi
 
 Follow the steps below to run the Kentico Migration Tool:
 
-1. Clone or download the Migration.Toolkit source code from this repository.
-2. Open the `Migration.Toolkit.sln` solution in Visual Studio.
-3. Configure the options in the `Migration.Toolkit.CLI/appsettings.json` configuration file. See [`Migration.Toolkit.CLI/README.md - Configuration`](./Migration.Toolkit.CLI/README.md#Configuration) for details.
+1. Clone or download the Migration.Tool source code from this repository.
+2. Open the `Migration.Tool.sln` solution in Visual Studio.
+3. Configure the options in the `Migration.Tool.CLI/appsettings.json` configuration file. See [`Migration.Tool.CLI/README.md - Configuration`](./Migration.Tool.CLI/README.md#Configuration) for details.
 4. Rebuild the solution and restore all required NuGet packages.
 5. Open the command line prompt.
-6. Navigate to the output directory of the `Migration.Toolkit.CLI` project.
-7. Run the `Migration.Toolkit.CLI.exe migrate` command.
+6. Navigate to the output directory of the `Migration.Tool.CLI` project.
+7. Run the `Migration.Tool.CLI.exe migrate` command.
 
    - The following example shows the command with all parameters for complete migration:
 
      ```powershell
-     Migration.Toolkit.CLI.exe  migrate --sites --custom-modules --users --settings-keys --page-types --pages --attachments --contact-management --forms --media-libraries --data-protection --countries
+     Migration.Tool.CLI.exe  migrate --sites --custom-modules --users --settings-keys --page-types --pages --attachments --contact-management --forms --media-libraries --data-protection --countries
      ```
 
 8. Observe the command line output. The command output is also stored in a log file (`logs\log-<date>.txt` under the output directory by default), which you can review later.
 9. Review the migration protocol, which provides information about the result of the migration, lists required manual steps, etc.
 
    - You can find the protocol in the location specified by the `MigrationProtocolPath` key in the `appsettings.json` configuration file.
-   - For more information, see [`Migration.Toolkit.CLI/MIGRATION_PROTOCOL_REFERENCE.md`](./Migration.Toolkit.CLI/MIGRATION_PROTOCOL_REFERENCE.md).
+   - For more information, see [`Migration.Tool.CLI/MIGRATION_PROTOCOL_REFERENCE.md`](./Migration.Tool.CLI/MIGRATION_PROTOCOL_REFERENCE.md).
 
-The data is now migrated to the target Xperience by Kentico instance according to your configuration. See [`Migration.Toolkit.CLI/README.md`](./Migration.Toolkit.CLI/README.md) for detailed information about the migration CLI, configuration options, instructions related to individual object types, and manual migration steps.
+The data is now migrated to the target Xperience by Kentico instance according to your configuration. See [`Migration.Tool.CLI/README.md`](./Migration.Tool.CLI/README.md) for detailed information about the migration CLI, configuration options, instructions related to individual object types, and manual migration steps.
 
 ## Full Instructions
 

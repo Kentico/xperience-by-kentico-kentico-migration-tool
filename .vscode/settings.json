@@ -49,7 +49,7 @@
     "editor.defaultFormatter": "ms-dotnettools.csharp"
   },
 
-  "dotnet.defaultSolution": "Migration.Toolkit.sln",
+  "dotnet.defaultSolution": "Migration.Tool.sln",
 
   "typescript.validate.enable": false,
   "eslint.workingDirectories": [],
