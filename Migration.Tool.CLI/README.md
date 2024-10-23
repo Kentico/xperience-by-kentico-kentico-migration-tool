@@ -324,8 +324,7 @@ The migration includes:
 * All system fields from the *CMS_User* and *CMS_UserSettings* tables. You can customize which fields are migrated via
   the `MemberIncludeUserSystemFields` configuration option. See [configuration](#configuration).
 * All custom fields added to the *CMS_User* and *CMS_UserSettings* tables are migrated under `CMS_Member`. The columns specified in the `MemberIncludeSystemFields` option are appended to the `CMS_Member` table in the order in which they were specified. For example for `MemberIncludeSystemFields: "MemberIncludeUserSystemFields": "FirstName|LastName|UserPrivilegeLevel` the structure looks like this after migration:
-* MemberId|MemberEmail|...|MemberSecurityStamp| -> |MemberId|MemberEmail|...|MemberSecurityStamp|FirstName|LastName|UserPrivilegeLevel|
-  * where *...* represent the remaining columns from the `CMS_Member` table.
+  * `|MemberId|MemberEmail|...|MemberSecurityStamp|` -> `|MemberId|MemberEmail|...|MemberSecurityStamp|FirstName|LastName|UserPrivilegeLevel|`
   > If you are migrating custom fields, the `--custom-modules` migration command must be run before the `--members`
   command. For example:
 
