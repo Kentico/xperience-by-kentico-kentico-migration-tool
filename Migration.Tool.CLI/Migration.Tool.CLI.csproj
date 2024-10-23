@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\KVA\Migration.Tool.Source\Migration.Tool.Source.csproj" />
+        <ProjectReference Include="..\Migration.Tool.Extensions\Migration.Tool.Extensions.csproj" />
+        <ProjectReference Include="..\Migration.Tool.Common\Migration.Tool.Common.csproj" />
+        <ProjectReference Include="..\Migration.Tool.Core.K11\Migration.Tool.Core.K11.csproj" />
+        <ProjectReference Include="..\Migration.Tool.Core.KX12\Migration.Tool.Core.KX12.csproj" />
+        <ProjectReference Include="..\Migration.Tool.Core.KX13\Migration.Tool.Core.KX13.csproj" />
+        <ProjectReference Include="..\Migration.Tool.K11\Migration.Tool.K11.csproj" />
+        <ProjectReference Include="..\Migration.Tool.KX12\Migration.Tool.KX12.csproj" />
+        <ProjectReference Include="..\Migration.Tool.KX13\Migration.Tool.KX13.csproj" />
+        <ProjectReference Include="..\Migration.Tool.KXP.Api\Migration.Tool.KXP.Api.csproj" />
+        <ProjectReference Include="..\Migration.Tool.KXP\Migration.Tool.KXP.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MediatR" Version="12.4.1" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.1" />
+        <PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="appsettings.local.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="appsettings.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+</Project>

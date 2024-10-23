@@ -619,7 +619,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ToolkitApiController.cs" />
+    <Compile Include="ToolApiController.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
