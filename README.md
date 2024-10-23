@@ -41,13 +41,13 @@ Follow the steps below to run the Kentico Migration Tool:
 3. Configure the options in the `Migration.Tool.CLI/appsettings.json` configuration file. See [`Migration.Tool.CLI/README.md - Configuration`](./Migration.Tool.CLI/README.md#Configuration) for details.
 4. Rebuild the solution and restore all required NuGet packages.
 5. Open the command line prompt.
-6. Navigate to the output directory of the `Migration.Tool.CLI` project.
+6. Navigate to the output directory of the `Migration.Tool.CLI` project. (under `.\Migration.Toolkit.CLI\bin\Debug\net8.0\`)
 7. Run the `Migration.Tool.CLI.exe migrate` command.
 
    - The following example shows the command with all parameters for complete migration:
 
      ```powershell
-     Migration.Tool.CLI.exe  migrate --sites --custom-modules --users --settings-keys --page-types --pages --attachments --contact-management --forms --media-libraries --data-protection --countries
+     .\Migration.Tool.CLI.exe  migrate --sites --custom-modules --users --settings-keys --page-types --pages --attachments --contact-management --forms --media-libraries --data-protection --countries --custom-tables --members --categories
      ```
 
    - You can migrate your projects iteratively. For repeated runs bypass depency checks by using the `--bypass-dependency-check` parameter, if you know that required dependencies were already migrated succesfully.
