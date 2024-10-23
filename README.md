@@ -25,7 +25,7 @@ This repository contains several README documents containing information necessa
 | == 29.2.0         | == 1.1.0        |
 | == 29.3.3         | == 1.2.0        |
 | == 29.5.2         | == 1.3.0        |
-| == 29.5.2         | == 1.4.0        |
+| == 29.6.0         | == 1.4.0        |
 
 ## Dependencies
 
