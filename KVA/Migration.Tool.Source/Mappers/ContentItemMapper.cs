@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
 using CMS.Core;
@@ -23,6 +22,7 @@ using Migration.Tool.Source.Model;
 using Migration.Tool.Source.Providers;
 using Migration.Tool.Source.Services;
 using Newtonsoft.Json.Linq;
+using System.Diagnostics;
 
 namespace Migration.Tool.Source.Mappers;
 
@@ -66,19 +66,26 @@ public class ContentItemMapper(
         var sourceNodeClass = modelFacade.SelectById<ICmsClass>(cmsTree.NodeClassID) ?? throw new InvalidOperationException($"Fatal: node class is missing, class id '{cmsTree.NodeClassID}'");
         var mapping = classMappingProvider.GetMapping(sourceNodeClass.ClassName);
         var targetClassGuid = sourceNodeClass.ClassGUID;
+        DataClassInfo targetClassInfo = null;
         if (mapping != null)
         {
-            targetClassGuid = DataClassInfoProvider.ProviderObject.Get(mapping.TargetClassName)?.ClassGUID ?? throw new InvalidOperationException($"Unable to find target class '{mapping.TargetClassName}'");
+            targetClassInfo = DataClassInfoProvider.ProviderObject.Get(mapping.TargetClassName) ?? throw new InvalidOperationException($"Unable to find target class '{mapping.TargetClassName}'");
+            targetClassGuid = targetClassInfo.ClassGUID;
         }
 
         bool migratedAsContentFolder = sourceNodeClass.ClassName.Equals("cms.folder", StringComparison.InvariantCultureIgnoreCase) && !configuration.UseDeprecatedFolderPageType.GetValueOrDefault(false);
 
         var contentItemGuid = spoiledGuidContext.EnsureNodeGuid(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsTree.NodeID);
+
+        string className = targetClassInfo?.ClassName ?? sourceNodeClass.ClassName;
+        bool isMappedTypeReusable = targetClassInfo?.ClassContentTypeType is ClassContentTypeType.REUSABLE;
+        var isReusable = configuration.ClassNamesConvertToContentHub.Contains(className) || isMappedTypeReusable;
+
         yield return new ContentItemModel
         {
             ContentItemGUID = contentItemGuid,
             ContentItemName = safeNodeName,
-            ContentItemIsReusable = false, // page is not reusable
+            ContentItemIsReusable = isReusable,
             ContentItemIsSecured = cmsTree.IsSecuredNode ?? false,
             ContentItemDataClassGuid = migratedAsContentFolder ? null : targetClassGuid,
             ContentItemChannelGuid = siteGuid
@@ -190,21 +197,21 @@ public class ContentItemMapper(
                 switch (cmsDocument)
                 {
                     case CmsDocumentK11:
-                    {
-                        break;
-                    }
+                        {
+                            break;
+                        }
                     case CmsDocumentK12 doc:
-                    {
-                        contentItemCommonDataPageBuilderWidgets = doc.DocumentPageBuilderWidgets;
-                        contentItemCommonDataPageTemplateConfiguration = doc.DocumentPageTemplateConfiguration;
-                        break;
-                    }
+                        {
+                            contentItemCommonDataPageBuilderWidgets = doc.DocumentPageBuilderWidgets;
+                            contentItemCommonDataPageTemplateConfiguration = doc.DocumentPageTemplateConfiguration;
+                            break;
+                        }
                     case CmsDocumentK13 doc:
-                    {
-                        contentItemCommonDataPageBuilderWidgets = doc.DocumentPageBuilderWidgets;
-                        contentItemCommonDataPageTemplateConfiguration = doc.DocumentPageTemplateConfiguration;
-                        break;
-                    }
+                        {
+                            contentItemCommonDataPageBuilderWidgets = doc.DocumentPageBuilderWidgets;
+                            contentItemCommonDataPageTemplateConfiguration = doc.DocumentPageTemplateConfiguration;
+                            break;
+                        }
 
                     default:
                         break;
@@ -520,23 +527,23 @@ public class ContentItemMapper(
             switch (mapping?.GetMapping(targetColumnName, sourceNodeClass.ClassName))
             {
                 case FieldMappingWithConversion fieldMappingWithConversion:
-                {
-                    targetFieldName = fieldMappingWithConversion.TargetFieldName;
-                    valueConvertor = fieldMappingWithConversion.Converter;
-                    break;
-                }
+                    {
+                        targetFieldName = fieldMappingWithConversion.TargetFieldName;
+                        valueConvertor = fieldMappingWithConversion.Converter;
+                        break;
+                    }
                 case FieldMapping fieldMapping:
-                {
-                    targetFieldName = fieldMapping.TargetFieldName;
-                    valueConvertor = sourceValue => sourceValue;
-                    break;
-                }
+                    {
+                        targetFieldName = fieldMapping.TargetFieldName;
+                        valueConvertor = sourceValue => sourceValue;
+                        break;
+                    }
                 case null:
-                {
-                    targetFieldName = targetColumnName;
-                    valueConvertor = sourceValue => sourceValue;
-                    break;
-                }
+                    {
+                        targetFieldName = targetColumnName;
+                        valueConvertor = sourceValue => sourceValue;
+                        break;
+                    }
 
                 default:
                     break;
@@ -630,15 +637,15 @@ public class ContentItemMapper(
                 switch (await fmb.MigrateValue(sourceValue, fvmc))
                 {
                     case { Success: true } result:
-                    {
-                        target[targetFieldName] = valueConvertor.Invoke(result.MigratedValue);
-                        break;
-                    }
+                        {
+                            target[targetFieldName] = valueConvertor.Invoke(result.MigratedValue);
+                            break;
+                        }
                     case { Success: false }:
-                    {
-                        logger.LogError("Error while migrating field '{Field}' value {Value}", targetFieldName, sourceValue);
-                        break;
-                    }
+                        {
+                            logger.LogError("Error while migrating field '{Field}' value {Value}", targetFieldName, sourceValue);
+                            break;
+                        }
 
                     default:
                         break;
@@ -670,33 +677,33 @@ public class ContentItemMapper(
                     switch (result)
                     {
                         case { LinkKind: MediaLinkKind.Guid or MediaLinkKind.DirectMediaPath, MediaKind: MediaKind.MediaFile }:
-                        {
-                            var mediaFile = MediaHelper.GetMediaFile(result, modelFacade);
-                            if (mediaFile is null)
                             {
-                                return original;
-                            }
+                                var mediaFile = MediaHelper.GetMediaFile(result, modelFacade);
+                                if (mediaFile is null)
+                                {
+                                    return original;
+                                }
 
-                            return assetFacade.GetAssetUri(mediaFile);
-                        }
+                                return assetFacade.GetAssetUri(mediaFile);
+                            }
                         case { LinkKind: MediaLinkKind.Guid, MediaKind: MediaKind.Attachment, MediaGuid: { } mediaGuid, LinkSiteId: var linkSiteId }:
-                        {
-                            var attachment = MediaHelper.GetAttachment(result, modelFacade);
-                            if (attachment is null)
                             {
-                                return original;
+                                var attachment = MediaHelper.GetAttachment(result, modelFacade);
+                                if (attachment is null)
+                                {
+                                    return original;
+                                }
+
+                                await attachmentMigrator.MigrateAttachment(attachment);
+
+                                string? culture = null;
+                                if (attachment.AttachmentDocumentID is { } attachmentDocumentId)
+                                {
+                                    culture = modelFacade.SelectById<ICmsDocument>(attachmentDocumentId)?.DocumentCulture;
+                                }
+
+                                return assetFacade.GetAssetUri(attachment, culture);
                             }
-
-                            await attachmentMigrator.MigrateAttachment(attachment);
-
-                            string? culture = null;
-                            if (attachment.AttachmentDocumentID is { } attachmentDocumentId)
-                            {
-                                culture = modelFacade.SelectById<ICmsDocument>(attachmentDocumentId)?.DocumentCulture;
-                            }
-
-                            return assetFacade.GetAssetUri(attachment, culture);
-                        }
 
                         default:
                             break;
