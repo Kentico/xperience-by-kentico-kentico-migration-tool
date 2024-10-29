@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
 using CMS.Core;
@@ -26,8 +28,6 @@ using Migration.Tool.Source.Providers;
 using Migration.Tool.Source.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Collections.Concurrent;
-using System.Diagnostics;
 
 namespace Migration.Tool.Source.Handlers;
 // ReSharper disable once UnusedType.Global
@@ -213,10 +213,10 @@ public class MigratePagesCommandHandler(
                     var commonDataInfos = new List<ContentItemCommonDataInfo>();
                     foreach (var umtModel in results)
                     {
-                        var isReusable = toolConfiguration.ClassNamesConvertToContentHub.Contains(targetClass?.ClassName) || targetClass?.ClassContentTypeType is ClassContentTypeType.REUSABLE;
+                        bool isReusable = toolConfiguration.ClassNamesConvertToContentHub.Contains(targetClass?.ClassName) || targetClass?.ClassContentTypeType is ClassContentTypeType.REUSABLE;
 
 
-                        var skipWebPageItem = umtModel is WebPageItemModel && isReusable;
+                        bool skipWebPageItem = umtModel is WebPageItemModel && isReusable;
 
                         IImportResult result = new ImportResult { Success = true };
                         if (skipWebPageItem)
@@ -240,21 +240,21 @@ public class MigratePagesCommandHandler(
                         switch (result)
                         {
                             case { Success: true, Imported: ContentItemCommonDataInfo ccid }:
-                                {
-                                    commonDataInfos.Add(ccid);
-                                    Debug.Assert(ccid.ContentItemCommonDataContentLanguageID != 0, "ccid.ContentItemCommonDataContentLanguageID != 0");
-                                    break;
-                                }
+                            {
+                                commonDataInfos.Add(ccid);
+                                Debug.Assert(ccid.ContentItemCommonDataContentLanguageID != 0, "ccid.ContentItemCommonDataContentLanguageID != 0");
+                                break;
+                            }
                             case { Success: true, Imported: ContentItemLanguageMetadataInfo cclm }:
-                                {
-                                    Debug.Assert(cclm.ContentItemLanguageMetadataContentLanguageID != 0, "ccid.ContentItemCommonDataContentLanguageID != 0");
-                                    break;
-                                }
+                            {
+                                Debug.Assert(cclm.ContentItemLanguageMetadataContentLanguageID != 0, "ccid.ContentItemCommonDataContentLanguageID != 0");
+                                break;
+                            }
                             case { Success: true, Imported: WebPageItemInfo wp }:
-                                {
-                                    webPageItemInfo = wp;
-                                    break;
-                                }
+                            {
+                                webPageItemInfo = wp;
+                                break;
+                            }
 
                             default:
                                 break;
@@ -554,24 +554,24 @@ public class MigratePagesCommandHandler(
         switch (importResult)
         {
             case { Success: true, Imported: WebPageUrlPathInfo imported }:
-                {
-                    logger.LogInformation("Page url path imported '{Path}' '{Guid}'", imported.WebPageUrlPath, imported.WebPageUrlPathGUID);
-                    break;
-                }
+            {
+                logger.LogInformation("Page url path imported '{Path}' '{Guid}'", imported.WebPageUrlPath, imported.WebPageUrlPathGUID);
+                break;
+            }
             case { Success: false, Exception: { } exception }:
-                {
-                    logger.LogError("Failed to import page url path: {Error}", exception.ToString());
-                    break;
-                }
+            {
+                logger.LogError("Failed to import page url path: {Error}", exception.ToString());
+                break;
+            }
             case { Success: false, ModelValidationResults: { } validation }:
+            {
+                foreach (var validationResult in validation)
                 {
-                    foreach (var validationResult in validation)
-                    {
-                        logger.LogError("Failed to import page url path {Members}: {Error}", string.Join(",", validationResult.MemberNames), validationResult.ErrorMessage);
-                    }
-
-                    break;
+                    logger.LogError("Failed to import page url path {Members}: {Error}", string.Join(",", validationResult.MemberNames), validationResult.ErrorMessage);
                 }
+
+                break;
+            }
 
             default:
                 break;
@@ -596,53 +596,53 @@ public class MigratePagesCommandHandler(
                 {
                     case CmsPageFormerUrlPathK11:
                     case CmsPageFormerUrlPathK12:
-                        {
-                            logger.LogError("Unexpected type '{Type}'", cmsPageFormerUrlPath.GetType().FullName);
-                            break;
-                        }
+                    {
+                        logger.LogError("Unexpected type '{Type}'", cmsPageFormerUrlPath.GetType().FullName);
+                        break;
+                    }
                     case CmsPageFormerUrlPathK13 pfup:
+                    {
+                        try
                         {
-                            try
+                            var languageInfo = languages.GetOrAdd(
+                                pfup.PageFormerUrlPathCulture,
+                                s => ContentLanguageInfoProvider.ProviderObject.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageName), s).SingleOrDefault() ?? throw new InvalidOperationException($"Missing content language '{s}'")
+                            );
+
+                            var ktPath = WebPageFormerUrlPathInfo.Provider.Get()
+                                .WhereEquals(nameof(WebPageFormerUrlPathInfo.WebPageFormerUrlPathHash), GetWebPageUrlPathHashQueryExpression(pfup.PageFormerUrlPathUrlPath))
+                                .WhereEquals(nameof(WebPageFormerUrlPathInfo.WebPageFormerUrlPathWebsiteChannelID), targetPage.WebPageItemWebsiteChannelID)
+                                .WhereEquals(nameof(WebPageFormerUrlPathInfo.WebPageFormerUrlPathContentLanguageID), languageInfo.ContentLanguageID)
+                                .SingleOrDefault();
+
+                            if (ktPath != null)
                             {
-                                var languageInfo = languages.GetOrAdd(
-                                    pfup.PageFormerUrlPathCulture,
-                                    s => ContentLanguageInfoProvider.ProviderObject.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageName), s).SingleOrDefault() ?? throw new InvalidOperationException($"Missing content language '{s}'")
-                                );
-
-                                var ktPath = WebPageFormerUrlPathInfo.Provider.Get()
-                                    .WhereEquals(nameof(WebPageFormerUrlPathInfo.WebPageFormerUrlPathHash), GetWebPageUrlPathHashQueryExpression(pfup.PageFormerUrlPathUrlPath))
-                                    .WhereEquals(nameof(WebPageFormerUrlPathInfo.WebPageFormerUrlPathWebsiteChannelID), targetPage.WebPageItemWebsiteChannelID)
-                                    .WhereEquals(nameof(WebPageFormerUrlPathInfo.WebPageFormerUrlPathContentLanguageID), languageInfo.ContentLanguageID)
-                                    .SingleOrDefault();
-
-                                if (ktPath != null)
-                                {
-                                    protocol.FetchedTarget(ktPath);
-                                }
-
-                                var webPageFormerUrlPathInfo = ktPath ?? new WebPageFormerUrlPathInfo();
-                                webPageFormerUrlPathInfo.WebPageFormerUrlPath = pfup.PageFormerUrlPathUrlPath;
-                                webPageFormerUrlPathInfo.WebPageFormerUrlPathHash = modelFacade.HashPath(pfup.PageFormerUrlPathUrlPath);
-                                webPageFormerUrlPathInfo.WebPageFormerUrlPathWebPageItemID = targetPage.WebPageItemID;
-                                webPageFormerUrlPathInfo.WebPageFormerUrlPathWebsiteChannelID = targetPage.WebPageItemWebsiteChannelID;
-                                webPageFormerUrlPathInfo.WebPageFormerUrlPathContentLanguageID = languageInfo.ContentLanguageID;
-                                webPageFormerUrlPathInfo.WebPageFormerUrlPathLastModified = pfup.PageFormerUrlPathLastModified;
-
-                                WebPageFormerUrlPathInfo.Provider.Set(webPageFormerUrlPathInfo);
-                                logger.LogInformation("Former page url path imported '{Path}'", webPageFormerUrlPathInfo.WebPageFormerUrlPath);
-                            }
-                            catch (Exception ex)
-                            {
-                                protocol.Append(HandbookReferences
-                                    .ErrorCreatingTargetInstance<WebPageFormerUrlPathInfo>(ex)
-                                    .NeedsManualAction()
-                                    .WithIdentityPrint(pfup)
-                                );
-                                logger.LogError("Failed to import page former url path: {Exception}", ex);
+                                protocol.FetchedTarget(ktPath);
                             }
 
-                            break;
+                            var webPageFormerUrlPathInfo = ktPath ?? new WebPageFormerUrlPathInfo();
+                            webPageFormerUrlPathInfo.WebPageFormerUrlPath = pfup.PageFormerUrlPathUrlPath;
+                            webPageFormerUrlPathInfo.WebPageFormerUrlPathHash = modelFacade.HashPath(pfup.PageFormerUrlPathUrlPath);
+                            webPageFormerUrlPathInfo.WebPageFormerUrlPathWebPageItemID = targetPage.WebPageItemID;
+                            webPageFormerUrlPathInfo.WebPageFormerUrlPathWebsiteChannelID = targetPage.WebPageItemWebsiteChannelID;
+                            webPageFormerUrlPathInfo.WebPageFormerUrlPathContentLanguageID = languageInfo.ContentLanguageID;
+                            webPageFormerUrlPathInfo.WebPageFormerUrlPathLastModified = pfup.PageFormerUrlPathLastModified;
+
+                            WebPageFormerUrlPathInfo.Provider.Set(webPageFormerUrlPathInfo);
+                            logger.LogInformation("Former page url path imported '{Path}'", webPageFormerUrlPathInfo.WebPageFormerUrlPath);
                         }
+                        catch (Exception ex)
+                        {
+                            protocol.Append(HandbookReferences
+                                .ErrorCreatingTargetInstance<WebPageFormerUrlPathInfo>(ex)
+                                .NeedsManualAction()
+                                .WithIdentityPrint(pfup)
+                            );
+                            logger.LogError("Failed to import page former url path: {Exception}", ex);
+                        }
+
+                        break;
+                    }
                     default:
                         throw new ArgumentOutOfRangeException(nameof(cmsPageFormerUrlPath));
                 }
