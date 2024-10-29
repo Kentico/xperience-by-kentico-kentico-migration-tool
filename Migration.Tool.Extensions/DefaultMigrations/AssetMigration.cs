@@ -16,6 +16,7 @@ using Migration.Tool.Source.Contexts;
 using Migration.Tool.Source.Helpers;
 using Migration.Tool.Source.Model;
 using Migration.Tool.Source.Services;
+using Newtonsoft.Json;
 
 namespace Migration.Tool.Extensions.DefaultMigrations;
 
@@ -327,11 +328,16 @@ public class AssetMigration(
         columnTypeAttr?.SetValue(configuration.MigrateMediaToMediaLibrary ? FieldDataType.Assets : FieldDataType.ContentItemReference);
 
         var settings = field.EnsureElement(FormDefinitionPatcher.FieldElemSettings);
-        settings.EnsureElement(FormDefinitionPatcher.SettingsElemControlname, e => e.Value = configuration.MigrateMediaToMediaLibrary ? FormComponents.AdminAssetSelectorComponent : FormComponents.AdminContentItemSelectorComponent);
-        settings.EnsureElement(FormDefinitionPatcher.AllowedContentItemTypeIdentifiers, e => e.Value = $"[\"{AssetFacade.LegacyMediaFileContentType.ClassGUID}\"]");
         if (configuration.MigrateMediaToMediaLibrary)
         {
+            settings.EnsureElement(FormDefinitionPatcher.SettingsElemControlname, e => e.Value = FormComponents.AdminAssetSelectorComponent);
             settings.EnsureElement(FormDefinitionPatcher.SettingsMaximumassets, maxAssets => maxAssets.Value = FormDefinitionPatcher.SettingsMaximumassetsFallback);
+        }
+        else
+        {
+            settings.EnsureElement(FormDefinitionPatcher.SettingsElemControlname, e => e.Value = FormComponents.AdminContentItemSelectorComponent);
+            Guid[] allowedContentTypes = [AssetFacade.LegacyMediaFileContentType.ClassGUID!.Value, AssetFacade.LegacyAttachmentContentType.ClassGUID!.Value];
+            settings.EnsureElement(FormDefinitionPatcher.AllowedContentItemTypeIdentifiers, e => e.Value = JsonConvert.SerializeObject(allowedContentTypes.Select(x => x.ToString().ToUpper()).ToArray()));
         }
     }
 }
