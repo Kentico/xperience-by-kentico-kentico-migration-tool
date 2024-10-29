@@ -370,7 +370,7 @@ public class AssetFacade(
         Properties = new FormFieldProperties { FieldCaption = "Asset", },
         Settings = new FormFieldSettings { CustomProperties = new Dictionary<string, object?> { { "AllowedExtensions", "_INHERITED_" } }, ControlName = "Kentico.Administration.ContentItemAssetUploader" }
     };
-    internal static readonly DataClassModel LegacyMediaFileContentType = new()
+    public static readonly DataClassModel LegacyMediaFileContentType = new()
     {
         ClassName = "Legacy.MediaFile",
         ClassType = ClassType.CONTENT_TYPE,
@@ -398,7 +398,7 @@ public class AssetFacade(
         Properties = new FormFieldProperties { FieldCaption = "Asset", },
         Settings = new FormFieldSettings { CustomProperties = new Dictionary<string, object?> { { "AllowedExtensions", "_INHERITED_" } }, ControlName = "Kentico.Administration.ContentItemAssetUploader" }
     };
-    internal static readonly DataClassModel LegacyAttachmentContentType = new()
+    public static readonly DataClassModel LegacyAttachmentContentType = new()
     {
         ClassName = "Legacy.Attachment",
         ClassType = ClassType.CONTENT_TYPE,
