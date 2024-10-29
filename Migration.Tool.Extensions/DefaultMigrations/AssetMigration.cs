@@ -337,7 +337,7 @@ public class AssetMigration(
         {
             settings.EnsureElement(FormDefinitionPatcher.SettingsElemControlname, e => e.Value = FormComponents.AdminContentItemSelectorComponent);
             Guid[] allowedContentTypes = [AssetFacade.LegacyMediaFileContentType.ClassGUID!.Value, AssetFacade.LegacyAttachmentContentType.ClassGUID!.Value];
-            settings.EnsureElement(FormDefinitionPatcher.AllowedContentItemTypeIdentifiers, e => e.Value = JsonConvert.SerializeObject(allowedContentTypes.Select(x => x.ToString().ToUpper()).ToArray()));
+            settings.EnsureElement(FormDefinitionPatcher.AllowedContentItemTypeIdentifiers, e => e.Value = JsonConvert.SerializeObject(allowedContentTypes.Select(x => x.ToString()).ToArray()));
         }
     }
 }
