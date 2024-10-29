@@ -24,6 +24,7 @@ public class FormDefinitionPatcher
     public const string FieldElem = "field";
     public const string FieldElemProperties = "properties";
     public const string FieldElemSettings = "settings";
+    public const string AllowedContentItemTypeIdentifiers = "AllowedContentItemTypeIdentifiers";
     public const string PropertiesElemDefaultvalue = "defaultvalue";
     public const string SettingsElemControlname = "controlname";
     public const string SettingsMaximumassets = "MaximumAssets";

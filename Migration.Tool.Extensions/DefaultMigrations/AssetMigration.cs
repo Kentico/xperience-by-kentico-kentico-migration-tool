@@ -328,6 +328,7 @@ public class AssetMigration(
 
         var settings = field.EnsureElement(FormDefinitionPatcher.FieldElemSettings);
         settings.EnsureElement(FormDefinitionPatcher.SettingsElemControlname, e => e.Value = configuration.MigrateMediaToMediaLibrary ? FormComponents.AdminAssetSelectorComponent : FormComponents.AdminContentItemSelectorComponent);
+        settings.EnsureElement(FormDefinitionPatcher.AllowedContentItemTypeIdentifiers, e => e.Value = $"[\"{AssetFacade.LegacyMediaFileContentType.ClassGUID}\"]");
         if (configuration.MigrateMediaToMediaLibrary)
         {
             settings.EnsureElement(FormDefinitionPatcher.SettingsMaximumassets, maxAssets => maxAssets.Value = FormDefinitionPatcher.SettingsMaximumassetsFallback);
