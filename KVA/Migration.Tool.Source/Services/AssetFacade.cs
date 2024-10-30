@@ -120,7 +120,7 @@ public class AssetFacade(
                 {
                     ContentItemGuid = translatedMediaGuid,
                     Identifier = GuidHelper.CreateAssetGuid(translatedMediaGuid, contentLanguageName),
-                    Name = Path.Combine(mediaFile.FileName, mediaFile.FileExtension),
+                    Name = Path.GetFileNameWithoutExtension(mediaFile.FileName) + mediaFile.FileExtension,
                     Extension = mediaFile.FileExtension,
                     Size = null,
                     LastModified = null,
@@ -158,26 +158,31 @@ public class AssetFacade(
         var (_, translatedAttachmentGuid) = entityIdentityFacade.Translate(attachment);
 
         List<ContentItemLanguageData> languageData = [];
-        languageData.AddRange(contentLanguageNames.Select(contentLanguageName => new ContentItemLanguageData
+        foreach (string contentLanguageName in contentLanguageNames)
         {
-            LanguageName = contentLanguageName,
-            DisplayName = $"{attachment.AttachmentName}",
-            UserGuid = null,
-            VersionStatus = VersionStatus.Published,
-            ContentItemData = new Dictionary<string, object?>
+            string assetFileName = $"{Path.GetFileNameWithoutExtension(attachment.AttachmentName)}{attachment.AttachmentExtension}";
+            var contentLanguageData = new ContentItemLanguageData
             {
-                ["Asset"] = new AssetDataSource
+                LanguageName = contentLanguageName,
+                DisplayName = $"{attachment.AttachmentName}",
+                UserGuid = null,
+                VersionStatus = VersionStatus.Published,
+                ContentItemData = new Dictionary<string, object?>
                 {
-                    ContentItemGuid = translatedAttachmentGuid,
-                    Identifier = GuidHelper.CreateAssetGuid(translatedAttachmentGuid, contentLanguageName),
-                    Name = Path.Combine(attachment.AttachmentName, attachment.AttachmentExtension),
-                    Extension = attachment.AttachmentExtension,
-                    Size = null,
-                    LastModified = attachment.AttachmentLastModified,
-                    Data = attachment.AttachmentBinary,
+                    ["Asset"] = new AssetDataSource
+                    {
+                        ContentItemGuid = translatedAttachmentGuid,
+                        Identifier = GuidHelper.CreateAssetGuid(translatedAttachmentGuid, contentLanguageName),
+                        Name = assetFileName,
+                        Extension = attachment.AttachmentExtension,
+                        Size = null,
+                        LastModified = attachment.AttachmentLastModified,
+                        Data = attachment.AttachmentBinary,
+                    }
                 }
-            }
-        }));
+            };
+            languageData.Add(contentLanguageData);
+        }
 
         string mediaFolder = "__Attachments";
         if (referencedNode != null && string.IsNullOrWhiteSpace(referencedNode.NodeAliasPath))

@@ -272,10 +272,9 @@ public class AssetMigration(
                                 }
                                 case MigrateAttachmentResultContentItem { Success: true, ContentItemGuid: { } contentItemGuid }:
                                 {
-                                    mfis =
-                                    [
+                                    mfisl.Add(
                                         new ContentItemReference { Identifier = contentItemGuid }
-                                    ];
+                                    );
                                     hasMigratedAsset = true;
                                     logger.LogTrace("Content item migrated from document '{DocumentID}' attachment '{FiledName}' to {ContentItemGUID}", docId, field.Name, contentItemGuid);
                                     break;
