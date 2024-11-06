@@ -213,31 +213,7 @@ public class MigratePagesCommandHandler(
                     var commonDataInfos = new List<ContentItemCommonDataInfo>();
                     foreach (var umtModel in results)
                     {
-                        bool isReusable = toolConfiguration.ClassNamesConvertToContentHub.Contains(targetClass?.ClassName) || targetClass?.ClassContentTypeType is ClassContentTypeType.REUSABLE;
-
-
-                        bool skipWebPageItem = umtModel is WebPageItemModel && isReusable;
-
-                        IImportResult result = new ImportResult { Success = true };
-                        if (skipWebPageItem)
-                        {
-                            if (targetClass is { } && targetClass.ClassContentTypeType == ClassContentTypeType.WEBSITE)
-                            {
-                                targetClass.ClassContentTypeType = ClassContentTypeType.REUSABLE;
-                                targetClass.ClassWebPageHasUrl = false;
-                                targetClass.Update();
-                            }
-                        }
-                        else
-                        {
-                            result = await importer.ImportAsync(umtModel);
-                        }
-                        if (result is { Success: false } && !skipWebPageItem)
-                        {
-                            logger.LogError("Failed to import: {Exception}, {ValidationResults}", result.Exception, JsonConvert.SerializeObject(result.ModelValidationResults));
-                        }
-
-                        switch (result)
+                        switch (await importer.ImportAsync(umtModel))
                         {
                             case { Success: true, Imported: ContentItemCommonDataInfo ccid }:
                             {

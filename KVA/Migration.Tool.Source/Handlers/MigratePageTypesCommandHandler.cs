@@ -151,6 +151,11 @@ public class MigratePageTypesCommandHandler(
 
             foreach (string sourceClassName in classMapping.SourceClassNames)
             {
+                if (newDt.ClassContentTypeType is ClassContentTypeType.REUSABLE)
+                {
+                    continue;
+                }
+
                 var sourceClass = cmsClasses.First(c => c.ClassName.Equals(sourceClassName, StringComparison.InvariantCultureIgnoreCase));
                 foreach (var cmsClassSite in modelFacade.SelectWhere<ICmsClassSite>("ClassId = @classId", new SqlParameter("classId", sourceClass.ClassID)))
                 {

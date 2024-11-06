@@ -19,7 +19,7 @@ public static class ServiceCollectionExtensions
 
         // services.AddClassMergeExample();
         // services.AddSimpleRemodelingSample();
-        //services.AddReusableRemodelingSample();
+        // services.AddReusableRemodelingSample();
         // services.AddReusableSchemaIntegrationSample();
         return services;
     }

@@ -76,16 +76,12 @@ public class ContentItemMapper(
         bool migratedAsContentFolder = sourceNodeClass.ClassName.Equals("cms.folder", StringComparison.InvariantCultureIgnoreCase) && !configuration.UseDeprecatedFolderPageType.GetValueOrDefault(false);
 
         var contentItemGuid = spoiledGuidContext.EnsureNodeGuid(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsTree.NodeID);
-
-        string className = targetClassInfo?.ClassName ?? sourceNodeClass.ClassName;
         bool isMappedTypeReusable = targetClassInfo?.ClassContentTypeType is ClassContentTypeType.REUSABLE;
-        bool isReusable = configuration.ClassNamesConvertToContentHub.Contains(className) || isMappedTypeReusable;
-
         yield return new ContentItemModel
         {
             ContentItemGUID = contentItemGuid,
             ContentItemName = safeNodeName,
-            ContentItemIsReusable = isReusable,
+            ContentItemIsReusable = isMappedTypeReusable,
             ContentItemIsSecured = cmsTree.IsSecuredNode ?? false,
             ContentItemDataClassGuid = migratedAsContentFolder ? null : targetClassGuid,
             ContentItemChannelGuid = siteGuid
@@ -357,16 +353,19 @@ public class ContentItemMapper(
         Debug.Assert(cmsTree.NodeLinkedNodeID == null, "cmsTree.NodeLinkedNodeId == null");
         Debug.Assert(cmsTree.NodeLinkedNodeSiteID == null, "cmsTree.NodeLinkedNodeSiteId == null");
 
-        yield return new WebPageItemModel
+        if (!isMappedTypeReusable)
         {
-            WebPageItemParentGuid = nodeParentGuid, // NULL => under root
-            WebPageItemGUID = contentItemGuid,
-            WebPageItemName = safeNodeName,
-            WebPageItemTreePath = treePath,
-            WebPageItemWebsiteChannelGuid = siteGuid,
-            WebPageItemContentItemGuid = contentItemGuid,
-            WebPageItemOrder = cmsTree.NodeOrder ?? 0 // 0 is nullish value
-        };
+            yield return new WebPageItemModel
+            {
+                WebPageItemParentGuid = nodeParentGuid, // NULL => under root
+                WebPageItemGUID = contentItemGuid,
+                WebPageItemName = safeNodeName,
+                WebPageItemTreePath = treePath,
+                WebPageItemWebsiteChannelGuid = siteGuid,
+                WebPageItemContentItemGuid = contentItemGuid,
+                WebPageItemOrder = cmsTree.NodeOrder ?? 0 // 0 is nullish value
+            };
+        }
     }
 
     private IEnumerable<IUmtModel> MigrateDraft(ICmsVersionHistory checkoutVersion, ICmsTree cmsTree, string sourceFormClassDefinition, string targetFormDefinition, Guid contentItemGuid,
