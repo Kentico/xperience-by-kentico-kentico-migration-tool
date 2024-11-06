@@ -22,7 +22,6 @@ public class ConfigurationNames
     public const string UseDeprecatedFolderPageType = "UseDeprecatedFolderPageType";
 
     public const string ExcludeCodeNames = "ExcludeCodeNames";
-    public const string ConvertClassesToContentHub = "ConvertClassesToContentHub";
     public const string ExplicitPrimaryKeyMapping = "ExplicitPrimaryKeyMapping";
 
     public const string SiteName = "SiteName";
