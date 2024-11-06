@@ -74,6 +74,8 @@ This repository contains several README documents containing information necessa
 
 ## Contributing
 
+If you are [creating an issue](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/issues/new) please provide all available information about the problem or error. If possible, include the command line output log file and migration protocol generated for your `Migration.Tool.CLI.exe migrate` command.
+
 To see the guidelines for Contributing to Kentico open source software, please see [Kentico's `CONTRIBUTING.md`](https://github.com/Kentico/.github/blob/main/CONTRIBUTING.md) for more information and follow the [Kentico's `CODE_OF_CONDUCT`](https://github.com/Kentico/.github/blob/main/CODE_OF_CONDUCT.md).
 
 Instructions and technical details for contributing to **this** project can be found in [Contributing Setup](./docs/Contributing-Setup.md).
