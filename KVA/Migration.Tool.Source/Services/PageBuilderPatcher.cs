@@ -1,6 +1,8 @@
 ﻿using CMS.ContentEngine;
 using CMS.MediaLibrary;
+using HotChocolate.Types.Relay;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Logging;
 using Migration.Tool.Common.Enumerations;
 using Migration.Tool.Common.Model;
@@ -41,7 +43,7 @@ public class PageBuilderPatcher(
                         sourceInstanceContext.GetPageTemplateFormComponents(sourceSiteId, pageTemplateConfigurationObj.Identifier);
                     if (pageTemplateConfigurationObj.Properties is { Count: > 0 })
                     {
-                        bool ndp = await MigrateProperties(sourceSiteId, pageTemplateConfigurationObj.Properties, pageTemplateConfigurationFcs);
+                        bool ndp = await MigrateProperties(sourceSiteId, pageTemplateConfigurationObj.Properties, pageTemplateConfigurationFcs, new Dictionary<string, IWidgetPropertyMigration>());
                         needsDeferredPatch = ndp || needsDeferredPatch;
                     }
 
@@ -92,7 +94,7 @@ public class PageBuilderPatcher(
             logger.LogTrace("Walk section {TypeIdentifier}|{Identifier}", section.TypeIdentifier, section.Identifier);
 
             var sectionFcs = sourceInstanceContext.GetSectionFormComponents(siteId, section.TypeIdentifier);
-            bool ndp1 = await MigrateProperties(siteId, section.Properties, sectionFcs);
+            bool ndp1 = await MigrateProperties(siteId, section.Properties, sectionFcs, new Dictionary<string, IWidgetPropertyMigration>());
             needsDeferredPatch = ndp1 || needsDeferredPatch;
 
             if (section.Zones is { Count: > 0 })
@@ -128,7 +130,24 @@ public class PageBuilderPatcher(
         foreach (var widget in widgets)
         {
             logger.LogTrace("Walk widget {TypeIdentifier}|{Identifier}", widget.TypeIdentifier, widget.Identifier);
+
             var widgetCompos = sourceInstanceContext.GetWidgetPropertyFormComponents(siteId, widget.TypeIdentifier);
+
+            var context = new WidgetMigrationContext(siteId);
+            var identifier = new WidgetIdentifier(widget.TypeIdentifier, widget.Identifier);
+            var migration = widgetMigrationService.GetWidgetMigration(context, identifier);
+            IReadOnlyDictionary<string, IWidgetPropertyMigration> propertyMigrations = new Dictionary<string, IWidgetPropertyMigration>();
+
+            if (migration is not null)
+            {
+                (var migratedValue, var propertyMigrationTypes, bool ndp) = await migration.MigrateWidget(identifier, JObject.FromObject(widget), context);
+                propertyMigrations = propertyMigrationTypes.ToDictionary(x => x.Key, x => widgetMigrationService.ResolveWidgetPropertyMigration(x.Value));
+                needsDeferredPatch = ndp || needsDeferredPatch;
+
+                widget.Variants.Clear();
+                using var migratedValueReader = migratedValue.CreateReader();
+                JsonSerializer.CreateDefault().Populate(migratedValueReader, widget);
+            }
 
             foreach (var variant in widget.Variants)
             {
@@ -136,11 +155,7 @@ public class PageBuilderPatcher(
 
                 if (variant.Properties is { Count: > 0 } properties)
                 {
-                    foreach ((string key, var value) in properties)
-                    {
-                        logger.LogTrace("Migrating widget property {Name}|{Identifier}", key, value?.ToString());
-                        await MigrateProperties(siteId, properties, widgetCompos);
-                    }
+                    await MigrateProperties(siteId, properties, widgetCompos, propertyMigrations);
                 }
             }
         }
@@ -148,109 +163,118 @@ public class PageBuilderPatcher(
         return needsDeferredPatch;
     }
 
-    private async Task<bool> MigrateProperties(int siteId, JObject properties, List<EditingFormControlModel>? formControlModels)
+    private async Task<bool> MigrateProperties(int siteId, JObject properties, List<EditingFormControlModel>? formControlModels, IReadOnlyDictionary<string, IWidgetPropertyMigration> explicitMigrations)
     {
         bool needsDeferredPatch = false;
         foreach ((string key, var value) in properties)
         {
-            logger.LogTrace("Walk property {Name}|{Identifier}", key, value?.ToString());
+            logger.LogTrace("Migrating widget property {Name}|{Identifier}", key, value?.ToString());
 
             var editingFcm = formControlModels?.FirstOrDefault(x => x.PropertyName.Equals(key, StringComparison.InvariantCultureIgnoreCase));
-            if (editingFcm != null)
+
+            IWidgetPropertyMigration? propertyMigration = null;
+            WidgetPropertyMigrationContext? context = null;
+            bool customMigrationApplied = false;
+            if (explicitMigrations.ContainsKey(key))
             {
-                var context = new WidgetPropertyMigrationContext(siteId, editingFcm);
-                var widgetPropertyMigration = widgetMigrationService.GetWidgetPropertyMigrations(context, key);
-                bool allowDefaultMigrations = true;
-                bool customMigrationApplied = false;
-                if (widgetPropertyMigration != null)
-                {
-                    (var migratedValue, bool ndp, allowDefaultMigrations) = await widgetPropertyMigration.MigrateWidgetProperty(key, value, context);
-                    needsDeferredPatch = ndp || needsDeferredPatch;
-                    properties[key] = migratedValue;
-                    customMigrationApplied = true;
-                    logger.LogTrace("Migration {Migration} applied to {Value}, resulting in {Result}", widgetPropertyMigration.GetType().FullName, value?.ToString() ?? "<null>", migratedValue?.ToString() ?? "<null>");
-                }
+                context = new WidgetPropertyMigrationContext(siteId, null);
+                propertyMigration = explicitMigrations[key];
+            }
+            else if (editingFcm is not null)
+            {
+                context = new WidgetPropertyMigrationContext(siteId, editingFcm);
+                propertyMigration = widgetMigrationService.GetWidgetPropertyMigration(context, key);
+            }
 
-                if (allowDefaultMigrations)
+            bool allowDefaultMigrations = true;
+            if (propertyMigration is not null)
+            {
+                (var migratedValue, bool ndp, allowDefaultMigrations) = await propertyMigration.MigrateWidgetProperty(key, value, context!);
+                needsDeferredPatch = ndp || needsDeferredPatch;
+                properties[key] = migratedValue;
+                customMigrationApplied = true;
+                logger.LogTrace("Migration {Migration} applied to {Value}, resulting in {Result}", propertyMigration.GetType().FullName, value?.ToString() ?? "<null>", migratedValue?.ToString() ?? "<null>");
+            }
+
+            if (allowDefaultMigrations && editingFcm is not null)
+            {
+                if (FieldMappingInstance.BuiltInModel.NotSupportedInKxpLegacyMode
+                        .SingleOrDefault(x => x.OldFormComponent == editingFcm.FormComponentIdentifier) is var (oldFormComponent, newFormComponent))
                 {
-                    if (FieldMappingInstance.BuiltInModel.NotSupportedInKxpLegacyMode
-                            .SingleOrDefault(x => x.OldFormComponent == editingFcm.FormComponentIdentifier) is var (oldFormComponent, newFormComponent))
+                    logger.LogTrace("Editing form component found {FormComponentName} => no longer supported {Replacement}", editingFcm.FormComponentIdentifier, newFormComponent);
+
+                    switch (oldFormComponent)
                     {
-                        logger.LogTrace("Editing form component found {FormComponentName} => no longer supported {Replacement}", editingFcm.FormComponentIdentifier, newFormComponent);
-
-                        switch (oldFormComponent)
+                        case Kx13FormComponents.Kentico_AttachmentSelector when newFormComponent == FormComponents.AdminAssetSelectorComponent:
                         {
-                            case Kx13FormComponents.Kentico_AttachmentSelector when newFormComponent == FormComponents.AdminAssetSelectorComponent:
+                            if (value?.ToObject<List<AttachmentSelectorItem>>() is { Count: > 0 } items)
                             {
-                                if (value?.ToObject<List<AttachmentSelectorItem>>() is { Count: > 0 } items)
+                                var nv = new List<object>();
+                                foreach (var asi in items)
                                 {
-                                    var nv = new List<object>();
-                                    foreach (var asi in items)
+                                    var attachment = modelFacade.SelectWhere<ICmsAttachment>("AttachmentSiteID = @attachmentSiteId AND AttachmentGUID = @attachmentGUID",
+                                            new SqlParameter("attachmentSiteID", siteId),
+                                            new SqlParameter("attachmentGUID", asi.FileGuid)
+                                        )
+                                        .FirstOrDefault();
+                                    if (attachment != null)
                                     {
-                                        var attachment = modelFacade.SelectWhere<ICmsAttachment>("AttachmentSiteID = @attachmentSiteId AND AttachmentGUID = @attachmentGUID",
-                                                new SqlParameter("attachmentSiteID", siteId),
-                                                new SqlParameter("attachmentGUID", asi.FileGuid)
-                                            )
-                                            .FirstOrDefault();
-                                        if (attachment != null)
+                                        switch (attachmentMigrator.MigrateAttachment(attachment).GetAwaiter().GetResult())
                                         {
-                                            switch (attachmentMigrator.MigrateAttachment(attachment).GetAwaiter().GetResult())
+                                            case MigrateAttachmentResultMediaFile { Success: true, MediaFileInfo: { } x }:
                                             {
-                                                case MigrateAttachmentResultMediaFile { Success: true, MediaFileInfo: { } x }:
-                                                {
-                                                    nv.Add(new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize });
-                                                    break;
-                                                }
-                                                case MigrateAttachmentResultContentItem { Success: true, ContentItemGuid: { } contentItemGuid }:
-                                                {
-                                                    nv.Add(new ContentItemReference { Identifier = contentItemGuid });
-                                                    break;
-                                                }
-                                                default:
-                                                {
-                                                    logger.LogWarning("Attachment '{AttachmentGUID}' failed to migrate", asi.FileGuid);
-                                                    break;
-                                                }
+                                                nv.Add(new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize });
+                                                break;
+                                            }
+                                            case MigrateAttachmentResultContentItem { Success: true, ContentItemGuid: { } contentItemGuid }:
+                                            {
+                                                nv.Add(new ContentItemReference { Identifier = contentItemGuid });
+                                                break;
+                                            }
+                                            default:
+                                            {
+                                                logger.LogWarning("Attachment '{AttachmentGUID}' failed to migrate", asi.FileGuid);
+                                                break;
                                             }
                                         }
-                                        else
-                                        {
-                                            logger.LogWarning("Attachment '{AttachmentGUID}' not found", asi.FileGuid);
-                                        }
                                     }
-
-                                    properties[key] = JToken.FromObject(nv);
+                                    else
+                                    {
+                                        logger.LogWarning("Attachment '{AttachmentGUID}' not found", asi.FileGuid);
+                                    }
                                 }
 
-                                logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
-                                break;
+                                properties[key] = JToken.FromObject(nv);
                             }
 
-                            default:
-                                break;
+                            logger.LogTrace("Value migrated from {Old} model to {New} model", oldFormComponent, newFormComponent);
+                            break;
                         }
+
+                        default:
+                            break;
                     }
-                    else if (!customMigrationApplied)
+                }
+                else if (!customMigrationApplied)
+                {
+                    if (FieldMappingInstance.BuiltInModel.SupportedInKxpLegacyMode.Contains(editingFcm.FormComponentIdentifier))
                     {
-                        if (FieldMappingInstance.BuiltInModel.SupportedInKxpLegacyMode.Contains(editingFcm.FormComponentIdentifier))
-                        {
-                            // OK
-                            logger.LogTrace("Editing form component found {FormComponentName} => supported in legacy mode", editingFcm.FormComponentIdentifier);
-                        }
-                        else
-                        {
-                            // unknown control, probably custom
-                            logger.LogTrace("Editing form component found {FormComponentName} => custom or inlined component, don't forget to migrate code accordingly", editingFcm.FormComponentIdentifier);
-                        }
+                        // OK
+                        logger.LogTrace("Editing form component found {FormComponentName} => supported in legacy mode", editingFcm.FormComponentIdentifier);
                     }
+                    else
+                    {
+                        // unknown control, probably custom
+                        logger.LogTrace("Editing form component found {FormComponentName} => custom or inlined component, don't forget to migrate code accordingly", editingFcm.FormComponentIdentifier);
+                    }
+                }
 
 
-                    if ("NodeAliasPath".Equals(key, StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        needsDeferredPatch = true;
-                        properties["TreePath"] = value;
-                        properties.Remove(key);
-                    }
+                if ("NodeAliasPath".Equals(key, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    needsDeferredPatch = true;
+                    properties["TreePath"] = value;
+                    properties.Remove(key);
                 }
             }
         }
