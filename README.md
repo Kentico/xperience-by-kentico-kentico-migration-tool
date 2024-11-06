@@ -12,6 +12,8 @@ The Kentico Migration Tool transfers content and other data from **Kentico Xperi
 
 This tool supports migrating a project to Xperience by Kentico over multiple migration runs with built-in and custom data transformations.
 
+Our documentation includes guides covering [the migration process from Kentico Xperience 13 to Xperience by Kentico](https://docs.kentico.com/x/migrate_from_kx13_guides).
+
 ## Library Version Matrix
 
 View all [project releases](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/releases/).
