@@ -323,7 +323,27 @@ The migration includes:
 
 * All system fields from the *CMS_User* and *CMS_UserSettings* tables. You can customize which fields are migrated via
   the `MemberIncludeUserSystemFields` configuration option. See [configuration](#configuration).
-* All custom fields added to the *CMS_User* and *CMS_UserSettings* tables are migrated under `CMS_Member`.
+* All custom fields added to the *CMS_User* and *CMS_UserSettings* tables are migrated under `CMS_Member`. The columns specified in the `MemberIncludeSystemFields` option are appended to the `CMS_Member` table in the order in which they were specified.
+  As an example, take the following `CMS_Member` columns
+
+  ```text
+  |MemberId|MemberEmail|...|MemberSecurityStamp|
+  ```
+  
+  And the following `Migration.Tool.CLI/appsettings.json` configuration.
+
+  ```json
+  {
+    "MemberIncludeUserSystemFields": "FirstName|LastName|UserPrivilegeLevel"
+  }
+  ```
+
+  This will result in the following `CMS_Member` structure after migration.
+  
+  ```text
+  |MemberId|MemberEmail|...|MemberSecurityStamp|FirstName|LastName|UserPrivilegeLevel|`
+  ```
+  
   > If you are migrating custom fields, the `--custom-modules` migration command must be run before the `--members`
   command. For example:
 
@@ -383,8 +403,8 @@ Add the options under the `Settings` section in the configuration file.
 
 | Configuration                                                     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 |-------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| KxConnectionString                                                | The connection string to the source Kentico Xperience 13 database.                                                                                                                                                                                                                                                                                                                                                                                               |
-| KxCmsDirPath                                                      | The absolute file system path of the **CMS** folder in the source Kentico Xperience 13 administration project. Required to migrate media library files.                                                                                                                                                                                                                                                                                                          |
+| KxConnectionString                                                | The connection string to the source Kentico Xperience 13, Kentico 12, or Kentico 11 database.                                                                                                                                                                                                                                                                                                                                                                    |
+| KxCmsDirPath                                                      | The absolute file system path of the **CMS** folder in the source Kentico Xperience 13, Kentico 12, or Kentico 11 administration project. Required to migrate media library files.                                                                                                                                                                                                                                                                               |
 | XbKDirPath                                                        | The absolute file system path of the root of the target Xperience by Kentico project. Required to migrate media library and page attachment files.                                                                                                                                                                                                                                                                                                               |
 | XbKApiSettings                                                    | Configuration options set for the API when creating migrated objects in the target application.<br /><br />The `ConnectionStrings.CMSConnectionString`option is required - set the connection string to the target Xperience by Kentico database (the same value as `XbKConnectionString`).                                                                                                                                                                      |
 | MigrationProtocolPath                                             | The absolute file system path of the location where the [migration protocol file](./MIGRATION_PROTOCOL_REFERENCE.md) is generated.<br /><br />For example: `"C:\\Logs\\Migration.Tool.Protocol.log"`                                                                                                                                                                                                                                                          |
