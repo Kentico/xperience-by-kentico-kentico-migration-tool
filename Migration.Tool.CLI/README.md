@@ -30,7 +30,7 @@ using the **Boilerplate** project template.
 
 To perform the migration:
 
-1. Make sure the [target instance is set up correctly](#set-up-the-target-instance).F
+1. Make sure the [target instance is set up correctly](#set-up-the-target-instance).
 2. [Configure](#configuration) the options in the `Migration.Tool.CLI` project's `appsettings.json` file.
 3. Compile the `Migration.Tool.CLI` project.
 4. Open the command line prompt.
