@@ -101,7 +101,7 @@ public class MigrateSitesCommandHandler(
             {
                 WebsiteChannelGUID = kx13CmsSite.SiteGuid,
                 WebsiteChannelChannelGuid = kx13CmsSite.SiteGuid,
-                WebsiteChannelDomain = kx13CmsSite.SiteDomainName,
+                WebsiteChannelDomain = kx13CmsSite.SiteDomainName.Trim('/'),
                 WebsiteChannelHomePage = homePagePath,
                 WebsiteChannelPrimaryContentLanguageGuid = migratedCultureCodes[defaultCultureCode].ContentLanguageGUID,
                 WebsiteChannelDefaultCookieLevel = cookieLevel,
