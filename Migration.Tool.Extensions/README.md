@@ -103,6 +103,10 @@ To create custom widget migration:
 Samples:
 - [Sample BannerWidget migration](./CommunityMigrations/SampleWidgetMigration.cs)
 
+### Convert page type to reusable content item (content hub)
+
+demonstrated in method `AddReusableRemodelingSample`. Please note, that all information unique to page will be lost
+
 ## Custom widget property migrations
 
 To create custom widget property migration:

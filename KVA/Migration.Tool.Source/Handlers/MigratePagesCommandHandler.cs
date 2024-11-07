@@ -215,6 +215,11 @@ public class MigratePagesCommandHandler(
                     {
                         switch (await importer.ImportAsync(umtModel))
                         {
+                            case { Success: false } result:
+                            {
+                                logger.LogError("Failed to import: {Exception}, {ValidationResults}", result.Exception, JsonConvert.SerializeObject(result.ModelValidationResults));
+                                break;
+                            }
                             case { Success: true, Imported: ContentItemCommonDataInfo ccid }:
                             {
                                 commonDataInfos.Add(ccid);

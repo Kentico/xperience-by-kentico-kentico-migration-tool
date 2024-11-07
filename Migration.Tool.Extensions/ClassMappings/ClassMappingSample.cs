@@ -34,6 +34,12 @@ public static class ClassMappingSample
             .SetFrom(sourceClassName, "CoffeeFarm", true)
             .WithFieldPatch(f => f.SetPropertyValue(FormFieldPropertyEnum.FieldCaption, "Farm RM"));
 
+        // field clone sample
+        m
+            .BuildField("FarmRM_Clone")
+            .SetFrom(sourceClassName, "CoffeeFarm", true)
+            .WithFieldPatch(f => f.SetPropertyValue(FormFieldPropertyEnum.FieldCaption, "Farm RM Clone"));
+
         m
             .BuildField("CoffeeCountryRM")
             .WithFieldPatch(f => f.Caption = "Country RM")
