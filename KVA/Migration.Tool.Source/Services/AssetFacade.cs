@@ -111,7 +111,7 @@ public class AssetFacade(
         languageData.AddRange(contentLanguageNames.Select(contentLanguageName => new ContentItemLanguageData
         {
             LanguageName = contentLanguageName,
-            DisplayName = $"{mediaFile.FileName}",
+            DisplayName = mediaFile.FileName,
             UserGuid = createdByUser?.UserGUID,
             VersionStatus = VersionStatus.Published,
             ContentItemData = new Dictionary<string, object?>
@@ -164,7 +164,7 @@ public class AssetFacade(
             var contentLanguageData = new ContentItemLanguageData
             {
                 LanguageName = contentLanguageName,
-                DisplayName = $"{attachment.AttachmentName}",
+                DisplayName = attachment.AttachmentName,
                 UserGuid = null,
                 VersionStatus = VersionStatus.Published,
                 ContentItemData = new Dictionary<string, object?>
