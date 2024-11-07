@@ -25,7 +25,8 @@ public class CmsClassMapper(
     PrimaryKeyMappingContext primaryKeyMappingContext,
     IProtocol protocol,
     FieldMigrationService fieldMigrationService,
-    ModelFacade modelFacade
+    ModelFacade modelFacade,
+    ToolConfiguration configuration
 )
     : EntityMapperBase<ICmsClass, DataClassInfo>(logger,
         primaryKeyMappingContext, protocol)
@@ -188,7 +189,9 @@ public class CmsClassMapper(
             }:
             {
                 target.ClassType = ClassType.CONTENT_TYPE;
-                target.ClassContentTypeType = ClassContentTypeType.WEBSITE;
+                target.ClassContentTypeType = configuration.ClassNamesConvertToContentHub.Contains(target.ClassName)
+                    ? ClassContentTypeType.REUSABLE
+                    : ClassContentTypeType.WEBSITE;
 
                 target = PatchDataClassInfo(target, out string? oldPrimaryKeyName, out string? documentNameField);
                 break;
