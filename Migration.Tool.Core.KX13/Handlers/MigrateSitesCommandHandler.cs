@@ -68,7 +68,7 @@ public class MigrateSitesCommandHandler(
                     ContentLanguageGUID = cmsCulture.CultureGuid,
                     ContentLanguageDisplayName = cmsCulture.CultureName,
                     ContentLanguageName = cmsCulture.CultureCode,
-                    ContentLanguageIsDefault = true,
+                    ContentLanguageIsDefault = string.Equals(cmsCulture.CultureCode, defaultCultureCode, StringComparison.InvariantCultureIgnoreCase),
                     ContentLanguageFallbackContentLanguageGuid = null,
                     ContentLanguageCultureFormat = cmsCulture.CultureCode
                 });
