@@ -1,0 +1,17 @@
+﻿{
+  "E00001": {
+    "Cause": {
+      "PlainText": "Your folder is corrupted {{folderName}}",
+      "HTML": "<p>Your folder is corrupted</p><a href=\"file://{{folderName}}\""
+    },
+    "Suggestions": [
+      {
+        "PlainText": "Do you have a backup?",
+        "HTML": "Do you have a backup? See recommended backup tools: <ul>...</ul>"
+      },
+      {
+        "PlainText": "Try to create the folder from scratch"
+      }
+    ]
+  }
+}

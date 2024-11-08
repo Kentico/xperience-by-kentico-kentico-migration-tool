@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
+using Migration.Tool.Common.Logging;
 using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.KXP.Api;
 using Migration.Tool.KXP.Api.Auxiliary;
@@ -21,6 +22,7 @@ namespace Migration.Tool.Source.Services;
 
 public class MediaFileMigrator(
     ILogger<MigrateMediaLibrariesCommandHandler> logger,
+    IProblemReporter<MigrateMediaLibrariesCommandHandler> problemReporter,
     IDbContextFactory<KxpContext> kxpContextFactory,
     ModelFacade modelFacade,
     KxpMediaFileFacade mediaFileFacade,

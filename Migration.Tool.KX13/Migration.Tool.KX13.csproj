@@ -1,6 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
+      <None Remove="ProblemDefinitions\problems.Migration.Tool.KX13.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="ProblemDefinitions\problems.Migration.Tool.KX13.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

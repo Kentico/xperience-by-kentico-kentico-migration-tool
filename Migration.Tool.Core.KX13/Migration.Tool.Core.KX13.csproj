@@ -5,6 +5,16 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <None Remove="ProblemDefinitions\problems.Migration.Tool.Core.KX13.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="ProblemDefinitions\problems.Migration.Tool.Core.KX13.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\Migration.Tool.Common\Migration.Tool.Common.csproj" />
         <ProjectReference Include="..\Migration.Tool.KX13\Migration.Tool.KX13.csproj" />
         <ProjectReference Include="..\Migration.Tool.KXP.Api\Migration.Tool.KXP.Api.csproj" />
