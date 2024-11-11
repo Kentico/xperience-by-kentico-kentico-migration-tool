@@ -47,9 +47,9 @@ public class MediaFileInfoMapper(
         return new MediaFileInfo();
     }
 
-    protected override MediaFileInfo MapInternal(MediaFileInfoMapperSource args, MediaFileInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override MediaFileInfo MapInternal(MediaFileInfoMapperSource source, MediaFileInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
-        (string fullMediaFilePath, var mediaFile, int targetLibraryId, var file, _, bool migrateOnlyMediaFileInfo, var safeMediaFileGuid) = args;
+        (string fullMediaFilePath, var mediaFile, int targetLibraryId, var file, _, bool migrateOnlyMediaFileInfo, var safeMediaFileGuid) = source;
 
         target.FileName = mediaFile.FileName;
         target.FileTitle = mediaFile.FileTitle;
@@ -100,6 +100,7 @@ public class MediaFileInfoMapper(
             addFailure(HandbookReferences.MediaFileIsMissingOnSourceFilesystem
                 .WithId(nameof(mediaFile.FileID), mediaFile.FileID)
                 .WithData(new { mediaFile.FilePath, mediaFile.FileGUID, mediaFile.FileLibraryID, mediaFile.FileSiteID, SearchedPath = fullMediaFilePath })
+                .WithSuggestion($"If you have a backup, copy it to the filesystem on path {source.FullMediaFilePath}. Otherwise, delete the media file from the source instance using admin web interface.")
                 .AsFailure<MediaFileInfo>()
             );
         }

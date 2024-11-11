@@ -26,6 +26,7 @@ public class HandbookReference
     public string ReferenceName { get; }
     public string? AdditionalInfo { get; }
     public Dictionary<string, object?>? Data { get; private set; }
+    public string Suggestion { get; private set; }
 
     public override string ToString()
     {
@@ -47,10 +48,19 @@ public class HandbookReference
                 sb.Append(", ");
             }
         }
-
+        sb.AppendLine();
+        if (!string.IsNullOrEmpty(Suggestion))
+        {
+            sb.AppendLine($"Suggestion: {Suggestion}");
+        }
         return sb.ToString();
     }
 
+    public HandbookReference WithSuggestion(string suggestion)
+    {
+        Suggestion = suggestion;
+        return this;
+    }
     /// <summary>
     ///     Related ID of data, specify if possible
     /// </summary>
