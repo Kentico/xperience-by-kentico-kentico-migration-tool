@@ -92,8 +92,12 @@ public class PageBuilderPatcher(
             logger.LogTrace("Walk section {TypeIdentifier}|{Identifier}", section.TypeIdentifier, section.Identifier);
 
             var sectionFcs = sourceInstanceContext.GetSectionFormComponents(siteId, section.TypeIdentifier);
-            bool ndp1 = await MigrateProperties(siteId, section.Properties, sectionFcs, new Dictionary<string, IWidgetPropertyMigration>());
-            needsDeferredPatch = ndp1 || needsDeferredPatch;
+
+            if (section.Properties is { Count: > 0 } properties)
+            {
+                bool ndp1 = await MigrateProperties(siteId, properties, sectionFcs, new Dictionary<string, IWidgetPropertyMigration>());
+                needsDeferredPatch = ndp1 || needsDeferredPatch;
+            }
 
             if (section.Zones is { Count: > 0 })
             {
