@@ -522,7 +522,7 @@ public class ContentItemMapper(
         foreach (string targetColumnName in newColumnNames)
         {
             string targetFieldName = null!;
-            Func<object?, object?> valueConvertor = sourceValue => sourceValue;
+            Func<object?, IConvertorContext, object?> valueConvertor = (sourceValue, _) => sourceValue;
             switch (mapping?.GetMapping(targetColumnName, sourceNodeClass.ClassName))
             {
                 case FieldMappingWithConversion fieldMappingWithConversion:
@@ -534,13 +534,13 @@ public class ContentItemMapper(
                 case FieldMapping fieldMapping:
                 {
                     targetFieldName = fieldMapping.TargetFieldName;
-                    valueConvertor = sourceValue => sourceValue;
+                    valueConvertor = (sourceValue, _) => sourceValue;
                     break;
                 }
                 case null:
                 {
                     targetFieldName = targetColumnName;
-                    valueConvertor = sourceValue => sourceValue;
+                    valueConvertor = (sourceValue, _) => sourceValue;
                     break;
                 }
 
@@ -587,7 +587,8 @@ public class ContentItemMapper(
             string? controlName = field.Settings[CLASS_FIELD_CONTROL_NAME]?.ToString()?.ToLowerInvariant();
 
             object? sourceValue = getSourceValue(sourceFieldName);
-            target[targetFieldName] = valueConvertor.Invoke(sourceValue);
+            var convertorContext = new ConvertorTreeNodeContext(cmsTree.NodeGUID, cmsTree.NodeSiteID, documentId, migratingFromVersionHistory);
+            target[targetFieldName] = valueConvertor.Invoke(sourceValue, convertorContext);
             var fvmc = new FieldMigrationContext(field.DataType, controlName, targetColumnName, new DocumentSourceObjectContext(cmsTree, sourceNodeClass, site, oldFormInfo, newFormInfo, documentId));
             var fmb = fieldMigrationService.GetFieldMigration(fvmc);
             if (fmb is FieldMigration fieldMigration)
@@ -600,12 +601,12 @@ public class ContentItemMapper(
                         var convertedRelation = relationshipService.GetNodeRelationships(cmsTree.NodeID, sourceNodeClass.ClassName, field.Guid)
                             .Select(r => new WebPageRelatedItem { WebPageGuid = spoiledGuidContext.EnsureNodeGuid(r.RightNode.NodeGUID, r.RightNode.NodeSiteID, r.RightNode.NodeID) });
 
-                        target.SetValueAsJson(targetFieldName, valueConvertor.Invoke(convertedRelation));
+                        target.SetValueAsJson(targetFieldName, valueConvertor.Invoke(convertedRelation, convertorContext));
                     }
                     else
                     {
                         // leave as is
-                        target[targetFieldName] = valueConvertor.Invoke(sourceValue);
+                        target[targetFieldName] = valueConvertor.Invoke(sourceValue, convertorContext);
                     }
 
                     if (fieldMigration.TargetFormComponent == "webpages")
@@ -622,13 +623,13 @@ public class ContentItemMapper(
                                 }
                             }
 
-                            target[targetFieldName] = valueConvertor.Invoke(parsed.ToString().Replace("\"NodeGuid\"", "\"WebPageGuid\""));
+                            target[targetFieldName] = valueConvertor.Invoke(parsed.ToString().Replace("\"NodeGuid\"", "\"WebPageGuid\""), convertorContext);
                         }
                     }
                 }
                 else
                 {
-                    target[targetFieldName] = valueConvertor.Invoke(sourceValue);
+                    target[targetFieldName] = valueConvertor.Invoke(sourceValue, convertorContext);
                 }
             }
             else if (fmb != null)
@@ -637,7 +638,7 @@ public class ContentItemMapper(
                 {
                     case { Success: true } result:
                     {
-                        target[targetFieldName] = valueConvertor.Invoke(result.MigratedValue);
+                        target[targetFieldName] = valueConvertor.Invoke(result.MigratedValue, convertorContext);
                         break;
                     }
                     case { Success: false }:
@@ -652,7 +653,7 @@ public class ContentItemMapper(
             }
             else
             {
-                target[targetFieldName] = valueConvertor?.Invoke(sourceValue);
+                target[targetFieldName] = valueConvertor?.Invoke(sourceValue, convertorContext);
             }
 
 
