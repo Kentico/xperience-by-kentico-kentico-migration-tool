@@ -89,7 +89,7 @@ public sealed class SectionConfiguration
     [DataMember]
     [JsonProperty("properties")]
     // public ISectionProperties Properties { get; set; }
-    public JObject Properties { get; set; }
+    public JObject? Properties { get; set; }
 
     /// <summary>Zones within the section.</summary>
     [DataMember]
