@@ -131,7 +131,12 @@ public class AttachmentMigratorToContentItem(
 
         if (ksAttachment.AttachmentBinary is null)
         {
-            logger.LogError("Binary data is null, cannot migrate attachment: {Attachment}", ksAttachment);
+            logger.LogError("Attachment binary data is null {Attachment} " +
+            "Option 1: Via admin web interface of your source instance navigate to the attachment and update the data. " +
+            "Option 2: Update the database directly - table CMS_Attachment, column AttachmentBinary. " +
+            "Option 3: Via admin web interface of your source instance remove all attachment references, then remove the attachment",
+            new { ksAttachment.AttachmentName, ksAttachment.AttachmentSiteID, ksAttachment.AttachmentID });
+
             throw new InvalidOperationException("Attachment data is null!");
         }
 
