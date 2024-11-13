@@ -9,7 +9,6 @@
     <ItemGroup>
         <ProjectReference Include="..\..\Migration.Tool.Common\Migration.Tool.Common.csproj" />
         <ProjectReference Include="..\..\Migration.Tool.KXP.Api\Migration.Tool.KXP.Api.csproj" />
-        <ProjectReference Include="..\..\Migration.Tool.KXP\Migration.Tool.KXP.csproj" />
     </ItemGroup>
 
     <ItemGroup>

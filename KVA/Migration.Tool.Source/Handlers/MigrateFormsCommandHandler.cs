@@ -4,11 +4,10 @@ using System.Xml.Linq;
 
 using CMS.Base;
 using CMS.DataEngine;
-
+using CMS.OnlineForms;
 using MediatR;
 
 using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Migration.Tool.Common;
@@ -16,8 +15,6 @@ using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.Common.Services.BulkCopy;
 using Migration.Tool.KXP.Api;
-using Migration.Tool.KXP.Context;
-using Migration.Tool.KXP.Models;
 using Migration.Tool.Source.Contexts;
 using Migration.Tool.Source.Model;
 
@@ -25,9 +22,8 @@ namespace Migration.Tool.Source.Handlers;
 
 public class MigrateFormsCommandHandler(
     ILogger<MigrateFormsCommandHandler> logger,
-    IDbContextFactory<KxpContext> kxpContextFactory,
     IEntityMapper<ICmsClass, DataClassInfo> dataClassMapper,
-    IEntityMapper<ICmsForm, CmsForm> cmsFormMapper,
+    IEntityMapper<ICmsForm, BizFormInfo> cmsFormMapper,
     KxpClassFacade kxpClassFacade,
     BulkDataCopyService bulkDataCopyService,
     PrimaryKeyMappingContext primaryKeyMappingContext,
@@ -35,12 +31,8 @@ public class MigrateFormsCommandHandler(
     ModelFacade modelFacade,
     ToolConfiguration configuration
 )
-    : IRequestHandler<MigrateFormsCommand, CommandResult>, IDisposable
+    : IRequestHandler<MigrateFormsCommand, CommandResult>
 {
-    private KxpContext kxpContext = kxpContextFactory.CreateDbContext();
-
-    public void Dispose() => kxpContext.Dispose();
-
     public async Task<CommandResult> Handle(MigrateFormsCommand request, CancellationToken cancellationToken)
     {
         var cmsClassForms = modelFacade.Select<ICmsClass>("ClassIsForm = 1", "ClassID");
@@ -63,7 +55,7 @@ public class MigrateFormsCommandHandler(
             {
                 protocol.FetchedSource(ksCmsForm);
 
-                var kxoCmsForm = kxpContext.CmsForms.FirstOrDefault(f => f.FormGuid == ksCmsForm.FormGUID);
+                var kxoCmsForm = BizFormInfo.Provider.Get(ksCmsForm.FormGUID);
 
                 protocol.FetchedTarget(kxoCmsForm);
 
@@ -75,33 +67,22 @@ public class MigrateFormsCommandHandler(
                     (var cmsForm, bool newInstance) = result;
                     ArgumentNullException.ThrowIfNull(cmsForm, nameof(cmsForm));
 
+
                     try
                     {
-                        if (newInstance)
-                        {
-                            kxpContext.CmsForms.Add(cmsForm);
-                        }
-                        else
-                        {
-                            kxpContext.CmsForms.Update(cmsForm);
-                        }
-
-                        await kxpContext.SaveChangesAsync(cancellationToken);
+                        BizFormInfo.Provider.Set(cmsForm!);
                         logger.LogEntitySetAction(newInstance, cmsForm);
 
-                        primaryKeyMappingContext.SetMapping<CmsForm>(
-                            r => r.FormId,
+                        primaryKeyMappingContext.SetMapping<BizFormInfo>(
+                            r => r.FormID,
                             ksClass.ClassID,
-                            cmsForm.FormId
+                            cmsForm.FormID
                         );
                     }
                     catch (Exception ex)
                     {
-                        await kxpContext.DisposeAsync(); // reset context errors
-                        kxpContext = await kxpContextFactory.CreateDbContextAsync(cancellationToken);
-
                         protocol.Append(HandbookReferences
-                            .ErrorCreatingTargetInstance<CmsForm>(ex)
+                            .ErrorCreatingTargetInstance<BizFormInfo>(ex)
                             .NeedsManualAction()
                             .WithIdentityPrint(cmsForm)
                         );
@@ -168,8 +149,8 @@ public class MigrateFormsCommandHandler(
                 protocol.Success(ksClass, dataClassInfo, mapped);
                 logger.LogEntitySetAction(newInstance, dataClassInfo);
 
-                primaryKeyMappingContext.SetMapping<CmsClass>(
-                    r => r.ClassId,
+                primaryKeyMappingContext.SetMapping<DataClassInfo>(
+                    r => r.ClassID,
                     ksClass.ClassID,
                     dataClassInfo.ClassID
                 );

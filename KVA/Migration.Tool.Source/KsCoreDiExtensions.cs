@@ -18,7 +18,6 @@ using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.Common.Services;
 using Migration.Tool.Common.Services.BulkCopy;
 using Migration.Tool.Common.Services.Ipc;
-using Migration.Tool.KXP.Models;
 using Migration.Tool.Source.Auxiliary;
 using Migration.Tool.Source.Behaviors;
 using Migration.Tool.Source.Contexts;
@@ -94,7 +93,6 @@ public static class KsCoreDiExtensions
         services.AddTransient<IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo>, CmsAttachmentMapper>();
         services.AddTransient<IEntityMapper<ICmsClass, DataClassInfo>, CmsClassMapper>();
         services.AddTransient<IEntityMapper<ICmsForm, BizFormInfo>, CmsFormMapper>();
-        services.AddTransient<IEntityMapper<ICmsForm, CmsForm>, CmsFormMapperEf>();
         services.AddTransient<IEntityMapper<ICmsResource, ResourceInfo>, ResourceMapper>();
         services.AddTransient<IEntityMapper<AlternativeFormMapperSource, AlternativeFormInfo>, AlternativeFormMapper>();
         services.AddTransient<IEntityMapper<MemberInfoMapperSource, MemberInfo>, MemberInfoMapper>();

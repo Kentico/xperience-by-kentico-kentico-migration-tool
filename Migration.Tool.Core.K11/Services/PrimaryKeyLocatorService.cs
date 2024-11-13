@@ -172,8 +172,8 @@ public class PrimaryKeyLocatorService(
 
             if (sourceType == typeof(OmContactStatus))
             {
-                string k11Guid = kx11Context.OmContactStatuses.Where(c => c.ContactStatusId == sourceId).Select(x => x.ContactStatusName).Single();
-                targetId = ContactStatusInfo.Provider.Get().WhereEquals(nameof(ContactStatusInfo.ContactStatusName), k11Guid).Select(x => x.ContactStatusID).Single();
+                string statusName = kx11Context.OmContactStatuses.Where(c => c.ContactStatusId == sourceId).Select(x => x.ContactStatusName).Single();
+                targetId = ContactStatusInfo.Provider.Get().WhereEquals(nameof(ContactStatusInfo.ContactStatusName), statusName).Select(x => x.ContactStatusID).Single();
                 return true;
             }
 
