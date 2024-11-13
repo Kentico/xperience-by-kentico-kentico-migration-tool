@@ -1,5 +1,5 @@
 using System.Linq.Expressions;
-
+using CMS.DataEngine;
 using Migration.Tool.Core.K11.Services;
 
 namespace Migration.Tool.Core.K11.Contexts;
@@ -11,15 +11,15 @@ public class KeyMappingContext(PrimaryKeyMappingContext primaryKeyMappingContext
     public MapSourceKeyResult<TTargetKey> MapSourceKey<TSource, TTarget, TTargetKey>(Expression<Func<TSource, object>> sourceKeySelector,
         Expression<Func<TSource, Guid>> sourceGuidSelector,
         object? sourceKey,
-        Expression<Func<TTarget, TTargetKey>> targetKeySelector,
-        Expression<Func<TTarget, Guid>> targetGuidSelector) where TSource : class where TTarget : class
+        Func<TTarget, TTargetKey> targetKeySelector,
+        Func<Guid, TTarget?> targetByGuidProvider) where TSource : class where TTarget : AbstractInfoBase<TTarget>, new()
     {
         if (sourceKey is int id && primaryKeyMappingContext.MapSourceId(sourceKeySelector, id) is { Success: true, MappedId: TTargetKey targetKey })
         {
             return new MapSourceKeyResult<TTargetKey>(true, targetKey);
         }
 
-        if (keyLocatorService.TryLocate(sourceKeySelector, targetKeySelector, sourceGuidSelector, targetGuidSelector, sourceKey, out var located))
+        if (keyLocatorService.TryLocate(sourceKeySelector, targetKeySelector, sourceGuidSelector, targetByGuidProvider, sourceKey, out var located))
         {
             return new MapSourceKeyResult<TTargetKey>(true, located);
         }

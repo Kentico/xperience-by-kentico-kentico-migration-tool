@@ -1,3 +1,4 @@
+using CMS.ContactManagement;
 using Microsoft.Extensions.Logging;
 
 using Migration.Tool.Common.Abstractions;
@@ -11,21 +12,38 @@ public class OmContactGroupMapper(
     ILogger<OmContactGroupMapper> logger,
     PrimaryKeyMappingContext primaryKeyMappingContext,
     IProtocol protocol)
-    : EntityMapperBase<OmContactGroup, KXP.Models.OmContactGroup>(logger, primaryKeyMappingContext, protocol)
+    : EntityMapperBase<OmContactGroup, ContactGroupInfo>(logger, primaryKeyMappingContext, protocol)
 {
-    protected override KXP.Models.OmContactGroup? CreateNewInstance(OmContactGroup tSourceEntity, MappingHelper mappingHelper, AddFailure addFailure) => new();
+    protected override ContactGroupInfo? CreateNewInstance(OmContactGroup tSourceEntity, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
-    protected override KXP.Models.OmContactGroup MapInternal(OmContactGroup source, KXP.Models.OmContactGroup target, bool newInstance,
+    protected override ContactGroupInfo MapInternal(OmContactGroup source, ContactGroupInfo target, bool newInstance,
         MappingHelper mappingHelper, AddFailure addFailure)
     {
+        T RequireValue<T>(string propertyName, Nullable<T> value, T defaultValue) where T : struct
+        {
+            if (value.HasValue)
+            {
+                return value.Value;
+            }
+            else
+            {
+                addFailure(new MapperResultFailure<ContactGroupInfo>(
+                    HandbookReferences.InvalidSourceData<OmContactGroup>()
+                    .WithMessage("Required property value is null")
+                    .WithId(nameof(source.ContactGroupId), source.ContactGroupId)
+                    .WithData(new { MissingProperty = propertyName })));
+                return defaultValue;
+            }
+        }
+
         target.ContactGroupName = source.ContactGroupName;
         target.ContactGroupDisplayName = source.ContactGroupDisplayName;
         target.ContactGroupDescription = source.ContactGroupDescription;
         target.ContactGroupDynamicCondition = source.ContactGroupDynamicCondition;
-        target.ContactGroupEnabled = source.ContactGroupEnabled;
-        target.ContactGroupLastModified = source.ContactGroupLastModified;
-        target.ContactGroupGuid = source.ContactGroupGuid;
-        target.ContactGroupStatus = source.ContactGroupStatus;
+        target.ContactGroupEnabled = RequireValue(nameof(source.ContactGroupEnabled), source.ContactGroupEnabled, false);
+        target.ContactGroupLastModified = RequireValue(nameof(source.ContactGroupLastModified), source.ContactGroupLastModified, DateTime.MinValue);
+        target.ContactGroupGUID = RequireValue(nameof(source.ContactGroupGuid), source.ContactGroupGuid, Guid.Empty);
+        target.ContactGroupStatus = (ContactGroupStatusEnum)RequireValue(nameof(source.ContactGroupStatus), source.ContactGroupStatus, 0);
 
         return target;
     }

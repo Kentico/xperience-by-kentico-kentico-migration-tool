@@ -1,30 +1,40 @@
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
-
+using CMS.ContactManagement;
+using CMS.DataEngine;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Migration.Tool.K11;
-using Migration.Tool.KXP.Context;
 
 namespace Migration.Tool.Core.K11.Services;
 
 public class KeyLocatorService(
     ILogger<KeyLocatorService> logger,
-    IDbContextFactory<KxpContext> kxpContextFactory,
     IDbContextFactory<K11Context> k11ContextFactory)
 {
+    /// <summary>
+    /// Finds key of target matched to source by equal GUIDs
+    /// </summary>
+    /// <typeparam name="TSource">Type of source instance</typeparam>
+    /// <typeparam name="TTarget">Type of target instance</typeparam>
+    /// <typeparam name="TTargetKey">Type of target key</typeparam>
+    /// <param name="sourceKeySelector">Expression that selects key from TSource instance</param>
+    /// <param name="targetKeySelector">Expression that selects key from TTarget instance</param>
+    /// <param name="sourceGuidSelector">Expression that selects GUID from TSource instance</param>
+    /// <param name="targetByGuidProvider">Func that returns TTarget instance uniquely identified by its GUID. In case of multiple GUIDs in target dataset, it must return null</param>
+    /// <param name="sourceKey">Source key to begin with</param>
+    /// <param name="targetId">Matched target key</param>
+    /// <returns></returns>
     public bool TryLocate<TSource, TTarget, TTargetKey>(
         Expression<Func<TSource, object>> sourceKeySelector,
-        Expression<Func<TTarget, TTargetKey>> targetKeySelector,
+        Func<TTarget, TTargetKey> targetKeySelector,
         Expression<Func<TSource, Guid>> sourceGuidSelector,
-        Expression<Func<TTarget, Guid>> targetGuidSelector,
+        Func<Guid, TTarget?> targetByGuidProvider,
         object? sourceKey, out TTargetKey targetId
     ) where TSource : class where TTarget : class
     {
-        using var kxpContext = kxpContextFactory.CreateDbContext();
         using var k11Context = k11ContextFactory.CreateDbContext();
-
         var sourceType = typeof(TSource);
         Unsafe.SkipInit(out targetId);
 
@@ -42,23 +52,15 @@ public class KeyLocatorService(
             var sourcePredicate = Expression.Lambda<Func<TSource, bool>>(sourceEquals, sourceKeySelector.Parameters[0]);
             var k11Guid = k11Context.Set<TSource>().Where(sourcePredicate).Select(sourceGuidSelector).Single();
 
-            var param = Expression.Parameter(typeof(TTarget), "t");
-            var member = targetGuidSelector.Body as MemberExpression ?? throw new InvalidOperationException($"Expression SHALL NOT be other than member expression, expression: {targetGuidSelector}");
-            var targetEquals = Expression.Equal(
-                Expression.MakeMemberAccess(param, member.Member),
-                Expression.Constant(k11Guid, typeof(Guid))
-            );
-            var targetPredicate = Expression.Lambda<Func<TTarget, bool>>(targetEquals, param);
+            var target = targetByGuidProvider(k11Guid);
+            if (target is null)
+            {
+                logger.LogWarning("Mapping {SourceFullType} primary key: {SourceId} failed, GUID {TargetGUID} not present in target instance", sourceType.FullName, sourceKey, k11Guid);
+                return false;
+            }
 
-            var query = kxpContext.Set<TTarget>().Where(targetPredicate);
-            var selector = Expression.Lambda<Func<TTarget, TTargetKey>>(targetKeySelector.Body, targetKeySelector.Parameters[0]);
-            targetId = query.Select(selector).Single();
+            targetId = targetKeySelector(target);
             return true;
-        }
-        catch (InvalidOperationException ioex)
-        {
-            logger.LogWarning("Mapping {SourceFullType} primary key: {SourceId} failed, {Message}", sourceType.FullName, sourceKey, ioex.Message);
-            return false;
         }
         finally
         {

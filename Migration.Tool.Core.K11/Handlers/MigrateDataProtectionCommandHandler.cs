@@ -1,10 +1,8 @@
-using CMS.ContactManagement;
 using CMS.DataEngine;
 using CMS.DataProtection;
 
 using MediatR;
 
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -14,7 +12,6 @@ using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.Core.K11.Contexts;
 using Migration.Tool.K11;
 using Migration.Tool.K11.Models;
-using Migration.Tool.KXP.Context;
 
 namespace Migration.Tool.Core.K11.Handlers;
 

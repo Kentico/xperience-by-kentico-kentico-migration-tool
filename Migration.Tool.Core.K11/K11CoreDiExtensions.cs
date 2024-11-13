@@ -1,3 +1,4 @@
+using CMS.ContactManagement;
 using CMS.DataEngine;
 using CMS.DataProtection;
 using CMS.FormEngine;
@@ -53,13 +54,12 @@ public static class K11CoreDiExtensions
         services.AddTransient<IEntityMapper<CmsConsentArchive, ConsentArchiveInfo>, CmsConsentArchiveMapper>();
         services.AddTransient<IEntityMapper<AlternativeFormMapperSource, AlternativeFormInfo>, AlternativeFormMapper>();
         services.AddTransient<IEntityMapper<CmsRole, RoleInfo>, RoleInfoMapper>();
-        services.AddTransient<IEntityMapper<CmsSettingsCategory, KXP.Models.CmsSettingsCategory>, CmsSettingsCategoryMapper>();
         services.AddTransient<IEntityMapper<CmsSettingsKey, SettingsKeyInfo>, CmsSettingsKeyMapper>();
         services.AddTransient<IEntityMapper<CmsUser, UserInfo>, UserInfoMapper>();
         services.AddTransient<IEntityMapper<MemberInfoMapperSource, MemberInfo>, MemberInfoMapper>();
         services.AddTransient<IEntityMapper<CmsUserRole, UserRoleInfo>, UserRoleInfoMapper>();
-        services.AddTransient<IEntityMapper<OmContactGroup, KXP.Models.OmContactGroup>, OmContactGroupMapper>();
-        services.AddTransient<IEntityMapper<OmContactStatus, KXP.Models.OmContactStatus>, OmContactStatusMapper>();
+        services.AddTransient<IEntityMapper<OmContactGroup, ContactGroupInfo>, OmContactGroupMapper>();
+        services.AddTransient<IEntityMapper<OmContactStatus, ContactStatusInfo>, OmContactStatusMapper>();
         services.AddTransient<IEntityMapper<CmsCountry, CountryInfo>, CountryInfoMapper>();
         services.AddTransient<IEntityMapper<CmsState, StateInfo>, StateInfoMapper>();
 

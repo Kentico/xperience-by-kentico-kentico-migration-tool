@@ -178,7 +178,7 @@ public class MigrateContactManagementCommandHandler(
                             s => s.UserGuid,
                             sourceUserId,
                             t => t.MemberID,
-                            t => t.MemberGuid
+                            guid => MemberInfo.Provider.Get(guid)
                         ) is { Success: true, Mapped: { } memberId })
                     {
                         return ValueInterceptorResult.ReplaceValue(memberId);
@@ -309,7 +309,7 @@ public class MigrateContactManagementCommandHandler(
                 s => s.SiteGuid,
                 sourceActivitySiteId.NullIfZero(),
                 t => t.ChannelID,
-                t => t.ChannelGUID
+                guid => ChannelInfo.Provider.Get().WhereEquals(nameof(ChannelInfo.ChannelGUID), guid).SingleOrDefault()
             );
             switch (result)
             {
