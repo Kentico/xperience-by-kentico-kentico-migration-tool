@@ -1,7 +1,5 @@
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
-using CMS.ContactManagement;
-using CMS.DataEngine;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

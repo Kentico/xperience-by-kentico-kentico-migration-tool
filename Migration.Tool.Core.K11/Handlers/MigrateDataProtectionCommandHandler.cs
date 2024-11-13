@@ -121,7 +121,7 @@ public class MigrateDataProtectionCommandHandler(
             {
                 (var agreementInfo, bool newInstance) = result;
                 ArgumentNullException.ThrowIfNull(agreementInfo, nameof(agreementInfo));
-                
+
                 if (newInstance)
                 {
                     consentAgreementNews.Add(agreementInfo);

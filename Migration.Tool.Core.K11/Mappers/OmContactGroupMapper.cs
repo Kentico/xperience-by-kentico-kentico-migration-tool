@@ -19,7 +19,7 @@ public class OmContactGroupMapper(
     protected override ContactGroupInfo MapInternal(OmContactGroup source, ContactGroupInfo target, bool newInstance,
         MappingHelper mappingHelper, AddFailure addFailure)
     {
-        T RequireValue<T>(string propertyName, Nullable<T> value, T defaultValue) where T : struct
+        T RequireValue<T>(string propertyName, T? value, T defaultValue) where T : struct
         {
             if (value.HasValue)
             {
