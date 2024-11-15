@@ -12,7 +12,6 @@ using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.Core.KX13.Contexts;
 using Migration.Tool.KX13.Context;
 using Migration.Tool.KXP.Api.Enums;
-using Migration.Tool.KXP.Models;
 
 namespace Migration.Tool.Core.KX13.Handlers;
 
@@ -195,7 +194,7 @@ public class MigrateUsersCommandHandler(
             if (!primaryKeyMappingContext.TryRequireMapFromSource<KX13M.CmsRole>(u => u.RoleId, kx13RoleId, out int xbkRoleId))
             {
                 var handbookRef = HandbookReferences
-                    .MissingRequiredDependency<CmsRole>(nameof(UserRoleInfo.RoleID), kx13UserRole.RoleId)
+                    .MissingRequiredDependency<RoleInfo>(nameof(UserRoleInfo.RoleID), kx13UserRole.RoleId)
                     .NeedsManualAction();
 
                 protocol.Append(handbookRef);

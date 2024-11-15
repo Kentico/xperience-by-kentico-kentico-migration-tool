@@ -1,13 +1,14 @@
+using CMS.ContactManagement;
 using CMS.DataEngine;
+using CMS.DataProtection;
 using CMS.FormEngine;
 using CMS.Globalization;
 using CMS.MediaLibrary;
 using CMS.Membership;
 using CMS.Modules;
-
+using CMS.OnlineForms;
 using Migration.Tool.Common.Helpers;
 using Migration.Tool.Common.Services;
-using Migration.Tool.KXP.Models;
 
 namespace Migration.Tool.Core.KX13.Helpers;
 
@@ -19,15 +20,15 @@ public class Printer
 
         return model switch
         {
-            MediaLibrary mediaLibrary => $"{currentTypeName}: {nameof(mediaLibrary.LibraryGuid)}={mediaLibrary.LibraryGuid}",
-            MediaFile mediaFile => $"{currentTypeName}: {nameof(mediaFile.FileGuid)}={mediaFile.FileGuid}",
-            CmsRole role => $"{currentTypeName}: {nameof(role.RoleGuid)}={role.RoleGuid}, {nameof(role.RoleName)}={role.RoleName}",
-            CmsUser user => $"{currentTypeName}: {nameof(user.UserGuid)}={user.UserGuid}, {nameof(user.UserName)}={user.UserName}",
-            CmsResource resource => $"{currentTypeName}: {nameof(resource.ResourceGuid)}={resource.ResourceGuid}, {nameof(resource.ResourceName)}={resource.ResourceName}",
-            CmsSettingsCategory settingsCategory => $"{currentTypeName}: {nameof(settingsCategory.CategoryName)}={settingsCategory.CategoryName}",
-            CmsSettingsKey settingsKey => $"{currentTypeName}: {nameof(settingsKey.KeyGuid)}={settingsKey.KeyGuid}, {nameof(settingsKey.KeyName)}={settingsKey.KeyName}",
-            CmsForm form => $"{currentTypeName}: {nameof(form.FormGuid)}={form.FormGuid}, {nameof(form.FormName)}={form.FormName}",
-            OmContactGroup omContactGroup => $"{currentTypeName}: {nameof(omContactGroup.ContactGroupGuid)}={omContactGroup.ContactGroupGuid}, {nameof(omContactGroup.ContactGroupName)}={omContactGroup.ContactGroupName}",
+            MediaLibraryInfo mediaLibrary => $"{currentTypeName}: {nameof(mediaLibrary.LibraryGUID)}={mediaLibrary.LibraryGUID}",
+            MediaFileInfo mediaFile => $"{currentTypeName}: {nameof(mediaFile.FileGUID)}={mediaFile.FileGUID}",
+            RoleInfo role => $"{currentTypeName}: {nameof(role.RoleGUID)}={role.RoleGUID}, {nameof(role.RoleName)}={role.RoleName}",
+            UserInfo user => $"{currentTypeName}: {nameof(user.UserGUID)}={user.UserGUID}, {nameof(user.UserName)}={user.UserName}",
+            ResourceInfo resource => $"{currentTypeName}: {nameof(resource.ResourceGUID)}={resource.ResourceGUID}, {nameof(resource.ResourceName)}={resource.ResourceName}",
+            SettingsCategoryInfo settingsCategory => $"{currentTypeName}: {nameof(settingsCategory.CategoryName)}={settingsCategory.CategoryName}",
+            SettingsKeyInfo settingsKey => $"{currentTypeName}: {nameof(settingsKey.KeyGUID)}={settingsKey.KeyGUID}, {nameof(settingsKey.KeyName)}={settingsKey.KeyName}",
+            BizFormInfo form => $"{currentTypeName}: {nameof(form.FormGUID)}={form.FormGUID}, {nameof(form.FormName)}={form.FormName}",
+            ContactGroupInfo omContactGroup => $"{currentTypeName}: {nameof(omContactGroup.ContactGroupGUID)}={omContactGroup.ContactGroupGUID}, {nameof(omContactGroup.ContactGroupName)}={omContactGroup.ContactGroupName}",
 
             null => $"{currentTypeName}: <null>",
             _ => $"TODO: {typeof(T).FullName}"
@@ -61,12 +62,11 @@ public class Printer
             RoleInfo item => FormatModel($"ID={item.RoleID}, Guid={item.RoleGUID} Name={item.RoleName}"),
             MemberInfo item => FormatModel($"ID={item.MemberID}, Guid={item.MemberGuid} Name={item.MemberName}"),
 
-            CmsForm item => FormatModel($"ID={item.FormId}, GUID={item.FormGuid}, Name={item.FormName}"),
-            CmsUser item => FormatModel($"ID={item.UserId}, GUID={item.UserGuid}, Name={item.UserName}"),
-            CmsConsent item => FormatModel($"ID={item.ConsentId}, GUID={item.ConsentGuid}, Name={item.ConsentName}"),
-            CmsConsentArchive item => FormatModel($"ID={item.ConsentArchiveId}, GUID={item.ConsentArchiveGuid}"),
-            CmsConsentAgreement item => FormatModel($"ID={item.ConsentAgreementId}, GUID={item.ConsentAgreementGuid}"),
-            CmsSettingsKey item => FormatModel($"ID={item.KeyId}, GUID={item.KeyGuid}, Name={item.KeyName}"),
+            BizFormInfo item => FormatModel($"ID={item.FormID}, GUID={item.FormGUID}, Name={item.FormName}"),
+            ConsentInfo item => FormatModel($"ID={item.ConsentID}, GUID={item.ConsentGuid}, Name={item.ConsentName}"),
+            ConsentArchiveInfo item => FormatModel($"ID={item.ConsentArchiveID}, GUID={item.ConsentArchiveGuid}"),
+            ConsentAgreementInfo item => FormatModel($"ID={item.ConsentAgreementID}, GUID={item.ConsentAgreementGuid}"),
+            SettingsKeyInfo item => FormatModel($"ID={item.KeyID}, GUID={item.KeyGUID}, Name={item.KeyName}"),
 
             KX13M.CmsPageTemplateConfiguration item => FormatModel($"ID={item.PageTemplateConfigurationId}, GUID={item.PageTemplateConfigurationGuid}, Name={item.PageTemplateConfigurationName}, SiteId={item.PageTemplateConfigurationSiteId}"),
             KX13M.CmsRole item => FormatModel($"ID={item.RoleId}, GUID={item.RoleGuid}, Name={item.RoleName}, SiteId={item.SiteId}"),
