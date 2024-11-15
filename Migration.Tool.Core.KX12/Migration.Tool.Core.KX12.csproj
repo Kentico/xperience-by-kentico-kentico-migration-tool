@@ -1,15 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <ProjectReference Include="..\Migration.Tool.Common\Migration.Tool.Common.csproj"/>
-        <ProjectReference Include="..\Migration.Tool.KX12\Migration.Tool.KX12.csproj"/>
-        <ProjectReference Include="..\Migration.Tool.KXP.Api\Migration.Tool.KXP.Api.csproj"/>
-        <ProjectReference Include="..\Migration.Tool.KXP\Migration.Tool.KXP.csproj"/>
+        <ProjectReference Include="..\Migration.Tool.Common\Migration.Tool.Common.csproj" />
+        <ProjectReference Include="..\Migration.Tool.KX12\Migration.Tool.KX12.csproj" />
+        <ProjectReference Include="..\Migration.Tool.KXP.Api\Migration.Tool.KXP.Api.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="MediatR" Version="12.4.1" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
 
 </Project>
