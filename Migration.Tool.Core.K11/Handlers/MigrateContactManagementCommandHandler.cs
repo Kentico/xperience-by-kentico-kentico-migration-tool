@@ -178,7 +178,7 @@ public class MigrateContactManagementCommandHandler(
                             s => s.UserGuid,
                             sourceUserId,
                             t => t.MemberID,
-                            guid => MemberInfo.Provider.Get(guid)
+                            MemberInfo.Provider.Get
                         ) is { Success: true, Mapped: { } memberId })
                     {
                         return ValueInterceptorResult.ReplaceValue(memberId);

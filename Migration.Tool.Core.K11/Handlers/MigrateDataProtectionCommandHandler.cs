@@ -56,10 +56,33 @@ public class MigrateDataProtectionCommandHandler(
                 (var consentInfo, bool newInstance) = result;
                 ArgumentNullException.ThrowIfNull(consentInfo, nameof(consentInfo));
 
-                ConsentInfo.Provider.Set(consentInfo);
-                protocol.Success(k11Consent, consentInfo, mapped);
-                logger.LogEntitySetAction(newInstance, consentInfo);
-                primaryKeyMappingContext.SetMapping<CmsConsent>(r => r.ConsentId, k11Consent.ConsentId, consentInfo.ConsentID);
+                try
+                {
+                    using (var conn = ConnectionHelper.GetConnection())
+                    {
+                        using var scope = new CMSTransactionScope(conn);
+                        string originalHash = consentInfo.ConsentHash;
+
+                        ConsentInfo.Provider.Set(consentInfo);
+
+                        // Provider regenerates the hash. Manually revert to the original one
+                        conn.DataConnection.ExecuteNonQuery("UPDATE [CMS_Consent] SET ConsentHash=@originalHash", new QueryDataParameters() { { "originalHash", originalHash } }, QueryTypeEnum.SQLQuery, true);
+                        scope.Commit();
+                    }
+
+                    protocol.Success(k11Consent, consentInfo, mapped);
+                    logger.LogEntitySetAction(newInstance, consentInfo);
+                    primaryKeyMappingContext.SetMapping<CmsConsent>(r => r.ConsentId, k11Consent.ConsentId, consentInfo.ConsentID);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogEntitySetError(ex, newInstance, consentInfo);
+                    protocol.Append(HandbookReferences
+                        .ErrorCreatingTargetInstance<ConsentInfo>(ex)
+                        .NeedsManualAction()
+                        .WithIdentityPrint(consentInfo)
+                    );
+                }
             }
         }
 

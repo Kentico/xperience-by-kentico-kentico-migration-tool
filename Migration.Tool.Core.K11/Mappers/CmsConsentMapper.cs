@@ -25,6 +25,7 @@ public class CmsConsentMapper(ILogger<CmsConsentMapper> logger, PrimaryKeyMappin
         target.ConsentContent = ConsentContentPatcher.PatchConsentContent(source.ConsentContent, defaultContentLanguageInfo);
         target.ConsentGuid = source.ConsentGuid;
         target.ConsentLastModified = source.ConsentLastModified;
+        target.SetValue(nameof(target.ConsentHash), source.ConsentHash);
 
         return target;
     }
