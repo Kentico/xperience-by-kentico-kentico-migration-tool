@@ -17,10 +17,8 @@ using Migration.Tool.Extensions;
 using Migration.Tool.K11;
 using Migration.Tool.KX12;
 using Migration.Tool.KX13;
-using Migration.Tool.KXP;
 using Migration.Tool.KXP.Api;
 using Migration.Tool.KXP.Api.Services.CmsClass;
-using Migration.Tool.KXP.Context;
 using Migration.Tool.Source;
 using static Migration.Tool.Common.Helpers.ConsoleHelper;
 
@@ -158,10 +156,6 @@ catch (Exception ex)
     return;
 }
 
-
-services.UseKxpDbContext(settings);
-
-
 services.UseKxpApi(kxpApiSettings, settings.XbKDirPath);
 services.AddSingleton(settings);
 services.AddSingleton<ICommandParser, CommandParser>();
@@ -176,13 +170,10 @@ await loader.LoadAsync();
 
 var commandParser = scope.ServiceProvider.GetRequiredService<ICommandParser>();
 var mediatr = scope.ServiceProvider.GetRequiredService<IMediator>();
-var kxpContext = scope.ServiceProvider.GetRequiredService<IDbContextFactory<KxpContext>>().CreateDbContext();
 
 var argsQ = new Queue<string>(args);
 bool bypassDependencyCheck = false;
 var commands = commandParser.Parse(argsQ, ref bypassDependencyCheck);
-
-kxpContext.Dispose();
 
 // sort commands
 commands = commands.OrderBy(x => x.Rank).ToList();
