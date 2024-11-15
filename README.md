@@ -6,7 +6,7 @@
 
 ## Description
 
-This repository is part of the [Xperience by Kentico Migration Tool](https://github.com/Kentico/xperience-by-kentico-migration-tool).
+This repository is part of the [Xperience by Kentico Migration Toolkit](https://github.com/Kentico/xperience-by-kentico-migration-toolkit).
 
 The Kentico Migration Tool transfers content and other data from **Kentico Xperience 13**, **Kentico 12** or **Kentico 11** to **Xperience by Kentico**.
 

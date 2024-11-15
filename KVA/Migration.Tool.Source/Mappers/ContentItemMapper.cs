@@ -66,19 +66,22 @@ public class ContentItemMapper(
         var sourceNodeClass = modelFacade.SelectById<ICmsClass>(cmsTree.NodeClassID) ?? throw new InvalidOperationException($"Fatal: node class is missing, class id '{cmsTree.NodeClassID}'");
         var mapping = classMappingProvider.GetMapping(sourceNodeClass.ClassName);
         var targetClassGuid = sourceNodeClass.ClassGUID;
+        DataClassInfo targetClassInfo = null;
         if (mapping != null)
         {
-            targetClassGuid = DataClassInfoProvider.ProviderObject.Get(mapping.TargetClassName)?.ClassGUID ?? throw new InvalidOperationException($"Unable to find target class '{mapping.TargetClassName}'");
+            targetClassInfo = DataClassInfoProvider.ProviderObject.Get(mapping.TargetClassName) ?? throw new InvalidOperationException($"Unable to find target class '{mapping.TargetClassName}'");
+            targetClassGuid = targetClassInfo.ClassGUID;
         }
 
         bool migratedAsContentFolder = sourceNodeClass.ClassName.Equals("cms.folder", StringComparison.InvariantCultureIgnoreCase) && !configuration.UseDeprecatedFolderPageType.GetValueOrDefault(false);
 
         var contentItemGuid = spoiledGuidContext.EnsureNodeGuid(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsTree.NodeID);
+        bool isMappedTypeReusable = (targetClassInfo?.ClassContentTypeType is ClassContentTypeType.REUSABLE) || configuration.ClassNamesConvertToContentHub.Contains(sourceNodeClass.ClassName);
         yield return new ContentItemModel
         {
             ContentItemGUID = contentItemGuid,
             ContentItemName = safeNodeName,
-            ContentItemIsReusable = false, // page is not reusable
+            ContentItemIsReusable = isMappedTypeReusable,
             ContentItemIsSecured = cmsTree.IsSecuredNode ?? false,
             ContentItemDataClassGuid = migratedAsContentFolder ? null : targetClassGuid,
             ContentItemChannelGuid = siteGuid
@@ -350,16 +353,19 @@ public class ContentItemMapper(
         Debug.Assert(cmsTree.NodeLinkedNodeID == null, "cmsTree.NodeLinkedNodeId == null");
         Debug.Assert(cmsTree.NodeLinkedNodeSiteID == null, "cmsTree.NodeLinkedNodeSiteId == null");
 
-        yield return new WebPageItemModel
+        if (!isMappedTypeReusable)
         {
-            WebPageItemParentGuid = nodeParentGuid, // NULL => under root
-            WebPageItemGUID = contentItemGuid,
-            WebPageItemName = safeNodeName,
-            WebPageItemTreePath = treePath,
-            WebPageItemWebsiteChannelGuid = siteGuid,
-            WebPageItemContentItemGuid = contentItemGuid,
-            WebPageItemOrder = cmsTree.NodeOrder ?? 0 // 0 is nullish value
-        };
+            yield return new WebPageItemModel
+            {
+                WebPageItemParentGuid = nodeParentGuid, // NULL => under root
+                WebPageItemGUID = contentItemGuid,
+                WebPageItemName = safeNodeName,
+                WebPageItemTreePath = treePath,
+                WebPageItemWebsiteChannelGuid = siteGuid,
+                WebPageItemContentItemGuid = contentItemGuid,
+                WebPageItemOrder = cmsTree.NodeOrder ?? 0 // 0 is nullish value
+            };
+        }
     }
 
     private IEnumerable<IUmtModel> MigrateDraft(ICmsVersionHistory checkoutVersion, ICmsTree cmsTree, string sourceFormClassDefinition, string targetFormDefinition, Guid contentItemGuid,

@@ -7,13 +7,13 @@ Samples:
 
 To create custom migration:
 
-- create new file in `Migration.Tool.Extensions/CommunityMigrations` (directory if you need more files for single migration)
-- implement interface `Migration.Tool.KXP.Api.Services.CmsClass.IFieldMigration`
-  - implement property rank, set number bellow 100 000 - for example 5000
-  - implement method shall migrate (if method returns true, migration will be used)
-  - implement `MigrateFieldDefinition`, where objective is to mutate argument `XElement field` that represents one particular field
-  - implement `MigrateValue` where goal is to return new migrated value derived from `object? sourceValue`
-- finally register in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as `Transient` dependency into service collection. For example `services.AddTransient<IFieldMigration, AssetMigration>()`
+- Create new file in `Migration.Tool.Extensions/CommunityMigrations` (directory if you need more files for single migration)
+- Implement interface `Migration.Tool.KXP.Api.Services.CmsClass.IFieldMigration`
+  - Implement property rank, set number bellow 100 000 - for example 5000
+  - Implement method shall migrate (if method returns true, migration will be used)
+  - Implement `MigrateFieldDefinition`, where objective is to mutate argument `XElement field` that represents one particular field
+  - Implement `MigrateValue` where goal is to return new migrated value derived from `object? sourceValue`
+- Register in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as `Transient` dependency into service collection. For example `services.AddTransient<IFieldMigration, AssetMigration>()`
 
 ## Custom class mappings for page types
 
@@ -90,9 +90,39 @@ Finally, let's define relations to fields:
 
 ### Inject and use reusable schema
 
-Example code is found in the method `AddReusableSchemaIntegrationSample`
+Example code is found in the method `AddReusableSchemaIntegrationSample`.
 
 The goal of this method is to take a **single data class** and assign reusable schema.
+
+### Convert page type to reusable content item (content hub)
+
+Example code is found in the method `AddReusableRemodelingSample`.
+
+Please note, that all information unique to page will be lost.
+
+## Custom widget migrations
+
+Custom widget migration allows you to remodel the original widget as a new widget type. The prominent operations are
+changing the target widget type and recombining the original properties.
+
+To create custom widget migration:
+
+- create new file in `Migration.Tool.Extensions/CommunityMigrations` (directory if you need more files for single migration)
+- implement interface `Migration.Tool.KXP.Api.Services.CmsClass.IWidgetMigration`
+  - implement property `Rank`, set number bellow 100 000 - for example 5000. Rank determines the order by which the migrations are tested to be eligible via the `ShallMigrate` method
+  - implement method `ShallMigrate`. If method returns true, migration will be used. This method receives a context, by which you can decide - typically by the original widget's type
+  - implement `MigrateWidget`, where objective is to convert old JToken representing the widget's JSON to new converted JToken value
+    - Widget property migration will still be applied after your custom widget migration
+    - In the following cases, you must explicitly specify the property migration to be used, via `PropertyMigrations` in returned value (because it can't be infered from the original widget)
+      - If you add a new property. That includes renaming an original property.
+      - In the special case when you introduce a new property whose name overlaps with original property. Otherwise the migration infered from the original property would be used
+        - If your new property is not supposed to be subject to property migrations and the original one was, explicitly specify `WidgetNoOpMigration` for this property
+    - You can also override the property migration of an original property if that suits your case
+- Register in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as `Transient` dependency into service collection. For example `services.AddTransient<IWidgetMigration, YourMigrationClass>()`
+
+Samples:
+
+- [Sample BannerWidget migration](./CommunityMigrations/SampleWidgetMigration.cs)
 
 ## Custom widget property migrations
 
@@ -100,8 +130,8 @@ To create custom widget property migration:
 
 - Create new file in `Migration.Tool.Extensions/CommunityMigrations` (directory if you need more files for single migration)
 - Implement interface `Migration.Tool.KXP.Api.Services.CmsClass.IWidgetPropertyMigration`
-  - Implement property rank, set number bellow 100 000 - for example 5000
-  - Implement method shall migrate (if method returns true, migration will be used)
+  - Implement property `Rank`, set number bellow 100 000 - for example 5000. Rank determines the order by which the migrations are tested to be eligible via the `ShallMigrate` method
+  - Implement method `ShallMigrate` (if method returns true, migration will be used)
   - Implement `MigrateWidgetProperty`, where objective is to convert old JToken representing json value to new converted JToken value
 - Register in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as `Transient` dependency into service collection. For example `services.AddTransient<IWidgetPropertyMigration, WidgetPathSelectorMigration>()`
 

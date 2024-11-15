@@ -10,6 +10,67 @@ namespace Migration.Tool.Extensions.ClassMappings;
 
 public static class ClassMappingSample
 {
+    public static IServiceCollection AddReusableRemodelingSample(this IServiceCollection serviceCollection)
+    {
+        const string targetClassName = "DancingGoatCore.CoffeeRemodeled";
+        // declare target class
+        var m = new MultiClassMapping(targetClassName, target =>
+        {
+            target.ClassName = targetClassName;
+            target.ClassTableName = "DancingGoatCore_CoffeeRemodeled";
+            target.ClassDisplayName = "Coffee remodeled";
+            target.ClassType = ClassType.CONTENT_TYPE;
+            target.ClassContentTypeType = ClassContentTypeType.REUSABLE;
+            target.ClassWebPageHasUrl = false;
+        });
+
+        // set new primary key
+        m.BuildField("CoffeeRemodeledID").AsPrimaryKey();
+
+        // change fields according to new requirements
+        const string sourceClassName = "DancingGoatCore.Coffee";
+        m
+            .BuildField("FarmRM")
+            .SetFrom(sourceClassName, "CoffeeFarm", true)
+            .WithFieldPatch(f => f.SetPropertyValue(FormFieldPropertyEnum.FieldCaption, "Farm RM"));
+
+        // field clone sample
+        m
+            .BuildField("FarmRM_Clone")
+            .SetFrom(sourceClassName, "CoffeeFarm", true)
+            .WithFieldPatch(f => f.SetPropertyValue(FormFieldPropertyEnum.FieldCaption, "Farm RM Clone"));
+
+        m
+            .BuildField("CoffeeCountryRM")
+            .WithFieldPatch(f => f.Caption = "Country RM")
+            .SetFrom(sourceClassName, "CoffeeCountry", true);
+
+        m
+            .BuildField("CoffeeVarietyRM")
+            .SetFrom(sourceClassName, "CoffeeVariety", true)
+            .WithFieldPatch(f => f.SetPropertyValue(FormFieldPropertyEnum.FieldCaption, "Variety RM"));
+
+        m
+            .BuildField("CoffeeProcessingRM")
+            .SetFrom(sourceClassName, "CoffeeProcessing", true)
+            .WithFieldPatch(f => f.SetPropertyValue(FormFieldPropertyEnum.FieldCaption, "Processing RM"));
+
+        m
+            .BuildField("CoffeeAltitudeRM")
+            .SetFrom(sourceClassName, "CoffeeAltitude", true)
+            .WithFieldPatch(f => f.SetPropertyValue(FormFieldPropertyEnum.FieldCaption, "Altitude RM"));
+
+        m
+            .BuildField("CoffeeIsDecafRM")
+            .SetFrom(sourceClassName, "CoffeeIsDecaf", true)
+            .WithFieldPatch(f => f.SetPropertyValue(FormFieldPropertyEnum.FieldCaption, "IsDecaf RM"));
+
+        // register class mapping
+        serviceCollection.AddSingleton<IClassMapping>(m);
+
+        return serviceCollection;
+    }
+
     public static IServiceCollection AddSimpleRemodelingSample(this IServiceCollection serviceCollection)
     {
         const string targetClassName = "DancingGoatCore.CoffeeRemodeled";

@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
-
 using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
 using CMS.Core;
@@ -12,12 +11,9 @@ using CMS.Websites.Internal;
 using CMS.Websites.Routing.Internal;
 using Kentico.Xperience.UMT.Model;
 using Kentico.Xperience.UMT.Services;
-
 using MediatR;
-
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-
 using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.Helpers;
@@ -30,7 +26,6 @@ using Migration.Tool.Source.Mappers;
 using Migration.Tool.Source.Model;
 using Migration.Tool.Source.Providers;
 using Migration.Tool.Source.Services;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -218,14 +213,13 @@ public class MigratePagesCommandHandler(
                     var commonDataInfos = new List<ContentItemCommonDataInfo>();
                     foreach (var umtModel in results)
                     {
-                        var result = await importer.ImportAsync(umtModel);
-                        if (result is { Success: false })
+                        switch (await importer.ImportAsync(umtModel))
                         {
-                            logger.LogError("Failed to import: {Exception}, {ValidationResults}", result.Exception, JsonConvert.SerializeObject(result.ModelValidationResults));
-                        }
-
-                        switch (result)
-                        {
+                            case { Success: false } result:
+                            {
+                                logger.LogError("Failed to import: {Exception}, {ValidationResults}", result.Exception, JsonConvert.SerializeObject(result.ModelValidationResults));
+                                break;
+                            }
                             case { Success: true, Imported: ContentItemCommonDataInfo ccid }:
                             {
                                 commonDataInfos.Add(ccid);

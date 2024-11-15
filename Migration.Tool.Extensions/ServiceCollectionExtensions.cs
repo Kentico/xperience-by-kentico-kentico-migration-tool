@@ -16,8 +16,10 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IWidgetPropertyMigration, WidgetPathSelectorMigration>();
         services.AddTransient<IWidgetPropertyMigration, WidgetPageSelectorMigration>();
 
+
         // services.AddClassMergeExample();
         // services.AddSimpleRemodelingSample();
+        // services.AddReusableRemodelingSample();
         // services.AddReusableSchemaIntegrationSample();
         return services;
     }

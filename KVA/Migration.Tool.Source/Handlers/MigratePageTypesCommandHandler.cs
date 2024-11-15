@@ -103,27 +103,30 @@ public class MigratePageTypesCommandHandler(
             bool hasFieldsAlready = true;
             foreach (var cmml in classMapping.Mappings.Where(m => m.IsTemplate).ToLookup(x => x.SourceFieldName))
             {
-                var cmm = cmml.FirstOrDefault() ?? throw new InvalidOperationException();
-                if (fieldInReusableSchemas.ContainsKey(cmm.TargetFieldName))
+                foreach (var cmm in cmml)
                 {
-                    // part of reusable schema
-                    continue;
-                }
+                    if (fieldInReusableSchemas.ContainsKey(cmm.TargetFieldName))
+                    {
+                        // part of reusable schema
+                        continue;
+                    }
 
-                var sc = cmsClasses.FirstOrDefault(sc => sc.ClassName.Equals(cmm.SourceClassName, StringComparison.InvariantCultureIgnoreCase))
-                         ?? throw new NullReferenceException($"The source class '{cmm.SourceClassName}' does not exist - wrong mapping {classMapping}");
+                    var sc = cmsClasses.FirstOrDefault(sc => sc.ClassName.Equals(cmm.SourceClassName, StringComparison.InvariantCultureIgnoreCase))
+                             ?? throw new NullReferenceException($"The source class '{cmm.SourceClassName}' does not exist - wrong mapping {classMapping}");
 
-                var fi = new FormInfo(sc.ClassFormDefinition);
-                if (nfi.GetFormField(cmm.TargetFieldName) is { })
-                {
+                    var fi = new FormInfo(sc.ClassFormDefinition);
+                    if (nfi.GetFormField(cmm.TargetFieldName) is { })
+                    {
+                    }
+                    else
+                    {
+                        var src = fi.GetFormField(cmm.SourceFieldName);
+                        src.Name = cmm.TargetFieldName;
+                        nfi.AddFormItem(src);
+                        hasFieldsAlready = false;
+                    }
                 }
-                else
-                {
-                    var src = fi.GetFormField(cmm.SourceFieldName);
-                    src.Name = cmm.TargetFieldName;
-                    nfi.AddFormItem(src);
-                    hasFieldsAlready = false;
-                }
+                //var cmm = cmml.FirstOrDefault() ?? throw new InvalidOperationException();
             }
 
             if (!hasFieldsAlready)
@@ -151,6 +154,11 @@ public class MigratePageTypesCommandHandler(
 
             foreach (string sourceClassName in classMapping.SourceClassNames)
             {
+                if (newDt.ClassContentTypeType is ClassContentTypeType.REUSABLE)
+                {
+                    continue;
+                }
+
                 var sourceClass = cmsClasses.First(c => c.ClassName.Equals(sourceClassName, StringComparison.InvariantCultureIgnoreCase));
                 foreach (var cmsClassSite in modelFacade.SelectWhere<ICmsClassSite>("ClassId = @classId", new SqlParameter("classId", sourceClass.ClassID)))
                 {
@@ -237,25 +245,28 @@ public class MigratePageTypesCommandHandler(
             var kxoDataClass = kxpClassFacade.GetClass(ksClass.ClassGUID);
             protocol.FetchedTarget(kxoDataClass);
 
-            if (SaveUsingKxoApi(ksClass, kxoDataClass) is { } targetClassId)
+            if (SaveUsingKxoApi(ksClass, kxoDataClass) is { } targetClass)
             {
-                foreach (var cmsClassSite in modelFacade.SelectWhere<ICmsClassSite>("ClassID = @classId", new SqlParameter("classId", ksClass.ClassID)))
+                if (targetClass.ClassContentTypeType is ClassContentTypeType.WEBSITE)
                 {
-                    if (modelFacade.SelectById<ICmsSite>(cmsClassSite.SiteID) is { SiteGUID: var siteGuid })
+                    foreach (var cmsClassSite in modelFacade.SelectWhere<ICmsClassSite>("ClassID = @classId", new SqlParameter("classId", ksClass.ClassID)))
                     {
-                        if (ChannelInfoProvider.ProviderObject.Get(siteGuid) is { ChannelID: var channelId })
+                        if (modelFacade.SelectById<ICmsSite>(cmsClassSite.SiteID) is { SiteGUID: var siteGuid })
                         {
-                            var info = new ContentTypeChannelInfo { ContentTypeChannelChannelID = channelId, ContentTypeChannelContentTypeID = targetClassId };
-                            ContentTypeChannelInfoProvider.ProviderObject.Set(info);
+                            if (ChannelInfoProvider.ProviderObject.Get(siteGuid) is { ChannelID: var channelId })
+                            {
+                                var info = new ContentTypeChannelInfo { ContentTypeChannelChannelID = channelId, ContentTypeChannelContentTypeID = targetClass.ClassID };
+                                ContentTypeChannelInfoProvider.ProviderObject.Set(info);
+                            }
+                            else
+                            {
+                                logger.LogWarning("Channel for site with SiteGUID '{SiteGuid}' not found", siteGuid);
+                            }
                         }
                         else
                         {
-                            logger.LogWarning("Channel for site with SiteGUID '{SiteGuid}' not found", siteGuid);
+                            logger.LogWarning("Source site with SiteID '{SiteId}' not found", cmsClassSite.SiteID);
                         }
-                    }
-                    else
-                    {
-                        logger.LogWarning("Source site with SiteID '{SiteId}' not found", cmsClassSite.SiteID);
                     }
                 }
             }
@@ -332,7 +343,7 @@ public class MigratePageTypesCommandHandler(
         }
     }
 
-    private int? SaveUsingKxoApi(ICmsClass ksClass, DataClassInfo kxoDataClass)
+    private DataClassInfo? SaveUsingKxoApi(ICmsClass ksClass, DataClassInfo kxoDataClass)
     {
         var mapped = dataClassMapper.Map(ksClass, kxoDataClass);
         protocol.MappedTarget(mapped);
@@ -360,7 +371,7 @@ public class MigratePageTypesCommandHandler(
                     dataClassInfo.ClassID
                 );
 
-                return dataClassInfo.ClassID;
+                return dataClassInfo;
             }
         }
         catch (Exception ex)

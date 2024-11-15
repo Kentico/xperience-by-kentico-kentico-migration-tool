@@ -49,9 +49,16 @@ public class ToolConfiguration
     [ConfigurationKeyName(ConfigurationNames.CreateReusableFieldSchemaForClasses)]
     public string? CreateReusableFieldSchemaForClasses { get; set; }
 
+    [ConfigurationKeyName(ConfigurationNames.ConvertClassesToContentHub)]
+    public string? ConvertClassesToContentHub { get; set; }
 
     public IReadOnlySet<string> ClassNamesCreateReusableSchema => classNamesCreateReusableSchema ??= new HashSet<string>(
         (CreateReusableFieldSchemaForClasses?.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries) ?? []).Select(x => x.Trim()),
+        StringComparer.InvariantCultureIgnoreCase
+    );
+
+    public IReadOnlySet<string> ClassNamesConvertToContentHub => classNamesConvertToContentHub ??= new HashSet<string>(
+        (ConvertClassesToContentHub?.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries) ?? []).Select(x => x.Trim()),
         StringComparer.InvariantCultureIgnoreCase
     );
 
@@ -96,6 +103,7 @@ public class ToolConfiguration
 
     #region Path to root directory of target instance
 
+    private HashSet<string>? classNamesConvertToContentHub;
     private HashSet<string>? classNamesCreateReusableSchema;
     private string? xbKConnectionString;
 

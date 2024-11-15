@@ -68,7 +68,7 @@ public class MigrateSitesCommandHandler(
                     ContentLanguageGUID = cmsCulture.CultureGuid,
                     ContentLanguageDisplayName = cmsCulture.CultureName,
                     ContentLanguageName = cmsCulture.CultureCode,
-                    ContentLanguageIsDefault = true,
+                    ContentLanguageIsDefault = string.Equals(cmsCulture.CultureCode, defaultCultureCode, StringComparison.InvariantCultureIgnoreCase),
                     ContentLanguageFallbackContentLanguageGuid = null,
                     ContentLanguageCultureFormat = cmsCulture.CultureCode
                 });
@@ -101,7 +101,7 @@ public class MigrateSitesCommandHandler(
             {
                 WebsiteChannelGUID = kx13CmsSite.SiteGuid,
                 WebsiteChannelChannelGuid = kx13CmsSite.SiteGuid,
-                WebsiteChannelDomain = kx13CmsSite.SiteDomainName,
+                WebsiteChannelDomain = kx13CmsSite.SiteDomainName.Trim('/'),
                 WebsiteChannelHomePage = homePagePath,
                 WebsiteChannelPrimaryContentLanguageGuid = migratedCultureCodes[defaultCultureCode].ContentLanguageGUID,
                 WebsiteChannelDefaultCookieLevel = cookieLevel,

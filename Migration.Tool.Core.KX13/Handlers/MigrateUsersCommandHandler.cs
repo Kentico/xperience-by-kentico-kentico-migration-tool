@@ -89,6 +89,10 @@ public class MigrateUsersCommandHandler(
 
             try
             {
+                if (string.IsNullOrEmpty(userInfo.Email))
+                {
+                    logger.LogError($"User {userInfo.UserName} does not have an email set. Email is required. You can set it via admin web interface of your source instance or directly in CMS_User database table.");
+                }
                 UserInfoProvider.ProviderObject.Set(userInfo);
 
                 protocol.Success(kx13User, userInfo, mapped);
