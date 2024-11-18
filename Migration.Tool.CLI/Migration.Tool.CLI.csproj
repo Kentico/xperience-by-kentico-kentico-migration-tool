@@ -14,8 +14,7 @@
         <ProjectReference Include="..\Migration.Tool.K11\Migration.Tool.K11.csproj" />
         <ProjectReference Include="..\Migration.Tool.KX12\Migration.Tool.KX12.csproj" />
         <ProjectReference Include="..\Migration.Tool.KX13\Migration.Tool.KX13.csproj" />
-        <ProjectReference Include="..\Migration.Tool.KXP.Api\Migration.Tool.KXP.Api.csproj" />
-        <ProjectReference Include="..\Migration.Tool.KXP\Migration.Tool.KXP.csproj" />
+        <ProjectReference Include="..\Migration.Tool.KXP.Api\Migration.Tool.KXP.Api.csproj" />        
     </ItemGroup>
 
     <ItemGroup>
