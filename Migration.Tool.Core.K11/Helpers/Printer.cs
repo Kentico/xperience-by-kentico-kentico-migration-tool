@@ -1,10 +1,12 @@
+using CMS.ContactManagement;
 using CMS.DataEngine;
+using CMS.DataProtection;
 using CMS.FormEngine;
 using CMS.Globalization;
 using CMS.MediaLibrary;
 using CMS.Membership;
 using CMS.Modules;
-
+using CMS.OnlineForms;
 using Migration.Tool.Common.Helpers;
 using Migration.Tool.Common.Services;
 using Migration.Tool.K11.Models;
@@ -19,15 +21,15 @@ public class Printer
 
         return model switch
         {
-            KXP.Models.MediaLibrary mediaLibrary => $"{currentTypeName}: {nameof(mediaLibrary.LibraryGuid)}={mediaLibrary.LibraryGuid}",
-            KXP.Models.MediaFile mediaFile => $"{currentTypeName}: {nameof(mediaFile.FileGuid)}={mediaFile.FileGuid}",
-            KXP.Models.CmsRole role => $"{currentTypeName}: {nameof(role.RoleGuid)}={role.RoleGuid}, {nameof(role.RoleName)}={role.RoleName}",
-            KXP.Models.CmsUser user => $"{currentTypeName}: {nameof(user.UserGuid)}={user.UserGuid}, {nameof(user.UserName)}={user.UserName}",
-            KXP.Models.CmsResource resource => $"{currentTypeName}: {nameof(resource.ResourceGuid)}={resource.ResourceGuid}, {nameof(resource.ResourceName)}={resource.ResourceName}",
-            KXP.Models.CmsSettingsCategory settingsCategory => $"{currentTypeName}: {nameof(settingsCategory.CategoryName)}={settingsCategory.CategoryName}",
-            KXP.Models.CmsSettingsKey settingsKey => $"{currentTypeName}: {nameof(settingsKey.KeyGuid)}={settingsKey.KeyGuid}, {nameof(settingsKey.KeyName)}={settingsKey.KeyName}",
-            KXP.Models.CmsForm form => $"{currentTypeName}: {nameof(form.FormGuid)}={form.FormGuid}, {nameof(form.FormName)}={form.FormName}",
-            KXP.Models.OmContactGroup omContactGroup => $"{currentTypeName}: {nameof(omContactGroup.ContactGroupGuid)}={omContactGroup.ContactGroupGuid}, {nameof(omContactGroup.ContactGroupName)}={omContactGroup.ContactGroupName}",
+            MediaLibraryInfo mediaLibrary => $"{currentTypeName}: {nameof(mediaLibrary.LibraryGUID)}={mediaLibrary.LibraryGUID}",
+            MediaFileInfo mediaFile => $"{currentTypeName}: {nameof(mediaFile.FileGUID)}={mediaFile.FileGUID}",
+            RoleInfo role => $"{currentTypeName}: {nameof(role.RoleGUID)}={role.RoleGUID}, {nameof(role.RoleName)}={role.RoleName}",
+            UserInfo user => $"{currentTypeName}: {nameof(user.UserGUID)}={user.UserGUID}, {nameof(user.UserName)}={user.UserName}",
+            ResourceInfo resource => $"{currentTypeName}: {nameof(resource.ResourceGUID)}={resource.ResourceGUID}, {nameof(resource.ResourceName)}={resource.ResourceName}",
+            SettingsCategoryInfo settingsCategory => $"{currentTypeName}: {nameof(settingsCategory.CategoryName)}={settingsCategory.CategoryName}",
+            SettingsKeyInfo settingsKey => $"{currentTypeName}: {nameof(settingsKey.KeyGUID)}={settingsKey.KeyGUID}, {nameof(settingsKey.KeyName)}={settingsKey.KeyName}",
+            BizFormInfo form => $"{currentTypeName}: {nameof(form.FormGUID)}={form.FormGUID}, {nameof(form.FormName)}={form.FormName}",
+            ContactGroupInfo omContactGroup => $"{currentTypeName}: {nameof(omContactGroup.ContactGroupGUID)}={omContactGroup.ContactGroupGUID}, {nameof(omContactGroup.ContactGroupName)}={omContactGroup.ContactGroupName}",
 
             null => $"{currentTypeName}: <null>",
             _ => $"TODO: {typeof(T).FullName}"
@@ -61,12 +63,11 @@ public class Printer
             RoleInfo item => FormatModel($"ID={item.RoleID}, Guid={item.RoleGUID} Name={item.RoleName}"),
             MemberInfo item => FormatModel($"ID={item.MemberID}, Guid={item.MemberGuid} Name={item.MemberName}"),
 
-            KXP.Models.CmsForm item => FormatModel($"ID={item.FormId}, GUID={item.FormGuid}, Name={item.FormName}"),
-            KXP.Models.CmsUser item => FormatModel($"ID={item.UserId}, GUID={item.UserGuid}, Name={item.UserName}"),
-            KXP.Models.CmsConsent item => FormatModel($"ID={item.ConsentId}, GUID={item.ConsentGuid}, Name={item.ConsentName}"),
-            KXP.Models.CmsConsentArchive item => FormatModel($"ID={item.ConsentArchiveId}, GUID={item.ConsentArchiveGuid}"),
-            KXP.Models.CmsConsentAgreement item => FormatModel($"ID={item.ConsentAgreementId}, GUID={item.ConsentAgreementGuid}"),
-            KXP.Models.CmsSettingsKey item => FormatModel($"ID={item.KeyId}, GUID={item.KeyGuid}, Name={item.KeyName}"),
+            BizFormInfo item => FormatModel($"ID={item.FormID}, GUID={item.FormGUID}, Name={item.FormName}"),
+            ConsentInfo item => FormatModel($"ID={item.ConsentID}, GUID={item.ConsentGuid}, Name={item.ConsentName}"),
+            ConsentArchiveInfo item => FormatModel($"ID={item.ConsentArchiveID}, GUID={item.ConsentArchiveGuid}"),
+            ConsentAgreementInfo item => FormatModel($"ID={item.ConsentAgreementID}, GUID={item.ConsentAgreementGuid}"),
+            SettingsKeyInfo item => FormatModel($"ID={item.KeyID}, GUID={item.KeyGUID}, Name={item.KeyName}"),
 
             CmsRole item => FormatModel($"ID={item.RoleId}, GUID={item.RoleGuid}, Name={item.RoleName}, SiteId={item.SiteId}"),
             CmsAttachment item => FormatModel($"ID={item.AttachmentId}, GUID={item.AttachmentGuid}, Name={item.AttachmentName}"),

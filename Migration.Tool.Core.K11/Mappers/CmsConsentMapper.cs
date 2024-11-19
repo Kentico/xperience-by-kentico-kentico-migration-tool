@@ -3,7 +3,7 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 
 using CMS.ContentEngine;
-
+using CMS.DataProtection;
 using Microsoft.Extensions.Logging;
 
 using Migration.Tool.Common.Abstractions;
@@ -13,11 +13,11 @@ using Migration.Tool.K11.Models;
 
 namespace Migration.Tool.Core.K11.Mappers;
 
-public class CmsConsentMapper(ILogger<CmsConsentMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : EntityMapperBase<CmsConsent, KXP.Models.CmsConsent>(logger, pkContext, protocol)
+public class CmsConsentMapper(ILogger<CmsConsentMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol) : EntityMapperBase<CmsConsent, ConsentInfo>(logger, pkContext, protocol)
 {
-    protected override KXP.Models.CmsConsent? CreateNewInstance(CmsConsent source, MappingHelper mappingHelper, AddFailure addFailure) => new();
+    protected override ConsentInfo? CreateNewInstance(CmsConsent source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
-    protected override KXP.Models.CmsConsent MapInternal(CmsConsent source, KXP.Models.CmsConsent target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override ConsentInfo MapInternal(CmsConsent source, ConsentInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         target.ConsentDisplayName = source.ConsentDisplayName;
         var defaultContentLanguageInfo = ContentLanguageInfo.Provider.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageIsDefault), true).FirstOrDefault() ?? throw new InvalidCastException("Missing default content language");
@@ -25,7 +25,7 @@ public class CmsConsentMapper(ILogger<CmsConsentMapper> logger, PrimaryKeyMappin
         target.ConsentContent = ConsentContentPatcher.PatchConsentContent(source.ConsentContent, defaultContentLanguageInfo);
         target.ConsentGuid = source.ConsentGuid;
         target.ConsentLastModified = source.ConsentLastModified;
-        target.ConsentHash = source.ConsentHash;
+        target.SetValue(nameof(target.ConsentHash), source.ConsentHash);
 
         return target;
     }

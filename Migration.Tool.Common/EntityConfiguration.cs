@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
-
+using CMS.DataEngine;
 using Migration.Tool.Common.Helpers;
 
 namespace Migration.Tool.Common;
@@ -24,6 +24,15 @@ public class EntityConfigurations : Dictionary<string, EntityConfiguration>
     public EntityConfiguration GetEntityConfiguration<TModel>()
     {
         string? tableName = ReflectionHelper<TModel>.GetFirstAttributeOrNull<TableAttribute>()?.Name;
+        if (tableName is null)
+        {
+            // If table is not specified by annotation at the type, try deriving the table name from OBJECT_TYPE static field (works for ProviderInfos)
+            object? objectType = ReflectionHelper<TModel>.GetStaticFieldOrNull(nameof(DataClassInfo.OBJECT_TYPE));
+            if (objectType is not null)
+            {
+                tableName = ((string)objectType).Replace('.', '_');
+            }
+        }
         return GetEntityConfiguration(tableName);
     }
 

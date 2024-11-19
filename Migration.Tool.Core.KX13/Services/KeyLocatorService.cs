@@ -5,24 +5,21 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Migration.Tool.KX13.Context;
-using Migration.Tool.KXP.Context;
 
 namespace Migration.Tool.Core.KX13.Services;
 
 public class KeyLocatorService(
     ILogger<KeyLocatorService> logger,
-    IDbContextFactory<KxpContext> kxpContextFactory,
     IDbContextFactory<KX13Context> kx13ContextFactory)
 {
     public bool TryLocate<TSource, TTarget, TTargetKey>(
         Expression<Func<TSource, object>> sourceKeySelector,
-        Expression<Func<TTarget, TTargetKey>> targetKeySelector,
+        Func<TTarget, TTargetKey> targetKeySelector,
         Expression<Func<TSource, Guid>> sourceGuidSelector,
-        Expression<Func<TTarget, Guid>> targetGuidSelector,
+        Func<Guid, TTarget?> targetByGuidProvider,
         object? sourceKey, out TTargetKey targetId
     ) where TSource : class where TTarget : class
     {
-        using var kxpContext = kxpContextFactory.CreateDbContext();
         using var kx13Context = kx13ContextFactory.CreateDbContext();
 
         var sourceType = typeof(TSource);
@@ -42,17 +39,14 @@ public class KeyLocatorService(
             var sourcePredicate = Expression.Lambda<Func<TSource, bool>>(sourceEquals, sourceKeySelector.Parameters[0]);
             var kx13Guid = kx13Context.Set<TSource>().Where(sourcePredicate).Select(sourceGuidSelector).Single();
 
-            var param = Expression.Parameter(typeof(TTarget), "t");
-            var member = targetGuidSelector.Body as MemberExpression ?? throw new InvalidOperationException($"Expression SHALL NOT be other than member expression, expression: {targetGuidSelector}");
-            var targetEquals = Expression.Equal(
-                Expression.MakeMemberAccess(param, member.Member),
-                Expression.Constant(kx13Guid, typeof(Guid))
-            );
-            var targetPredicate = Expression.Lambda<Func<TTarget, bool>>(targetEquals, param);
+            var target = targetByGuidProvider(kx13Guid);
+            if (target is null)
+            {
+                logger.LogWarning("Mapping {SourceFullType} primary key: {SourceId} failed, GUID {TargetGUID} not present in target instance", sourceType.FullName, sourceKey, kx13Guid);
+                return false;
+            }
 
-            var query = kxpContext.Set<TTarget>().Where(targetPredicate);
-            var selector = Expression.Lambda<Func<TTarget, TTargetKey>>(targetKeySelector.Body, targetKeySelector.Parameters[0]);
-            targetId = query.Select(selector).Single();
+            targetId = targetKeySelector(target);
             return true;
         }
         catch (InvalidOperationException ioex)

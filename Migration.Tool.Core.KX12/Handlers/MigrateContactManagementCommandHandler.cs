@@ -1,10 +1,10 @@
 using CMS.Activities;
 using CMS.ContactManagement;
 using CMS.ContentEngine;
-
+using CMS.Globalization;
+using CMS.Membership;
 using MediatR;
 
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Migration.Tool.Common;
@@ -16,14 +16,11 @@ using Migration.Tool.Core.KX12.Contexts;
 using Migration.Tool.Core.KX12.Helpers;
 using Migration.Tool.Core.KX12.Services;
 using Migration.Tool.KXP.Api;
-using Migration.Tool.KXP.Context;
-using Migration.Tool.KXP.Models;
 
 namespace Migration.Tool.Core.KX12.Handlers;
 
 public class MigrateContactManagementCommandHandler(
     ILogger<MigrateContactManagementCommandHandler> logger,
-    IDbContextFactory<KxpContext> kxpContextFactory,
     BulkDataCopyService bulkDataCopyService,
     ToolConfiguration toolConfiguration,
     PrimaryKeyMappingContext primaryKeyMappingContext,
@@ -33,12 +30,8 @@ public class MigrateContactManagementCommandHandler(
     ISpoiledGuidContext spoiledGuidContext,
     IProtocol protocol
 )
-    : IRequestHandler<MigrateContactManagementCommand, CommandResult>, IDisposable
+    : IRequestHandler<MigrateContactManagementCommand, CommandResult>
 {
-    private readonly KxpContext kxpContext = kxpContextFactory.CreateDbContext();
-
-    public void Dispose() => kxpContext.Dispose();
-
     public Task<CommandResult> Handle(MigrateContactManagementCommand request, CancellationToken cancellationToken)
     {
         countryMigrator.MigrateCountriesAndStates();
@@ -62,36 +55,36 @@ public class MigrateContactManagementCommandHandler(
     {
         var requiredColumnsForContactMigration = new Dictionary<string, string>
         {
-            { nameof(KX12M.OmContact.ContactId), nameof(OmContact.ContactId) },
-            { nameof(KX12M.OmContact.ContactFirstName), nameof(OmContact.ContactFirstName) },
-            { nameof(KX12M.OmContact.ContactMiddleName), nameof(OmContact.ContactMiddleName) },
-            { nameof(KX12M.OmContact.ContactLastName), nameof(OmContact.ContactLastName) },
-            { nameof(KX12M.OmContact.ContactJobTitle), nameof(OmContact.ContactJobTitle) },
-            { nameof(KX12M.OmContact.ContactAddress1), nameof(OmContact.ContactAddress1) },
-            { nameof(KX12M.OmContact.ContactCity), nameof(OmContact.ContactCity) },
-            { nameof(KX12M.OmContact.ContactZip), nameof(OmContact.ContactZip) },
-            { nameof(KX12M.OmContact.ContactStateId), nameof(OmContact.ContactStateId) },
-            { nameof(KX12M.OmContact.ContactCountryId), nameof(OmContact.ContactCountryId) },
-            { nameof(KX12M.OmContact.ContactMobilePhone), nameof(OmContact.ContactMobilePhone) },
-            { nameof(KX12M.OmContact.ContactBusinessPhone), nameof(OmContact.ContactBusinessPhone) },
-            { nameof(KX12M.OmContact.ContactEmail), nameof(OmContact.ContactEmail) },
-            // No support 2022-07-07  { nameof(OmContact.ContactBirthday), nameof(KXO.Models.OmContact.ContactBirthday) },
-            { nameof(KX12M.OmContact.ContactGender), nameof(OmContact.ContactGender) },
-            // { nameof(OmContact.ContactStatusId), nameof(KXO.Models.OmContact.ContactStatusId) }, // No support 2022-07-07  but needs to be mapped because of constraint
-            { nameof(KX12M.OmContact.ContactNotes), nameof(OmContact.ContactNotes) },
-            { nameof(KX12M.OmContact.ContactOwnerUserId), nameof(OmContact.ContactOwnerUserId) },
-            // No support 2022-07-07  { nameof(OmContact.ContactMonitored), nameof(KXO.Models.OmContact.ContactMonitored) },
-            { nameof(KX12M.OmContact.ContactGuid), nameof(OmContact.ContactGuid) },
-            { nameof(KX12M.OmContact.ContactLastModified), nameof(OmContact.ContactLastModified) },
-            { nameof(KX12M.OmContact.ContactCreated), nameof(OmContact.ContactCreated) },
-            // No support 2022-07-07  { nameof(OmContact.ContactBounces), nameof(KXO.Models.OmContact.ContactBounces) },
-            { nameof(KX12M.OmContact.ContactCampaign), nameof(OmContact.ContactCampaign) },
-            // No support 2022-07-07  { nameof(OmContact.ContactSalesForceLeadId), nameof(KXO.Models.OmContact.ContactSalesForceLeadId) },
-            // No support 2022-07-07  { nameof(OmContact.ContactSalesForceLeadReplicationDisabled), nameof(KXO.Models.OmContact.ContactSalesForceLeadReplicationDisabled) },
-            // No support 2022-07-07  { nameof(OmContact.ContactSalesForceLeadReplicationDateTime), nameof(KXO.Models.OmContact.ContactSalesForceLeadReplicationDateTime) },
-            // No support 2022-07-07  { nameof(OmContact.ContactSalesForceLeadReplicationSuspensionDateTime), nameof(KXO.Models.OmContact.ContactSalesForceLeadReplicationSuspensionDateTime) },
-            { nameof(KX12M.OmContact.ContactCompanyName), nameof(OmContact.ContactCompanyName) }
-            // No support 2022-07-07  { nameof(OmContact.ContactSalesForceLeadReplicationRequired), nameof(KXO.Models.OmContact.ContactSalesForceLeadReplicationRequired) },
+            { nameof(KX12M.OmContact.ContactId), nameof(ContactInfo.ContactID) },
+            { nameof(KX12M.OmContact.ContactFirstName), nameof(ContactInfo.ContactFirstName) },
+            { nameof(KX12M.OmContact.ContactMiddleName), nameof(ContactInfo.ContactMiddleName) },
+            { nameof(KX12M.OmContact.ContactLastName), nameof(ContactInfo.ContactLastName) },
+            { nameof(KX12M.OmContact.ContactJobTitle), nameof(ContactInfo.ContactJobTitle) },
+            { nameof(KX12M.OmContact.ContactAddress1), nameof(ContactInfo.ContactAddress1) },
+            { nameof(KX12M.OmContact.ContactCity), nameof(ContactInfo.ContactCity) },
+            { nameof(KX12M.OmContact.ContactZip), nameof(ContactInfo.ContactZIP) },
+            { nameof(KX12M.OmContact.ContactStateId), nameof(ContactInfo.ContactStateID) },
+            { nameof(KX12M.OmContact.ContactCountryId), nameof(ContactInfo.ContactCountryID) },
+            { nameof(KX12M.OmContact.ContactMobilePhone), nameof(ContactInfo.ContactMobilePhone) },
+            { nameof(KX12M.OmContact.ContactBusinessPhone), nameof(ContactInfo.ContactBusinessPhone) },
+            { nameof(KX12M.OmContact.ContactEmail), nameof(ContactInfo.ContactEmail) },
+            // No support 2022-07-07  { nameof(ContactInfo.ContactBirthday), nameof(KXO.Models.OmContact.ContactBirthday) },
+            { nameof(KX12M.OmContact.ContactGender), nameof(ContactInfo.ContactGender) },
+            // { nameof(ContactInfo.ContactStatusId), nameof(KXO.Models.OmContact.ContactStatusId) }, // No support 2022-07-07  but needs to be mapped because of constraint
+            { nameof(KX12M.OmContact.ContactNotes), nameof(ContactInfo.ContactNotes) },
+            { nameof(KX12M.OmContact.ContactOwnerUserId), nameof(ContactInfo.ContactOwnerUserID) },
+            // No support 2022-07-07  { nameof(ContactInfo.ContactMonitored), nameof(KXO.Models.OmContact.ContactMonitored) },
+            { nameof(KX12M.OmContact.ContactGuid), nameof(ContactInfo.ContactGUID) },
+            { nameof(KX12M.OmContact.ContactLastModified), nameof(ContactInfo.ContactLastModified) },
+            { nameof(KX12M.OmContact.ContactCreated), nameof(ContactInfo.ContactCreated) },
+            // No support 2022-07-07  { nameof(ContactInfo.ContactBounces), nameof(KXO.Models.OmContact.ContactBounces) },
+            { nameof(KX12M.OmContact.ContactCampaign), nameof(ContactInfo.ContactCampaign) },
+            // No support 2022-07-07  { nameof(ContactInfo.ContactSalesForceLeadId), nameof(KXO.Models.OmContact.ContactSalesForceLeadId) },
+            // No support 2022-07-07  { nameof(ContactInfo.ContactSalesForceLeadReplicationDisabled), nameof(KXO.Models.OmContact.ContactSalesForceLeadReplicationDisabled) },
+            // No support 2022-07-07  { nameof(ContactInfo.ContactSalesForceLeadReplicationDateTime), nameof(KXO.Models.OmContact.ContactSalesForceLeadReplicationDateTime) },
+            // No support 2022-07-07  { nameof(ContactInfo.ContactSalesForceLeadReplicationSuspensionDateTime), nameof(KXO.Models.OmContact.ContactSalesForceLeadReplicationSuspensionDateTime) },
+            { nameof(KX12M.OmContact.ContactCompanyName), nameof(ContactInfo.ContactCompanyName) }
+            // No support 2022-07-07  { nameof(ContactInfo.ContactSalesForceLeadReplicationRequired), nameof(KXO.Models.OmContact.ContactSalesForceLeadReplicationRequired) },
         };
 
         foreach (var cfi in kxpClassFacade.GetCustomizedFieldInfos(ContactInfo.TYPEINFO.ObjectClassName))
@@ -149,7 +142,7 @@ public class MigrateContactManagementCommandHandler(
 
     private ValueInterceptorResult ContactValueInterceptor(int ordinal, string columnName, object value, Dictionary<string, object?> currentRow)
     {
-        if (columnName.Equals(nameof(OmContact.ContactCompanyName), StringComparison.InvariantCultureIgnoreCase))
+        if (columnName.Equals(nameof(ContactInfo.ContactCompanyName), StringComparison.InvariantCultureIgnoreCase))
         {
             // autofix removed in favor of error report and data consistency
             // var truncatedValue = SqlDataTypeHelper.TruncateString(value, 100);
@@ -171,7 +164,7 @@ public class MigrateContactManagementCommandHandler(
             }
         }
 
-        if (columnName.Equals(nameof(OmContact.ContactOwnerUserId), StringComparison.InvariantCultureIgnoreCase) && value is int sourceUserId)
+        if (columnName.Equals(nameof(ContactInfo.ContactOwnerUserID), StringComparison.InvariantCultureIgnoreCase) && value is int sourceUserId)
         {
             switch (primaryKeyMappingContext.MapSourceId<KX12M.CmsUser>(u => u.UserId, sourceUserId))
             {
@@ -180,18 +173,18 @@ public class MigrateContactManagementCommandHandler(
                 case { Success: false }:
                 {
                     // try search member
-                    if (keyMappingContext.MapSourceKey<KX12M.CmsUser, CmsMember, int?>(
+                    if (keyMappingContext.MapSourceKey<KX12M.CmsUser, MemberInfo, int?>(
                             s => s.UserId,
                             s => s.UserGuid,
                             sourceUserId,
-                            t => t.MemberId,
-                            t => t.MemberGuid
+                            t => t.MemberID,
+                            MemberInfo.Provider.Get
                         ) is { Success: true, Mapped: { } memberId })
                     {
                         return ValueInterceptorResult.ReplaceValue(memberId);
                     }
 
-                    protocol.Append(HandbookReferences.MissingRequiredDependency<CmsUser>(columnName, value)
+                    protocol.Append(HandbookReferences.MissingRequiredDependency<UserInfo>(columnName, value)
                         .WithData(currentRow));
                     return ValueInterceptorResult.SkipRow;
                 }
@@ -201,7 +194,7 @@ public class MigrateContactManagementCommandHandler(
             }
         }
 
-        if (columnName.Equals(nameof(OmContact.ContactStateId), StringComparison.InvariantCultureIgnoreCase) && value is int sourceStateId)
+        if (columnName.Equals(nameof(ContactInfo.ContactStateID), StringComparison.InvariantCultureIgnoreCase) && value is int sourceStateId)
         {
             switch (primaryKeyMappingContext.MapSourceId<KX12M.CmsState>(u => u.StateId, sourceStateId.NullIfZero()))
             {
@@ -209,7 +202,7 @@ public class MigrateContactManagementCommandHandler(
                     return ValueInterceptorResult.ReplaceValue(id);
                 case { Success: false }:
                 {
-                    protocol.Append(HandbookReferences.MissingRequiredDependency<CmsState>(columnName, value)
+                    protocol.Append(HandbookReferences.MissingRequiredDependency<StateInfo>(columnName, value)
                         .WithData(currentRow));
                     return ValueInterceptorResult.SkipRow;
                 }
@@ -219,7 +212,7 @@ public class MigrateContactManagementCommandHandler(
             }
         }
 
-        if (columnName.Equals(nameof(OmContact.ContactCountryId), StringComparison.InvariantCultureIgnoreCase) && value is int sourceCountryId)
+        if (columnName.Equals(nameof(ContactInfo.ContactCountryID), StringComparison.InvariantCultureIgnoreCase) && value is int sourceCountryId)
         {
             switch (primaryKeyMappingContext.MapSourceId<KX12M.CmsCountry>(u => u.CountryId, sourceCountryId.NullIfZero()))
             {
@@ -227,7 +220,7 @@ public class MigrateContactManagementCommandHandler(
                     return ValueInterceptorResult.ReplaceValue(id);
                 case { Success: false }:
                 {
-                    protocol.Append(HandbookReferences.MissingRequiredDependency<CmsCountry>(columnName, value)
+                    protocol.Append(HandbookReferences.MissingRequiredDependency<CountryInfo>(columnName, value)
                         .WithData(currentRow));
                     return ValueInterceptorResult.SkipRow;
                 }
@@ -249,25 +242,25 @@ public class MigrateContactManagementCommandHandler(
     {
         var requiredColumnsForContactMigration = new Dictionary<string, string>
         {
-            { nameof(KX12M.OmActivity.ActivityId), nameof(OmActivity.ActivityId) },
-            { nameof(KX12M.OmActivity.ActivityContactId), nameof(OmActivity.ActivityContactId) },
-            { nameof(KX12M.OmActivity.ActivityCreated), nameof(OmActivity.ActivityCreated) },
-            { nameof(KX12M.OmActivity.ActivityType), nameof(OmActivity.ActivityType) },
-            // No support 2022-07-07  { nameof(OmActivity.ActivityItemId), nameof(KXO.Models.OmActivity.ActivityItemId) },
-            // No support 2022-07-07  { nameof(OmActivity.ActivityItemDetailId), nameof(KXO.Models.OmActivity.ActivityItemDetailId) },
-            { nameof(KX12M.OmActivity.ActivityValue), nameof(OmActivity.ActivityValue) },
-            { nameof(KX12M.OmActivity.ActivityUrl), nameof(OmActivity.ActivityUrl) },
-            { nameof(KX12M.OmActivity.ActivityTitle), nameof(OmActivity.ActivityTitle) },
-            { nameof(KX12M.OmActivity.ActivitySiteId), nameof(OmActivity.ActivityChannelId) },
-            { nameof(KX12M.OmActivity.ActivityComment), nameof(OmActivity.ActivityComment) },
-            // { nameof(OmActivity.ActivityCampaign), nameof(KXP.Models.OmActivity.ActivityCampaign) }, // deprecated without replacement in v27
-            { nameof(KX12M.OmActivity.ActivityUrlreferrer), nameof(OmActivity.ActivityUrlreferrer) },
-            { nameof(KX12M.OmActivity.ActivityCulture), nameof(OmActivity.ActivityLanguageId) },
-            { nameof(KX12M.OmActivity.ActivityNodeId), nameof(OmActivity.ActivityWebPageItemGuid) },
-            { nameof(KX12M.OmActivity.ActivityUtmsource), nameof(OmActivity.ActivityUtmsource) },
-            // No support 2022-07-07  { nameof(OmActivity.ActivityAbvariantName), nameof(KXO.Models.OmActivity.ActivityAbvariantName) },
-            // OBSOLETE 26.0.0: { nameof(OmActivity.ActivityUrlhash), nameof(KXP.Models.OmActivity.ActivityUrlhash) },
-            { nameof(KX12M.OmActivity.ActivityUtmcontent), nameof(OmActivity.ActivityUtmcontent) }
+            { nameof(KX12M.OmActivity.ActivityId), nameof(ActivityInfo.ActivityID) },
+            { nameof(KX12M.OmActivity.ActivityContactId), nameof(ActivityInfo.ActivityContactID) },
+            { nameof(KX12M.OmActivity.ActivityCreated), nameof(ActivityInfo.ActivityCreated) },
+            { nameof(KX12M.OmActivity.ActivityType), nameof(ActivityInfo.ActivityType) },
+            // No support 2022-07-07  { nameof(ActivityInfo.ActivityItemId), nameof(KXO.Models.OmActivity.ActivityItemId) },
+            // No support 2022-07-07  { nameof(ActivityInfo.ActivityItemDetailId), nameof(KXO.Models.OmActivity.ActivityItemDetailId) },
+            { nameof(KX12M.OmActivity.ActivityValue), nameof(ActivityInfo.ActivityValue) },
+            { nameof(KX12M.OmActivity.ActivityUrl), nameof(ActivityInfo.ActivityURL) },
+            { nameof(KX12M.OmActivity.ActivityTitle), nameof(ActivityInfo.ActivityTitle) },
+            { nameof(KX12M.OmActivity.ActivitySiteId), nameof(ActivityInfo.ActivityChannelID) },
+            { nameof(KX12M.OmActivity.ActivityComment), nameof(ActivityInfo.ActivityComment) },
+            // { nameof(ActivityInfo.ActivityCampaign), nameof(KXP.Models.OmActivity.ActivityCampaign) }, // deprecated without replacement in v27
+            { nameof(KX12M.OmActivity.ActivityUrlreferrer), nameof(ActivityInfo.ActivityURLReferrer) },
+            { nameof(KX12M.OmActivity.ActivityCulture), nameof(ActivityInfo.ActivityLanguageID) },
+            { nameof(KX12M.OmActivity.ActivityNodeId), nameof(ActivityInfo.ActivityWebPageItemGUID) },
+            { nameof(KX12M.OmActivity.ActivityUtmsource), nameof(ActivityInfo.ActivityUTMSource) },
+            // No support 2022-07-07  { nameof(ActivityInfo.ActivityAbvariantName), nameof(KXO.Models.OmActivity.ActivityAbvariantName) },
+            // OBSOLETE 26.0.0: { nameof(ActivityInfo.ActivityUrlhash), nameof(KXP.Models.OmActivity.ActivityUrlhash) },
+            { nameof(KX12M.OmActivity.ActivityUtmcontent), nameof(ActivityInfo.ActivityUTMContent) }
         };
 
         foreach (var cfi in kxpClassFacade.GetCustomizedFieldInfos(ActivityInfo.TYPEINFO.ObjectClassName))
@@ -316,12 +309,12 @@ public class MigrateContactManagementCommandHandler(
         if (columnName.Equals(nameof(KX12M.OmActivity.ActivitySiteId), StringComparison.InvariantCultureIgnoreCase) &&
             value is int sourceActivitySiteId)
         {
-            var result = keyMappingContext.MapSourceKey<KX12M.CmsSite, CmsChannel, int?>(
+            var result = keyMappingContext.MapSourceKey<KX12M.CmsSite, ChannelInfo, int?>(
                 s => s.SiteId,
                 s => s.SiteGuid,
                 sourceActivitySiteId.NullIfZero(),
-                t => t.ChannelId,
-                t => t.ChannelGuid
+                t => t.ChannelID,
+                guid => ChannelInfo.Provider.Get().WhereEquals(nameof(ChannelInfo.ChannelGUID), guid).SingleOrDefault()
             );
             switch (result)
             {
@@ -340,7 +333,7 @@ public class MigrateContactManagementCommandHandler(
                         case AutofixEnum.Error:
                         default: //error
                             protocol.Append(HandbookReferences
-                                .MissingRequiredDependency<CmsChannel>(columnName, value)
+                                .MissingRequiredDependency<ChannelInfo>(columnName, value)
                                 .WithData(currentRow)
                             );
                             return ValueInterceptorResult.SkipRow;
@@ -373,14 +366,14 @@ public class MigrateContactManagementCommandHandler(
                 case AutofixEnum.Error:
                 default: //error
                     protocol.Append(HandbookReferences
-                        .MissingRequiredDependency<CmsWebPageItem>(columnName, value)
+                        .MissingRequiredDependency<CMS.Websites.Internal.WebPageItemInfo>(columnName, value)
                         .WithData(currentRow)
                     );
                     return ValueInterceptorResult.SkipRow;
             }
         }
 
-        if (columnName.Equals(nameof(OmActivity.ActivityLanguageId), StringComparison.InvariantCultureIgnoreCase) && value is string cultureCode)
+        if (columnName.Equals(nameof(ActivityInfo.ActivityLanguageID), StringComparison.InvariantCultureIgnoreCase) && value is string cultureCode)
         {
             return ValueInterceptorResult.ReplaceValue(ContentLanguageInfoProvider.ProviderObject.Get(cultureCode)?.ContentLanguageID);
         }

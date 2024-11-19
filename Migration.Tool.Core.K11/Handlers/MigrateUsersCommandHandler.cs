@@ -231,7 +231,7 @@ public class MigrateUsersCommandHandler(
             if (!primaryKeyMappingContext.TryRequireMapFromSource<CmsRole>(u => u.RoleId, k11RoleId, out int xbkRoleId))
             {
                 var handbookRef = HandbookReferences
-                    .MissingRequiredDependency<KXP.Models.CmsRole>(nameof(UserRoleInfo.RoleID), k11UserRole.RoleId)
+                    .MissingRequiredDependency<RoleInfo>(nameof(UserRoleInfo.RoleID), k11UserRole.RoleId)
                     .NeedsManualAction();
 
                 protocol.Append(handbookRef);

@@ -19,7 +19,6 @@ using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.Helpers;
 using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.Common.Model;
-using Migration.Tool.KXP.Models;
 using Migration.Tool.Source.Contexts;
 using Migration.Tool.Source.Helpers;
 using Migration.Tool.Source.Mappers;
@@ -53,7 +52,7 @@ public class MigratePagesCommandHandler(
 
     public async Task<CommandResult> Handle(MigratePagesCommand request, CancellationToken cancellationToken)
     {
-        var classEntityConfiguration = toolConfiguration.EntityConfigurations.GetEntityConfiguration<CmsClass>();
+        var classEntityConfiguration = toolConfiguration.EntityConfigurations.GetEntityConfiguration<DataClassInfo>();
 
         var cultureCodeToLanguageGuid = modelFacade.SelectAll<ICmsCulture>()
             .ToDictionary(c => c.CultureCode, c => c.CultureGUID, StringComparer.InvariantCultureIgnoreCase);
