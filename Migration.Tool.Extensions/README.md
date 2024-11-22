@@ -1,10 +1,12 @@
 ## Custom migrations
 
 Samples:
+
 - `Migration.Tool.Extensions/CommunityMigrations/SampleTextMigration.cs` contains simplest implementation for migration of text fields
 - `Migration.Tool.Extensions/DefaultMigrations/AssetMigration.cs` contains real world migration of assets (complex example)
 
 To create custom migration:
+
 - create new file in `Migration.Tool.Extensions/CommunityMigrations` (directory if you need more files for single migration)
 - implement interface `Migration.Tool.KXP.Api.Services.CmsClass.IFieldMigration`
   - implement property rank, set number bellow 100 000 - for example 5000
@@ -26,6 +28,7 @@ demonstrated in method `AddSimpleRemodelingSample`, goal is to take single data 
 demonstrated in method `AddClassMergeExample`, goal is to take multiple data classes from source instance and define their relation to new class
 
 lets define new class:
+
 ```csharp
 var m = new MultiClassMapping(targetClassName, target =>
 {
@@ -38,13 +41,15 @@ var m = new MultiClassMapping(targetClassName, target =>
 ```
 
 define new primary key:
+
 ```csharp
 m.BuildField("EventID").AsPrimaryKey();
 ```
 
 and finally lets define relations to fields:
 
-1) build field title 
+1. build field title
+
 ```csharp
 // build new field
 var title = m.BuildField("Title");
@@ -54,13 +59,14 @@ title.SetFrom("_ET.Event1", "EventTitle", true);
 // map "EventTitle" field form source data class "_ET.Event2"
 title.SetFrom("_ET.Event2", "EventTitle");
 
-// patch field definition, in this case lets change field caption 
+// patch field definition, in this case lets change field caption
 title.WithFieldPatch(f => f.Caption = "Event title");
 ```
 
-2) in similar fashion map other fields
+2. in similar fashion map other fields
 
-3) if needed custom value conversion can be used
+3. if needed custom value conversion can be used
+
 ```csharp
 var startDate = m.BuildField("StartDate");
 startDate.SetFrom("_ET.Event1", "EventDateStart", true);
@@ -71,9 +77,10 @@ startDate.ConvertFrom("_ET.Event2", "EventStartDateAsText", false,
 startDate.WithFieldPatch(f => f.Caption = "Event start date");
 ```
 
-4) register class mapping to dependency injection ocntainer
+4. register class mapping to dependency injection ocntainer
+
 ```csharp
-serviceCollection.AddSingleton<IClassMapping>(m); 
+serviceCollection.AddSingleton<IClassMapping>(m);
 ```
 
 ### Inject and use reusable schema
@@ -82,10 +89,11 @@ demonstrated in method `AddReusableSchemaIntegrationSample`, goal is to take sin
 
 ## Custom widget migrations
 
-Custom widget migration allows you to remodel the original widget as a new widget type. The prominent operations are 
+Custom widget migration allows you to remodel the original widget as a new widget type. The prominent operations are
 changing the target widget type and recombining the original properties.
 
 To create custom widget migration:
+
 - create new file in `Migration.Tool.Extensions/CommunityMigrations` (directory if you need more files for single migration)
 - implement interface `Migration.Tool.KXP.Api.Services.CmsClass.IWidgetMigration`
   - implement property `Rank`, set number bellow 100 000 - for example 5000. Rank determines the order by which the migrations are tested to be eligible via the `ShallMigrate` method
@@ -97,10 +105,10 @@ To create custom widget migration:
       - In the special case when you introduce a new property whose name overlaps with original property. Otherwise the migration infered from the original property would be used
         - If your new property is not supposed to be subject to property migrations and the original one was, explicitly specify `WidgetNoOpMigration` for this property
     - You can also override the property migration of an original property if that suits your case
-    
 - finally register in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as `Transient` dependency into service collection. For example `services.AddTransient<IWidgetMigration, YourMigrationClass>()`
 
 Samples:
+
 - [Sample BannerWidget migration](./CommunityMigrations/SampleWidgetMigration.cs)
 
 ### Convert page type to reusable content item (content hub)
@@ -110,14 +118,16 @@ demonstrated in method `AddReusableRemodelingSample`. Please note, that all info
 ## Custom widget property migrations
 
 To create custom widget property migration:
+
 - create new file in `Migration.Tool.Extensions/CommunityMigrations` (directory if you need more files for single migration)
 - implement interface `Migration.Tool.KXP.Api.Services.CmsClass.IWidgetPropertyMigration`
   - implement property `Rank`, set number bellow 100 000 - for example 5000. Rank determines the order by which the migrations are tested to be eligible via the `ShallMigrate` method
   - implement method `ShallMigrate` (if method returns true, migration will be used)
-  - implement `MigrateWidgetProperty`, where objective is to convert old JToken representing json value to new converted JToken value  
+  - implement `MigrateWidgetProperty`, where objective is to convert old JToken representing json value to new converted JToken value
 - finally register in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as `Transient` dependency into service collection. For example `services.AddTransient<IWidgetPropertyMigration, WidgetPathSelectorMigration>()`
 
 Samples:
+
 - [Path selector migration](./DefaultMigrations/WidgetPathSelectorMigration.cs)
 - [Page selector migration](./DefaultMigrations/WidgetPageSelectorMigration.cs)
 - [File selector migration](./DefaultMigrations/WidgetFileMigration.cs)
