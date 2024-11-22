@@ -66,8 +66,21 @@ var startDate = m.BuildField("StartDate");
 startDate.SetFrom("_ET.Event1", "EventDateStart", true);
 // if needed use value conversion to adapt value
 startDate.ConvertFrom("_ET.Event2", "EventStartDateAsText", false,
-    v => v?.ToString() is { } av && !string.IsNullOrWhiteSpace(av) ? DateTime.Parse(av) : null
-);
+    (v, context) =>
+    {
+        switch (context)
+        {
+            case ConvertorTreeNodeContext treeNodeContext:
+                // here you can use available treenode context
+                // (var nodeGuid, int nodeSiteId, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
+                break;
+            default:
+                // no context is available (possibly when tool is extended with other conversion possibilities)
+                break;
+        }
+
+        return v?.ToString() is { } av && !string.IsNullOrWhiteSpace(av) ? DateTime.Parse(av) : null;
+    });
 startDate.WithFieldPatch(f => f.Caption = "Event start date");
 ```
 
