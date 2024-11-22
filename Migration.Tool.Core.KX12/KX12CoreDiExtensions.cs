@@ -1,4 +1,6 @@
+using CMS.ContactManagement;
 using CMS.DataEngine;
+using CMS.DataProtection;
 using CMS.FormEngine;
 using CMS.Globalization;
 using CMS.MediaLibrary;
@@ -18,7 +20,6 @@ using Migration.Tool.Core.KX12.Contexts;
 using Migration.Tool.Core.KX12.Helpers;
 using Migration.Tool.Core.KX12.Mappers;
 using Migration.Tool.Core.KX12.Services;
-using Migration.Tool.KXP.Models;
 
 namespace Migration.Tool.Core.KX12;
 
@@ -47,18 +48,17 @@ public static class Kx12CoreDiExtensions
 
         // mappers
         services.AddTransient<IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo>, CmsAttachmentMapper>();
-        services.AddTransient<IEntityMapper<KX12M.CmsConsent, CmsConsent>, CmsConsentMapper>();
-        services.AddTransient<IEntityMapper<KX12M.CmsConsentAgreement, CmsConsentAgreement>, CmsConsentAgreementMapper>();
-        services.AddTransient<IEntityMapper<KX12M.CmsConsentArchive, CmsConsentArchive>, CmsConsentArchiveMapper>();
+        services.AddTransient<IEntityMapper<KX12M.CmsConsent, ConsentInfo>, CmsConsentMapper>();
+        services.AddTransient<IEntityMapper<KX12M.CmsConsentAgreement, ConsentAgreementInfo>, CmsConsentAgreementMapper>();
+        services.AddTransient<IEntityMapper<KX12M.CmsConsentArchive, ConsentArchiveInfo>, CmsConsentArchiveMapper>();
         services.AddTransient<IEntityMapper<AlternativeFormMapperSource, AlternativeFormInfo>, AlternativeFormMapper>();
         services.AddTransient<IEntityMapper<KX12M.CmsRole, RoleInfo>, RoleInfoMapper>();
-        services.AddTransient<IEntityMapper<KX12M.CmsSettingsCategory, CmsSettingsCategory>, CmsSettingsCategoryMapper>();
         services.AddTransient<IEntityMapper<KX12M.CmsSettingsKey, SettingsKeyInfo>, CmsSettingsKeyMapper>();
         services.AddTransient<IEntityMapper<KX12M.CmsUser, UserInfo>, UserInfoMapper>();
         services.AddTransient<IEntityMapper<MemberInfoMapperSource, MemberInfo>, MemberInfoMapper>();
         services.AddTransient<IEntityMapper<KX12M.CmsUserRole, UserRoleInfo>, UserRoleInfoMapper>();
-        services.AddTransient<IEntityMapper<KX12M.OmContactGroup, OmContactGroup>, OmContactGroupMapper>();
-        services.AddTransient<IEntityMapper<KX12M.OmContactStatus, OmContactStatus>, OmContactStatusMapper>();
+        services.AddTransient<IEntityMapper<KX12M.OmContactGroup, ContactGroupInfo>, OmContactGroupMapper>();
+        services.AddTransient<IEntityMapper<KX12M.OmContactStatus, ContactStatusInfo>, OmContactStatusMapper>();
         services.AddTransient<IEntityMapper<KX12M.CmsCountry, CountryInfo>, CountryInfoMapper>();
         services.AddTransient<IEntityMapper<KX12M.CmsState, StateInfo>, StateInfoMapper>();
 

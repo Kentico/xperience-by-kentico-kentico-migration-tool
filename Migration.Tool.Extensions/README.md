@@ -69,20 +69,33 @@ Finally, let's define relations to fields:
    title.WithFieldPatch(f => f.Caption = "Event title");
    ```
 
-2. in similar fashion map other fields
-3. if needed custom value conversion can be used
+1. in similar fashion map other fields
+1. if needed custom value conversion can be used
 
    ```csharp
    var startDate = m.BuildField("StartDate");
    startDate.SetFrom("_ET.Event1", "EventDateStart", true);
    // if needed use value conversion to adapt value
    startDate.ConvertFrom("_ET.Event2", "EventStartDateAsText", false,
-       v => v?.ToString() is { } av && !string.IsNullOrWhiteSpace(av) ? DateTime.Parse(av) : null
-   );
+       (v, context) =>
+       {
+           switch (context)
+           {
+               case ConvertorTreeNodeContext treeNodeContext:
+                   // here you can use available treenode context
+                   // (var nodeGuid, int nodeSiteId, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
+                   break;
+               default:
+                   // no context is available (possibly when tool is extended with other conversion possibilities)
+                   break;
+           }
+
+           return v?.ToString() is { } av && !string.IsNullOrWhiteSpace(av) ? DateTime.Parse(av) : null;
+       });
    startDate.WithFieldPatch(f => f.Caption = "Event start date");
    ```
 
-4. register class mapping to dependency injection ocntainer
+1. register class mapping to dependency injection ocntainer
 
    ```csharp
    serviceCollection.AddSingleton<IClassMapping>(m);

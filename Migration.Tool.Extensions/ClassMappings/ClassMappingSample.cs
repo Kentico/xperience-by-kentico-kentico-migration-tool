@@ -168,8 +168,21 @@ public static class ClassMappingSample
         startDate.SetFrom(sourceClassName1, "EventDateStart", true);
         // if needed use value conversion to adapt value
         startDate.ConvertFrom(sourceClassName2, "EventStartDateAsText", false,
-            v => v?.ToString() is { } av && !string.IsNullOrWhiteSpace(av) ? DateTime.Parse(av) : null
-        );
+            (v, context) =>
+            {
+                switch (context)
+                {
+                    case ConvertorTreeNodeContext treeNodeContext:
+                        // here you can use available treenode context
+                        // (var nodeGuid, int nodeSiteId, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
+                        break;
+                    default:
+                        // no context is available (in future, mapping feature could be extended and therefore different context will be supplied or no context at all)
+                        break;
+                }
+
+                return v?.ToString() is { } av && !string.IsNullOrWhiteSpace(av) ? DateTime.Parse(av) : null;
+            });
         startDate.WithFieldPatch(f => f.Caption = "Event start date");
 
         serviceCollection.AddSingleton<IClassMapping>(m);

@@ -13,7 +13,6 @@ using Migration.Tool.Common.Helpers;
 using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.KXP.Api;
 using Migration.Tool.KXP.Api.Services.CmsClass;
-using Migration.Tool.KXP.Models;
 using Migration.Tool.Source.Contexts;
 using Migration.Tool.Source.Helpers;
 using Migration.Tool.Source.Mappers;
@@ -42,7 +41,7 @@ public class MigratePageTypesCommandHandler(
 
     public async Task<CommandResult> Handle(MigratePageTypesCommand request, CancellationToken cancellationToken)
     {
-        var entityConfiguration = toolConfiguration.EntityConfigurations.GetEntityConfiguration<CmsClass>();
+        var entityConfiguration = toolConfiguration.EntityConfigurations.GetEntityConfiguration<DataClassInfo>();
 
         using var ksClasses = EnumerableHelper.CreateDeferrableItemWrapper(
             modelFacade.Select<ICmsClass>("ClassIsDocumentType=1", "ClassID")
@@ -202,7 +201,7 @@ public class MigratePageTypesCommandHandler(
                 {
                     logger.LogErrorMissingDependency(ksClass, nameof(ksClass.ClassInheritsFromClassID), ksClass.ClassInheritsFromClassID, typeof(DataClassInfo));
                     protocol.Append(HandbookReferences
-                        .MissingRequiredDependency<CmsClass>(nameof(CmsClass.ClassId), classInheritsFromClassId)
+                        .MissingRequiredDependency<DataClassInfo>(nameof(DataClassInfo.ClassID), classInheritsFromClassId)
                         .NeedsManualAction()
                     );
                 }
@@ -365,8 +364,8 @@ public class MigratePageTypesCommandHandler(
                 protocol.Success(ksClass, dataClassInfo, mapped);
                 logger.LogEntitySetAction(newInstance, dataClassInfo);
 
-                primaryKeyMappingContext.SetMapping<CmsClass>(
-                    r => r.ClassId,
+                primaryKeyMappingContext.SetMapping<DataClassInfo>(
+                    r => r.ClassID,
                     ksClass.ClassID,
                     dataClassInfo.ClassID
                 );

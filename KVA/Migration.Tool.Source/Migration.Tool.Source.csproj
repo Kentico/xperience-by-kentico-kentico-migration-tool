@@ -9,11 +9,10 @@
     <ItemGroup>
         <ProjectReference Include="..\..\Migration.Tool.Common\Migration.Tool.Common.csproj" />
         <ProjectReference Include="..\..\Migration.Tool.KXP.Api\Migration.Tool.KXP.Api.csproj" />
-        <ProjectReference Include="..\..\Migration.Tool.KXP\Migration.Tool.KXP.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Kentico.Xperience.UMT" Version="1.9.0" />
+        <PackageReference Include="Kentico.Xperience.UMT" Version="1.10.1" />
         <PackageReference Include="MediatR" Version="12.4.1" />
     </ItemGroup>
 

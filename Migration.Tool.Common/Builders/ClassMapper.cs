@@ -32,7 +32,7 @@ public interface IFieldMapping
 
 public record FieldMapping(string TargetFieldName, string SourceClassName, string SourceFieldName, bool IsTemplate) : IFieldMapping;
 
-public record FieldMappingWithConversion(string TargetFieldName, string SourceClassName, string SourceFieldName, bool IsTemplate, Func<object?, object?> Converter) : IFieldMapping;
+public record FieldMappingWithConversion(string TargetFieldName, string SourceClassName, string SourceFieldName, bool IsTemplate, Func<object?, IConvertorContext, object?> Converter) : IFieldMapping;
 
 public class MultiClassMapping(string targetClassName, Action<DataClassInfo> classPatcher) : IClassMapping
 {
@@ -93,6 +93,9 @@ public class MultiClassMapping(string targetClassName, Action<DataClassInfo> cla
     IList<string> IClassMapping.ReusableSchemaNames => reusableSchemaNames;
 }
 
+public interface IConvertorContext;
+public record ConvertorTreeNodeContext(Guid NodeGuid, int NodeSiteId, int? DocumentId, bool MigratingFromVersionHistory) : IConvertorContext;
+
 public class FieldBuilder(MultiClassMapping multiClassMapping, string targetFieldName)
 {
     private IFieldMapping? currentFieldMapping;
@@ -105,7 +108,7 @@ public class FieldBuilder(MultiClassMapping multiClassMapping, string targetFiel
         return this;
     }
 
-    public FieldBuilder ConvertFrom(string sourceClassName, string sourceFieldName, bool isTemplate, Func<object?, object?> converter)
+    public FieldBuilder ConvertFrom(string sourceClassName, string sourceFieldName, bool isTemplate, Func<object?, IConvertorContext, object?> converter)
     {
         currentFieldMapping = new FieldMappingWithConversion(targetFieldName, sourceClassName, sourceFieldName, isTemplate, converter);
         multiClassMapping.Mappings.Add(currentFieldMapping);

@@ -5,14 +5,12 @@ using CMS.Base;
 using CMS.Helpers;
 using CMS.MediaLibrary;
 using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.KXP.Api;
 using Migration.Tool.KXP.Api.Auxiliary;
-using Migration.Tool.KXP.Context;
 using Migration.Tool.Source.Auxiliary;
 using Migration.Tool.Source.Mappers;
 using Migration.Tool.Source.Model;
@@ -22,7 +20,6 @@ namespace Migration.Tool.Source.Services;
 public class AttachmentMigratorToMediaLibrary(
     ILogger<AttachmentMigratorToMediaLibrary> logger,
     KxpMediaFileFacade mediaFileFacade,
-    IDbContextFactory<KxpContext> kxpContextFactory,
     IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo> attachmentMapper,
     IProtocol protocol,
     ModelFacade modelFacade,
@@ -227,11 +224,10 @@ public class AttachmentMigratorToMediaLibrary(
     {
         string targetLibraryCodeName = $"AttachmentsForSite{targetSiteName}";
         string targetLibraryDisplayName = $"Attachments for site {targetSiteName}";
-        using var dbContext = kxpContextFactory.CreateDbContext();
         try
         {
             targetLibraryId = mediaLibraryIdCache.GetOrAdd((targetLibraryCodeName, targetSiteId), static (arg, context) => MediaLibraryFactory(arg, context),
-                new MediaLibraryFactoryContext(mediaFileFacade, targetLibraryCodeName, targetLibraryDisplayName, dbContext));
+                new MediaLibraryFactoryContext(mediaFileFacade, targetLibraryCodeName, targetLibraryDisplayName));
 
             return true;
         }
@@ -253,7 +249,7 @@ public class AttachmentMigratorToMediaLibrary(
         (string libraryName, int siteId) = arg;
 
         // TODO tomas.krch: 2023-11-02 libraries now globalized, where do i put conflicting directories?
-        var tml = context.DbContext.MediaLibraries.SingleOrDefault(ml => ml.LibraryName == libraryName);
+        var tml = MediaLibraryInfo.Provider.Get().WhereEquals(nameof(MediaLibraryInfo.LibraryName), libraryName).SingleOrDefault();
 
         string libraryDirectory = context.TargetLibraryCodeName;
         if (!libraryPathValidationRegex.IsMatch(libraryDirectory))
@@ -261,9 +257,9 @@ public class AttachmentMigratorToMediaLibrary(
             libraryDirectory = sanitizationRegex.Replace(libraryDirectory, "_");
         }
 
-        return tml?.LibraryId ?? context.MediaFileFacade
+        return tml?.LibraryID ?? context.MediaFileFacade
             .CreateMediaLibrary(siteId, libraryDirectory, "Created by Xperience Migration.Tool", context.TargetLibraryCodeName, context.TargetLibraryDisplayName).LibraryID;
     }
 
-    private record MediaLibraryFactoryContext(KxpMediaFileFacade MediaFileFacade, string TargetLibraryCodeName, string TargetLibraryDisplayName, KxpContext DbContext);
+    private record MediaLibraryFactoryContext(KxpMediaFileFacade MediaFileFacade, string TargetLibraryCodeName, string TargetLibraryDisplayName);
 }

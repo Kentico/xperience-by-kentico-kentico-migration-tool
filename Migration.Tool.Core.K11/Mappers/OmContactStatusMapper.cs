@@ -1,3 +1,4 @@
+using CMS.ContactManagement;
 using Microsoft.Extensions.Logging;
 
 using Migration.Tool.Common.Abstractions;
@@ -11,12 +12,12 @@ public class OmContactStatusMapper(
     ILogger<OmContactStatusMapper> logger,
     PrimaryKeyMappingContext primaryKeyMappingContext,
     IProtocol protocol)
-    : EntityMapperBase<OmContactStatus, KXP.Models.OmContactStatus>(logger, primaryKeyMappingContext, protocol)
+    : EntityMapperBase<OmContactStatus, ContactStatusInfo>(logger, primaryKeyMappingContext, protocol)
 {
-    protected override KXP.Models.OmContactStatus? CreateNewInstance(OmContactStatus tSourceEntity, MappingHelper mappingHelper,
+    protected override ContactStatusInfo? CreateNewInstance(OmContactStatus tSourceEntity, MappingHelper mappingHelper,
         AddFailure addFailure) => new();
 
-    protected override KXP.Models.OmContactStatus MapInternal(OmContactStatus source, KXP.Models.OmContactStatus target, bool newInstance,
+    protected override ContactStatusInfo MapInternal(OmContactStatus source, ContactStatusInfo target, bool newInstance,
         MappingHelper mappingHelper, AddFailure addFailure)
     {
         target.ContactStatusName = source.ContactStatusName;
