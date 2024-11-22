@@ -170,14 +170,17 @@ public static class ClassMappingSample
         startDate.ConvertFrom(sourceClassName2, "EventStartDateAsText", false,
             (v, context) =>
             {
-                if (context is ConvertorTreeNodeContext(var nodeGuid, var nodeSiteId, var documentId, var migratingFromVersionHistory))
+                switch (context)
                 {
-                    // here you can use available treenode context
+                    case ConvertorTreeNodeContext treeNodeContext:
+                        // here you can use available treenode context
+                        // (var nodeGuid, int nodeSiteId, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
+                        break;
+                    default:
+                        // no context is available (in future, mapping feature could be extended and therefore different context will be supplied or no context at all)
+                        break;
                 }
-                else
-                {
-                    // no context is available (possibly when tool is extended with other conversion possibilities)
-                }
+
                 return v?.ToString() is { } av && !string.IsNullOrWhiteSpace(av) ? DateTime.Parse(av) : null;
             });
         startDate.WithFieldPatch(f => f.Caption = "Event start date");
