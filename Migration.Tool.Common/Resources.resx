@@ -65,7 +65,7 @@
         <value>{0}Configuration warning{1}: {2}</value>
     </data>
     <data name="ProgramAwaitingExitMessage" xml:space="preserve">
-        <value>Press any key to exit program...</value>
+        <value>Finished, press any key to exit program...</value>
     </data>
     <data name="Exception_MappingIsRequired" xml:space="preserve">
         <value>{0} ExplicitPrimaryKeyMapping of {1} is required.</value>
