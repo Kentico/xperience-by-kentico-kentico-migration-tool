@@ -87,7 +87,7 @@ if (anyValidationErrors)
 var settingsSection = config.GetRequiredSection(ConfigurationNames.Settings);
 var settings = settingsSection.Get<ToolConfiguration>() ?? new ToolConfiguration();
 var kxpApiSettings = settingsSection.GetSection(ConfigurationNames.XbKApiSettings);
-settings.SetXbKConnectionStringIfNotEmpty(kxpApiSettings["ConnectionStrings:CMSConnectionString"]);
+settings.SetXbyKConnectionStringIfNotEmpty(kxpApiSettings["ConnectionStrings:CMSConnectionString"]);
 
 FieldMappingInstance.PrepareFieldMigrations(settings);
 
