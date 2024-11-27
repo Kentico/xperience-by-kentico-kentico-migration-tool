@@ -1,16 +1,19 @@
 using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
 
 namespace Migration.Tool.Common.Helpers;
 
 public class HtmlProcessor
 {
     private readonly MediaLinkService mediaLinkService;
+    private readonly ILogger? logger;
     private readonly HtmlDocument document;
     private readonly string html;
 
-    public HtmlProcessor(string html, MediaLinkService mediaLinkService)
+    public HtmlProcessor(string html, MediaLinkService mediaLinkService, ILogger? logger)
     {
         this.mediaLinkService = mediaLinkService;
+        this.logger = logger;
 
         var doc = new HtmlDocument();
         doc.LoadHtml(html);
@@ -25,7 +28,20 @@ public class HtmlProcessor
         {
             if (imgNode?.Attributes["src"].Value is { } src)
             {
-                yield return mediaLinkService.MatchMediaLink(src, currentSiteId);
+                MatchMediaLinkResult? mediaLinkMatch = null;
+                try
+                {
+                    mediaLinkMatch = mediaLinkService.MatchMediaLink(src, currentSiteId);
+                }
+                catch (Exception ex)
+                {
+                    logger?.LogError(ex, "Failed to match media link for value '{SourceValue}'", src);
+                }
+
+                if (mediaLinkMatch != null)
+                {
+                    yield return mediaLinkMatch;
+                }
             }
         }
     }

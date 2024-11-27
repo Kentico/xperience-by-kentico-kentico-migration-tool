@@ -48,7 +48,7 @@ public class HtmlProcessorTests
             }
         );
 
-        var processor = new HtmlProcessor(HtmlFragmentSample1, mediaLinkService);
+        var processor = new HtmlProcessor(HtmlFragmentSample1, mediaLinkService, null);
 
         var actual = processor.GetImages(2).ToArray();
         Assert.Collection(actual,

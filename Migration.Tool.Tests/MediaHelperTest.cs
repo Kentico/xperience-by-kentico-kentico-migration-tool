@@ -293,5 +293,108 @@ public class MediaHelperTest
             Assert.Equal(3, a.LinkSiteId);
             Assert.Equal("MediaLibraryS3", a.LibraryDir);
         }
+
+        {
+            var a = mediaLinkService.MatchMediaLink("http://localhost:5003/Site3/media/MediaLibraryS3/some sub dir/myfile.jpg", 3);
+            Assert.True(a.Success);
+            Assert.Equal("/MediaLibraryS3/some sub dir/myfile.jpg", a.Path);
+            Assert.Null(a.MediaGuid);
+            Assert.Equal(MediaKind.MediaFile, a.MediaKind);
+            Assert.Equal(MediaLinkKind.DirectMediaPath, a.LinkKind);
+            Assert.Equal(3, a.LinkSiteId);
+            Assert.Equal("MediaLibraryS3/some sub dir", a.LibraryDir);
+        }
+    }
+
+    // [Fact]
+    // public void ParseMediaLinkDirectPath_SpacesInPath()
+    // {
+    //     var mediaLinkService = new MediaLinkService(
+    //         [
+    //             (1, "Site1", "http://localhost:5001"), // site with custom global dir
+    //             (2, "Site2", "http://localhost:5002/SiteSubPath"), // site with custom global dir & subpath
+    //             (3, "Site3", "http://localhost:5003"), // site without custom global media library dir
+    //             (4, "Site4", "http://localhost:5004"), // site with custom global media library dir & without media sites folder
+    //             // add site with live site url "localhost" - that was valid in K11
+    //         ],
+    //         [
+    //             // (null, null), not set globally
+    //             (1, "Site1MediaFolder"),
+    //             (2, "Site2MediaFolder"),
+    //             // (3, null) not set for site 3
+    //             (4, "Site4MediaFolder"),
+    //         ],
+    //         [
+    //             // (null, null) not set globally
+    //             (1, "False"),
+    //             (2, "False"),
+    //             (3, "True"),
+    //             (4, "True"),
+    //         ],
+    //         new Dictionary<int, HashSet<string>>
+    //         {
+    //             {1, new (["MediaLibraryS1"],StringComparer.InvariantCultureIgnoreCase)},
+    //             {2, new (["MediaLibraryS2"],StringComparer.InvariantCultureIgnoreCase)},
+    //             {3, new (["MediaLibraryS3"],StringComparer.InvariantCultureIgnoreCase)},
+    //             {4, new (["MediaLibraryS4"],StringComparer.InvariantCultureIgnoreCase)}
+    //         }
+    //     );
+    //     
+    //     {
+    //         var a = mediaLinkService.MatchMediaLink("http://localhost:5003/Site3/media/MediaLibraryS3/some sub dir/myfile.jpg", 3);
+    //         Assert.True(a.Success);
+    //         Assert.Equal("/MediaLibraryS3/some sub dir/myfile.jpg", a.Path);
+    //         Assert.Null(a.MediaGuid);
+    //         Assert.Equal(MediaKind.MediaFile, a.MediaKind);
+    //         Assert.Equal(MediaLinkKind.DirectMediaPath, a.LinkKind);
+    //         Assert.Equal(3, a.LinkSiteId);
+    //         Assert.Equal("MediaLibraryS3/some sub dir", a.LibraryDir);
+    //     }
+    // }
+
+    [Fact]
+    public void ParseMediaLinkDirectPath_SpacesInPath_CorrectlyEscaped()
+    {
+        var mediaLinkService = new MediaLinkService(
+            [
+                (1, "Site1", "http://localhost:5001"), // site with custom global dir
+                (2, "Site2", "http://localhost:5002/SiteSubPath"), // site with custom global dir & subpath
+                (3, "Site3", "http://localhost:5003"), // site without custom global media library dir
+                (4, "Site4", "http://localhost:5004"), // site with custom global media library dir & without media sites folder
+                // add site with live site url "localhost" - that was valid in K11
+            ],
+            [
+                // (null, null), not set globally
+                (1, "Site1MediaFolder"),
+                (2, "Site2MediaFolder"),
+                // (3, null) not set for site 3
+                (4, "Site4MediaFolder"),
+            ],
+            [
+                // (null, null) not set globally
+                (1, "False"),
+                (2, "False"),
+                (3, "True"),
+                (4, "True"),
+            ],
+            new Dictionary<int, HashSet<string>>
+            {
+                {1, new (["MediaLibraryS1"],StringComparer.InvariantCultureIgnoreCase)},
+                {2, new (["MediaLibraryS2"],StringComparer.InvariantCultureIgnoreCase)},
+                {3, new (["MediaLibraryS3"],StringComparer.InvariantCultureIgnoreCase)},
+                {4, new (["MediaLibraryS4"],StringComparer.InvariantCultureIgnoreCase)}
+            }
+        );
+
+        {
+            var a = mediaLinkService.MatchMediaLink("http://localhost:5003/Site3/media/MediaLibraryS3/some%20sub%20dir/myfile.jpg", 3);
+            Assert.True(a.Success);
+            Assert.Equal("/MediaLibraryS3/some sub dir/myfile.jpg", a.Path);
+            Assert.Null(a.MediaGuid);
+            Assert.Equal(MediaKind.MediaFile, a.MediaKind);
+            Assert.Equal(MediaLinkKind.DirectMediaPath, a.LinkKind);
+            Assert.Equal(3, a.LinkSiteId);
+            Assert.Equal("MediaLibraryS3", a.LibraryDir);
+        }
     }
 }
