@@ -40,17 +40,17 @@ public static class ConfigurationValidator
 
         if (settings?.GetValue<string>(ConfigurationNames.XbKConnectionString) is not null)
         {
-            yield return new ValidationMessage(ValidationMessageType.Warning, $"Configuration key '{ConfigurationNames.XbKConnectionString}' is deprecated, use 'Settings:ConnectionStrings:CMSConnectionString' instead");
+            yield return new ValidationMessage(ValidationMessageType.Warning, $"Configuration key '{ConfigurationNames.XbKConnectionString}' is deprecated, use 'Settings:XbyKApiSettings:ConnectionStrings:CMSConnectionString' instead");
         }
 
-        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.XbKDirPath)) && CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.XbKDirPath)))
+        if (CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.XbKDirPath)) && CheckCfgValue(settings?.GetValue<string>(ConfigurationNames.XbyKDirPath)))
         {
             yield return new ValidationMessage(ValidationMessageType.Error,
                 Resources.ConfigurationValidator_GetValidationErrors_TargetCmsDirPath_IsRequired);
         }
 
-        var targetKxpApiSettings = settings?.GetSection(ConfigurationNames.XbKApiSettings);
-        if (targetKxpApiSettings is null)
+        var targetKxpApiSettings = settings?.GetSectionWithFallback(ConfigurationNames.XbyKApiSettings, ConfigurationNames.XbKApiSettings);
+        if (targetKxpApiSettings?.Exists() != true)
         {
             yield return new ValidationMessage(ValidationMessageType.Error, Resources.ConfigurationValidator_GetValidationErrors_TargetKxpApiSettings_IsRequired);
         }

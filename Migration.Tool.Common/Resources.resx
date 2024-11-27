@@ -36,16 +36,16 @@
         <value>Configuration value in path 'Settings.XbKConnectionString' is required</value>
     </data>
     <data name="ConfigurationValidator_GetValidationErrors_TargetCmsDirPath_IsRequired" xml:space="preserve">
-        <value>Configuration value in path 'Settings.XbKDirPath' is required</value>
+        <value>Configuration value in path 'Settings.XbyKDirPath' is required</value>
     </data>
     <data name="ConfigurationValidator_GetValidationErrors_TargetKxpApiSettings_IsRequired" xml:space="preserve">
-        <value>Section 'Settings.XbKApiSettings' is required</value>
+        <value>Section 'Settings.XbyKApiSettings' is required</value>
     </data>
     <data name="ConfigurationValidator_GetValidationErrors_ConnectionStrings_IsRequired" xml:space="preserve">
-        <value>Section 'Settings.XbKApiSettings.ConnectionStrings' is required</value>
+        <value>Section 'Settings.XbyKApiSettings.ConnectionStrings' is required</value>
     </data>
     <data name="ConfigurationValidator_GetValidationErrors_CmsConnectionString_IsRequired" xml:space="preserve">
-        <value>Configuration value in path  'Settings.XbKApiSettings.ConnectionStrings.CMSConnectionString' is required</value>
+        <value>Configuration value in path  'Settings.XbyKApiSettings.ConnectionStrings.CMSConnectionString' is required</value>
     </data>
     <data name="ConfigurationValidator_GetValidationErrors_UseOmActivitySiteRelationAutofix_MustFit"
           xml:space="preserve">

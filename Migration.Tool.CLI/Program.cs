@@ -33,7 +33,7 @@ var config = new ConfigurationBuilder()
         .Build()
     ;
 
-Directory.SetCurrentDirectory(config.GetValue<string>("Settings:XbKDirPath") ?? throw new InvalidOperationException("Settings:XbKDirPath must be set to valid directory path"));
+Directory.SetCurrentDirectory(config.GetValue<string>("Settings:XbyKDirPath") ?? config.GetValue<string>("Settings:XbKDirPath") ?? throw new InvalidOperationException("Settings:XbKDirPath must be set to valid directory path"));
 
 var validationErrors = ConfigurationValidator.GetValidationErrors(config);
 bool anyValidationErrors = false;
@@ -86,8 +86,8 @@ if (anyValidationErrors)
 
 var settingsSection = config.GetRequiredSection(ConfigurationNames.Settings);
 var settings = settingsSection.Get<ToolConfiguration>() ?? new ToolConfiguration();
-var kxpApiSettings = settingsSection.GetSection(ConfigurationNames.XbKApiSettings);
-settings.SetXbyKConnectionStringIfNotEmpty(kxpApiSettings["ConnectionStrings:CMSConnectionString"]);
+var kxpApiSettings = settingsSection.GetSectionWithFallback(ConfigurationNames.XbyKApiSettings, ConfigurationNames.XbKApiSettings);
+settings.SetXbKConnectionStringIfNotEmpty(kxpApiSettings["ConnectionStrings:CMSConnectionString"]);
 
 FieldMappingInstance.PrepareFieldMigrations(settings);
 
@@ -156,7 +156,7 @@ catch (Exception ex)
     return;
 }
 
-services.UseKxpApi(kxpApiSettings, settings.XbKDirPath);
+services.UseKxpApi(kxpApiSettings, settings.XbyKDirPath ?? settings.XbKDirPath);
 services.AddSingleton(settings);
 services.AddSingleton<ICommandParser, CommandParser>();
 services.UseToolCommon();
