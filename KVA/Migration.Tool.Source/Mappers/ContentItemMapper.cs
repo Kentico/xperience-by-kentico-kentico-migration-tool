@@ -77,6 +77,11 @@ public class ContentItemMapper(
 
         var contentItemGuid = spoiledGuidContext.EnsureNodeGuid(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsTree.NodeID);
         bool isMappedTypeReusable = (targetClassInfo?.ClassContentTypeType is ClassContentTypeType.REUSABLE) || configuration.ClassNamesConvertToContentHub.Contains(sourceNodeClass.ClassName);
+        if (isMappedTypeReusable)
+        {
+            logger.LogTrace("Target is reusable {Info}", new { cmsTree.NodeAliasPath, targetClassInfo?.ClassName });
+        }
+
         yield return new ContentItemModel
         {
             ContentItemGUID = contentItemGuid,
