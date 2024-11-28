@@ -87,15 +87,15 @@ public class ToolConfiguration
     [ConfigurationKeyName(ConfigurationNames.XbKConnectionString)]
     public string XbKConnectionString
     {
-        get => xbKConnectionString!;
-        set => xbKConnectionString = value;
+        get => xbkConnectionString!;
+        set => xbkConnectionString = value;
     }
 
     public void SetXbKConnectionStringIfNotEmpty(string? connectionString)
     {
         if (!string.IsNullOrWhiteSpace(connectionString))
         {
-            xbKConnectionString = connectionString;
+            xbkConnectionString = connectionString;
         }
     }
 
@@ -105,10 +105,13 @@ public class ToolConfiguration
 
     private HashSet<string>? classNamesConvertToContentHub;
     private HashSet<string>? classNamesCreateReusableSchema;
-    private string? xbKConnectionString;
+    private string? xbkConnectionString;
 
     [ConfigurationKeyName(ConfigurationNames.XbKDirPath)]
     public string? XbKDirPath { get; set; } = null;
+
+    [ConfigurationKeyName(ConfigurationNames.XbyKDirPath)]
+    public string? XbyKDirPath { get; set; } = null;
 
     #endregion
 

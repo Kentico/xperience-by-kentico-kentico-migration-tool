@@ -47,7 +47,7 @@ public class SampleTextMigration(ILogger<SampleTextMigration> logger, SpoiledGui
 
     public async Task<FieldMigrationResult> MigrateValue(object? sourceValue, FieldMigrationContext context)
     {
-        // if required, migrate value (for example cut out any unsupported features or migrated them to kentico supported variants if available)
+        // if required, migrate value (for example cut out any unsupported features or migrated them to supported product variants if available)
 
         // check context
         if (context.SourceObjectContext is DocumentSourceObjectContext(_, _, _, _, _, _))

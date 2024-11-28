@@ -7,7 +7,7 @@ The migration is performed by running a command for the .NET CLI.
 
 ## Set up the source instance
 
-The source instance of Kentico must **not** use a [separated contact management database](https://docs.kentico.com/x/4giRBg), it is recommended that you [rejoin the contact management database](https://docs.kentico.com/x/5giRBg) before proceeding with the migration.
+The source instance must **not** use a [separated contact management database](https://docs.kentico.com/x/4giRBg), it is recommended that you [rejoin the contact management database](https://docs.kentico.com/x/5giRBg) before proceeding with the migration.
 
 ## Set up the target instance
 
@@ -99,7 +99,7 @@ controls. We recommend that you check your content type fields after the migrati
 The following table describes how the Kentico Migration Tool maps the data types and form controls/components of page
 type fields:
 
-| KX13/12/11 Data type     | XbK Data type            | KX13/12/11 Form control | XbK Form component                                                                      |
+| KX13/12/11 Data type     | XbyK Data type            | KX13/12/11 Form control | XbyK Form component                                                                      |
 | ------------------------ | ------------------------ | ----------------------- | --------------------------------------------------------------------------------------- |
 | Text                     | Text                     | Text box                | Text input                                                                              |
 | Text                     | Text                     | Drop-down list          | Dropdown selector                                                                       |
@@ -118,7 +118,7 @@ type fields:
 | Date and time            | Date and time            | _any_                   | Datetime input                                                                          |
 | Date                     | Date                     | _any_                   | Date input                                                                              |
 | Time interval            | Time interval            | _any_                   | None (not supported)                                                                    |
-| Boolean (Yes/No)         | Boolean (Yes/No)         | _any_                   | Checkbox                                                                                |
+| Boolean (Yes/No)         | Boolean (Yes/No)         | _any_                   | Check box                                                                                |
 | Attachments              | Media files              | _any_ (Attachments)     | Media file selector<br />(the [attachments](#attachments) are converted to media files) |
 | File                     | Media files              | _any_ (Direct uploader) | Media file selector<br />(the [attachments](#attachments) are converted to media files) |
 | Unique identifier (Guid) | Unique identifier (Guid) | _any_                   | None (not supported)                                                                    |
@@ -161,23 +161,23 @@ If the target instance is a [SaaS project](https://docs.kentico.com/x/saas_xp) (
 - Linked pages are currently not supported in Xperience by Kentico. The migration creates standard page copies for any
   linked pages on the source instance.
 - Page permissions (ACLs) are currently not migrated into Xperience by Kentico.
-- Migration of Page Builder content is only available for Kentico Xperience 13.
+- Migration of page builder content is only available for Kentico Xperience 13.
 
-#### Page Builder content
+#### Page builder content
 
-> :warning: Page Builder content migration is only available when migrating from Kentico Xperience 13.
+> :warning: Page builder content migration is only available when migrating from Kentico Xperience 13.
 
-By default, JSON data storing the Page Builder content of pages and custom page templates is migrated directly without
+By default, JSON data storing the page builder content of pages and custom page templates is migrated directly without
 modifications. On the target Xperience by Kentico instance, the migrated data can work in the Page Builder's legacy
 compatibility mode. However, we strongly recommend updating your codebase to the new Xperience by Kentico components.
 
-The Kentico Migration Tool provides an advanced migration mode for Page Builder content that utilizes API discovery on
+The Kentico Migration Tool provides an advanced migration mode for page builder content that utilizes API discovery on
 the source instance. To learn more details and how to configure this feature,
 see [Source instance API discovery](#source-instance-api-discovery).
 
 #### Categories
 
-Xperience by Kentico uses a different approach to categorization than older Kentico
+Xperience by Kentico uses a different approach to categorization than older product
 versions. [Categories](https://docs.kentico.com/13/configuring-xperience/configuring-the-environment-for-content-editors/configuring-categories)
 were replaced by [taxonomies](https://docs.kentico.com/developers-and-admins/configuration/taxonomies) and selected
 categories for each page are assigned to pages in the target instance via
@@ -352,7 +352,7 @@ The migration includes:
 
 The migration **_DOES NOT_** include:
 
-- External login information associated with each account (e.g., Google or Facebook logins).
+- External sign-in information associated with each account (e.g., Google or Facebook logins).
 - User password hashes from the `CMS_User.UserPassword` column.
 
   After the migration, the corresponding `CMS_Member.MemberPassword` in the target Xperience by Kentico instance
@@ -404,8 +404,8 @@ Add the options under the `Settings` section in the configuration file.
 | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | KxConnectionString                                                | The connection string to the source Kentico Xperience 13, Kentico 12, or Kentico 11 database.                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | KxCmsDirPath                                                      | The absolute file system path of the **CMS** folder in the source Kentico Xperience 13, Kentico 12, or Kentico 11 administration project. Required to migrate media library files.                                                                                                                                                                                                                                                                                                                                                        |
-| XbKDirPath                                                        | The absolute file system path of the root of the target Xperience by Kentico project. Required to migrate media library and page attachment files.                                                                                                                                                                                                                                                                                                                                                                                        |
-| XbKApiSettings                                                    | Configuration options set for the API when creating migrated objects in the target application.<br /><br />The `ConnectionStrings.CMSConnectionString`option is required - set the connection string to the target Xperience by Kentico database (the same value as `XbKConnectionString`).                                                                                                                                                                                                                                               |
+| XbyKDirPath                                                       | The absolute file system path of the root of the target Xperience by Kentico project. Required to migrate media library and page attachment files.                                                                                                                                                                                                                                                                                                                                                                                        |
+| XbyKApiSettings                                                   | Configuration options set for the API when creating migrated objects in the target application.<br /><br />The `ConnectionStrings.CMSConnectionString`option is required - set the connection string to the target Xperience by Kentico database (the same value as obsolete `XbKConnectionString`).                                                                                                                                                                                                                                               |
 | MigrationProtocolPath                                             | The absolute file system path of the location where the [migration protocol file](./MIGRATION_PROTOCOL_REFERENCE.md) is generated.<br /><br />For example: `"C:\\Logs\\Migration.Tool.Protocol.log"`                                                                                                                                                                                                                                                                                                                                      |
 | MigrateOnlyMediaFileInfo                                          | If set to `true`, only the database representations of media files are migrated, without the files in the media folder in the project's file system. For example, enable this option if your media library files are mapped to a shared directory or Cloud storage.<br /><br />If `false`, media files are migrated based on the `KxCmsDirPath` location.                                                                                                                                                                                 |
 | MigrateMediaToMediaLibrary                                        | Determines whether media library files and attachments from the source instance are migrated to the target instance as media libraries or as [content item assets](https://docs.kentico.com/x/barWCQ) in the content hub. The default value is `false` – media files and attachments are migrated as content item assets. <br /><br /> See [Convert attachments and media library files to media libraries instad of content item assets](#convert-attachments-and-media-library-files-to-media-libraries-instead-of-content-item-assets) |
@@ -415,7 +415,7 @@ Add the options under the `Settings` section in the configuration file.
 | EntityConfigurations                                              | Contains options that allow you to fine-tune the migration of specific object types.                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | EntityConfigurations._&lt;object table name&gt;_.ExcludeCodeNames | Excludes objects with the specified code names from the migration.                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | CreateReusableFieldSchemaForClasses                               | Specifies which page types are also converted to [reusable field schemas](#convert-page-types-to-reusable-field-schemas).                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| OptInFeatures.QuerySourceInstanceApi.Enabled                      | If `true`, [source instance API discovery](#source-instance-api-discovery) is enabled to allow advanced migration of Page Builder content for pages and page templates.                                                                                                                                                                                                                                                                                                                                                                   |
+| OptInFeatures.QuerySourceInstanceApi.Enabled                      | If `true`, [source instance API discovery](#source-instance-api-discovery) is enabled to allow advanced migration of page builder content for pages and page templates.                                                                                                                                                                                                                                                                                                                                                                   |
 | OptInFeatures.QuerySourceInstanceApi.Connections                  | To use [source instance API discovery](#source-instance-api-discovery), you need to add a connection JSON object containing the following values:<br />`SourceInstanceUri` - the base URI where the source instance's live site application is running.<br />`Secret` - the secret that you set in the _ToolkitApiController.cs_ file on the source instance.                                                                                                                                                                             |
 | OptInFeatures.CustomMigration.FieldMigrations                     | Enables conversion of media selection text fields to content item assets or media library files. See [Convert text fields with media links](#convert-text-fields-with-media-links) for more information.                                                                                                                                                                                                                                                                                                                                  |
 
@@ -439,8 +439,8 @@ Add the options under the `Settings` section in the configuration file.
   "Settings": {
     "KxConnectionString": "Data Source=myserver;Initial Catalog=Xperience13;Integrated Security=True;Persist Security Info=False;Connect Timeout=120;Encrypt=False;Current Language=English;",
     "KxCmsDirPath": "C:\\inetpub\\wwwroot\\Xperience13\\CMS",
-    "XbKDirPath": "C:\\inetpub\\wwwroot\\XP_Target",
-    "XbKApiSettings": {
+    "XbyKDirPath": "C:\\inetpub\\wwwroot\\XP_Target",
+    "XbyKApiSettings": {
       "ConnectionStrings": {
         "CMSConnectionString": "Data Source=myserver;Initial Catalog=XperienceByKentico;Integrated Security=True;Persist Security Info=False;Connect Timeout=120;Encrypt=False;Current Language=English;"
       }
@@ -500,8 +500,8 @@ Add the options under the `Settings` section in the configuration file.
 
 > :warning: **Warning** – source instance API discovery is only available when migrating from Kentico Xperience 13.
 
-By default, JSON data storing the Page Builder content of pages and custom page templates is migrated directly without
-modifications. Within this content, Page Builder components (widgets, sections, etc.) with properties have their
+By default, JSON data storing the page builder content of pages and custom page templates is migrated directly without
+modifications. Within this content, page builder components (widgets, sections, etc.) with properties have their
 configuration based on Kentico Xperience 13 form components, which are assigned to the properties on the source
 instance. On the target Xperience by Kentico instance, the migrated data can work in the Page Builder's legacy
 compatibility mode.
@@ -509,7 +509,7 @@ compatibility mode.
 However, we strongly recommend updating your codebase to the new Xperience by Kentico components.
 See [Editing components in Xperience by Kentico](https://docs.xperience.io/x/wIfWCQ) to learn more.
 
-To convert Page Builder data to a format suitable for the Xperience by Kentico components, the Kentico Migration Tool
+To convert page builder data to a format suitable for the Xperience by Kentico components, the Kentico Migration Tool
 provides an advanced migration mode that utilizes API discovery on the source instance. The advanced mode currently
 provides the following data conversion:
 
@@ -522,8 +522,8 @@ provides the following data conversion:
 
 - To use source instance API discovery, the live site application of your source instance must be running and available
   during the migration.
-- Using the advanced Page Builder data migration **prevents the data from being used in the Page Builder's legacy
-  compatibility mode**. With this approach, you need to update all Page Builder component code files to
+- Using the advanced page builder data migration **prevents the data from being used in the Page Builder's legacy
+  compatibility mode**. With this approach, you need to update all page builder component code files to
   the [Xperience by Kentico format](https://docs.xperience.io/x/wIfWCQ).
 - The source instance API discovery feature only processes component properties defined using `[EditingComponent]`
   attribute notation. Other implementations, such as properties edited via custom view components in the Razer view, are
@@ -599,7 +599,7 @@ public class MyWidgetProperties : IWidgetProperties
    ```
 
 4. Configure the `Settings.OptInFeatures.QuerySourceInstanceApi` [configuration options](#configuration) for the
-   Migration Tool:
+   Kentico Migration Tool:
 
    ```json
    "OptInFeatures":{
@@ -616,8 +616,8 @@ You can test the source instance API discovery by making a POST request
 to `<source instance live site URI>/ToolApi/Test` with `{ "secret":"__your secret string__" }` in the body. If your
 setup is correct, the response should be: `{ "pong": true }`
 
-When you now [migrate data](#migrate-data), the tool performs API discovery of Page Builder component code on the source
-instance and advanced migration of Page Builder data.
+When you now [migrate data](#migrate-data), the tool performs API discovery of page builder component code on the source
+instance and advanced migration of page builder data.
 
 ## Convert page types to reusable field schemas
 
@@ -766,6 +766,6 @@ The following is an example of a media library created by the Kentico Migration 
 Additionally, any attachments placed into the content of migrated pages **will no longer work** in Xperience by Kentico.
 This includes images and file download links that use **/getattachment** and **/getimage** URLs.
 
-If you wish to continue using these legacy attachment URLs from earlier Kentico versions, you need to add a custom
+If you wish to continue using these legacy attachment URLs from earlier product versions, you need to add a custom
 handler to your Xperience by Kentico project.
 See [`Migration.Toolkit.KXP.Extensions/README.MD`](/Migration.Toolkit.KXP.Extensions/README.MD) for instructions.

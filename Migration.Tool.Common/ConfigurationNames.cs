@@ -5,10 +5,13 @@ public class ConfigurationNames
     public const string KxConnectionString = "KxConnectionString";
     public const string KxCmsDirPath = "KxCmsDirPath";
 
-    [Obsolete("not needed anymore, connection string from Kentico config section is used")]
+    [Obsolete("Not needed anymore, replaced by Settings:XbyKApiSettings:ConnectionStrings:CMSConnectionString")]
     public const string XbKConnectionString = "XbKConnectionString";
 
+    [Obsolete("Replaced by XbyKDirPath")]
     public const string XbKDirPath = "XbKDirPath";
+    public const string XbyKDirPath = "XbyKDirPath";
+
     public const string MigrateOnlyMediaFileInfo = "MigrateOnlyMediaFileInfo";
     public const string UseOmActivityNodeRelationAutofix = "UseOmActivityNodeRelationAutofix";
     public const string UseOmActivitySiteRelationAutofix = "UseOmActivitySiteRelationAutofix";
@@ -55,6 +58,7 @@ public class ConfigurationNames
     public const string FieldNameRegex = "FieldNameRegex";
 
     public const string XbKApiSettings = "XbKApiSettings";
+    public const string XbyKApiSettings = "XbyKApiSettings";
 
     #endregion
 }
