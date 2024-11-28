@@ -25,6 +25,10 @@ public class ModuleLoader(
                     await sourceInstanceContext.RequestSourceInstanceInfo();
                 }
             }
+            else
+            {
+                logger.LogWarning("The source instance is not configured.");
+            }
         }
         catch (Exception ex)
         {
