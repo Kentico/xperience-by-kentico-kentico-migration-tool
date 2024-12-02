@@ -1,14 +1,16 @@
+# Migration Tool customization
+
 To create custom migrations:
 
 1. Create the custom migration class:
-  - [Field migrations](#Customize field migrations)
-  - [Widget migrations](#Customize widget migrations)
-  - [Widget property migrations](#Customize widget property migrations)
+    - [Field migrations](#Customize field migrations)
+    - [Widget migrations](#Customize widget migrations)
+    - [Widget property migrations](#Customize widget property migrations)
 2. [Register the migration](#Register migrations)
 
 ## Customize field migrations
 
-In the `Migration.Tool.Extensions/CommunityMigrations` folder, create a new class that implements the `IFieldMigration` interface. Implement the following properties and methods required by the interface:
+You can customize field migrations to customize the default mappings of fields. In the `Migration.Tool.Extensions/CommunityMigrations` folder, create a new file with a class that implements the `IFieldMigration` interface. Implement the following properties and methods required by the interface:
 
 - `Rank` - An integer property that determines the order in which migrations are applied. Use a value lower than *100000*, as that is the value for system migrations.
 - `ShallMigrate` - A boolean method that specifies whether the migration shall be applied for the current field. Use properties of the `FieldMigrationContext` object passed as an argument to the method to evaluate the condition:
@@ -30,7 +32,7 @@ After implementing the migration, you need to [register the migration](#Register
 
 ## Customize widget migrations
 
-In the `Migration.Tool.Extensions/CommunityMigrations` folder, create a new class that implements the `IWidgetMigration` interface. Implement the following properties and methods required by the interface:
+You can customize widget migration to change the widget to which source widgets are migrated in the target instance. In the `Migration.Tool.Extensions/CommunityMigrations` folder, create a new file with a class that implements the `IWidgetMigration` interface. Implement the following properties and methods required by the interface:
 
 - `Rank` - An integer property that determines the order in which migrations are applied. Use a value lower than *100000*, as that is the value for system migrations.
 - `ShallMigrate` - A boolean method that specifies whether the migration shall be applied for the current widget. Use properties of the `WidgetMigrationContext` and `WidgetIdentifier` objects passed as an argument to the method to evaluate the condition:
@@ -47,7 +49,7 @@ After implementing the migration, you need to [register the migration](#Register
 
 ## Customize widget property migrations
 
-In the `Migration.Tool.Extensions/CommunityMigrations` folder, create a new class that implements the `IWidgetPropertyMigration` interface. Implement the following properties and methods required by the interface:
+In the `Migration.Tool.Extensions/CommunityMigrations` folder, create a new file with a class that implements the `IWidgetPropertyMigration` interface. Implement the following properties and methods required by the interface:
 
 - `Rank` - An integer property that determines the order in which migrations are applied. Use a value lower than *100000*, as that is the value for system migrations.
 - `ShallMigrate` - A boolean method that specifies whether the migration shall be applied for the current widget. Use properties of the `WidgetPropertyMigrationContext` and `propertyName` objects passed as an argument to the method to evaluate the condition:
