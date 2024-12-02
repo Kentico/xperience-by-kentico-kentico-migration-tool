@@ -190,6 +190,51 @@ public static class ClassMappingSample
         return serviceCollection;
     }
 
+    /// <summary>
+    /// This sample uses data from the official Kentico 11 e-shop demo
+    /// </summary>
+    public static IServiceCollection AddControlledCategoryMigrationSample(this IServiceCollection serviceCollection)
+    {
+        const string targetClassName = "Eshop.BookRemodeled";
+        // declare target class
+        var m = new MultiClassMapping(targetClassName, target =>
+        {
+            target.ClassName = targetClassName;
+            target.ClassTableName = "Eshop_BookRemodeled";
+            target.ClassDisplayName = "Book remodeled";
+            target.ClassType = ClassType.CONTENT_TYPE;
+            target.ClassContentTypeType = ClassContentTypeType.REUSABLE;
+            target.ClassWebPageHasUrl = false;
+        });
+
+        // set new primary key
+        m.BuildField("BookRemodeledID").AsPrimaryKey();
+
+        // change fields according to new requirements
+        const string sourceClassName1 = "CMSProduct.Book";
+
+        // field clone sample
+        m
+            .BuildField("BookAuthor")
+            .SetFrom(sourceClassName1, "BookAuthor", true)
+            .WithFieldPatch(f => f.SetPropertyValue(FormFieldPropertyEnum.FieldCaption, "Author's name"));
+
+        m
+            .BuildField("BookISBN")
+            .SetFrom(sourceClassName1, "BookISBN", true)
+            .WithFieldPatch(f => f.Caption = "ISBN");
+
+        // category migration refinement sample
+        const int EbookCategoryID = 17;
+        int[] excludedCategories = [EbookCategoryID,];
+        m.FilterCategories((className, categoryID) => !excludedCategories.Contains(categoryID));
+
+        // register class mapping
+        serviceCollection.AddSingleton<IClassMapping>(m);
+
+        return serviceCollection;
+    }
+
     public static IServiceCollection AddReusableSchemaIntegrationSample(this IServiceCollection serviceCollection)
     {
         const string schemaNameDgcCommon = "DGC.Address";

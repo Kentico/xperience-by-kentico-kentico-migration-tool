@@ -31,6 +31,13 @@ Example code is found in the method `AddClassMergeExample`.
 
 The goal of this method is to take **multiple data classes** from the source instance and define their relation to a new class.
 
+### Class mapping with category control
+
+Example code is found in the method `AddK11EshopExample`.
+
+The goal of this method is to show how to **control migration of categories**. You can enable/disable the migration based on category ID and/or source class name. 
+This is useful when merging multiple data classes into one (see _Class merge sample_)
+
 ### Example
 
 Let's define a new class:
@@ -95,7 +102,7 @@ Finally, let's define relations to fields:
    startDate.WithFieldPatch(f => f.Caption = "Event start date");
    ```
 
-1. register class mapping to dependency injection ocntainer
+1. register class mapping to dependency injection container
 
    ```csharp
    serviceCollection.AddSingleton<IClassMapping>(m);
