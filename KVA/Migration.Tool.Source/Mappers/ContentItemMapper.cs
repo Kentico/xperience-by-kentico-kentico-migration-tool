@@ -66,7 +66,7 @@ public class ContentItemMapper(
         var sourceNodeClass = modelFacade.SelectById<ICmsClass>(cmsTree.NodeClassID) ?? throw new InvalidOperationException($"Fatal: node class is missing, class id '{cmsTree.NodeClassID}'");
         var mapping = classMappingProvider.GetMapping(sourceNodeClass.ClassName);
         var targetClassGuid = sourceNodeClass.ClassGUID;
-        DataClassInfo targetClassInfo = null;
+        var targetClassInfo = DataClassInfoProvider.ProviderObject.Get(sourceNodeClass.ClassName);
         if (mapping != null)
         {
             targetClassInfo = DataClassInfoProvider.ProviderObject.Get(mapping.TargetClassName) ?? throw new InvalidOperationException($"Unable to find target class '{mapping.TargetClassName}'");
@@ -74,9 +74,14 @@ public class ContentItemMapper(
         }
 
         bool migratedAsContentFolder = sourceNodeClass.ClassName.Equals("cms.folder", StringComparison.InvariantCultureIgnoreCase) && !configuration.UseDeprecatedFolderPageType.GetValueOrDefault(false);
-
+        
         var contentItemGuid = spoiledGuidContext.EnsureNodeGuid(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsTree.NodeID);
         bool isMappedTypeReusable = (targetClassInfo?.ClassContentTypeType is ClassContentTypeType.REUSABLE) || configuration.ClassNamesConvertToContentHub.Contains(sourceNodeClass.ClassName);
+        if (isMappedTypeReusable)
+        {
+            logger.LogTrace("Target is reusable {Info}", new { cmsTree.NodeAliasPath, targetClassInfo?.ClassName });    
+        }
+        
         yield return new ContentItemModel
         {
             ContentItemGUID = contentItemGuid,
@@ -670,7 +675,7 @@ public class ContentItemMapper(
                 !configuration.MigrateMediaToMediaLibrary)
             {
                 var mediaLinkService = mediaLinkServiceFactory.Create();
-                var htmlProcessor = new HtmlProcessor(html, mediaLinkService);
+                var htmlProcessor = new HtmlProcessor(html, mediaLinkService, logger);
 
                 target[targetColumnName] = await htmlProcessor.ProcessHtml(site.SiteID, async (result, original) =>
                 {

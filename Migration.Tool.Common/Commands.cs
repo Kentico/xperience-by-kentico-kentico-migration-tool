@@ -86,7 +86,7 @@ public record MigratePageTypesCommand : IRequest<CommandResult>, ICommand
 
 public record MigratePagesCommand : IRequest<CommandResult>, ICommand
 {
-    public static readonly int Rank = 1 + MigrateSitesCommand.Rank + MigrateUsersCommand.Rank + MigratePageTypesCommand.Rank;
+    public static readonly int Rank = 1 + MigrateSitesCommand.Rank + MigrateUsersCommand.Rank + MigratePageTypesCommand.Rank + MigrateMediaLibrariesCommand.Rank;
 
     public static string Moniker => "pages";
     public static string MonikerFriendly => "Pages";

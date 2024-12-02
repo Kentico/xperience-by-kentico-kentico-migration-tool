@@ -57,8 +57,20 @@ public class AssetMigration(
 
         List<object> mfis = [];
         bool hasMigratedAsset = false;
-        if (sourceValue is string link &&
-            mediaLinkServiceFactory.Create().MatchMediaLink(link, cmsSite.SiteID) is (true, var mediaLinkKind, var mediaKind, var path, var mediaGuid, _, _) result)
+        MatchMediaLinkResult? mediaLinkMatch = null;
+        try
+        {
+            if (sourceValue is string link)
+            {
+                mediaLinkMatch = mediaLinkServiceFactory.Create().MatchMediaLink(link, cmsSite.SiteID);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to match media link for value '{SourceValue}'", sourceValue);
+        }
+
+        if (mediaLinkMatch is (true, var mediaLinkKind, var mediaKind, var path, var mediaGuid, _, _) result)
         {
             if (mediaLinkKind == MediaLinkKind.Path)
             {
@@ -107,10 +119,21 @@ public class AssetMigration(
                     {
                         if (configuration.MigrateMediaToMediaLibrary)
                         {
-                            if (entityIdentityFacade.Translate(sourceMediaFile) is { } mf && mediaFileFacade.GetMediaFile(mf.Identity) is { } x)
+                            if (entityIdentityFacade.Translate(sourceMediaFile) is { } mfi)
                             {
-                                mfis = [new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
-                                hasMigratedAsset = true;
+                                if (mediaFileFacade.GetMediaFile(mfi.Identity) is { } mf)
+                                {
+                                    mfis = [new AssetRelatedItem { Identifier = mf.FileGUID, Dimensions = new AssetDimensions { Height = mf.FileImageHeight, Width = mf.FileImageWidth }, Name = mf.FileName, Size = mf.FileSize }];
+                                    hasMigratedAsset = true;
+                                }
+                                else
+                                {
+                                    logger.LogError("Media file {MediaFileIdentity} not found", mfi);
+                                }
+                            }
+                            else
+                            {
+                                logger.LogError("Unable to determine identity for {MediaFile}", sourceMediaFile);
                             }
                         }
                         else
@@ -165,10 +188,21 @@ public class AssetMigration(
                     {
                         if (configuration.MigrateMediaToMediaLibrary)
                         {
-                            if (entityIdentityFacade.Translate(sourceMediaFile) is { } mf && mediaFileFacade.GetMediaFile(mf.Identity) is { } x)
+                            if (entityIdentityFacade.Translate(sourceMediaFile) is { } mfi)
                             {
-                                mfis = [new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
-                                hasMigratedAsset = true;
+                                if (mediaFileFacade.GetMediaFile(mfi.Identity) is { } mf)
+                                {
+                                    mfis = [new AssetRelatedItem { Identifier = mf.FileGUID, Dimensions = new AssetDimensions { Height = mf.FileImageHeight, Width = mf.FileImageWidth }, Name = mf.FileName, Size = mf.FileSize }];
+                                    hasMigratedAsset = true;
+                                }
+                                else
+                                {
+                                    logger.LogError("Media file {MediaFileIdentity} not found", mfi);
+                                }
+                            }
+                            else
+                            {
+                                logger.LogError("Unable to determine identity for {MediaFile}", sourceMediaFile);
                             }
                         }
                         else
