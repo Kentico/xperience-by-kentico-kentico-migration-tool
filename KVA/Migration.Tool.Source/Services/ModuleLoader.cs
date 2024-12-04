@@ -27,7 +27,7 @@ public class ModuleLoader(
             }
             else
             {
-                logger.LogWarning("The source instance is not configured.");
+                logger.LogWarning("Source instance API discovery feature is disabled, capabilities of Migration Tool to migrate widgets, page urls will be limited.");
             }
         }
         catch (Exception ex)
