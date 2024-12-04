@@ -74,7 +74,7 @@ public static class KsCoreDiExtensions
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(KsCoreDiExtensions).Assembly));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestHandlingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CommandConstraintBehavior<,>));
-        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(XbKApiContextBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(XbyKApiContextBehavior<,>));
 
         services.AddSingleton<SourceInstanceContext>();
         services.AddSingleton<DeferredPathService>();

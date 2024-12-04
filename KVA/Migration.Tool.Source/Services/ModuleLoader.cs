@@ -25,6 +25,10 @@ public class ModuleLoader(
                     await sourceInstanceContext.RequestSourceInstanceInfo();
                 }
             }
+            else
+            {
+                logger.LogWarning("Source instance API discovery feature is disabled, capabilities of Migration Tool to migrate widgets, page urls will be limited.");
+            }
         }
         catch (Exception ex)
         {

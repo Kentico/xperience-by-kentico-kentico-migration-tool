@@ -75,28 +75,28 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
 
         void UnableToReadVersionKey(string keyName)
         {
-            logger.LogCritical("Unable to read CMS version (incorrect format) - SettingsKeyName '{Key}'. Ensure Kentico version is at least '{SupportedVersion}'", keyName, minimalVersion.ToString());
+            logger.LogCritical("Unable to read CMS version (incorrect format) - SettingsKeyName '{Key}'. Ensure Kentico 12 version is at least '{SupportedVersion}'", keyName, minimalVersion.ToString());
             protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new { ErrorKind = "Settings key value incorrect format", SettingsKeyName = keyName, SupportedVersion = minimalVersion.ToString() }));
             criticalCheckPassed = false;
         }
 
         void VersionKeyNotFound(string keyName)
         {
-            logger.LogCritical("CMS version not found - SettingsKeyName '{Key}'. Ensure Kentico version is at least '{SupportedVersion}'", keyName, minimalVersion.ToString());
+            logger.LogCritical("CMS version not found - SettingsKeyName '{Key}'. Ensure Kentico 12 version is at least '{SupportedVersion}'", keyName, minimalVersion.ToString());
             protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new { ErrorKind = "Settings key not found", SettingsKeyName = keyName, SupportedVersion = minimalVersion.ToString() }));
             criticalCheckPassed = false;
         }
 
         void UpgradeNeeded(string keyName, string currentVersion)
         {
-            logger.LogCritical("{Key} '{CurrentVersion}' is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'", keyName, currentVersion, minimalVersion.ToString());
+            logger.LogCritical("{Key} '{CurrentVersion}' is not supported for migration. Upgrade Kentico 12 to at least '{SupportedVersion}'", keyName, currentVersion, minimalVersion.ToString());
             protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new { CurrentVersion = currentVersion, SupportedVersion = minimalVersion.ToString() }));
             criticalCheckPassed = false;
         }
 
         void LowHotfix(string keyName, int currentHotfix)
         {
-            logger.LogCritical("{Key} '{CurrentVersion}' hotfix is not supported for migration. Upgrade Kentico to at least '{SupportedVersion}'", keyName, currentHotfix, minimalVersion.ToString());
+            logger.LogCritical("{Key} '{CurrentVersion}' hotfix is not supported for migration. Upgrade Kentico 12 to at least '{SupportedVersion}'", keyName, currentHotfix, minimalVersion.ToString());
             protocol.Append(HandbookReferences.InvalidSourceCmsVersion().WithData(new { CurrentHotfix = currentHotfix.ToString(), SupportedVersion = minimalVersion.ToString() }));
             criticalCheckPassed = false;
         }

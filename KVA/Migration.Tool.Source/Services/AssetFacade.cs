@@ -133,6 +133,7 @@ public class AssetFacade(
 
         var folder = GetAssetFolder(site);
 
+        string? contentItemSafeName = await Service.Resolve<IContentItemCodeNameProvider>().Get($"{mediaFile.FileName}_{translatedMediaGuid}");
         var contentItem = new ContentItemSimplifiedModel
         {
             CustomProperties = [],
@@ -140,7 +141,7 @@ public class AssetFacade(
             ContentItemContentFolderGUID = (await EnsureFolderStructure(mediaFolder, folder))?.ContentFolderGUID ?? folder.ContentFolderGUID,
             IsSecured = null,
             ContentTypeName = LegacyMediaFileContentType.ClassName,
-            Name = $"{mediaFile.FileName}_{translatedMediaGuid}",
+            Name = contentItemSafeName,
             IsReusable = true,
             LanguageData = languageData,
         };
@@ -192,19 +193,17 @@ public class AssetFacade(
 
         var folder = GetAssetFolder(site);
 
+        string? contentItemSafeName = await Service.Resolve<IContentItemCodeNameProvider>().Get($"{attachment.AttachmentGUID}_{translatedAttachmentGuid}");
         var contentItem = new ContentItemSimplifiedModel
         {
             ContentItemGUID = translatedAttachmentGuid,
             ContentItemContentFolderGUID = (await EnsureFolderStructure(mediaFolder, folder))?.ContentFolderGUID ?? folder.ContentFolderGUID,
             IsSecured = null,
             ContentTypeName = LegacyAttachmentContentType.ClassName,
-            Name = $"{attachment.AttachmentGUID}_{translatedAttachmentGuid}",
+            Name = contentItemSafeName,
             IsReusable = true,
             LanguageData = languageData,
         };
-
-        // TODO tomas.krch: 2024-09-02 append url to protocol
-        // urlProtocol.AppendMediaFileUrlIfNeeded();
 
         return contentItem;
     }
@@ -433,8 +432,9 @@ public class AssetFacade(
         };
     }
 
-    private static readonly IUmtModel[] prerequisites = [
-            LegacyMediaFileContentType,
+    private static readonly IUmtModel[] prerequisites =
+    [
+        LegacyMediaFileContentType,
         LegacyAttachmentContentType
     ];
 

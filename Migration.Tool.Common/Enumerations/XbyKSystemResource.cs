@@ -2,7 +2,7 @@
 
 namespace Migration.Tool.Common.Enumerations;
 
-public static class XbkSystemResource
+public static class XbyKSystemResource
 {
     public const string CMS = "CMS";
     public const string CMS_ABTest = "CMS.ABTest";

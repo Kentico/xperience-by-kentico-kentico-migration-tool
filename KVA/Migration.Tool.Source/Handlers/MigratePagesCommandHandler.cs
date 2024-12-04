@@ -46,8 +46,6 @@ public class MigratePagesCommandHandler(
 {
     private const string ClassCmsRoot = "CMS.Root";
 
-    private readonly ContentItemNameProvider contentItemNameProvider = new(new ContentItemNameValidator());
-
     private readonly ConcurrentDictionary<string, ContentLanguageInfo> languages = new(StringComparer.InvariantCultureIgnoreCase);
 
     public async Task<CommandResult> Handle(MigratePagesCommand request, CancellationToken cancellationToken)
@@ -183,7 +181,7 @@ public class MigratePagesCommandHandler(
                     );
                 }
 
-                string safeNodeName = await contentItemNameProvider.Get(ksNode.NodeName);
+                string safeNodeName = await Service.Resolve<IContentItemCodeNameProvider>().Get(ksNode.NodeName);
                 var ksNodeParent = modelFacade.SelectById<ICmsTree>(ksNode.NodeParentID);
                 var nodeParentGuid = ksNodeParent?.NodeAliasPath == "/" || ksNodeParent == null
                     ? (Guid?)null

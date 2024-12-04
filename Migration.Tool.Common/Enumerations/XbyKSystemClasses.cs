@@ -2,7 +2,7 @@
 
 namespace Migration.Tool.Common.Enumerations;
 #pragma warning disable IDE1006
-public class XbKSystemClasses
+public class XbyKSystemClasses
 {
     public const string cms_culture = "cms.culture";
     public const string cms_site = "cms.site";

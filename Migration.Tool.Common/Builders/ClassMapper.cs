@@ -17,7 +17,7 @@ public interface IClassMapping
 
     string? GetTargetFieldName(string sourceColumnName, string sourceClassName);
     string GetSourceFieldName(string targetColumnName, string nodeClassClassName);
-
+    bool IsCategoryMapped(string sourceClassName, int categoryID);
     void UseResusableSchema(string reusableSchemaName);
     IList<string> ReusableSchemaNames { get; }
 }
@@ -32,7 +32,7 @@ public interface IFieldMapping
 
 public record FieldMapping(string TargetFieldName, string SourceClassName, string SourceFieldName, bool IsTemplate) : IFieldMapping;
 
-public record FieldMappingWithConversion(string TargetFieldName, string SourceClassName, string SourceFieldName, bool IsTemplate, Func<object?, object?> Converter) : IFieldMapping;
+public record FieldMappingWithConversion(string TargetFieldName, string SourceClassName, string SourceFieldName, bool IsTemplate, Func<object?, IConvertorContext, object?> Converter) : IFieldMapping;
 
 public class MultiClassMapping(string targetClassName, Action<DataClassInfo> classPatcher) : IClassMapping
 {
@@ -89,9 +89,18 @@ public class MultiClassMapping(string targetClassName, Action<DataClassInfo> cla
         reusableSchemaNames.Add(reusableSchemaName);
     }
 
+    private MultiClassMappingCategoryFilter categoryFilter = (_, _) => true;
+    public void FilterCategories(MultiClassMappingCategoryFilter filter) => categoryFilter = filter;
+    public bool IsCategoryMapped(string sourceClassName, int categoryID) => categoryFilter(sourceClassName, categoryID);
+
     private readonly IList<string> reusableSchemaNames = [];
     IList<string> IClassMapping.ReusableSchemaNames => reusableSchemaNames;
 }
+
+public delegate bool MultiClassMappingCategoryFilter(string sourceClassName, int categoryID);
+
+public interface IConvertorContext;
+public record ConvertorTreeNodeContext(Guid NodeGuid, int NodeSiteId, int? DocumentId, bool MigratingFromVersionHistory) : IConvertorContext;
 
 public class FieldBuilder(MultiClassMapping multiClassMapping, string targetFieldName)
 {
@@ -105,7 +114,7 @@ public class FieldBuilder(MultiClassMapping multiClassMapping, string targetFiel
         return this;
     }
 
-    public FieldBuilder ConvertFrom(string sourceClassName, string sourceFieldName, bool isTemplate, Func<object?, object?> converter)
+    public FieldBuilder ConvertFrom(string sourceClassName, string sourceFieldName, bool isTemplate, Func<object?, IConvertorContext, object?> converter)
     {
         currentFieldMapping = new FieldMappingWithConversion(targetFieldName, sourceClassName, sourceFieldName, isTemplate, converter);
         multiClassMapping.Mappings.Add(currentFieldMapping);

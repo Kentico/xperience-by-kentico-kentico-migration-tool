@@ -173,7 +173,7 @@ public class MigrateCustomModulesCommandHandler(
             }
         }
 
-        // special case - member migration (CMS_User splits into CMS_User and CMS_Member in XbK)
+        // special case - member migration (CMS_User splits into CMS_User and CMS_Member in XbyK)
         await MigrateMemberClass(cancellationToken);
     }
 

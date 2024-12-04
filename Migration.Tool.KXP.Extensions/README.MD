@@ -1,4 +1,4 @@
-## Handler for legacy attachment URLs
+# Handler for legacy attachment URLs
 
 Page attachments are not supported in Xperience by Kentico. Instead, the [Migration tool](/README.md) transfers
 attachment files into [media libraries](https://docs.xperience.io/x/agKiCQ).
@@ -8,7 +8,7 @@ handler URLs and will no longer work (return 404 errors). For example, this can 
 If you wish to continue using these legacy attachment URLs, you need
 to [add a custom handler](#add-the-handler-to-your-project) to your Xperience by Kentico project.
 
-### Prerequisite
+## Prerequisite
 
 To ensure that the handler provided in the `LegacyAttachmentHandler.cs` file works correctly, you need to [migrate](/Migration.Toolkit.CLI/README.md) your page attachments into a **media library** using the `MigrateMediaToMediaLibrary` configuration option, and **keep the default folder structure and file names**. By default, attachments are migrated into the content hub and the handler is not applicable.
 
@@ -16,14 +16,14 @@ To ensure that the handler provided in the `LegacyAttachmentHandler.cs` file wor
 
 The `LegacyAttachmentHandler.cs` handler can serve the following legacy attachment URLs:
 
-* `/getimage/[AttachmentGUID]/[AttachmentName].[AttachmentExtension]`
-    * Example: `/getimage/454BD7D7-200F-4976-AD21-8B5D70CBE7FD/image.jpg`
-* `/getattachment/[NodeAliasPath]/[AttachmentName].[AttachmentExtension]`
-    * Example: `/getattachment/news/article1/image.jpg`
-* `/getattachment/[AttachmentGUID]/[AttachmentName].[AttachmentExtension]`
-    * Example: `/getattachment/454BD7D7-200F-4976-AD21-8B5D70CBE7FD/image.jpg`
+- `/getimage/[AttachmentGUID]/[AttachmentName].[AttachmentExtension]`
+  - Example: `/getimage/454BD7D7-200F-4976-AD21-8B5D70CBE7FD/image.jpg`
+- `/getattachment/[NodeAliasPath]/[AttachmentName].[AttachmentExtension]`
+  - Example: `/getattachment/news/article1/image.jpg`
+- `/getattachment/[AttachmentGUID]/[AttachmentName].[AttachmentExtension]`
+  - Example: `/getattachment/454BD7D7-200F-4976-AD21-8B5D70CBE7FD/image.jpg`
 
-### Add the handler to your project
+## Add the handler to your project
 
 1. Open your Xperience by Kentico solution in Visual Studio.
 2. Add a custom assembly (_Class Library_ project) to your solution or re-use an existing one. See
