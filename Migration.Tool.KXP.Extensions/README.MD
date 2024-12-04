@@ -10,18 +10,18 @@ to [add a custom handler](#add-the-handler-to-your-project) to your Xperience by
 
 ### Prerequisite
 
-To ensure that the handler provided in the `LegacyAttachmentHandler.cs` file works correctly, you need to [migrate](/Migration.Toolkit.CLI/README.md) your page attachments into a **media library** using the `MigrateMediaToMediaLibrary` configuration option, and **keep the default folder structure and file names**. By default, attachments are migrated into the content hub and the handler is not applicable.
+To ensure that the handler provided in the `LegacyAttachmentHandler.cs` file works correctly, you need to [migrate](/Migration.Tool.CLI/README.md) your page attachments into a **media library** using the `MigrateMediaToMediaLibrary` configuration option, and **keep the default folder structure and file names**. By default, attachments are migrated into the content hub and the handler is not applicable.
 
 ### Attachment URLs in content
 
 The `LegacyAttachmentHandler.cs` handler can serve the following legacy attachment URLs:
 
-* `/getimage/[AttachmentGUID]/[AttachmentName].[AttachmentExtension]`
-    * Example: `/getimage/454BD7D7-200F-4976-AD21-8B5D70CBE7FD/image.jpg`
-* `/getattachment/[NodeAliasPath]/[AttachmentName].[AttachmentExtension]`
-    * Example: `/getattachment/news/article1/image.jpg`
-* `/getattachment/[AttachmentGUID]/[AttachmentName].[AttachmentExtension]`
-    * Example: `/getattachment/454BD7D7-200F-4976-AD21-8B5D70CBE7FD/image.jpg`
+- `/getimage/[AttachmentGUID]/[AttachmentName].[AttachmentExtension]`
+  - Example: `/getimage/454BD7D7-200F-4976-AD21-8B5D70CBE7FD/image.jpg`
+- `/getattachment/[NodeAliasPath]/[AttachmentName].[AttachmentExtension]`
+  - Example: `/getattachment/news/article1/image.jpg`
+- `/getattachment/[AttachmentGUID]/[AttachmentName].[AttachmentExtension]`
+  - Example: `/getattachment/454BD7D7-200F-4976-AD21-8B5D70CBE7FD/image.jpg`
 
 ### Add the handler to your project
 

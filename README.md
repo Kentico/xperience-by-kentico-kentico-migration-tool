@@ -12,10 +12,10 @@ The Kentico Migration Tool transfers content and other data from **Kentico Xperi
 
 This repository contains several README documents containing information necessary for the correct usage of the Kentico Migration Tool. Namely:
 
-- [Migration CLI](./Migration.Toolkit.CLI/README.md) -- information about the necessary set up before running the Kentico Migration Tool.
+- [Migration CLI](./Migration.Tool.CLI/README.md) -- information about the necessary set up before running the Kentico Migration Tool.
 - [Usage Guide](./docs/Usage-Guide.md) -- information about what kind of projects the Kentico Migration Tool supports.
 - [Supported Data](./docs/Supported-Data.md) -- lists all available data for migration
-- [Migration Protocol](./Migration.Toolkit.CLI/MIGRATION_PROTOCOL_REFERENCE.md) -- provides information about the results of the migration and required manual steps, etc.
+- [Migration Protocol](./Migration.Tool.CLI/MIGRATION_PROTOCOL_REFERENCE.md) -- provides information about the results of the migration and required manual steps, etc.
 
 ## Library Version Matrix
 
@@ -41,7 +41,7 @@ Follow the steps below to run the Kentico Migration Tool:
 3. Configure the options in the `Migration.Tool.CLI/appsettings.json` configuration file. See [`Migration.Tool.CLI/README.md - Configuration`](./Migration.Tool.CLI/README.md#Configuration) for details.
 4. Rebuild the solution and restore all required NuGet packages.
 5. Open the command line prompt.
-6. Navigate to the output directory of the `Migration.Tool.CLI` project. (under `.\Migration.Toolkit.CLI\bin\Debug\net8.0\`)
+6. Navigate to the output directory of the `Migration.Tool.CLI` project. (under `.\Migration.Tool.CLI\bin\Debug\net8.0\`)
 7. Run the `Migration.Tool.CLI.exe migrate` command.
 
    - The following example shows the command with all parameters for complete migration:
@@ -68,7 +68,7 @@ View the [Usage Guide](./docs/Usage-Guide.md) for information about what kind of
 
 - **September 4, 2024**
   - Migration of media libraries and attachments to assets is available
-  - Media libraries and attachments are now [migrated](/Migration.Toolkit.CLI/README.md#media-libraries) to content item assets by default
+  - Media libraries and attachments are now [migrated](/Migration.Tool.CLI/README.md#media-libraries) to content item assets by default
 - **June 13, 2024**
   - Migration of categories to taxonomies is available
 - **March 11, 2024**
