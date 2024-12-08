@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.Builders;
+using Migration.Tool.Common.Helpers;
 using Migration.Tool.KXP.Api.Auxiliary;
 
 // ReSharper disable ArrangeMethodOrOperatorBody
@@ -246,6 +247,16 @@ public static class ClassMappingSample
         description.SetFrom(sourceClassName2, "EventSmallDesc", true);
         description.SetFrom(sourceClassName3, "DescriptionCT");
         description.WithFieldPatch(f => f.Caption = "Event description");
+
+        var descriptionCopy = m.BuildField("DescriptionCopy");
+        descriptionCopy.SetFrom(sourceClassName2, "EventSmallDesc", true);
+        descriptionCopy.SetFrom(sourceClassName3, "DescriptionCT");
+        descriptionCopy.WithFieldPatch(f =>
+        {
+            // for copied field, we also need to adjust field guid
+            f.Guid = GuidHelper.CreateFieldGuid($"DescriptionCopy"); // deterministic guid to ensure not conflicts occur in repeated migration
+            f.Caption = "Event description copy";
+        });
 
         var teaser = m.BuildField("Teaser");
         teaser.SetFrom(sourceClassName1, "EventTeaser", true);
