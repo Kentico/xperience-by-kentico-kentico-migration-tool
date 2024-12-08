@@ -268,7 +268,7 @@ public class CmsClassMapper(
 
     public static string? GetLegacyDocumentName(FormInfo nfi, string className)
     {
-        if (nfi.GetFields(true, true).FirstOrDefault(f => GuidHelper.CreateDocumentNameFieldGuid($"documentname|{className}").Equals(f.Guid)) is { } foundField)
+        if (nfi.GetFields(true, true).FirstOrDefault(f => GuidHelper.CreateFieldGuid($"documentname|{className}").Equals(f.Guid)) is { } foundField)
         {
             return foundField.Name;
         }
@@ -276,9 +276,9 @@ public class CmsClassMapper(
         return null;
     }
 
-    private static void AppendDocumentNameField(FormInfo nfi, string className, out string documentNameField)
+    private static void AppendDocumentNameField(FormInfo nfi, string newClassName, out string documentNameField)
     {
-        if (GetLegacyDocumentName(nfi, className) is { } fieldName)
+        if (GetLegacyDocumentName(nfi, newClassName) is { } fieldName)
         {
             documentNameField = fieldName;
             return;
@@ -301,7 +301,7 @@ public class CmsClassMapper(
             Size = 100,
             Precision = 0,
             DefaultValue = null,
-            Guid = GuidHelper.CreateDocumentNameFieldGuid($"documentname|{className}"),
+            Guid = GuidHelper.CreateFieldGuid($"documentname|{newClassName}"),
             System = false, // no longer system field, system doesn't rely on this field anymore
             Settings = { { "controlname", "Kentico.Administration.TextInput" } }
         });

@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-
+using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.MigrationProtocol;
 
 namespace Migration.Tool.Common;
@@ -12,6 +12,9 @@ public static class CommonDiExtensions
         services.AddSingleton<IMigrationProtocol, TextMigrationProtocol>();
         services.AddSingleton<IMigrationProtocol, DebugMigrationProtocol>();
         services.AddSingleton<UrlProtocol>();
+
+        services.AddTransient<DefaultCustomTableClassMappingHandler>();
+
         return services;
     }
 }

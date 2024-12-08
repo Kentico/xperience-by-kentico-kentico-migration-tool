@@ -53,12 +53,12 @@ public class ToolConfiguration
     public string? ConvertClassesToContentHub { get; set; }
 
     public IReadOnlySet<string> ClassNamesCreateReusableSchema => classNamesCreateReusableSchema ??= new HashSet<string>(
-        (CreateReusableFieldSchemaForClasses?.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries) ?? []).Select(x => x.Trim()),
+        (CreateReusableFieldSchemaForClasses?.Split(new[] { ',', ';', '|' }, StringSplitOptions.RemoveEmptyEntries) ?? []).Select(x => x.Trim()),
         StringComparer.InvariantCultureIgnoreCase
     );
 
     public IReadOnlySet<string> ClassNamesConvertToContentHub => classNamesConvertToContentHub ??= new HashSet<string>(
-        (ConvertClassesToContentHub?.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries) ?? []).Select(x => x.Trim()),
+        (ConvertClassesToContentHub?.Split(new[] { ',', ';', '|' }, StringSplitOptions.RemoveEmptyEntries) ?? []).Select(x => x.Trim()),
         StringComparer.InvariantCultureIgnoreCase
     );
 

@@ -1,7 +1,6 @@
 using System.Reflection;
 using MediatR;
 using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -33,7 +32,10 @@ var config = new ConfigurationBuilder()
         .Build()
     ;
 
-Directory.SetCurrentDirectory(config.GetValue<string>("Settings:XbyKDirPath") ?? config.GetValue<string>("Settings:XbKDirPath") ?? throw new InvalidOperationException("Settings:XbKDirPath must be set to valid directory path"));
+string xbykDirPath = config.GetValue<string?>("Settings:XbyKDirPath").NullIf(ConfigurationNames.TodoPlaceholder, StringComparison.InvariantCultureIgnoreCase) ??
+                     config.GetValue<string?>("Settings:XbKDirPath").NullIf(ConfigurationNames.TodoPlaceholder, StringComparison.InvariantCultureIgnoreCase) ??
+                     throw new InvalidOperationException("Settings:XbKDirPath must be set to valid directory path");
+Directory.SetCurrentDirectory(xbykDirPath);
 
 var validationErrors = ConfigurationValidator.GetValidationErrors(config);
 bool anyValidationErrors = false;

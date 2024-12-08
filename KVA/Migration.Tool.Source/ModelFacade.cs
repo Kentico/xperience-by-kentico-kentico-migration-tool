@@ -1,12 +1,12 @@
 using System.Runtime.CompilerServices;
 
 using Microsoft.Data.SqlClient;
-
+using Microsoft.Extensions.Logging;
 using Migration.Tool.Common;
 
 namespace Migration.Tool.Source;
 
-public class ModelFacade(ToolConfiguration configuration)
+public class ModelFacade(ILogger<ModelFacade> logger, ToolConfiguration configuration)
 {
     private SemanticVersion? semanticVersion;
 
@@ -41,6 +41,47 @@ public class ModelFacade(ToolConfiguration configuration)
         while (reader.Read())
         {
             yield return T.FromReader(reader, semanticVersion);
+        }
+    }
+
+    public IEnumerable<Dictionary<string, object?>> SelectAllAsDictionary(string tableName, string? orderBy = null)
+    {
+        semanticVersion ??= SelectVersion();
+        using var conn = GetConnection();
+        conn.Open();
+        var cmd = conn.CreateCommand();
+        cmd.CommandText = $"SELECT * FROM {tableName}";
+        if (!string.IsNullOrWhiteSpace(orderBy))
+        {
+            cmd.CommandText += orderBy;
+        }
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            var r = new Dictionary<string, object?>(StringComparer.InvariantCultureIgnoreCase);
+            foreach (var dbColumn in reader.GetColumnSchema())
+            {
+                if (dbColumn.ColumnOrdinal is { } ordinal)
+                {
+                    object val = reader.GetValue(ordinal);
+
+                    if (DBNull.Value.Equals(val))
+                    {
+                        r.Add(dbColumn.ColumnName, null);
+                    }
+                    else
+                    {
+                        r.Add(dbColumn.ColumnName, val);
+                    }
+                }
+                else
+                {
+                    logger.LogError("Column '{Column}' of '{Table}' has no ordinal! This might introduce invalid data mapping", dbColumn.ColumnName, tableName);
+                }
+            }
+
+            yield return r;
         }
     }
 
