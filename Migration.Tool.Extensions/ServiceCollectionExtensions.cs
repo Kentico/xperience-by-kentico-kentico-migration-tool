@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Migration.Tool.Extensions.ClassMappings;
 using Migration.Tool.Extensions.CommunityMigrations;
 using Migration.Tool.Extensions.DefaultMigrations;
 using Migration.Tool.KXP.Api.Services.CmsClass;
