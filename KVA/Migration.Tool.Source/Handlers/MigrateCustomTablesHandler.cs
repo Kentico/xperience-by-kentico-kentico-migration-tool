@@ -1,23 +1,27 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Xml.Linq;
-
+using CMS.ContentEngine.Internal;
 using CMS.DataEngine;
 using CMS.Modules;
-
+using Kentico.Xperience.UMT.Services;
 using MediatR;
 
 using Microsoft.Extensions.Logging;
 
 using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
+using Migration.Tool.Common.Builders;
 using Migration.Tool.Common.Helpers;
 using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.Common.Services.BulkCopy;
 using Migration.Tool.KXP.Api;
 using Migration.Tool.Source.Contexts;
 using Migration.Tool.Source.Helpers;
+using Migration.Tool.Source.Mappers;
 using Migration.Tool.Source.Model;
+using Migration.Tool.Source.Providers;
+using Newtonsoft.Json;
 
 namespace Migration.Tool.Source.Handlers;
 
@@ -27,8 +31,12 @@ public class MigrateCustomTablesHandler(
     KxpClassFacade kxpClassFacade,
     IProtocol protocol,
     BulkDataCopyService bulkDataCopyService,
+    IImporter importer,
+    IUmtMapper<CustomTableMapperSource> mapper,
     IEntityMapper<ICmsClass, DataClassInfo> dataClassMapper,
-    PrimaryKeyMappingContext primaryKeyMappingContext
+    PrimaryKeyMappingContext primaryKeyMappingContext,
+    ClassMappingProvider classMappingProvider,
+    ToolConfiguration configuration
 // ReusableSchemaService reusableSchemaService
 )
     : IRequestHandler<MigrateCustomTablesCommand, CommandResult>
@@ -77,25 +85,34 @@ public class MigrateCustomTablesHandler(
             modelFacade.Select<ICmsClass>("ClassIsCustomTable=1", "ClassID ASC")
         );
 
+        var manualMappings = classMappingProvider.ExecuteMappings();
+        var remapped = new List<(ICmsClass ksClass, DataClassInfo target, IClassMapping mapping)>();
+
         while (srcClassesDe.GetNext(out var di))
         {
-            var (_, srcClass) = di;
+            var (_, ksClass) = di;
 
-            if (!srcClass.ClassIsCustomTable)
+            if (manualMappings.TryGetValue(ksClass.ClassName, out var mappedToClass))
+            {
+                remapped.Add((ksClass, mappedToClass.target, mappedToClass.mappping));
+                continue;
+            }
+
+            if (!ksClass.ClassIsCustomTable)
             {
                 continue;
             }
 
-            if (srcClass.ClassInheritsFromClassID is { } classInheritsFromClassId && !primaryKeyMappingContext.HasMapping<ICmsClass>(c => c.ClassID, classInheritsFromClassId))
+            if (ksClass.ClassInheritsFromClassID is { } classInheritsFromClassId && !primaryKeyMappingContext.HasMapping<ICmsClass>(c => c.ClassID, classInheritsFromClassId))
             {
                 // defer migration to later stage
                 if (srcClassesDe.TryDeferItem(di))
                 {
-                    logger.LogTrace("Class {Class} inheritance parent not found, deferring migration to end. Attempt {Attempt}", Printer.GetEntityIdentityPrint(srcClass), di.Recurrence);
+                    logger.LogTrace("Class {Class} inheritance parent not found, deferring migration to end. Attempt {Attempt}", Printer.GetEntityIdentityPrint(ksClass), di.Recurrence);
                 }
                 else
                 {
-                    logger.LogErrorMissingDependency(srcClass, nameof(srcClass.ClassInheritsFromClassID), srcClass.ClassInheritsFromClassID, typeof(DataClassInfo));
+                    logger.LogErrorMissingDependency(ksClass, nameof(ksClass.ClassInheritsFromClassID), ksClass.ClassInheritsFromClassID, typeof(DataClassInfo));
                     protocol.Append(HandbookReferences
                         .MissingRequiredDependency<ICmsClass>(nameof(ICmsClass.ClassID), classInheritsFromClassId)
                         .NeedsManualAction()
@@ -105,13 +122,13 @@ public class MigrateCustomTablesHandler(
                 continue;
             }
 
-            protocol.FetchedSource(srcClass);
+            protocol.FetchedSource(ksClass);
 
-            var xbkDataClass = kxpClassFacade.GetClass(srcClass.ClassGUID);
+            var xbkDataClass = kxpClassFacade.GetClass(ksClass.ClassGUID);
 
             protocol.FetchedTarget(xbkDataClass);
 
-            if (await SaveClassUsingKxoApi(srcClass, xbkDataClass) is { } savedDataClass)
+            if (await SaveClassUsingKxoApi(ksClass, xbkDataClass) is { } savedDataClass)
             {
                 Debug.Assert(savedDataClass.ClassID != 0, "xbkDataClass.ClassID != 0");
                 // MigrateClassSiteMappings(kx13Class, xbkDataClass);
@@ -121,7 +138,7 @@ public class MigrateCustomTablesHandler(
 
                 #region Migrate coupled data class data
 
-                if (srcClass.ClassShowAsSystemTable is false)
+                if (ksClass.ClassShowAsSystemTable is false)
                 {
                     Debug.Assert(xbkDataClass.ClassTableName != null, "kx13Class.ClassTableName != null");
                     // var csi = new ClassStructureInfo(kx13Class.ClassXmlSchema, kx13Class.ClassXmlSchema, kx13Class.ClassTableName);
@@ -135,7 +152,7 @@ public class MigrateCustomTablesHandler(
 
                     Debug.Assert(autoIncrementColumns.Count == 1, "autoIncrementColumns.Count == 1");
                     var r = (xbkDataClass.ClassTableName, xbkDataClass.ClassGUID, autoIncrementColumns);
-                    logger.LogTrace("Class '{ClassGuild}' Resolved as: {Result}", srcClass.ClassGUID, r);
+                    logger.LogTrace("Class '{ClassGuild}' Resolved as: {Result}", ksClass.ClassGUID, r);
 
                     try
                     {
@@ -164,6 +181,60 @@ public class MigrateCustomTablesHandler(
                 }
 
                 #endregion
+            }
+        }
+
+        foreach (var (cmsClass, targetDataClass, mapping) in remapped)
+        {
+            if (string.IsNullOrWhiteSpace(cmsClass.ClassTableName))
+            {
+                logger.LogError("Class {Class} is missing table name", cmsClass.ClassName);
+                continue;
+            }
+
+            var ctis = modelFacade.SelectAllAsDictionary(cmsClass.ClassTableName);
+            foreach (var cti in ctis)
+            {
+                var results = mapper.Map(new CustomTableMapperSource(
+                    targetDataClass.ClassFormDefinition,
+                    cmsClass.ClassFormDefinition,
+                    cti.TryGetValue("ItemGUID", out object? itemGuid) && itemGuid is Guid guid ? guid : Guid.NewGuid(), // TODO tomas.krch: 2024-12-03 provide guid?
+                    cmsClass,
+                    cti,
+                    mapping
+                ));
+                try
+                {
+                    var commonDataInfos = new List<ContentItemCommonDataInfo>();
+                    foreach (var umtModel in results)
+                    {
+                        switch (await importer.ImportAsync(umtModel))
+                        {
+                            case { Success: false } result:
+                            {
+                                logger.LogError("Failed to import: {Exception}, {ValidationResults}", result.Exception, JsonConvert.SerializeObject(result.ModelValidationResults));
+                                break;
+                            }
+                            case { Success: true, Imported: ContentItemCommonDataInfo ccid }:
+                            {
+                                commonDataInfos.Add(ccid);
+                                Debug.Assert(ccid.ContentItemCommonDataContentLanguageID != 0, "ccid.ContentItemCommonDataContentLanguageID != 0");
+                                break;
+                            }
+                            case { Success: true, Imported: ContentItemLanguageMetadataInfo cclm }:
+                            {
+                                Debug.Assert(cclm.ContentItemLanguageMetadataContentLanguageID != 0, "ccid.ContentItemCommonDataContentLanguageID != 0");
+                                break;
+                            }
+                            default:
+                                break;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error occured while mapping custom table item to content item");
+                }
             }
         }
     }

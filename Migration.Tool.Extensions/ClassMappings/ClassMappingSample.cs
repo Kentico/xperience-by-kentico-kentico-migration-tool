@@ -1,6 +1,9 @@
 using CMS.DataEngine;
 using CMS.FormEngine;
+using Kentico.Xperience.UMT.Model;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.Builders;
 using Migration.Tool.KXP.Api.Auxiliary;
 
@@ -128,6 +131,7 @@ public static class ClassMappingSample
     public static IServiceCollection AddClassMergeExample(this IServiceCollection serviceCollection)
     {
         const string targetClassName = "ET.Event";
+
         const string sourceClassName1 = "_ET.Event1";
         const string sourceClassName2 = "_ET.Event2";
 
@@ -140,6 +144,9 @@ public static class ClassMappingSample
             target.ClassContentTypeType = ClassContentTypeType.WEBSITE;
         });
 
+        // register custom table handler once for all custom table mappings
+        serviceCollection.AddTransient<SampleCustomTableHandler>();
+
         m.BuildField("EventID").AsPrimaryKey();
 
         // build new field
@@ -150,6 +157,7 @@ public static class ClassMappingSample
         title.SetFrom(sourceClassName2, "EventTitle");
         // patch field definition, in this case lets change field caption 
         title.WithFieldPatch(f => f.Caption = "Event title");
+
 
         var description = m.BuildField("Description");
         description.SetFrom(sourceClassName2, "EventSmallDesc", true);
@@ -167,27 +175,168 @@ public static class ClassMappingSample
         var startDate = m.BuildField("StartDate");
         startDate.SetFrom(sourceClassName1, "EventDateStart", true);
         // if needed use value conversion to adapt value
-        startDate.ConvertFrom(sourceClassName2, "EventStartDateAsText", false,
-            (v, context) =>
+        Func<object?, IConvertorContext, object?> dateConvertor = (v, context) =>
+        {
+            switch (context)
             {
-                switch (context)
-                {
-                    case ConvertorTreeNodeContext treeNodeContext:
-                        // here you can use available treenode context
-                        // (var nodeGuid, int nodeSiteId, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
-                        break;
-                    default:
-                        // no context is available (in future, mapping feature could be extended and therefore different context will be supplied or no context at all)
-                        break;
-                }
+                case ConvertorTreeNodeContext treeNodeContext:
+                    // here you can use available treenode context
+                    // (var nodeGuid, int nodeSiteId, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
+                    break;
+                default:
+                    // no context is available (in future, mapping feature could be extended and therefore different context will be supplied or no context at all)
+                    break;
+            }
 
-                return v?.ToString() is { } av && !string.IsNullOrWhiteSpace(av) ? DateTime.Parse(av) : null;
-            });
+            // be strict about value assertion and isolate any unexpected value
+
+            return v switch
+            {
+                string stringValue => !string.IsNullOrWhiteSpace(stringValue) ? DateTime.Parse(stringValue) : null, // valid date or empty string isd expected, otherwise error
+                DateTime dateTimeValue => dateTimeValue,
+                null => null,
+                _ => throw new InvalidOperationException($"I didn't expected this value in instance of my class! {v}")
+            };
+        };
+        startDate.ConvertFrom(sourceClassName2, "EventStartDateAsText", false, dateConvertor);
         startDate.WithFieldPatch(f => f.Caption = "Event start date");
 
         serviceCollection.AddSingleton<IClassMapping>(m);
 
         return serviceCollection;
+    }
+
+    public static IServiceCollection AddClassMergeExampleAsReusable(this IServiceCollection serviceCollection)
+    {
+        const string targetClassName = "ET.Event";
+
+        const string sourceClassName1 = "_ET.Event1";
+        const string sourceClassName2 = "_ET.Event2";
+        const string sourceClassName3 = "_ET.EventCustomTable";
+
+        var m = new MultiClassMapping(targetClassName, target =>
+        {
+            target.ClassName = targetClassName;
+            target.ClassTableName = "ET_Event";
+            target.ClassDisplayName = "ET - MY new transformed event";
+            target.ClassType = ClassType.CONTENT_TYPE;
+            target.ClassContentTypeType = ClassContentTypeType.REUSABLE;
+        });
+
+        m.SetHandler<SampleCustomTableHandler>();
+
+        // register custom table handler once for all custom table mappings
+        serviceCollection.AddTransient<SampleCustomTableHandler>();
+
+        m.BuildField("EventID").AsPrimaryKey();
+
+        // build new field
+        var title = m.BuildField("Title");
+        // map "EventTitle" field form source data class "_ET.Event1" also use it as template for target field
+        title.SetFrom(sourceClassName1, "EventTitle", true);
+        // map "EventTitle" field form source data class "_ET.Event2"
+        title.SetFrom(sourceClassName2, "EventTitle");
+        // map "TitleCT" from custom table
+        title.SetFrom(sourceClassName3, "TitleCT");
+        // patch field definition, in this case lets change field caption 
+        title.WithFieldPatch(f => f.Caption = "Event title");
+
+
+        var description = m.BuildField("Description");
+        description.SetFrom(sourceClassName2, "EventSmallDesc", true);
+        description.SetFrom(sourceClassName3, "DescriptionCT");
+        description.WithFieldPatch(f => f.Caption = "Event description");
+
+        var teaser = m.BuildField("Teaser");
+        teaser.SetFrom(sourceClassName1, "EventTeaser", true);
+        teaser.WithFieldPatch(f => f.Caption = "Event teaser");
+
+        var text = m.BuildField("Text");
+        text.SetFrom(sourceClassName1, "EventText", true);
+        text.SetFrom(sourceClassName2, "EventHtml");
+        text.SetFrom(sourceClassName3, "EventHtmlCT");
+        text.WithFieldPatch(f => f.Caption = "Event text");
+
+        var startDate = m.BuildField("StartDate");
+        startDate.SetFrom(sourceClassName1, "EventDateStart", true);
+        // if needed use value conversion to adapt value
+        Func<object?, IConvertorContext, object?> dateConvertor = (v, context) =>
+        {
+            switch (context)
+            {
+                case ConvertorTreeNodeContext treeNodeContext:
+                    // here you can use available treenode context
+                    // (var nodeGuid, int nodeSiteId, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
+                    break;
+                case ConvertorCustomTableContext customTableContext:
+                {
+                    // handle any specific requirements if source data are of custom table class type 
+                    break;
+                }
+                default:
+                    // no context is available (in future, mapping feature could be extended and therefore different context will be supplied or no context at all)
+                    break;
+            }
+
+            // be strict about value assertion and isolate any unexpected value
+
+            return v switch
+            {
+                string stringValue => !string.IsNullOrWhiteSpace(stringValue) ? DateTime.Parse(stringValue) : null, // valid date or empty string isd expected, otherwise error
+                DateTime dateTimeValue => dateTimeValue,
+                null => null,
+                _ => throw new InvalidOperationException($"I didn't expected this value in instance of my class! {v}")
+            };
+        };
+        startDate.ConvertFrom(sourceClassName2, "EventStartDateAsText", false, dateConvertor);
+        startDate.ConvertFrom(sourceClassName3, "EventDateStartCT", false, dateConvertor);
+        startDate.WithFieldPatch(f => f.Caption = "Event start date");
+
+        // if desired add system field from custom table
+        var itemGuid = m.BuildField("EventGuid");
+        itemGuid.SetFrom(sourceClassName3, "ItemGuid", true);
+        itemGuid.WithFieldPatch(f =>
+        {
+            f.AllowEmpty = true; // allow empty, otherwise unmapped classes will throw
+            f.Caption = "Event guid";
+        });
+
+        serviceCollection.AddSingleton<IClassMapping>(m);
+
+
+
+        return serviceCollection;
+    }
+
+    public sealed class SampleCustomTableHandler : DefaultCustomTableClassMappingHandler
+    {
+        private readonly ILogger<DefaultCustomTableClassMappingHandler> logger;
+
+        public SampleCustomTableHandler(ILogger<DefaultCustomTableClassMappingHandler> logger) : base(logger) => this.logger = logger;
+
+        public override void EnsureContentItemLanguageMetadata(ContentItemLanguageMetadataModel languageMetadataInfo, CustomTableMappingHandlerContext context)
+        {
+            // always call base if You want to use default fallbacks and guid derivation/generation
+            // if base is not called, You have to handle all fallbacks Yourself 
+            base.EnsureContentItemLanguageMetadata(languageMetadataInfo, context);
+
+            if (context.SourceClassName.Equals("_ET.EventCustomTable", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (context.Values.TryGetValue("TitleCT", out object? mbTitle) && mbTitle is string titleCt)
+                {
+                    languageMetadataInfo.ContentItemLanguageMetadataDisplayName = titleCt;
+                }
+                else
+                {
+                    // no value assigned to my custom "TitleCT", i will leave fallback value generated with "DefaultCustomTableClassMappingHandler"
+                }
+            }
+            else
+            {
+                // unexpected dataclass?
+                logger.LogError("Unexpected data class '{ClassName}' in my mapping", context.SourceClassName);
+            }
+        }
     }
 
     /// <summary>
