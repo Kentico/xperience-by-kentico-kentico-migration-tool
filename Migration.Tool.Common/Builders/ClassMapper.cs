@@ -1,5 +1,6 @@
 using CMS.DataEngine;
 using CMS.FormEngine;
+using Migration.Tool.Common.Abstractions;
 
 namespace Migration.Tool.Common.Builders;
 
@@ -20,6 +21,11 @@ public interface IClassMapping
     bool IsCategoryMapped(string sourceClassName, int categoryID);
     void UseResusableSchema(string reusableSchemaName);
     IList<string> ReusableSchemaNames { get; }
+
+    /// <summary>
+    /// as for now, supported only for custom tables
+    /// </summary>
+    Type? MappingHandler { get; }
 }
 
 public interface IFieldMapping
@@ -95,12 +101,25 @@ public class MultiClassMapping(string targetClassName, Action<DataClassInfo> cla
 
     private readonly IList<string> reusableSchemaNames = [];
     IList<string> IClassMapping.ReusableSchemaNames => reusableSchemaNames;
+
+    #region Handlers
+
+    public Type? MappingHandler { get; private set; }
+
+    public void SetHandler<T>() where T : IClassMappingHandler => MappingHandler = typeof(T);
+
+    #endregion
 }
 
 public delegate bool MultiClassMappingCategoryFilter(string sourceClassName, int categoryID);
 
 public interface IConvertorContext;
 public record ConvertorTreeNodeContext(Guid NodeGuid, int NodeSiteId, int? DocumentId, bool MigratingFromVersionHistory) : IConvertorContext;
+public record ConvertorCustomTableContext() : IConvertorContext;
+
+public interface IMappingHandlerContext;
+
+public record CustomTableMappingHandlerContext(Dictionary<string, object?> Values, DataClassInfo TargetClassInfo, string SourceClassName);
 
 public class FieldBuilder(MultiClassMapping multiClassMapping, string targetFieldName)
 {
