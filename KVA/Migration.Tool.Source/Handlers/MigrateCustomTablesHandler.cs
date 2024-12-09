@@ -192,15 +192,15 @@ public class MigrateCustomTablesHandler(
                 continue;
             }
 
-            var ctis = modelFacade.SelectAllAsDictionary(cmsClass.ClassTableName);
-            foreach (var cti in ctis)
+            var customTableItems = modelFacade.SelectAllAsDictionary(cmsClass.ClassTableName);
+            foreach (var customTableItem in customTableItems)
             {
                 var results = mapper.Map(new CustomTableMapperSource(
                     targetDataClass.ClassFormDefinition,
                     cmsClass.ClassFormDefinition,
-                    cti.TryGetValue("ItemGUID", out object? itemGuid) && itemGuid is Guid guid ? guid : Guid.NewGuid(), // TODO tomas.krch: 2024-12-03 provide guid?
+                    customTableItem.TryGetValue("ItemGUID", out object? itemGuid) && itemGuid is Guid guid ? guid : Guid.NewGuid(), // TODO tomas.krch: 2024-12-03 provide guid?
                     cmsClass,
-                    cti,
+                    customTableItem,
                     mapping
                 ));
                 try
