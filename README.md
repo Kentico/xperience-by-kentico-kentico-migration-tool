@@ -19,7 +19,8 @@ Our documentation includes guides covering [the migration process from Kentico X
 View all [project releases](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/releases/).
 
 | Xperience Version | Library Version |
-| ----------------- | --------------- |
+|-------------------|-----------------|
+| 29.7.0            | 1.6.0           |
 | 29.6.0            | 1.4.0           |
 | 29.5.2            | 1.3.0           |
 | 29.3.3            | 1.2.0           |
