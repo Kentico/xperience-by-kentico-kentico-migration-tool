@@ -18,6 +18,7 @@ public static class ServiceCollectionExtensions
 
 
         // services.AddClassMergeExample();
+        // services.AddClassMergeExampleAsReusable();
         // services.AddSimpleRemodelingSample();
         // services.AddReusableRemodelingSample();
         // services.AddReusableSchemaIntegrationSample();

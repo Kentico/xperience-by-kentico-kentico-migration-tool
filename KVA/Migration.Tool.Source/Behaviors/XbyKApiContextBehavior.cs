@@ -11,8 +11,8 @@ using Migration.Tool.KXP.Api;
 
 namespace Migration.Tool.Source.Behaviors;
 
-public class XbKApiContextBehavior<TRequest, TResponse>(
-    ILogger<XbKApiContextBehavior<TRequest, TResponse>> logger,
+public class XbyKApiContextBehavior<TRequest, TResponse>(
+    ILogger<XbyKApiContextBehavior<TRequest, TResponse>> logger,
     IMigrationProtocol protocol,
     KxpApiInitializer initializer)
     : IPipelineBehavior<TRequest, TResponse>
@@ -28,9 +28,9 @@ public class XbKApiContextBehavior<TRequest, TResponse>(
         {
             protocol.Append(HandbookReferences
                 .MissingRequiredDependency<UserInfo>()
-                .WithMessage($"Target XbK doesn't contain default administrator account ('{UserInfoProvider.DEFAULT_ADMIN_USERNAME}'). Default administrator account is required for migration.")
+                .WithMessage($"Target XbyK doesn't contain default administrator account ('{UserInfoProvider.DEFAULT_ADMIN_USERNAME}'). Default administrator account is required for migration.")
             );
-            throw new InvalidOperationException($"Target XbK doesn't contain default administrator account ('{UserInfoProvider.DEFAULT_ADMIN_USERNAME}')");
+            throw new InvalidOperationException($"Target XbyK doesn't contain default administrator account ('{UserInfoProvider.DEFAULT_ADMIN_USERNAME}')");
         }
 
         using (new CMSActionContext(defaultAdmin) { User = defaultAdmin, UseGlobalAdminContext = true })

@@ -10,17 +10,17 @@ This repository is part of the [Xperience by Kentico Migration Toolkit](https://
 
 The Kentico Migration Tool transfers content and other data from **Kentico Xperience 13**, **Kentico 12** or **Kentico 11** to **Xperience by Kentico**.
 
-This repository contains several README documents containing information necessary for the correct usage of the Kentico Migration Tool. Namely:
+This tool supports migrating a project to Xperience by Kentico over multiple migration runs with built-in and custom data transformations.
 
-- [Migration CLI](./Migration.Toolkit.CLI/README.md) -- information about the necessary set up before running the Kentico Migration Tool.
-- [Usage Guide](./docs/Usage-Guide.md) -- information about what kind of projects the Kentico Migration Tool supports.
-- [Supported Data](./docs/Supported-Data.md) -- lists all available data for migration
-- [Migration Protocol](./Migration.Toolkit.CLI/MIGRATION_PROTOCOL_REFERENCE.md) -- provides information about the results of the migration and required manual steps, etc.
+Our documentation includes guides covering [the migration process from Kentico Xperience 13 to Xperience by Kentico](https://docs.kentico.com/x/migrate_from_kx13_guides).
 
 ## Library Version Matrix
 
+View all [project releases](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/releases/).
+
 | Xperience Version | Library Version |
-| ----------------- | --------------- |
+|-------------------|-----------------|
+| 29.7.0            | 1.6.0           |
 | 29.6.0            | 1.4.0           |
 | 29.5.2            | 1.3.0           |
 | 29.3.3            | 1.2.0           |
@@ -36,12 +36,18 @@ This repository contains several README documents containing information necessa
 
 Follow the steps below to run the Kentico Migration Tool:
 
-1. Clone or download the Migration.Tool source code from this repository.
-2. Open the `Migration.Tool.sln` solution in Visual Studio.
-3. Configure the options in the `Migration.Tool.CLI/appsettings.json` configuration file. See [`Migration.Tool.CLI/README.md - Configuration`](./Migration.Tool.CLI/README.md#Configuration) for details.
-4. Rebuild the solution and restore all required NuGet packages.
-5. Open the command line prompt.
-6. Navigate to the output directory of the `Migration.Tool.CLI` project. (under `.\Migration.Toolkit.CLI\bin\Debug\net8.0\`)
+1. Clone or download source code from this repository.
+2. Open the `.\Migration.Tool.sln` solution in your IDE.
+3. Configure the options in the `.\Migration.Tool.CLI\appsettings.json` configuration file.
+
+   - See [`Migration.Tool.CLI/README.md - Configuration`](./Migration.Tool.CLI/README.md#Configuration) for details.
+
+4. Build the solution.
+5. Open the the repository folder [in a terminal](https://github.com/microsoft/terminal).
+6. Navigate to the output directory of the `Migration.Tool.CLI` project.
+
+   - `.\Migration.Toolkit.CLI\bin\Debug\net8.0`
+
 7. Run the `Migration.Tool.CLI.exe migrate` command.
 
    - The following example shows the command with all parameters for complete migration:
@@ -50,33 +56,28 @@ Follow the steps below to run the Kentico Migration Tool:
      .\Migration.Tool.CLI.exe  migrate --sites --custom-modules --users --settings-keys --page-types --pages --attachments --contact-management --forms --media-libraries --data-protection --countries --custom-tables --members --categories
      ```
 
-   - You can migrate your projects iteratively. For repeated runs bypass depency checks by using the `--bypass-dependency-check` parameter, if you know that required dependencies were already migrated succesfully.
+8. Review the command line output of the tool.
 
-8. Observe the command line output. The command output is also stored in a log file (`logs\log-<date>.txt` under the output directory by default), which you can review later.
-9. Review the migration protocol, which provides information about the result of the migration, lists required manual steps, etc.
+   - The output is also logged to a file `logs\log-<date>.txt` under the output directory by default.
 
-   - You can find the protocol in the location specified by the `MigrationProtocolPath` key in the `appsettings.json` configuration file.
-   - For more information, see [`Migration.Tool.CLI/MIGRATION_PROTOCOL_REFERENCE.md`](./Migration.Tool.CLI/MIGRATION_PROTOCOL_REFERENCE.md).
+9. Review the migration protocol output, which provides information about the result of the migration, lists required manual steps, etc.
 
-The data is now migrated to the target Xperience by Kentico instance according to your configuration. See [`Migration.Tool.CLI/README.md`](./Migration.Tool.CLI/README.md) for detailed information about the migration CLI, configuration options, instructions related to individual object types, and manual migration steps.
+   - The output file path is found in the `Migration.Tool.CLI/appsettings.json` configuration file under the `MigrationProtocolPath` setting.
+
+The data is now migrated to the target Xperience by Kentico instance according to your configuration.
 
 ## Full Requirements
 
-View the [Usage Guide](./docs/Usage-Guide.md) for information about what kind of projects the Kentico Migration Tool supports.
+This repository contains several README documents containing information necessary for the correct usage of the Kentico Migration Tool.
 
-## Changelog of recent updates
-
-- **September 4, 2024**
-  - Migration of media libraries and attachments to assets is available
-  - Media libraries and attachments are now [migrated](/Migration.Toolkit.CLI/README.md#media-libraries) to content item assets by default
-- **June 13, 2024**
-  - Migration of categories to taxonomies is available
-- **March 11, 2024**
-  - Kentico Xperience 11 instances are supported as a source of migration
-- **February 1, 2024**
-  - Kentico Xperience 12 instances are supported as a source of migration
+- [Migration CLI](./Migration.Toolkit.CLI/README.md) - detailed information about the migration CLI, configuration options, instructions related to individual object types, and manual migration steps.
+- [Usage Guide](./docs/Usage-Guide.md) - information about what kind of projects the Kentico Migration Tool supports.
+- [Supported Data](./docs/Supported-Data.md) - lists all available data for migration
+- [Migration Protocol](./Migration.Toolkit.CLI/MIGRATION_PROTOCOL_REFERENCE.md) - provides information about the results of the migration and required manual steps, etc.
 
 ## Contributing
+
+If you are [creating an issue](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/issues/new) please provide all available information about the problem or error. If possible, include the command line output log file and migration protocol generated for your `Migration.Tool.CLI.exe migrate` command.
 
 To see the guidelines for Contributing to Kentico open source software, please see [Kentico's `CONTRIBUTING.md`](https://github.com/Kentico/.github/blob/main/CONTRIBUTING.md) for more information and follow the [Kentico's `CODE_OF_CONDUCT`](https://github.com/Kentico/.github/blob/main/CODE_OF_CONDUCT.md).
 

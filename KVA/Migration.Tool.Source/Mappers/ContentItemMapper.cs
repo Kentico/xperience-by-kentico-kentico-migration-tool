@@ -8,6 +8,7 @@ using CMS.FormEngine;
 using CMS.Websites;
 using CMS.Websites.Internal;
 using Kentico.Xperience.UMT.Model;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
@@ -38,6 +39,15 @@ public record CmsTreeMapperSource(
     ICmsSite SourceSite
 );
 
+public record CustomTableMapperSource(
+    string? TargetFormDefinition,
+    string SourceFormDefinition,
+    Guid ContentItemGuid,
+    ICmsClass SourceClass,
+    Dictionary<string, object?> Values,
+    IClassMapping ClassMapping
+);
+
 public class ContentItemMapper(
     ILogger<ContentItemMapper> logger,
     CoupledDataService coupledDataService,
@@ -52,8 +62,9 @@ public class ContentItemMapper(
     MediaLinkServiceFactory mediaLinkServiceFactory,
     ToolConfiguration configuration,
     ClassMappingProvider classMappingProvider,
-    PageBuilderPatcher pageBuilderPatcher
-    ) : UmtMapperBase<CmsTreeMapperSource>
+    PageBuilderPatcher pageBuilderPatcher,
+    IServiceProvider serviceProvider
+    ) : UmtMapperBase<CmsTreeMapperSource>, IUmtMapper<CustomTableMapperSource>
 {
     private const string CLASS_FIELD_CONTROL_NAME = "controlname";
 
@@ -66,7 +77,7 @@ public class ContentItemMapper(
         var sourceNodeClass = modelFacade.SelectById<ICmsClass>(cmsTree.NodeClassID) ?? throw new InvalidOperationException($"Fatal: node class is missing, class id '{cmsTree.NodeClassID}'");
         var mapping = classMappingProvider.GetMapping(sourceNodeClass.ClassName);
         var targetClassGuid = sourceNodeClass.ClassGUID;
-        DataClassInfo targetClassInfo = null;
+        var targetClassInfo = DataClassInfoProvider.ProviderObject.Get(sourceNodeClass.ClassName);
         if (mapping != null)
         {
             targetClassInfo = DataClassInfoProvider.ProviderObject.Get(mapping.TargetClassName) ?? throw new InvalidOperationException($"Unable to find target class '{mapping.TargetClassName}'");
@@ -77,6 +88,11 @@ public class ContentItemMapper(
 
         var contentItemGuid = spoiledGuidContext.EnsureNodeGuid(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsTree.NodeID);
         bool isMappedTypeReusable = (targetClassInfo?.ClassContentTypeType is ClassContentTypeType.REUSABLE) || configuration.ClassNamesConvertToContentHub.Contains(sourceNodeClass.ClassName);
+        if (isMappedTypeReusable)
+        {
+            logger.LogTrace("Target is reusable {Info}", new { cmsTree.NodeAliasPath, targetClassInfo?.ClassName });
+        }
+
         yield return new ContentItemModel
         {
             ContentItemGUID = contentItemGuid,
@@ -269,17 +285,24 @@ public class ContentItemMapper(
                     var targetColumns = commonFields
                         .Select(cf => ReusableSchemaService.RemoveClassPrefix(sourceNodeClass.ClassName, cf.Name))
                         .Union(fi.GetColumnNames(false))
-                        .Except([CmsClassMapper.GetLegacyDocumentName(fi, sourceNodeClass.ClassName)])
+                        .Except([CmsClassMapper.GetLegacyDocumentName(fi, targetClassInfo?.ClassName)])
                         .ToList();
 
                     var coupledDataRow = coupledDataService.GetSourceCoupledDataRow(sourceNodeClass.ClassTableName, primaryKeyName, cmsDocument.DocumentForeignKeyValue);
+                    var sourceObjectContext = new DocumentSourceObjectContext(cmsTree, sourceNodeClass, sourceSite, sfi, fi, cmsDocument.DocumentID);
+                    var convertorContext = new ConvertorTreeNodeContext(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsDocument.DocumentID, false);
                     // TODO tomas.krch: 2024-09-05 propagate async to root
                     MapCoupledDataFieldValues(dataModel.CustomProperties,
                         columnName => coupledDataRow?[columnName],
                         columnName => coupledDataRow?.ContainsKey(columnName) ?? false,
-                        cmsTree, cmsDocument.DocumentID,
+                        //  cmsTree, cmsDocument.DocumentID,
                         targetColumns, sfi, fi,
-                        false, sourceNodeClass, sourceSite, mapping
+                        false, sourceNodeClass,
+                        // sourceSite, 
+                        mapping,
+                        sourceObjectContext,
+                        convertorContext,
+                        targetClassInfo.ClassName
                     ).GetAwaiter().GetResult();
 
                     foreach (var formFieldInfo in commonFields)
@@ -300,7 +323,7 @@ public class ContentItemMapper(
                 }
 
                 string targetClassName = mapping?.TargetClassName ?? sourceNodeClass.ClassName;
-                if (CmsClassMapper.GetLegacyDocumentName(fi, targetClassName) is { } legacyDocumentNameFieldName)
+                if (CmsClassMapper.GetLegacyDocumentName(fi, targetClassInfo.ClassName) is { } legacyDocumentNameFieldName)
                 {
                     if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(targetClassName))
                     {
@@ -375,6 +398,9 @@ public class ContentItemMapper(
 
         ContentItemCommonDataModel? commonDataModel = null;
         ContentItemDataModel? dataModel = null;
+
+        string targetClassName = mapping?.TargetClassName ?? sourceNodeClass.ClassName;
+
         try
         {
             string? pageTemplateConfiguration = adapter.DocumentPageTemplateConfiguration;
@@ -452,14 +478,23 @@ public class ContentItemMapper(
                 var sourceColumns = commonFields
                     .Select(cf => ReusableSchemaService.RemoveClassPrefix(sourceNodeClass.ClassName, cf.Name))
                     .Union(fi.GetColumnNames(false))
-                    .Except([CmsClassMapper.GetLegacyDocumentName(fi, sourceNodeClass.ClassName)])
+                    .Except([CmsClassMapper.GetLegacyDocumentName(fi, targetClassName)])
                     .ToList();
 
+                var sourceObjectContext = new DocumentSourceObjectContext(cmsTree, sourceNodeClass, sourceSite, sfi, fi, adapter.DocumentID);
+                var convertorContext = new ConvertorTreeNodeContext(cmsTree.NodeGUID, cmsTree.NodeSiteID, adapter.DocumentID, false);
                 // TODO tomas.krch: 2024-09-05 propagate async to root
                 MapCoupledDataFieldValues(dataModel.CustomProperties,
                     s => adapter.GetValue(s),
-                    s => adapter.HasValueSet(s)
-                    , cmsTree, adapter.DocumentID, sourceColumns, sfi, fi, true, sourceNodeClass, sourceSite, mapping).GetAwaiter().GetResult();
+                    s => adapter.HasValueSet(s),
+                    // cmsTree, adapter.DocumentID,
+                    sourceColumns, sfi, fi, true, sourceNodeClass,
+                    // sourceSite, 
+                    mapping,
+                    sourceObjectContext,
+                    convertorContext,
+                    targetClassName
+                    ).GetAwaiter().GetResult();
 
                 foreach (var formFieldInfo in commonFields)
                 {
@@ -503,26 +538,26 @@ public class ContentItemMapper(
     }
 
     private async Task MapCoupledDataFieldValues(
-        Dictionary<string, object?> target,
-        Func<string, object?> getSourceValue,
-        Func<string, bool> containsSourceValue,
-        ICmsTree cmsTree,
-        int? documentId,
-        List<string> newColumnNames,
-        FormInfo oldFormInfo,
-        FormInfo newFormInfo,
-        bool migratingFromVersionHistory,
-        ICmsClass sourceNodeClass,
-        ICmsSite site,
-        IClassMapping mapping
-    )
+      Dictionary<string, object?> target,
+      Func<string, object?> getSourceValue,
+      Func<string, bool> containsSourceValue,
+      List<string> newColumnNames,
+      FormInfo oldFormInfo,
+      FormInfo newFormInfo,
+      bool migratingFromVersionHistory,
+      ICmsClass sourceNodeClass,
+      IClassMapping mapping,
+      ISourceObjectContext sourceObjectContext,
+      IConvertorContext convertorContext,
+      string targetClassName
+  )
     {
         Debug.Assert(sourceNodeClass.ClassTableName != null, "sourceNodeClass.ClassTableName != null");
 
         foreach (string targetColumnName in newColumnNames)
         {
             string targetFieldName = null!;
-            Func<object?, object?> valueConvertor = sourceValue => sourceValue;
+            Func<object?, IConvertorContext, object?> valueConvertor = (sourceValue, _) => sourceValue;
             switch (mapping?.GetMapping(targetColumnName, sourceNodeClass.ClassName))
             {
                 case FieldMappingWithConversion fieldMappingWithConversion:
@@ -534,13 +569,13 @@ public class ContentItemMapper(
                 case FieldMapping fieldMapping:
                 {
                     targetFieldName = fieldMapping.TargetFieldName;
-                    valueConvertor = sourceValue => sourceValue;
+                    valueConvertor = (sourceValue, _) => sourceValue;
                     break;
                 }
                 case null:
                 {
                     targetFieldName = targetColumnName;
-                    valueConvertor = sourceValue => sourceValue;
+                    valueConvertor = (sourceValue, _) => sourceValue;
                     break;
                 }
 
@@ -552,7 +587,7 @@ public class ContentItemMapper(
                 targetFieldName.Equals("ContentItemDataID", StringComparison.InvariantCultureIgnoreCase) ||
                 targetFieldName.Equals("ContentItemDataCommonDataID", StringComparison.InvariantCultureIgnoreCase) ||
                 targetFieldName.Equals("ContentItemDataGUID", StringComparison.InvariantCultureIgnoreCase) ||
-                targetFieldName.Equals(CmsClassMapper.GetLegacyDocumentName(newFormInfo, sourceNodeClass.ClassName), StringComparison.InvariantCultureIgnoreCase)
+                targetFieldName.Equals(CmsClassMapper.GetLegacyDocumentName(newFormInfo, targetClassName), StringComparison.InvariantCultureIgnoreCase)
             )
             {
                 logger.LogTrace("Skipping '{FieldName}'", targetFieldName);
@@ -587,28 +622,29 @@ public class ContentItemMapper(
             string? controlName = field.Settings[CLASS_FIELD_CONTROL_NAME]?.ToString()?.ToLowerInvariant();
 
             object? sourceValue = getSourceValue(sourceFieldName);
-            target[targetFieldName] = valueConvertor.Invoke(sourceValue);
-            var fvmc = new FieldMigrationContext(field.DataType, controlName, targetColumnName, new DocumentSourceObjectContext(cmsTree, sourceNodeClass, site, oldFormInfo, newFormInfo, documentId));
+            target[targetFieldName] = valueConvertor.Invoke(sourceValue, convertorContext);
+            var fvmc = new FieldMigrationContext(field.DataType, controlName, targetColumnName, sourceObjectContext);
             var fmb = fieldMigrationService.GetFieldMigration(fvmc);
             if (fmb is FieldMigration fieldMigration)
             {
+                var documentSourceObjectContext = sourceObjectContext as DocumentSourceObjectContext;
                 if (controlName != null)
                 {
-                    if (fieldMigration.Actions?.Contains(TcaDirective.ConvertToPages) ?? false)
+                    if ((fieldMigration.Actions?.Contains(TcaDirective.ConvertToPages) ?? false) && documentSourceObjectContext != null)
                     {
                         // relation to other document
-                        var convertedRelation = relationshipService.GetNodeRelationships(cmsTree.NodeID, sourceNodeClass.ClassName, field.Guid)
+                        var convertedRelation = relationshipService.GetNodeRelationships(documentSourceObjectContext.CmsTree.NodeID, sourceNodeClass.ClassName, field.Guid)
                             .Select(r => new WebPageRelatedItem { WebPageGuid = spoiledGuidContext.EnsureNodeGuid(r.RightNode.NodeGUID, r.RightNode.NodeSiteID, r.RightNode.NodeID) });
 
-                        target.SetValueAsJson(targetFieldName, valueConvertor.Invoke(convertedRelation));
+                        target.SetValueAsJson(targetFieldName, valueConvertor.Invoke(convertedRelation, convertorContext));
                     }
                     else
                     {
                         // leave as is
-                        target[targetFieldName] = valueConvertor.Invoke(sourceValue);
+                        target[targetFieldName] = valueConvertor.Invoke(sourceValue, convertorContext);
                     }
 
-                    if (fieldMigration.TargetFormComponent == "webpages")
+                    if (fieldMigration.TargetFormComponent == "webpages" && documentSourceObjectContext != null)
                     {
                         if (sourceValue is string pageReferenceJson)
                         {
@@ -617,18 +653,18 @@ public class ContentItemMapper(
                             {
                                 if (jToken.Path.EndsWith("NodeGUID", StringComparison.InvariantCultureIgnoreCase))
                                 {
-                                    var patchedGuid = spoiledGuidContext.EnsureNodeGuid(jToken.Value<Guid>(), cmsTree.NodeSiteID);
+                                    var patchedGuid = spoiledGuidContext.EnsureNodeGuid(jToken.Value<Guid>(), documentSourceObjectContext.CmsTree.NodeSiteID);
                                     jToken.Replace(JToken.FromObject(patchedGuid));
                                 }
                             }
 
-                            target[targetFieldName] = valueConvertor.Invoke(parsed.ToString().Replace("\"NodeGuid\"", "\"WebPageGuid\""));
+                            target[targetFieldName] = valueConvertor.Invoke(parsed.ToString().Replace("\"NodeGuid\"", "\"WebPageGuid\""), convertorContext);
                         }
                     }
                 }
                 else
                 {
-                    target[targetFieldName] = valueConvertor.Invoke(sourceValue);
+                    target[targetFieldName] = valueConvertor.Invoke(sourceValue, convertorContext);
                 }
             }
             else if (fmb != null)
@@ -637,7 +673,7 @@ public class ContentItemMapper(
                 {
                     case { Success: true } result:
                     {
-                        target[targetFieldName] = valueConvertor.Invoke(result.MigratedValue);
+                        target[targetFieldName] = valueConvertor.Invoke(result.MigratedValue, convertorContext);
                         break;
                     }
                     case { Success: false }:
@@ -652,7 +688,7 @@ public class ContentItemMapper(
             }
             else
             {
-                target[targetFieldName] = valueConvertor?.Invoke(sourceValue);
+                target[targetFieldName] = valueConvertor?.Invoke(sourceValue, convertorContext);
             }
 
 
@@ -670,46 +706,48 @@ public class ContentItemMapper(
             {
                 var mediaLinkService = mediaLinkServiceFactory.Create();
                 var htmlProcessor = new HtmlProcessor(html, mediaLinkService);
-
-                target[targetColumnName] = await htmlProcessor.ProcessHtml(site.SiteID, async (result, original) =>
+                if (sourceObjectContext is DocumentSourceObjectContext documentSourceObjectContext)
                 {
-                    switch (result)
+                    target[targetColumnName] = await htmlProcessor.ProcessHtml(documentSourceObjectContext.Site.SiteID, async (result, original) =>
                     {
-                        case { LinkKind: MediaLinkKind.Guid or MediaLinkKind.DirectMediaPath, MediaKind: MediaKind.MediaFile }:
+                        switch (result)
                         {
-                            var mediaFile = MediaHelper.GetMediaFile(result, modelFacade);
-                            if (mediaFile is null)
+                            case { LinkKind: MediaLinkKind.Guid or MediaLinkKind.DirectMediaPath, MediaKind: MediaKind.MediaFile }:
                             {
-                                return original;
+                                var mediaFile = MediaHelper.GetMediaFile(result, modelFacade);
+                                if (mediaFile is null)
+                                {
+                                    return original;
+                                }
+
+                                return assetFacade.GetAssetUri(mediaFile);
+                            }
+                            case { LinkKind: MediaLinkKind.Guid, MediaKind: MediaKind.Attachment, MediaGuid: { } mediaGuid, LinkSiteId: var linkSiteId }:
+                            {
+                                var attachment = MediaHelper.GetAttachment(result, modelFacade);
+                                if (attachment is null)
+                                {
+                                    return original;
+                                }
+
+                                await attachmentMigrator.MigrateAttachment(attachment);
+
+                                string? culture = null;
+                                if (attachment.AttachmentDocumentID is { } attachmentDocumentId)
+                                {
+                                    culture = modelFacade.SelectById<ICmsDocument>(attachmentDocumentId)?.DocumentCulture;
+                                }
+
+                                return assetFacade.GetAssetUri(attachment, culture);
                             }
 
-                            return assetFacade.GetAssetUri(mediaFile);
+                            default:
+                                break;
                         }
-                        case { LinkKind: MediaLinkKind.Guid, MediaKind: MediaKind.Attachment, MediaGuid: { } mediaGuid, LinkSiteId: var linkSiteId }:
-                        {
-                            var attachment = MediaHelper.GetAttachment(result, modelFacade);
-                            if (attachment is null)
-                            {
-                                return original;
-                            }
 
-                            await attachmentMigrator.MigrateAttachment(attachment);
-
-                            string? culture = null;
-                            if (attachment.AttachmentDocumentID is { } attachmentDocumentId)
-                            {
-                                culture = modelFacade.SelectById<ICmsDocument>(attachmentDocumentId)?.DocumentCulture;
-                            }
-
-                            return assetFacade.GetAssetUri(attachment, culture);
-                        }
-
-                        default:
-                            break;
-                    }
-
-                    return original;
-                });
+                        return original;
+                    });
+                }
             }
         }
     }
@@ -737,4 +775,171 @@ public class ContentItemMapper(
     }
 
 
+    public IEnumerable<IUmtModel> Map(CustomTableMapperSource source)
+    {
+        // only reusable items
+        (string? targetFormDefinition, string sourceFormDefinition, var contentItemGuid, var sourceClass, var values, var classMapping) = source;
+
+        var mapping = classMappingProvider.GetMapping(sourceClass.ClassName);
+        var targetClassGuid = sourceClass.ClassGUID;
+        var targetClassInfo = DataClassInfoProvider.ProviderObject.Get(sourceClass.ClassName);
+        if (mapping != null)
+        {
+            targetClassInfo = DataClassInfoProvider.ProviderObject.Get(mapping.TargetClassName) ?? throw new InvalidOperationException($"Unable to find target class '{mapping.TargetClassName}'");
+            targetClassGuid = targetClassInfo.ClassGUID;
+        }
+
+        var mappingHandler = typeof(DefaultCustomTableClassMappingHandler);
+        if (classMapping.MappingHandler is not null)
+        {
+            mappingHandler = classMapping.MappingHandler;
+        }
+
+        if (serviceProvider.GetRequiredService(mappingHandler) is not IClassMappingHandler mappingHandlerInstance)
+        {
+            throw new InvalidOperationException($"Incorrect handler registered '{mappingHandler.FullName}'");
+        }
+
+        IClassMappingHandler handler = new ClassMappingHandlerWrapper(mappingHandlerInstance, logger);
+        var ctms = new CustomTableMappingHandlerContext(values, targetClassInfo, sourceClass.ClassName);
+
+        bool isMappedTypeReusable = targetClassInfo?.ClassContentTypeType is ClassContentTypeType.REUSABLE; // TODO tomas.krch: 2024-12-03 configuration here? || configuration.ClassNamesConvertToContentHub.Contains(sourceNodeClass.ClassName);
+        if (!isMappedTypeReusable)
+        {
+            throw new InvalidOperationException("Mapping of custom table items to web site channel is currently not supported");
+        }
+
+        var contentItemModel = new ContentItemModel { ContentItemGUID = contentItemGuid, ContentItemIsReusable = isMappedTypeReusable, ContentItemDataClassGuid = targetClassGuid, };
+
+        handler.EnsureContentItem(contentItemModel, ctms);
+
+        yield return contentItemModel;
+
+        var versionStatus = VersionStatus.Published;
+
+
+        DateTime? scheduledPublishWhen = null;
+        DateTime? scheduleUnpublishWhen = null;
+        string? contentItemCommonDataPageBuilderWidgets = null;
+        string? contentItemCommonDataPageTemplateConfiguration = null;
+
+
+        // todo async
+        var languageVersions = handler.ProduceLanguageVersions(ctms).GetAwaiter().GetResult();
+        foreach (var (contentLanguageInfo, languageSensitiveValues) in languageVersions)
+        {
+            var commonDataModel = new ContentItemCommonDataModel
+            {
+                ContentItemCommonDataContentItemGuid = contentItemGuid,
+                ContentItemCommonDataContentLanguageGuid = contentLanguageInfo.ContentLanguageGUID,
+                ContentItemCommonDataVersionStatus = versionStatus,
+                ContentItemCommonDataPageBuilderWidgets = contentItemCommonDataPageBuilderWidgets,
+                ContentItemCommonDataPageTemplateConfiguration = contentItemCommonDataPageTemplateConfiguration,
+            };
+
+            handler.EnsureContentItemCommonData(commonDataModel, ctms);
+
+            var dataModel = new ContentItemDataModel
+            {
+                ContentItemDataGUID = commonDataModel.ContentItemCommonDataGUID,
+                ContentItemDataCommonDataGuid = commonDataModel.ContentItemCommonDataGUID,
+                ContentItemContentTypeName = mapping?.TargetClassName ?? targetClassInfo?.ClassName
+            };
+
+            var fi = new FormInfo(targetFormDefinition);
+            var sfi = new FormInfo(sourceFormDefinition);
+            string primaryKeyName = "";
+            foreach (var sourceFieldInfo in sfi.GetFields(true, true))
+            {
+                if (sourceFieldInfo.PrimaryKey)
+                {
+                    primaryKeyName = sourceFieldInfo.Name;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(primaryKeyName))
+            {
+                throw new Exception("Error, unable to find coupled data primary key");
+            }
+
+            var commonFields = UnpackReusableFieldSchemas(fi.GetFields<FormSchemaInfo>()).ToArray();
+            var targetColumns = commonFields
+                .Select(cf => ReusableSchemaService.RemoveClassPrefix(sourceClass.ClassName, cf.Name))
+                .Union(fi.GetColumnNames(false))
+                .Except([CmsClassMapper.GetLegacyDocumentName(fi, targetClassInfo.ClassName)])
+                .ToList();
+
+            var sourceObjectContext = new CustomTableSourceObjectContext();
+            var convertorContext = new ConvertorCustomTableContext();
+
+            // TODO tomas.krch: 2024-09-05 propagate async to root
+            MapCoupledDataFieldValues(dataModel.CustomProperties,
+                columnName => languageSensitiveValues[columnName],
+                columnName => languageSensitiveValues.ContainsKey(columnName),
+                // cmsTree, cmsDocument.DocumentID,
+                targetColumns, sfi, fi,
+                false, sourceClass,
+                //sourceSite, 
+                mapping,
+                sourceObjectContext,
+                convertorContext,
+                targetClassInfo.ClassName
+            ).GetAwaiter().GetResult();
+
+            string? documentNameFieldName = CmsClassMapper.GetLegacyDocumentName(fi, targetClassInfo.ClassName);
+            if (documentNameFieldName is not null)
+            {
+                dataModel.CustomProperties[documentNameFieldName] = contentItemModel.ContentItemName;
+            }
+
+            foreach (var formFieldInfo in commonFields)
+            {
+                string originalFieldName = ReusableSchemaService.RemoveClassPrefix(sourceClass.ClassName, formFieldInfo.Name);
+                if (dataModel.CustomProperties.TryGetValue(originalFieldName, out object? value))
+                {
+                    commonDataModel.CustomProperties ??= [];
+                    logger.LogTrace("Reusable schema field '{FieldName}' from schema '{SchemaGuid}' populated", formFieldInfo.Name, formFieldInfo.Properties[ReusableFieldSchemaConstants.SCHEMA_IDENTIFIER_KEY]);
+                    commonDataModel.CustomProperties[formFieldInfo.Name] = value;
+                    dataModel.CustomProperties.Remove(originalFieldName);
+                }
+                else
+                {
+                    logger.LogTrace("Reusable schema field '{FieldName}' from schema '{SchemaGuid}' missing", formFieldInfo.Name, formFieldInfo.Properties[ReusableFieldSchemaConstants.SCHEMA_IDENTIFIER_KEY]);
+                }
+            }
+
+            yield return commonDataModel;
+            yield return dataModel;
+
+            Guid? documentCreatedByUserGuid = null;
+            int? createdByUserId = handler.GetCreatedByUserId(ctms, sourceClass.ClassName, sourceClass.ClassFormDefinition);
+            if (createdByUserId.HasValue && modelFacade.TrySelectGuid<ICmsUser>(createdByUserId, out var createdByUserGuid))
+            {
+                documentCreatedByUserGuid = createdByUserGuid;
+            }
+
+            Guid? documentModifiedByUserGuid = null;
+            int? modifiedByUserId = handler.GetModifiedByUserId(ctms, sourceClass.ClassName, sourceClass.ClassFormDefinition);
+            if (modelFacade.TrySelectGuid<ICmsUser>(modifiedByUserId, out var modifiedByUserGuid))
+            {
+                documentModifiedByUserGuid = modifiedByUserGuid;
+            }
+
+            var languageMetadataInfo = new ContentItemLanguageMetadataModel
+            {
+                ContentItemLanguageMetadataContentItemGuid = contentItemGuid,
+                ContentItemLanguageMetadataLatestVersionStatus = VersionStatus.Published, // That's the latest status of th item for admin optimization
+                ContentItemLanguageMetadataCreatedByUserGuid = documentCreatedByUserGuid,
+                ContentItemLanguageMetadataModifiedByUserGuid = documentModifiedByUserGuid,
+                ContentItemLanguageMetadataHasImageAsset = false,
+                ContentItemLanguageMetadataContentLanguageGuid = commonDataModel.ContentItemCommonDataContentLanguageGuid, // DocumentCulture -> language entity needs to be created and its ID used here
+                ContentItemLanguageMetadataScheduledPublishWhen = scheduledPublishWhen,
+                ContentItemLanguageMetadataScheduledUnpublishWhen = scheduleUnpublishWhen
+            };
+
+            handler.EnsureContentItemLanguageMetadata(languageMetadataInfo, ctms);
+
+            yield return languageMetadataInfo;
+        }
+    }
 }

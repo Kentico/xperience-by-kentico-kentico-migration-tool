@@ -1,31 +1,47 @@
-## Custom migrations
+# Custom migrations
 
 Samples:
+
 - `Migration.Tool.Extensions/CommunityMigrations/SampleTextMigration.cs` contains simplest implementation for migration of text fields
 - `Migration.Tool.Extensions/DefaultMigrations/AssetMigration.cs` contains real world migration of assets (complex example)
 
 To create custom migration:
-- create new file in `Migration.Tool.Extensions/CommunityMigrations` (directory if you need more files for single migration)
-- implement interface `Migration.Tool.KXP.Api.Services.CmsClass.IFieldMigration`
-  - implement property rank, set number bellow 100 000 - for example 5000
-  - implement method shall migrate (if method returns true, migration will be used)
-  - implement `MigrateFieldDefinition`, where objective is to mutate argument `XElement field` that represents one particular field
-  - implement `MigrateValue` where goal is to return new migrated value derived from `object? sourceValue`
-- finally register in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as `Transient` dependency into service collection. For example `services.AddTransient<IFieldMigration, AssetMigration>()`
+
+- Create new file in `Migration.Tool.Extensions/CommunityMigrations` (directory if you need more files for single migration)
+- Implement interface `Migration.Tool.KXP.Api.Services.CmsClass.IFieldMigration`
+  - Implement property rank, set number bellow 100 000 - for example 5000
+  - Implement method shall migrate (if method returns true, migration will be used)
+  - Implement `MigrateFieldDefinition`, where objective is to mutate argument `XElement field` that represents one particular field
+  - Implement `MigrateValue` where goal is to return new migrated value derived from `object? sourceValue`
+- Register in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as `Transient` dependency into service collection. For example `services.AddTransient<IFieldMigration, AssetMigration>()`
 
 ## Custom class mappings for page types
 
-examples are `Migration.Tool.Extensions/ClassMappings/ClassMappingSample.cs`
+Example code is found in `Migration.Tool.Extensions/ClassMappings/ClassMappingSample.cs`.
 
 ### Class remodeling sample
 
-demonstrated in method `AddSimpleRemodelingSample`, goal is to take single data class and change it to more suitable shape.
+Example code is found in the method `AddSimpleRemodelingSample`.
+
+The goal of this method is to take a **single data class** and change it to more suitable shape.
 
 ### Class merge sample
 
-demonstrated in method `AddClassMergeExample`, goal is to take multiple data classes from source instance and define their relation to new class
+Example code is found in the method `AddClassMergeExample`.
 
-lets define new class:
+The goal of this method is to take **multiple data classes** from the source instance and define their relation to a new class.
+
+### Class mapping with category control
+
+Example code is found in the method `AddK11EshopExample`.
+
+The goal of this method is to show how to **control migration of categories**. You can enable/disable the migration based on category ID and/or source class name. 
+This is useful when merging multiple data classes into one (see _Class merge sample_)
+
+### Example
+
+Let's define a new class:
+
 ```csharp
 var m = new MultiClassMapping(targetClassName, target =>
 {
@@ -37,55 +53,80 @@ var m = new MultiClassMapping(targetClassName, target =>
 });
 ```
 
-define new primary key:
+Then define a new primary key:
+
 ```csharp
 m.BuildField("EventID").AsPrimaryKey();
 ```
 
-and finally lets define relations to fields:
+Finally, let's define relations to fields:
 
-1) build field title 
-```csharp
-// build new field
-var title = m.BuildField("Title");
+1. build field title
 
-// map "EventTitle" field form source data class "_ET.Event1" also use it as template for target field
-title.SetFrom("_ET.Event1", "EventTitle", true);
-// map "EventTitle" field form source data class "_ET.Event2"
-title.SetFrom("_ET.Event2", "EventTitle");
+   ```csharp
+   // build new field
+   var title = m.BuildField("Title");
 
-// patch field definition, in this case lets change field caption 
-title.WithFieldPatch(f => f.Caption = "Event title");
-```
+   // map "EventTitle" field form source data class "_ET.Event1" also use it as template for target field
+   title.SetFrom("_ET.Event1", "EventTitle", true);
+   // map "EventTitle" field form source data class "_ET.Event2"
+   title.SetFrom("_ET.Event2", "EventTitle");
 
-2) in similar fashion map other fields
+   // patch field definition, in this case lets change field caption
+   title.WithFieldPatch(f => f.Caption = "Event title");
+   ```
 
-3) if needed custom value conversion can be used
-```csharp
-var startDate = m.BuildField("StartDate");
-startDate.SetFrom("_ET.Event1", "EventDateStart", true);
-// if needed use value conversion to adapt value
-startDate.ConvertFrom("_ET.Event2", "EventStartDateAsText", false,
-    v => v?.ToString() is { } av && !string.IsNullOrWhiteSpace(av) ? DateTime.Parse(av) : null
-);
-startDate.WithFieldPatch(f => f.Caption = "Event start date");
-```
+1. in similar fashion map other fields
+1. if needed custom value conversion can be used
 
-4) register class mapping to dependency injection ocntainer
-```csharp
-serviceCollection.AddSingleton<IClassMapping>(m); 
-```
+   ```csharp
+   var startDate = m.BuildField("StartDate");
+   startDate.SetFrom("_ET.Event1", "EventDateStart", true);
+   // if needed use value conversion to adapt value
+   startDate.ConvertFrom("_ET.Event2", "EventStartDateAsText", false,
+       (v, context) =>
+       {
+           switch (context)
+           {
+               case ConvertorTreeNodeContext treeNodeContext:
+                   // here you can use available treenode context
+                   // (var nodeGuid, int nodeSiteId, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
+                   break;
+               default:
+                   // no context is available (possibly when tool is extended with other conversion possibilities)
+                   break;
+           }
+
+           return v?.ToString() is { } av && !string.IsNullOrWhiteSpace(av) ? DateTime.Parse(av) : null;
+       });
+   startDate.WithFieldPatch(f => f.Caption = "Event start date");
+   ```
+
+1. register class mapping to dependency injection container
+
+   ```csharp
+   serviceCollection.AddSingleton<IClassMapping>(m);
+   ```
 
 ### Inject and use reusable schema
 
-demonstrated in method `AddReusableSchemaIntegrationSample`, goal is to take single data class and assign reusable schema.
+Example code is found in the method `AddReusableSchemaIntegrationSample`.
+
+The goal of this method is to take a **single data class** and assign reusable schema.
+
+### Convert page type to reusable content item (content hub)
+
+Example code is found in the method `AddReusableRemodelingSample`.
+
+Please note, that all information unique to page will be lost.
 
 ## Custom widget migrations
 
-Custom widget migration allows you to remodel the original widget as a new widget type. The prominent operations are 
+Custom widget migration allows you to remodel the original widget as a new widget type. The prominent operations are
 changing the target widget type and recombining the original properties.
 
 To create custom widget migration:
+
 - create new file in `Migration.Tool.Extensions/CommunityMigrations` (directory if you need more files for single migration)
 - implement interface `Migration.Tool.KXP.Api.Services.CmsClass.IWidgetMigration`
   - implement property `Rank`, set number bellow 100 000 - for example 5000. Rank determines the order by which the migrations are tested to be eligible via the `ShallMigrate` method
@@ -97,27 +138,25 @@ To create custom widget migration:
       - In the special case when you introduce a new property whose name overlaps with original property. Otherwise the migration infered from the original property would be used
         - If your new property is not supposed to be subject to property migrations and the original one was, explicitly specify `WidgetNoOpMigration` for this property
     - You can also override the property migration of an original property if that suits your case
-    
-- finally register in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as `Transient` dependency into service collection. For example `services.AddTransient<IWidgetMigration, YourMigrationClass>()`
+- Register in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as `Transient` dependency into service collection. For example `services.AddTransient<IWidgetMigration, YourMigrationClass>()`
 
 Samples:
+
 - [Sample BannerWidget migration](./CommunityMigrations/SampleWidgetMigration.cs)
-
-### Convert page type to reusable content item (content hub)
-
-demonstrated in method `AddReusableRemodelingSample`. Please note, that all information unique to page will be lost
 
 ## Custom widget property migrations
 
 To create custom widget property migration:
-- create new file in `Migration.Tool.Extensions/CommunityMigrations` (directory if you need more files for single migration)
-- implement interface `Migration.Tool.KXP.Api.Services.CmsClass.IWidgetPropertyMigration`
-  - implement property `Rank`, set number bellow 100 000 - for example 5000. Rank determines the order by which the migrations are tested to be eligible via the `ShallMigrate` method
-  - implement method `ShallMigrate` (if method returns true, migration will be used)
-  - implement `MigrateWidgetProperty`, where objective is to convert old JToken representing json value to new converted JToken value  
-- finally register in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as `Transient` dependency into service collection. For example `services.AddTransient<IWidgetPropertyMigration, WidgetPathSelectorMigration>()`
 
-Samples:
+- Create new file in `Migration.Tool.Extensions/CommunityMigrations` (directory if you need more files for single migration)
+- Implement interface `Migration.Tool.KXP.Api.Services.CmsClass.IWidgetPropertyMigration`
+  - Implement property `Rank`, set number bellow 100 000 - for example 5000. Rank determines the order by which the migrations are tested to be eligible via the `ShallMigrate` method
+  - Implement method `ShallMigrate` (if method returns true, migration will be used)
+  - Implement `MigrateWidgetProperty`, where objective is to convert old JToken representing json value to new converted JToken value
+- Register in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as `Transient` dependency into service collection. For example `services.AddTransient<IWidgetPropertyMigration, WidgetPathSelectorMigration>()`
+
+### Widget migration samples
+
 - [Path selector migration](./DefaultMigrations/WidgetPathSelectorMigration.cs)
 - [Page selector migration](./DefaultMigrations/WidgetPageSelectorMigration.cs)
 - [File selector migration](./DefaultMigrations/WidgetFileMigration.cs)

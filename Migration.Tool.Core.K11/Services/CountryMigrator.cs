@@ -26,7 +26,7 @@ public class CountryMigrator(
     {
         if (!kxpApiInitializer.EnsureApiIsInitialized())
         {
-            throw new InvalidOperationException("Falied to initialize kentico API. Please check configuration.");
+            throw new InvalidOperationException("Failed to initialize Kentico API. Please check configuration.");
         }
 
         var k11Context = k11ContextFactory.CreateDbContext();
