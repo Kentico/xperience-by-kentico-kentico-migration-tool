@@ -71,10 +71,10 @@ The data is now migrated to the target Xperience by Kentico instance according t
 
 This repository contains several README documents containing information necessary for the correct usage of the Kentico Migration Tool.
 
-- [Migration CLI](./Migration.Toolkit.CLI/README.md) - detailed information about the migration CLI, configuration options, instructions related to individual object types, and manual migration steps.
+- [Migration CLI](./Migration.Tool.CLI/README.md) - detailed information about the migration CLI, configuration options, instructions related to individual object types, and manual migration steps.
 - [Usage Guide](./docs/Usage-Guide.md) - information about what kind of projects the Kentico Migration Tool supports.
 - [Supported Data](./docs/Supported-Data.md) - lists all available data for migration
-- [Migration Protocol](./Migration.Toolkit.CLI/MIGRATION_PROTOCOL_REFERENCE.md) - provides information about the results of the migration and required manual steps, etc.
+- [Migration Protocol](./Migration.Tool.CLI/MIGRATION_PROTOCOL_REFERENCE.md) - provides information about the results of the migration and required manual steps, etc.
 
 ## Contributing
 
