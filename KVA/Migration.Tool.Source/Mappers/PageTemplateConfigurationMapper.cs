@@ -12,7 +12,7 @@ public class PageTemplateConfigurationMapper(
     ILogger<PageTemplateConfigurationMapper> logger,
     PrimaryKeyMappingContext pkContext,
     IProtocol protocol,
-    PageBuilderPatcher pageBuilderPatcher
+    VisualBuilderPatcher visualBuilderPatcher
 )
     : EntityMapperBase<ICmsPageTemplateConfiguration, PageTemplateConfigurationInfo>(logger, pkContext, protocol)
 {
@@ -44,7 +44,7 @@ public class PageTemplateConfigurationMapper(
             string? configurationTemplate = source.PageTemplateConfigurationTemplate;
             string? configurationWidgets = source.PageTemplateConfigurationWidgets;
 
-            (configurationTemplate, configurationWidgets, bool _) = pageBuilderPatcher.PatchJsonDefinitions(source.PageTemplateConfigurationSiteID, configurationTemplate, configurationWidgets).GetAwaiter().GetResult();
+            (configurationTemplate, configurationWidgets, bool _) = visualBuilderPatcher.PatchJsonDefinitions(source.PageTemplateConfigurationSiteID, configurationTemplate, configurationWidgets).GetAwaiter().GetResult();
 
             target.PageTemplateConfigurationTemplate = configurationTemplate;
             target.PageTemplateConfigurationWidgets = configurationWidgets;
