@@ -62,7 +62,7 @@ public class ContentItemMapper(
     MediaLinkServiceFactory mediaLinkServiceFactory,
     ToolConfiguration configuration,
     ClassMappingProvider classMappingProvider,
-    PageBuilderPatcher pageBuilderPatcher,
+    VisualBuilderPatcher visualBuilderPatcher,
     IServiceProvider serviceProvider
     ) : UmtMapperBase<CmsTreeMapperSource>, IUmtMapper<CustomTableMapperSource>
 {
@@ -174,8 +174,8 @@ public class ContentItemMapper(
 
             DateTime? scheduledPublishWhen = null;
             DateTime? scheduleUnpublishWhen = null;
-            string? contentItemCommonDataPageBuilderWidgets = null;
-            string? contentItemCommonDataPageTemplateConfiguration = null;
+            string? contentItemCommonDataVisualBuilderWidgets = null;
+            string? contentItemCommonDataVisualBuilderTemplateConfiguration = null;
 
             bool ndp = false;
             if (!migratedAsContentFolder)
@@ -214,14 +214,14 @@ public class ContentItemMapper(
                     }
                     case CmsDocumentK12 doc:
                     {
-                        contentItemCommonDataPageBuilderWidgets = doc.DocumentPageBuilderWidgets;
-                        contentItemCommonDataPageTemplateConfiguration = doc.DocumentPageTemplateConfiguration;
+                        contentItemCommonDataVisualBuilderWidgets = doc.DocumentPageBuilderWidgets;
+                        contentItemCommonDataVisualBuilderTemplateConfiguration = doc.DocumentPageTemplateConfiguration;
                         break;
                     }
                     case CmsDocumentK13 doc:
                     {
-                        contentItemCommonDataPageBuilderWidgets = doc.DocumentPageBuilderWidgets;
-                        contentItemCommonDataPageTemplateConfiguration = doc.DocumentPageTemplateConfiguration;
+                        contentItemCommonDataVisualBuilderWidgets = doc.DocumentPageBuilderWidgets;
+                        contentItemCommonDataVisualBuilderTemplateConfiguration = doc.DocumentPageTemplateConfiguration;
                         break;
                     }
 
@@ -229,7 +229,7 @@ public class ContentItemMapper(
                         break;
                 }
 
-                (contentItemCommonDataPageTemplateConfiguration, contentItemCommonDataPageBuilderWidgets, ndp) = pageBuilderPatcher.PatchJsonDefinitions(source.CmsTree.NodeSiteID, contentItemCommonDataPageTemplateConfiguration, contentItemCommonDataPageBuilderWidgets).GetAwaiter().GetResult();
+                (contentItemCommonDataVisualBuilderTemplateConfiguration, contentItemCommonDataVisualBuilderWidgets, ndp) = visualBuilderPatcher.PatchJsonDefinitions(source.CmsTree.NodeSiteID, contentItemCommonDataVisualBuilderTemplateConfiguration, contentItemCommonDataVisualBuilderWidgets).GetAwaiter().GetResult();
             }
 
             var documentGuid = spoiledGuidContext.EnsureDocumentGuid(
@@ -246,8 +246,8 @@ public class ContentItemMapper(
                 ContentItemCommonDataContentLanguageGuid = languageGuid, // DocumentCulture -> language entity needs to be created and its ID used here
                 ContentItemCommonDataVersionStatus = versionStatus,
                 ContentItemCommonDataIsLatest = !draftMigrated, // Flag for latest record to know what to retrieve for the UI
-                ContentItemCommonDataPageBuilderWidgets = contentItemCommonDataPageBuilderWidgets,
-                ContentItemCommonDataPageTemplateConfiguration = contentItemCommonDataPageTemplateConfiguration,
+                ContentItemCommonDataVisualBuilderWidgets = contentItemCommonDataVisualBuilderWidgets,
+                ContentItemCommonDataVisualBuilderTemplateConfiguration = contentItemCommonDataVisualBuilderTemplateConfiguration,
             };
 
             if (ndp)
@@ -405,7 +405,7 @@ public class ContentItemMapper(
         {
             string? pageTemplateConfiguration = adapter.DocumentPageTemplateConfiguration;
             string? pageBuildWidgets = adapter.DocumentPageBuilderWidgets;
-            (pageTemplateConfiguration, pageBuildWidgets, bool ndp) = pageBuilderPatcher.PatchJsonDefinitions(checkoutVersion.NodeSiteID, pageTemplateConfiguration, pageBuildWidgets).GetAwaiter().GetResult();
+            (pageTemplateConfiguration, pageBuildWidgets, bool ndp) = visualBuilderPatcher.PatchJsonDefinitions(checkoutVersion.NodeSiteID, pageTemplateConfiguration, pageBuildWidgets).GetAwaiter().GetResult();
 
             #region Find existing guid
 
@@ -436,8 +436,8 @@ public class ContentItemMapper(
                 ContentItemCommonDataContentLanguageGuid = contentLanguageGuid,
                 ContentItemCommonDataVersionStatus = VersionStatus.Draft,
                 ContentItemCommonDataIsLatest = true, // Flag for latest record to know what to retrieve for the UI
-                ContentItemCommonDataPageBuilderWidgets = pageBuildWidgets,
-                ContentItemCommonDataPageTemplateConfiguration = pageTemplateConfiguration
+                ContentItemCommonDataVisualBuilderWidgets = pageBuildWidgets,
+                ContentItemCommonDataVisualBuilderTemplateConfiguration = pageTemplateConfiguration
             };
 
             if (ndp)
@@ -833,8 +833,8 @@ public class ContentItemMapper(
                 ContentItemCommonDataContentItemGuid = contentItemGuid,
                 ContentItemCommonDataContentLanguageGuid = contentLanguageInfo.ContentLanguageGUID,
                 ContentItemCommonDataVersionStatus = versionStatus,
-                ContentItemCommonDataPageBuilderWidgets = contentItemCommonDataPageBuilderWidgets,
-                ContentItemCommonDataPageTemplateConfiguration = contentItemCommonDataPageTemplateConfiguration,
+                ContentItemCommonDataVisualBuilderWidgets = contentItemCommonDataPageBuilderWidgets,
+                ContentItemCommonDataVisualBuilderTemplateConfiguration = contentItemCommonDataPageTemplateConfiguration,
             };
 
             handler.EnsureContentItemCommonData(commonDataModel, ctms);

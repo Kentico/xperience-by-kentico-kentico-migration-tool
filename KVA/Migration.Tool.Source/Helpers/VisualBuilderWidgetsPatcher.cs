@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Migration.Tool.Source.Helpers;
 
-public static class PageBuilderWidgetsPatcher
+public static class VisualBuilderWidgetsPatcher
 {
     public static EditableAreasConfiguration DeferredPatchConfiguration(EditableAreasConfiguration configuration, TreePathConvertor convertor, out bool anythingChanged)
     {
