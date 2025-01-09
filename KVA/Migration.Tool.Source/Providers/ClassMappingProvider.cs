@@ -147,7 +147,7 @@ public class ClassMappingProvider(
             if (!hasFieldsAlready)
             {
                 FormDefinitionHelper.MapFormDefinitionFields(logger, fieldMigrationService, nfi.GetXmlDefinition(), false, true, newDt, false, false);
-                CmsClassMapper.PatchDataClassInfo(newDt, out _, out _);
+                CmsClassMapper.PatchDataClassInfo(newDt, [], out _, out _);
             }
 
             if (classMapping.TargetFieldPatchers.Count > 0)
