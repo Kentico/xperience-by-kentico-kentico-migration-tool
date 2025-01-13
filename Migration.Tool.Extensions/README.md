@@ -3,9 +3,9 @@
 To create custom migrations:
 
 1. Create the custom migration class:
-    - [Field migrations](#Customize field migrations)
-    - [Widget migrations](#Customize widget migrations)
-    - [Widget property migrations](#Customize widget property migrations)
+    - [Field migrations](#customize-field-migrations)
+    - [Widget migrations](#customize-widget-migrations)
+    - [Widget property migrations](#customize-widget-property-migrations)
 2. [Register the migration](#Register migrations)
 
 ## Customize field migrations
@@ -45,7 +45,7 @@ You can customize widget migration to change the widget to which source widgets 
 
 You can see a sample: [SampleWidgetMigration.cs](./CommunityMigrations/SampleWidgetMigration.cs)
 
-After implementing the migration, you need to [register the migration](#Register migrations) in the system.
+After implementing the migration, you need to [register the migration](#register-migrations) in the system.
 
 ## Customize widget property migrations
 
@@ -67,7 +67,7 @@ You can see samples:
 - [Page selector migration](./DefaultMigrations/WidgetPageSelectorMigration.cs)
 - [File selector migration](./DefaultMigrations/WidgetFileMigration.cs)
 
-After implementing the migration, you need to [register the migration](#Register migrations) in the system.
+After implementing the migration, you need to [register the migration](#register-migrations) in the system.
 
 ## Register migrations
 
