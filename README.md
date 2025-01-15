@@ -82,7 +82,7 @@ If you are [creating an issue](https://github.com/Kentico/xperience-by-kentico-k
 
 To see the guidelines for Contributing to Kentico open source software, please see [Kentico's `CONTRIBUTING.md`](https://github.com/Kentico/.github/blob/main/CONTRIBUTING.md) for more information and follow the [Kentico's `CODE_OF_CONDUCT`](https://github.com/Kentico/.github/blob/main/CODE_OF_CONDUCT.md).
 
-Instructions and technical details for contributing to **this** project can be found in [Contributing Setup](./docs/Contributing-Setup.md).
+Instructions and technical details for **contributing to this project** can be found in [Contributing Setup](./docs/Contributing-Setup.md).
 
 ## License
 
