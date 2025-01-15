@@ -126,7 +126,7 @@ type fields:
 
 Additionally, you can enable the Conversion of text fields with media links (_Media selection_ form control) to content item assets or media
 library files by setting
-the `OptInFeatures.CustomMigration.FieldMigrations` [configuration option](#convert-text-fields-with-media-links).
+the `OptInFeatures.CustomMigration.FieldMigrations` [configuration option](#convert-text-fields-with-media-links). If you need additional control or want to customize the default mappings of data types, you can [customize the Migration Tool behavior](../Migration.Tool.Extensions/README.md).
 
 Some [Form components](https://docs.xperience.io/x/5ASiCQ) used by content type fields in Xperience by Kentico store
 data differently than their equivalent Form control in Xperience 13. To ensure that content is displayed correctly on
@@ -139,6 +139,8 @@ most common components and selectors.
 You can create [reusable field schemas](https://docs.kentico.com/x/D4_OD) from page types from which other page types
 inherit, by setting
 the `Settings.CreateReusableFieldSchemaForClasses` [configuration option](#convert-page-types-to-reusable-field-schemas).
+
+Additionally, you can use the extensibility feature to implement [customizations](../Migration.Tool.Extensions/README.md) that allow you to inject reusable field schemas into content types.
 
 #### Content items
 
@@ -174,6 +176,8 @@ compatibility mode. However, we strongly recommend updating your codebase to the
 The Kentico Migration Tool provides an advanced migration mode for page builder content that utilizes API discovery on
 the source instance. To learn more details and how to configure this feature,
 see [Source instance API discovery](#source-instance-api-discovery).
+
+Additionally, you can define [custom migrations of widgets and widget properties](../Migration.Tool.Extensions/README.md) to change the default behavior and migrate widget content to Xperience by Kentico components.
 
 #### Categories
 
@@ -227,6 +231,7 @@ The migration includes the following:
   - _Contact management > Contact management - Account_ (however, accounts are currently not supported in Xperience by
     Kentico)
   - _Contact management > Contact management - Contact_
+- You can customize the default migration of fields using the [extensibility feature](../Migration.Tool.Extensions/README.md).
 
 Module and class migration does NOT include:
 
@@ -279,7 +284,7 @@ If required, you can [configure the tool](#convert-attachments-and-media-library
 
 #### Forms
 
-The migration does not include the content of form autoresponder and notification emails.
+The migration does not include the content of form autoresponder and notification emails. You can customize the default migration of fields using the [extensibility feature](../Migration.Tool.Extensions/README.md).
 
 You can migrate form autoresponders to Xperience by Kentico manually by copying your HTML code and content into Email
 templates and Emails. See [Emails](https://docs.xperience.io/x/IaDWCQ).
@@ -302,6 +307,7 @@ The command migrates all users with access to the administration interface. Note
   - If you encounter issues related to email validation, you can change the default validation behavior via
     the `CMSEmailValidationRegex` [application key](https://docs.xperience.io/x/yA6RBg).
 - Custom user fields can be migrated together with _module classes_.
+  - You can customize the default migration of fields using the [extensibility feature](../Migration.Tool.Extensions/README.md).
 
 Additionally, the command migrates all roles and user-role bindings for users whose _Privilege level_ is _Editor_ or
 higher.
@@ -349,6 +355,8 @@ The migration includes:
   ```powershell
   Migration.Tool.CLI.exe migrate --sites --custom-modules  --users --members
   ```
+
+- You can customize the default migration of fields using the [extensibility feature](../Migration.Tool.Extensions/README.md).
 
 The migration **_DOES NOT_** include:
 
