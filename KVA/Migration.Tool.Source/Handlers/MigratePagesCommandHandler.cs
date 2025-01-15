@@ -46,8 +46,6 @@ public class MigratePagesCommandHandler(
 {
     private const string ClassCmsRoot = "CMS.Root";
 
-    private readonly ContentItemNameProvider contentItemNameProvider = new(new ContentItemNameValidator());
-
     private readonly ConcurrentDictionary<string, ContentLanguageInfo> languages = new(StringComparer.InvariantCultureIgnoreCase);
 
     public async Task<CommandResult> Handle(MigratePagesCommand request, CancellationToken cancellationToken)
@@ -183,7 +181,7 @@ public class MigratePagesCommandHandler(
                     );
                 }
 
-                string safeNodeName = await contentItemNameProvider.Get(ksNode.NodeName);
+                string safeNodeName = await Service.Resolve<IContentItemCodeNameProvider>().Get(ksNode.NodeName);
                 var ksNodeParent = modelFacade.SelectById<ICmsTree>(ksNode.NodeParentID);
                 var nodeParentGuid = ksNodeParent?.NodeAliasPath == "/" || ksNodeParent == null
                     ? (Guid?)null
@@ -288,7 +286,7 @@ public class MigratePagesCommandHandler(
             }
         }
 
-        await ExecDeferredPageBuilderPatch();
+        await ExecDeferredVisualBuilderPatch();
 
         return new GenericCommandResult();
     }
@@ -638,7 +636,7 @@ public class MigratePagesCommandHandler(
 
     #region Deffered patch
 
-    private async Task ExecDeferredPageBuilderPatch()
+    private async Task ExecDeferredVisualBuilderPatch()
     {
         logger.LogInformation("Executing TreePath patch");
 
@@ -648,10 +646,10 @@ public class MigratePagesCommandHandler(
             {
                 var contentItemCommonDataInfo = await ContentItemCommonDataInfo.Provider.GetAsync(uniqueId);
 
-                contentItemCommonDataInfo.ContentItemCommonDataPageBuilderWidgets = DeferredPatchPageBuilderWidgets(
-                    contentItemCommonDataInfo.ContentItemCommonDataPageBuilderWidgets, webSiteChannelId, out bool anythingChangedW);
-                contentItemCommonDataInfo.ContentItemCommonDataPageTemplateConfiguration = DeferredPatchPageTemplateConfiguration(
-                    contentItemCommonDataInfo.ContentItemCommonDataPageTemplateConfiguration, webSiteChannelId, out bool anythingChangedC);
+                contentItemCommonDataInfo.ContentItemCommonDataVisualBuilderWidgets = DeferredPatchVisualBuilderWidgets(
+                    contentItemCommonDataInfo.ContentItemCommonDataVisualBuilderWidgets, webSiteChannelId, out bool anythingChangedW);
+                contentItemCommonDataInfo.ContentItemCommonDataVisualBuilderTemplateConfiguration = DeferredPatchVisualTemplateConfiguration(
+                    contentItemCommonDataInfo.ContentItemCommonDataVisualBuilderTemplateConfiguration, webSiteChannelId, out bool anythingChangedC);
 
                 if (anythingChangedC || anythingChangedW)
                 {
@@ -661,12 +659,12 @@ public class MigratePagesCommandHandler(
             else if (className == PageTemplateConfigurationInfo.TYPEINFO.ObjectClassName)
             {
                 var pageTemplateConfigurationInfo = await PageTemplateConfigurationInfo.Provider.GetAsync(uniqueId);
-                pageTemplateConfigurationInfo.PageTemplateConfigurationWidgets = DeferredPatchPageBuilderWidgets(
+                pageTemplateConfigurationInfo.PageTemplateConfigurationWidgets = DeferredPatchVisualBuilderWidgets(
                     pageTemplateConfigurationInfo.PageTemplateConfigurationWidgets,
                     webSiteChannelId,
                     out bool anythingChangedW
                 );
-                pageTemplateConfigurationInfo.PageTemplateConfigurationTemplate = DeferredPatchPageTemplateConfiguration(
+                pageTemplateConfigurationInfo.PageTemplateConfigurationTemplate = DeferredPatchVisualTemplateConfiguration(
                     pageTemplateConfigurationInfo.PageTemplateConfigurationTemplate,
                     webSiteChannelId,
                     out bool anythingChangedC
@@ -679,12 +677,12 @@ public class MigratePagesCommandHandler(
         }
     }
 
-    private string DeferredPatchPageTemplateConfiguration(string documentPageTemplateConfiguration, int webSiteChannelId, out bool anythingChanged)
+    private string DeferredPatchVisualTemplateConfiguration(string documentPageTemplateConfiguration, int webSiteChannelId, out bool anythingChanged)
     {
         if (!string.IsNullOrWhiteSpace(documentPageTemplateConfiguration))
         {
             var configuration = JObject.Parse(documentPageTemplateConfiguration);
-            PageBuilderWidgetsPatcher.DeferredPatchProperties(configuration, TreePathConvertor.GetSiteConverter(webSiteChannelId), out anythingChanged);
+            VisualBuilderWidgetsPatcher.DeferredPatchProperties(configuration, TreePathConvertor.GetSiteConverter(webSiteChannelId), out anythingChanged);
             return JsonConvert.SerializeObject(configuration);
         }
 
@@ -692,11 +690,11 @@ public class MigratePagesCommandHandler(
         return documentPageTemplateConfiguration;
     }
 
-    private string DeferredPatchPageBuilderWidgets(string documentPageBuilderWidgets, int webSiteChannelId, out bool anythingChanged)
+    private string DeferredPatchVisualBuilderWidgets(string documentPageBuilderWidgets, int webSiteChannelId, out bool anythingChanged)
     {
         if (!string.IsNullOrWhiteSpace(documentPageBuilderWidgets))
         {
-            var patched = PageBuilderWidgetsPatcher.DeferredPatchConfiguration(
+            var patched = VisualBuilderWidgetsPatcher.DeferredPatchConfiguration(
                 JsonConvert.DeserializeObject<EditableAreasConfiguration>(documentPageBuilderWidgets),
                 TreePathConvertor.GetSiteConverter(webSiteChannelId),
                 out anythingChanged

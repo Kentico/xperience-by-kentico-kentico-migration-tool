@@ -17,8 +17,8 @@ namespace Migration.Tool.Source.Services;
 
 public record PageBuilderPatchResult(string? Configuration, string? Widgets, bool NeedsDeferredPatch);
 
-public class PageBuilderPatcher(
-    ILogger<PageBuilderPatcher> logger,
+public class VisualBuilderPatcher(
+    ILogger<VisualBuilderPatcher> logger,
     SourceInstanceContext sourceInstanceContext,
     WidgetMigrationService widgetMigrationService,
     ModelFacade modelFacade,

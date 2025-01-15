@@ -79,8 +79,26 @@ Example code is found in `Migration.Tool.Extensions/ClassMappings/ClassMappingSa
 Example code is found in the method `AddSimpleRemodelingSample`.
 
 The goal of this method is to take a **single data class** and change it to more suitable shape.
+Example code is found in the method `AddSimpleRemodelingSample`.
+
+The goal of this method is to take a **single data class** and change it to more suitable shape.
 
 ### Class merge sample
+
+Example code is found in the method `AddClassMergeExample`.
+
+The goal of this method is to take **multiple data classes** from the source instance and define their relation to a new class.
+
+### Class mapping with category control
+
+Example code is found in the method `AddK11EshopExample`.
+
+The goal of this method is to show how to **control migration of categories**. You can enable/disable the migration based on category ID and/or source class name. 
+This is useful when merging multiple data classes into one (see _Class merge sample_)
+
+### Example
+
+Let's define a new class:
 
 Example code is found in the method `AddClassMergeExample`.
 
@@ -110,6 +128,8 @@ var m = new MultiClassMapping(targetClassName, target =>
 
 Then define a new primary key:
 
+Then define a new primary key:
+
 ```csharp
 m.BuildField("EventID").AsPrimaryKey();
 ```
@@ -117,7 +137,13 @@ m.BuildField("EventID").AsPrimaryKey();
 Finally, let's define relations to fields:
 
 1. build field title
+Finally, let's define relations to fields:
 
+1. build field title
+
+   ```csharp
+   // build new field
+   var title = m.BuildField("Title");
    ```csharp
    // build new field
    var title = m.BuildField("Title");
@@ -126,14 +152,45 @@ Finally, let's define relations to fields:
    title.SetFrom("_ET.Event1", "EventTitle", true);
    // map "EventTitle" field form source data class "_ET.Event2"
    title.SetFrom("_ET.Event2", "EventTitle");
+   // map "EventTitle" field form source data class "_ET.Event1" also use it as template for target field
+   title.SetFrom("_ET.Event1", "EventTitle", true);
+   // map "EventTitle" field form source data class "_ET.Event2"
+   title.SetFrom("_ET.Event2", "EventTitle");
 
+   // patch field definition, in this case lets change field caption
+   title.WithFieldPatch(f => f.Caption = "Event title");
+   ```
    // patch field definition, in this case lets change field caption
    title.WithFieldPatch(f => f.Caption = "Event title");
    ```
 
 1. in similar fashion map other fields
 1. if needed custom value conversion can be used
+1. in similar fashion map other fields
+1. if needed custom value conversion can be used
 
+   ```csharp
+   var startDate = m.BuildField("StartDate");
+   startDate.SetFrom("_ET.Event1", "EventDateStart", true);
+   // if needed use value conversion to adapt value
+   startDate.ConvertFrom("_ET.Event2", "EventStartDateAsText", false,
+       (v, context) =>
+       {
+           switch (context)
+           {
+               case ConvertorTreeNodeContext treeNodeContext:
+                   // here you can use available treenode context
+                   // (var nodeGuid, int nodeSiteId, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
+                   break;
+               default:
+                   // no context is available (possibly when tool is extended with other conversion possibilities)
+                   break;
+           }
+
+           return v?.ToString() is { } av && !string.IsNullOrWhiteSpace(av) ? DateTime.Parse(av) : null;
+       });
+   startDate.WithFieldPatch(f => f.Caption = "Event start date");
+   ```
    ```csharp
    var startDate = m.BuildField("StartDate");
    startDate.SetFrom("_ET.Event1", "EventDateStart", true);

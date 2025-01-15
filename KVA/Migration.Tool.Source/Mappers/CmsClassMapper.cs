@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Xml;
-
 using CMS.ContentEngine;
 using CMS.Core;
 using CMS.DataEngine;
@@ -54,6 +53,8 @@ public class CmsClassMapper(
 
             logger.LogDebug("{ClassName} is {@Properties}", source.ClassName, new { isCustomizableSystemClass, classIsCustom, source.ClassResourceID, classResource?.ResourceName });
         }
+
+        var existingFieldGUIDs = new FormInfo(target.ClassFormDefinition).ItemsList.OfType<FormFieldInfo>().ToDictionary(x => x.Name, x => x.Guid);
 
         FormDefinitionHelper.MapFormDefinitionFields(logger, fieldMigrationService, source, target, isCustomizableSystemClass, classIsCustom);
 
@@ -141,7 +142,7 @@ public class CmsClassMapper(
                 target.ClassType = ClassType.OTHER;
                 target.ClassContentTypeType = null;
 
-                target = PatchDataClassInfo(target, out string? oldPrimaryKeyName, out string? documentNameField);
+                target = PatchDataClassInfo(target, existingFieldGUIDs, out string? oldPrimaryKeyName, out string? documentNameField);
 
                 break;
             }
@@ -175,7 +176,7 @@ public class CmsClassMapper(
                 target.ClassType = ClassType.CONTENT_TYPE;
                 target.ClassContentTypeType = ClassContentTypeType.REUSABLE;
 
-                target = PatchDataClassInfo(target, out string? oldPrimaryKeyName, out string? documentNameField);
+                target = PatchDataClassInfo(target, existingFieldGUIDs, out string? oldPrimaryKeyName, out string? documentNameField);
                 break;
             }
 
@@ -193,7 +194,7 @@ public class CmsClassMapper(
                     ? ClassContentTypeType.REUSABLE
                     : ClassContentTypeType.WEBSITE;
 
-                target = PatchDataClassInfo(target, out string? oldPrimaryKeyName, out string? documentNameField);
+                target = PatchDataClassInfo(target, existingFieldGUIDs, out string? oldPrimaryKeyName, out string? documentNameField);
                 break;
             }
 
@@ -204,7 +205,7 @@ public class CmsClassMapper(
         return target;
     }
 
-    public static DataClassInfo PatchDataClassInfo(DataClassInfo dataClass, out string? oldPrimaryKeyName, out string? documentNameField)
+    public static DataClassInfo PatchDataClassInfo(DataClassInfo dataClass, Dictionary<string, Guid> existingFieldGUIDs, out string? oldPrimaryKeyName, out string? documentNameField)
     {
         oldPrimaryKeyName = null;
         documentNameField = null;
@@ -213,13 +214,22 @@ public class CmsClassMapper(
             var fi = new FormInfo(dataClass.ClassFormDefinition);
             string tableName = dataClass.ClassTableName;
             var contentTypeManager = Service.Resolve<IContentTypeManager>();
+
             contentTypeManager.Initialize(dataClass);
+
             if (!string.IsNullOrWhiteSpace(tableName))
             {
                 dataClass.ClassTableName = tableName;
             }
 
             var nfi = new FormInfo(dataClass.ClassFormDefinition);
+            foreach (var item in nfi.ItemsList.OfType<FormFieldInfo>())
+            {
+                if (existingFieldGUIDs.TryGetValue(item.Name, out var existingGUID))
+                {
+                    item.Guid = existingGUID;
+                }
+            }
 
             foreach (var dataDefinitionItem in fi.GetFormElements(true, true) ?? [])
             {
@@ -268,7 +278,7 @@ public class CmsClassMapper(
 
     public static string? GetLegacyDocumentName(FormInfo nfi, string className)
     {
-        if (nfi.GetFields(true, true).FirstOrDefault(f => GuidHelper.CreateDocumentNameFieldGuid($"documentname|{className}").Equals(f.Guid)) is { } foundField)
+        if (nfi.GetFields(true, true).FirstOrDefault(f => GuidHelper.CreateFieldGuid($"documentname|{className}").Equals(f.Guid)) is { } foundField)
         {
             return foundField.Name;
         }
@@ -276,9 +286,9 @@ public class CmsClassMapper(
         return null;
     }
 
-    private static void AppendDocumentNameField(FormInfo nfi, string className, out string documentNameField)
+    private static void AppendDocumentNameField(FormInfo nfi, string newClassName, out string documentNameField)
     {
-        if (GetLegacyDocumentName(nfi, className) is { } fieldName)
+        if (GetLegacyDocumentName(nfi, newClassName) is { } fieldName)
         {
             documentNameField = fieldName;
             return;
@@ -301,7 +311,7 @@ public class CmsClassMapper(
             Size = 100,
             Precision = 0,
             DefaultValue = null,
-            Guid = GuidHelper.CreateDocumentNameFieldGuid($"documentname|{className}"),
+            Guid = GuidHelper.CreateFieldGuid($"documentname|{newClassName}"),
             System = false, // no longer system field, system doesn't rely on this field anymore
             Settings = { { "controlname", "Kentico.Administration.TextInput" } }
         });

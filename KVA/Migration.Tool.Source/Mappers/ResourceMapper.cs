@@ -27,11 +27,11 @@ public class ResourceMapper(ILogger<ResourceMapper> logger, PrimaryKeyMappingCon
 
         if (target.ResourceName == Kx13SystemResource.Licenses)
         {
-            target.ResourceName = XbkSystemResource.CMS_Licenses;
-            logger.LogInformation("Patching CMS Resource 'Licences': name changed to '{ResourceNamePatched}'", XbkSystemResource.CMS_Licenses);
+            target.ResourceName = XbyKSystemResource.CMS_Licenses;
+            logger.LogInformation("Patching CMS Resource 'Licences': name changed to '{ResourceNamePatched}'", XbyKSystemResource.CMS_Licenses);
         }
 
-        if (!XbkSystemResource.All.Contains(target.ResourceName) || Kx13SystemResource.ConvertToNonSysResource.Contains(target.ResourceName))
+        if (!XbyKSystemResource.All.Contains(target.ResourceName) || Kx13SystemResource.ConvertToNonSysResource.Contains(target.ResourceName))
         {
             // custom resource
 

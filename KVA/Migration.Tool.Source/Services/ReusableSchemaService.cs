@@ -88,8 +88,11 @@ public class ReusableSchemaService(ILogger<ReusableSchemaService> logger, ToolCo
     {
         var formInfo = new FormInfo(dataClassInfo.ClassFormDefinition);
         var schema = reusableFieldSchemaManager.Get(reusableFieldSchemaName);
-        formInfo.AddFormItem(new FormSchemaInfo { Name = dataClassInfo.ClassName, Guid = schema.Guid });
-        dataClassInfo.ClassFormDefinition = formInfo.GetXmlDefinition();
+        if (!formInfo.ItemsList.Any(x => x is FormSchemaInfo fsi && fsi.Guid == schema.Guid))
+        {
+            formInfo.AddFormItem(new FormSchemaInfo { Name = dataClassInfo.ClassName, Guid = schema.Guid });
+            dataClassInfo.ClassFormDefinition = formInfo.GetXmlDefinition();
+        }
     }
 
     public IEnumerable<FormFieldInfo> GetFieldsFromReusableSchema(DataClassInfo dataClassInfo)
