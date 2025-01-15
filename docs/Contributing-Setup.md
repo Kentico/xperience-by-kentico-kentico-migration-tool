@@ -8,7 +8,15 @@ When implementing a new feature, follow these steps:
 1. Create a Pull Request with your feature targeting the release branch.
    - Prepare a documentation for the new feature in the appropriate README file.
 1. Request a review from a repo administrator. Provide a description of the feature and the documentation.
-1. Once the PR is successfully merged, the repo administrator will handle remaining actions, such as merging release branch into master, handling the repo release notes and creating a release tag.
+
+The repo administrator will handle remaining actions:
+
+1. Review any PRs targeting the release branch.
+1. Add the release to the *Library Version Matrix* in the [main README file](/README.md).
+1. Merge the release branch into the `master` branch at the appropriate time.
+1. Create a new GitHub [Tag](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/tags) for the released version of the repo.
+1. Create GitHub [release notes](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/releases) for the released version of the repo.
+1. Delete the release branch (and optionally create a branch for the next release).
 
 ## Submitting issues
 
