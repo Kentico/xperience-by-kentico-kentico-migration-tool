@@ -19,7 +19,7 @@ Our documentation includes guides covering [the migration process from Kentico X
 View all [project releases](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/releases/).
 
 | Xperience Version | Library Version |
-|-------------------|-----------------|
+| ----------------- | --------------- |
 | 30.0.0            | 2.0.0           |
 | 29.7.0            | 1.6.0           |
 | 29.6.0            | 1.4.0           |
@@ -47,7 +47,7 @@ Follow the steps below to run the Kentico Migration Tool:
 5. Open the the repository folder [in a terminal](https://github.com/microsoft/terminal).
 6. Navigate to the output directory of the `Migration.Tool.CLI` project.
 
-   - `.\Migration.Toolkit.CLI\bin\Debug\net8.0`
+   - `.\Migration.Tool.CLI\bin\Debug\net8.0`
 
 7. Run the `Migration.Tool.CLI.exe migrate` command.
 
