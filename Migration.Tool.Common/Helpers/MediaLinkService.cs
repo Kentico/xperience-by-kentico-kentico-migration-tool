@@ -43,12 +43,6 @@ public class MediaLinkService(
         string path = "";
         bool isAbsolute = false;
         Uri? uri = null;
-        if (Uri.IsWellFormedUriString(link, UriKind.Absolute))
-        {
-            uri = new Uri(link, UriKind.Absolute);
-            path = uri.LocalPath;
-            isAbsolute = true;
-        }
 
         var mockDomain = new Uri("http://mock.local/", UriKind.Absolute);
         if (Uri.IsWellFormedUriString(link, UriKind.Relative))
@@ -64,6 +58,35 @@ public class MediaLinkService(
                 path = link;
             }
         }
+        else if (Uri.IsWellFormedUriString(link, UriKind.Absolute))
+        {
+            uri = new Uri(link, UriKind.Absolute);
+            path = uri.LocalPath;
+            isAbsolute = true;
+        }
+        else
+        {
+            try
+            {
+                // assume relative with unescaped unicode
+                uri = new Uri(mockDomain, link);
+                path = uri.LocalPath;
+            }
+            catch
+            {
+                try
+                {
+                    // assume absolute with unescaped unicode
+                    uri = new Uri(link, UriKind.Absolute);
+                    path = uri.LocalPath;
+                }
+                catch
+                {
+                    path = link;
+                }
+            }
+        }
+        
 
         int inspectionIndex = 0;
 
