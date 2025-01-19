@@ -26,7 +26,7 @@ public class MediaFileMigrator(
     PrimaryKeyMappingContext primaryKeyMappingContext,
     EntityIdentityFacade entityIdentityFacade,
     IProtocol protocol
-    ) : IMediaFileMigrator
+) : IMediaFileMigrator
 {
     public async Task<CommandResult> Handle(MigrateMediaLibrariesCommand request, CancellationToken cancellationToken)
     {
@@ -84,6 +84,7 @@ public class MediaFileMigrator(
                 }
                 catch (Exception ex)
                 {
+                    logger.LogTrace($"Failed {ksMediaLibrary}");
                     protocol.Append(HandbookReferences
                         .ErrorCreatingTargetInstance<MediaLibraryInfo>(ex)
                         .NeedsManualAction()
@@ -136,70 +137,77 @@ public class MediaFileMigrator(
 
             foreach (var ksMediaFile in ksMediaFiles)
             {
-                protocol.FetchedSource(ksMediaFile);
-
-                bool found = false;
-                IUploadedFile? uploadedFile = null;
-                string? fullMediaPath = "<uninitialized>";
-                if (loadMediaFileData)
+                try
                 {
-                    (found, uploadedFile, fullMediaPath) = LoadMediaFileBinary(sourceMediaLibraryPath, ksMediaFile.FilePath, ksMediaFile.FileMimeType);
-                    if (!found)
+                    protocol.FetchedSource(ksMediaFile);
+
+                    bool found = false;
+                    IUploadedFile? uploadedFile = null;
+                    string? fullMediaPath = "<uninitialized>";
+                    if (loadMediaFileData)
                     {
-                        // report missing file (currently reported in mapper)
-                    }
-                }
-
-                string? librarySubfolder = Path.GetDirectoryName(ksMediaFile.FilePath);
-
-                (bool isFixed, var safeMediaFileGuid) = entityIdentityFacade.Translate(ksMediaFile);
-                if (isFixed)
-                {
-                    logger.LogWarning("MediaFile {File} has non-unique guid, new guid {Guid} was required", new { ksMediaFile.FileGUID, ksMediaFile.FileName, ksMediaFile.FileSiteID }, safeMediaFileGuid);
-                }
-
-                var kxoMediaFile = mediaFileFacade.GetMediaFile(safeMediaFileGuid);
-
-                protocol.FetchedTarget(kxoMediaFile);
-
-                var source = new MediaFileInfoMapperSource(fullMediaPath, ksMediaFile, targetMediaLibrary.LibraryID, found ? uploadedFile : null,
-                    librarySubfolder, toolConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(false), safeMediaFileGuid);
-                var mapped = mediaFileInfoMapper.Map(source, kxoMediaFile);
-                protocol.MappedTarget(mapped);
-
-                if (mapped is { Success: true } result)
-                {
-                    (var mf, bool newInstance) = result;
-                    ArgumentNullException.ThrowIfNull(mf, nameof(mf));
-
-                    try
-                    {
-                        if (newInstance)
+                        (found, uploadedFile, fullMediaPath) = LoadMediaFileBinary(sourceMediaLibraryPath, ksMediaFile.FilePath, ksMediaFile.FileMimeType);
+                        if (!found)
                         {
-                            mediaFileFacade.EnsureMediaFilePathExistsInLibrary(mf, targetMediaLibrary.LibraryID);
+                            // report missing file (currently reported in mapper)
+                        }
+                    }
+
+                    string? librarySubfolder = Path.GetDirectoryName(ksMediaFile.FilePath);
+
+                    (bool isFixed, var safeMediaFileGuid) = entityIdentityFacade.Translate(ksMediaFile);
+                    if (isFixed)
+                    {
+                        logger.LogWarning("MediaFile {File} has non-unique guid, new guid {Guid} was required", new { ksMediaFile.FileGUID, ksMediaFile.FileName, ksMediaFile.FileSiteID }, safeMediaFileGuid);
+                    }
+
+                    var kxoMediaFile = mediaFileFacade.GetMediaFile(safeMediaFileGuid);
+
+                    protocol.FetchedTarget(kxoMediaFile);
+
+                    var source = new MediaFileInfoMapperSource(fullMediaPath, ksMediaFile, targetMediaLibrary.LibraryID, found ? uploadedFile : null,
+                        librarySubfolder, toolConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(false), safeMediaFileGuid);
+                    var mapped = mediaFileInfoMapper.Map(source, kxoMediaFile);
+                    protocol.MappedTarget(mapped);
+
+                    if (mapped is { Success: true } result)
+                    {
+                        (var mf, bool newInstance) = result;
+                        ArgumentNullException.ThrowIfNull(mf, nameof(mf));
+
+                        try
+                        {
+                            if (newInstance)
+                            {
+                                mediaFileFacade.EnsureMediaFilePathExistsInLibrary(mf, targetMediaLibrary.LibraryID);
+                            }
+
+                            mediaFileFacade.SetMediaFile(mf, newInstance);
+
+                            protocol.Success(ksMediaFile, mf, mapped);
+                            logger.LogEntitySetAction(newInstance, mf);
+                        }
+                        catch (Exception ex)
+                        {
+                            protocol.Append(HandbookReferences
+                                .ErrorCreatingTargetInstance<MediaLibraryInfo>(ex)
+                                .NeedsManualAction()
+                                .WithIdentityPrint(mf)
+                            );
+                            logger.LogEntitySetError(ex, newInstance, mf);
+                            continue;
                         }
 
-                        mediaFileFacade.SetMediaFile(mf, newInstance);
-
-                        protocol.Success(ksMediaFile, mf, mapped);
-                        logger.LogEntitySetAction(newInstance, mf);
-                    }
-                    catch (Exception ex)
-                    {
-                        protocol.Append(HandbookReferences
-                            .ErrorCreatingTargetInstance<MediaLibraryInfo>(ex)
-                            .NeedsManualAction()
-                            .WithIdentityPrint(mf)
+                        primaryKeyMappingContext.SetMapping<MediaFileInfo>(
+                            r => r.FileID,
+                            ksMediaFile.FileID,
+                            mf.FileID
                         );
-                        logger.LogEntitySetError(ex, newInstance, mf);
-                        continue;
                     }
-
-                    primaryKeyMappingContext.SetMapping<MediaFileInfo>(
-                        r => r.FileID,
-                        ksMediaFile.FileID,
-                        mf.FileID
-                    );
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Failed {MediaFile}", ksMediaFile);
                 }
             }
         }

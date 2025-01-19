@@ -85,7 +85,7 @@ public class ContentItemMapper(
         }
 
         bool migratedAsContentFolder = sourceNodeClass.ClassName.Equals("cms.folder", StringComparison.InvariantCultureIgnoreCase) && !configuration.UseDeprecatedFolderPageType.GetValueOrDefault(false);
-
+        
         var contentItemGuid = spoiledGuidContext.EnsureNodeGuid(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsTree.NodeID);
         bool isMappedTypeReusable = (targetClassInfo?.ClassContentTypeType is ClassContentTypeType.REUSABLE) || configuration.ClassNamesConvertToContentHub.Contains(sourceNodeClass.ClassName);
         if (isMappedTypeReusable)
@@ -705,7 +705,7 @@ public class ContentItemMapper(
                 !configuration.MigrateMediaToMediaLibrary)
             {
                 var mediaLinkService = mediaLinkServiceFactory.Create();
-                var htmlProcessor = new HtmlProcessor(html, mediaLinkService);
+                var htmlProcessor = new HtmlProcessor(html, mediaLinkService, logger);
                 if (sourceObjectContext is DocumentSourceObjectContext documentSourceObjectContext)
                 {
                     target[targetColumnName] = await htmlProcessor.ProcessHtml(documentSourceObjectContext.Site.SiteID, async (result, original) =>

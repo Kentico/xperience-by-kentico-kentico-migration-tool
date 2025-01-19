@@ -120,7 +120,7 @@ public class CommandParser : ICommandParser
             }
         }
 
-        return commands;
+        return commands.OrderBy(c => c.Rank).ToList();
     }
 
     private void PrintCommandDescriptions()
