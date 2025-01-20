@@ -72,166 +72,90 @@ After implementing the migration, you need to [register the migration](#register
 
 ## Custom class mappings
 
-Example code is found in `Migration.Tool.Extensions/ClassMappings/ClassMappingSample.cs`.
+You can customize class mappings to adjust the content model between the source instance and the target Xperience by Kentico instance. For example, you can merge multiple page types into a single content type, or migrate specific page types to the [content hub](https://docs.kentico.com/x/barWCQ) as reusable content.
 
-### Class remodeling sample
+1. Create a new class.
+2. Define a new `MultiClassMapping` object:
 
-Example code is found in the method `AddSimpleRemodelingSample`.
+    ```csharp
+    var m = new MultiClassMapping(targetClassName, target =>
+    {
+      // Target content type name
+      target.ClassName = "Acme.Event";
+      // Database table name of the new type
+      target.ClassTableName = "Acme_Event";
+      // Display name of the content type
+      target.ClassDisplayName = "My new transformed event";
+      // Type of the class (specifies that the class is a content type)
+      target.ClassType = ClassType.CONTENT_TYPE;
+      // Use of the content type
+      target.ClassContentTypeType = ClassContentTypeType.WEBSITE;
+    });
+    ```
 
-The goal of this method is to take a **single data class** and change it to more suitable shape.
-Example code is found in the method `AddSimpleRemodelingSample`.
+3. Define a new primary key:
 
-The goal of this method is to take a **single data class** and change it to more suitable shape.
+    ```csharp
+    m.BuildField("EventID").AsPrimaryKey();
+    ```
 
-### Class merge sample
+4. Define individual fields of the new content type:
 
-Example code is found in the method `AddClassMergeExample`.
+    ```csharp
+    // Build a new title field
+    var title = m.BuildField("Title");
 
-The goal of this method is to take **multiple data classes** from the source instance and define their relation to a new class.
+    // Map "EventTitle" field form source data class "_ET.Event1"
+    // Set the isTemplate parameter to 'true' to inherit the definition
+    // of the source field as a template
+    title.SetFrom("_ET.Event1", "EventTitle", true);
+    // Map "EventTitle" field form a second source data class "_ET.Event2"
+    // The isTemplate is not set, so only the value is taken from this source
+    title.SetFrom("_ET.Event2", "EventTitle");
+    // You can modify the field definition, e.g., change the caption of the field
+    title.WithFieldPatch(f => f.Caption = "Event title");
+    ```
 
-### Class mapping with category control
+5. (*Optional*) You can add custom value conversions:
 
-Example code is found in the method `AddK11EshopExample`.
+    ```csharp
+    var startDate = m.BuildField("StartDate");
+    startDate.SetFrom("_ET.Event1", "EventDateStart", true);
+    // Use value conversion to modify the field value
+    startDate.ConvertFrom("_ET.Event2", "EventStartDateAsText", false,
+        (v, context) =>
+        {
+            switch (context)
+            {
+                case ConvertorTreeNodeContext treeNodeContext:
+                    // You can use the available TreeNode context here
+                    // (var nodeGuid, int nodeSiteId, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
+                    break;
+                default:
+                    // No context is available (possibly when tool is extended with other conversion possibilities)
+                    break;
+            }
 
-The goal of this method is to show how to **control migration of categories**. You can enable/disable the migration based on category ID and/or source class name. 
-This is useful when merging multiple data classes into one (see _Class merge sample_)
+            return v?.ToString() is { } av && !string.IsNullOrWhiteSpace(av) ? DateTime.Parse(av) : null;
+        });
+    startDate.WithFieldPatch(f => f.Caption = "Event start date");
+    ```
 
-### Example
+1. Register the class mapping to the dependency injection container:
 
-Let's define a new class:
+    ```csharp
+    serviceCollection.AddSingleton<IClassMapping>(m);
+    ```
 
-Example code is found in the method `AddClassMergeExample`.
+After implementing the custom mapping, you need to [register the mapping](#register-migrations) in the system.
 
-The goal of this method is to take **multiple data classes** from the source instance and define their relation to a new class.
+### Examples
 
-### Class mapping with category control
+You can find sample class mappings in the [ClassMappingSample.cs](/Migration.Tool.Extensions/ClassMappings/ClassMappingSample.cs) file.
 
-Example code is found in the method `AddK11EshopExample`.
-
-The goal of this method is to show how to **control migration of categories**. You can enable/disable the migration based on category ID and/or source class name. 
-This is useful when merging multiple data classes into one (see _Class merge sample_)
-
-### Example
-
-Let's define a new class:
-
-```csharp
-var m = new MultiClassMapping(targetClassName, target =>
-{
-    target.ClassName = targetClassName;
-    target.ClassTableName = "ET_Event";
-    target.ClassDisplayName = "ET - MY new transformed event";
-    target.ClassType = ClassType.CONTENT_TYPE;
-    target.ClassContentTypeType = ClassContentTypeType.WEBSITE;
-});
-```
-
-Then define a new primary key:
-
-Then define a new primary key:
-
-```csharp
-m.BuildField("EventID").AsPrimaryKey();
-```
-
-Finally, let's define relations to fields:
-
-1. build field title
-Finally, let's define relations to fields:
-
-1. build field title
-
-   ```csharp
-   // build new field
-   var title = m.BuildField("Title");
-   ```csharp
-   // build new field
-   var title = m.BuildField("Title");
-
-   // map "EventTitle" field form source data class "_ET.Event1" also use it as template for target field
-   title.SetFrom("_ET.Event1", "EventTitle", true);
-   // map "EventTitle" field form source data class "_ET.Event2"
-   title.SetFrom("_ET.Event2", "EventTitle");
-   // map "EventTitle" field form source data class "_ET.Event1" also use it as template for target field
-   title.SetFrom("_ET.Event1", "EventTitle", true);
-   // map "EventTitle" field form source data class "_ET.Event2"
-   title.SetFrom("_ET.Event2", "EventTitle");
-
-   // patch field definition, in this case lets change field caption
-   title.WithFieldPatch(f => f.Caption = "Event title");
-   ```
-   // patch field definition, in this case lets change field caption
-   title.WithFieldPatch(f => f.Caption = "Event title");
-   ```
-
-1. in similar fashion map other fields
-1. if needed custom value conversion can be used
-1. in similar fashion map other fields
-1. if needed custom value conversion can be used
-
-   ```csharp
-   var startDate = m.BuildField("StartDate");
-   startDate.SetFrom("_ET.Event1", "EventDateStart", true);
-   // if needed use value conversion to adapt value
-   startDate.ConvertFrom("_ET.Event2", "EventStartDateAsText", false,
-       (v, context) =>
-       {
-           switch (context)
-           {
-               case ConvertorTreeNodeContext treeNodeContext:
-                   // here you can use available treenode context
-                   // (var nodeGuid, int nodeSiteId, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
-                   break;
-               default:
-                   // no context is available (possibly when tool is extended with other conversion possibilities)
-                   break;
-           }
-
-           return v?.ToString() is { } av && !string.IsNullOrWhiteSpace(av) ? DateTime.Parse(av) : null;
-       });
-   startDate.WithFieldPatch(f => f.Caption = "Event start date");
-   ```
-   ```csharp
-   var startDate = m.BuildField("StartDate");
-   startDate.SetFrom("_ET.Event1", "EventDateStart", true);
-   // if needed use value conversion to adapt value
-   startDate.ConvertFrom("_ET.Event2", "EventStartDateAsText", false,
-       (v, context) =>
-       {
-           switch (context)
-           {
-               case ConvertorTreeNodeContext treeNodeContext:
-                   // here you can use available treenode context
-                   // (var nodeGuid, int nodeSiteId, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
-                   break;
-               default:
-                   // no context is available (possibly when tool is extended with other conversion possibilities)
-                   break;
-           }
-
-           return v?.ToString() is { } av && !string.IsNullOrWhiteSpace(av) ? DateTime.Parse(av) : null;
-       });
-   startDate.WithFieldPatch(f => f.Caption = "Event start date");
-   ```
-
-1. After implementing the mapping, you need to [register it](#register-migrations) in the system.
-1. register class mapping to dependency injection container
-
-   ```csharp
-   serviceCollection.AddSingleton<IClassMapping>(m);
-   ```
-
-### Inject and use reusable schema
-
-Example code is found in the method `AddReusableSchemaIntegrationSample`.
-
-The goal of this method is to take a **single data class** and assign reusable schema.
-
-### Convert page type to reusable content item (content hub)
-
-Example code is found in the method `AddReusableRemodelingSample`.
-
-Please note, that all information unique to page will be lost.
+- `AddSimpleRemodelingSample` showcases how to change the mapping of a single page type
+- `AddClassMergeSample` showcases how to merge two page types into a single content type
+- `AddReusableRemodelingSample` showcases how to migrate a page type as reusable content
 
 ## Register migrations
 
