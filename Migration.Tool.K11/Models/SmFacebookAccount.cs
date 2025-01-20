@@ -53,5 +53,5 @@ public class SmFacebookAccount
     public virtual CmsSite FacebookAccountSite { get; set; } = null!;
 
     [InverseProperty("FacebookPostFacebookAccount")]
-    public virtual ICollection<SmFacebookPost> SmFacebookPosts { get; set; } = new List<SmFacebookPost>();
+    public virtual ICollection<SmFacebookPost> SmFacebookPosts { get; set; } = [];
 }

@@ -32,21 +32,21 @@ public class CmsState
     public DateTime StateLastModified { get; set; }
 
     [InverseProperty("AddressState")]
-    public virtual ICollection<ComAddress> ComAddresses { get; set; } = new List<ComAddress>();
+    public virtual ICollection<ComAddress> ComAddresses { get; set; } = [];
 
     [InverseProperty("AddressState")]
-    public virtual ICollection<ComOrderAddress> ComOrderAddresses { get; set; } = new List<ComOrderAddress>();
+    public virtual ICollection<ComOrderAddress> ComOrderAddresses { get; set; } = [];
 
     [InverseProperty("State")]
-    public virtual ICollection<ComTaxClassState> ComTaxClassStates { get; set; } = new List<ComTaxClassState>();
+    public virtual ICollection<ComTaxClassState> ComTaxClassStates { get; set; } = [];
 
     [ForeignKey("CountryId")]
     [InverseProperty("CmsStates")]
     public virtual CmsCountry Country { get; set; } = null!;
 
     [InverseProperty("AccountState")]
-    public virtual ICollection<OmAccount> OmAccounts { get; set; } = new List<OmAccount>();
+    public virtual ICollection<OmAccount> OmAccounts { get; set; } = [];
 
     [InverseProperty("ContactState")]
-    public virtual ICollection<OmContact> OmContacts { get; set; } = new List<OmContact>();
+    public virtual ICollection<OmContact> OmContacts { get; set; } = [];
 }

@@ -34,7 +34,7 @@ public class SmTwitterApplication
     public string TwitterApplicationConsumerSecret { get; set; } = null!;
 
     [InverseProperty("TwitterAccountTwitterApplication")]
-    public virtual ICollection<SmTwitterAccount> SmTwitterAccounts { get; set; } = new List<SmTwitterAccount>();
+    public virtual ICollection<SmTwitterAccount> SmTwitterAccounts { get; set; } = [];
 
     [ForeignKey("TwitterApplicationSiteId")]
     [InverseProperty("SmTwitterApplications")]

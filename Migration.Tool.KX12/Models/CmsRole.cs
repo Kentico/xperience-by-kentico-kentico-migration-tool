@@ -39,25 +39,25 @@ public class CmsRole
     public bool? RoleIsDomain { get; set; }
 
     [InverseProperty("Role")]
-    public virtual ICollection<CmsAclitem> CmsAclitems { get; set; } = new List<CmsAclitem>();
+    public virtual ICollection<CmsAclitem> CmsAclitems { get; set; } = [];
 
     [InverseProperty("Role")]
-    public virtual ICollection<CmsUserRole> CmsUserRoles { get; set; } = new List<CmsUserRole>();
+    public virtual ICollection<CmsUserRole> CmsUserRoles { get; set; } = [];
 
     [InverseProperty("Role")]
-    public virtual ICollection<CmsWidgetRole> CmsWidgetRoles { get; set; } = new List<CmsWidgetRole>();
+    public virtual ICollection<CmsWidgetRole> CmsWidgetRoles { get; set; } = [];
 
     [InverseProperty("Role")]
-    public virtual ICollection<CmsWorkflowStepRole> CmsWorkflowStepRoles { get; set; } = new List<CmsWorkflowStepRole>();
+    public virtual ICollection<CmsWorkflowStepRole> CmsWorkflowStepRoles { get; set; } = [];
 
     [InverseProperty("Role")]
-    public virtual ICollection<CommunityGroupRolePermission> CommunityGroupRolePermissions { get; set; } = new List<CommunityGroupRolePermission>();
+    public virtual ICollection<CommunityGroupRolePermission> CommunityGroupRolePermissions { get; set; } = [];
 
     [InverseProperty("Role")]
-    public virtual ICollection<ForumsForumRole> ForumsForumRoles { get; set; } = new List<ForumsForumRole>();
+    public virtual ICollection<ForumsForumRole> ForumsForumRoles { get; set; } = [];
 
     [InverseProperty("Role")]
-    public virtual ICollection<MediaLibraryRolePermission> MediaLibraryRolePermissions { get; set; } = new List<MediaLibraryRolePermission>();
+    public virtual ICollection<MediaLibraryRolePermission> MediaLibraryRolePermissions { get; set; } = [];
 
     [ForeignKey("RoleGroupId")]
     [InverseProperty("CmsRoles")]
@@ -69,29 +69,29 @@ public class CmsRole
 
     [ForeignKey("RoleId")]
     [InverseProperty("Roles")]
-    public virtual ICollection<BoardBoard> Boards { get; set; } = new List<BoardBoard>();
+    public virtual ICollection<BoardBoard> Boards { get; set; } = [];
 
     [ForeignKey("RoleId")]
     [InverseProperty("Roles")]
-    public virtual ICollection<CmsUielement> Elements { get; set; } = new List<CmsUielement>();
+    public virtual ICollection<CmsUielement> Elements { get; set; } = [];
 
     [ForeignKey("RoleId")]
     [InverseProperty("RolesNavigation")]
-    public virtual ICollection<CmsUielement> ElementsNavigation { get; set; } = new List<CmsUielement>();
+    public virtual ICollection<CmsUielement> ElementsNavigation { get; set; } = [];
 
     [ForeignKey("RoleId")]
     [InverseProperty("Roles")]
-    public virtual ICollection<CmsForm> Forms { get; set; } = new List<CmsForm>();
+    public virtual ICollection<CmsForm> Forms { get; set; } = [];
 
     [ForeignKey("RoleId")]
     [InverseProperty("Roles")]
-    public virtual ICollection<CmsMembership> Memberships { get; set; } = new List<CmsMembership>();
+    public virtual ICollection<CmsMembership> Memberships { get; set; } = [];
 
     [ForeignKey("RoleId")]
     [InverseProperty("Roles")]
-    public virtual ICollection<CmsPermission> Permissions { get; set; } = new List<CmsPermission>();
+    public virtual ICollection<CmsPermission> Permissions { get; set; } = [];
 
     [ForeignKey("RoleId")]
     [InverseProperty("Roles")]
-    public virtual ICollection<PollsPoll> Polls { get; set; } = new List<PollsPoll>();
+    public virtual ICollection<PollsPoll> Polls { get; set; } = [];
 }

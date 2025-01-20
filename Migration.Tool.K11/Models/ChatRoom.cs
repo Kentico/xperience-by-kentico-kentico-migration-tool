@@ -59,10 +59,10 @@ public class ChatRoom
     public virtual ChatInitiatedChatRequest? ChatInitiatedChatRequest { get; set; }
 
     [InverseProperty("ChatMessageRoom")]
-    public virtual ICollection<ChatMessage> ChatMessages { get; set; } = new List<ChatMessage>();
+    public virtual ICollection<ChatMessage> ChatMessages { get; set; } = [];
 
     [InverseProperty("ChatNotificationRoom")]
-    public virtual ICollection<ChatNotification> ChatNotifications { get; set; } = new List<ChatNotification>();
+    public virtual ICollection<ChatNotification> ChatNotifications { get; set; } = [];
 
     [ForeignKey("ChatRoomCreatedByChatUserId")]
     [InverseProperty("ChatRooms")]
@@ -73,8 +73,8 @@ public class ChatRoom
     public virtual CmsSite? ChatRoomSite { get; set; }
 
     [InverseProperty("ChatRoomUserRoom")]
-    public virtual ICollection<ChatRoomUser> ChatRoomUsers { get; set; } = new List<ChatRoomUser>();
+    public virtual ICollection<ChatRoomUser> ChatRoomUsers { get; set; } = [];
 
     [InverseProperty("ChatSupportTakenRoomRoom")]
-    public virtual ICollection<ChatSupportTakenRoom> ChatSupportTakenRooms { get; set; } = new List<ChatSupportTakenRoom>();
+    public virtual ICollection<ChatSupportTakenRoom> ChatSupportTakenRooms { get; set; } = [];
 }

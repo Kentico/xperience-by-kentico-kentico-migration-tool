@@ -233,7 +233,7 @@ public class MigratePagesCommandHandler(
                                 webPageItemInfo = wp;
                                 break;
                             }
-                            case {} importResult:
+                            case { } importResult:
                             {
                                 logger.LogTrace("Unexpected state {UMT} Result: {Result}", umtModel.PrintMe(), new
                                 {
@@ -284,13 +284,13 @@ public class MigratePagesCommandHandler(
                     }
                     else
                     {
-                        if (nodeParentGuid is {} npg && ContentItemInfo.Provider.Get(npg) is {ContentItemIsReusable:true})
+                        if (nodeParentGuid is { } npg && ContentItemInfo.Provider.Get(npg) is { ContentItemIsReusable: true })
                         {
                             logger.LogTrace("No webpage item produced for '{NodeAliasPath}' - parent is reusable, possibly converted with mapping?", ksNode.NodeAliasPath);
                         }
                         else
                         {
-                            logger.LogTrace("No webpage item produced for '{NodeAliasPath}'", ksNode.NodeAliasPath);    
+                            logger.LogTrace("No webpage item produced for '{NodeAliasPath}'", ksNode.NodeAliasPath);
                         }
                     }
                 }

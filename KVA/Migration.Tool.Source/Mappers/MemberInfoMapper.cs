@@ -29,8 +29,8 @@ public class MemberInfoMapper(
 )
     : EntityMapperBase<MemberInfoMapperSource, MemberInfo>(logger, primaryKeyMappingContext, protocol)
 {
-    public static IReadOnlyList<string> MigratedUserFields = new List<string>
-    {
+    public static IReadOnlyList<string> MigratedUserFields =
+    [
         nameof(ICmsUser.UserGUID),
         nameof(ICmsUser.UserName),
         nameof(ICmsUser.Email),
@@ -38,7 +38,7 @@ public class MemberInfoMapper(
         nameof(ICmsUser.UserEnabled),
         nameof(ICmsUser.UserCreated),
         nameof(ICmsUser.UserSecurityStamp)
-    };
+    ];
 
     protected override MemberInfo CreateNewInstance(MemberInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 

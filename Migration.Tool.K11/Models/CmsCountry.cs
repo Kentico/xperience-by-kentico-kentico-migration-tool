@@ -28,20 +28,20 @@ public class CmsCountry
     public string? CountryThreeLetterCode { get; set; }
 
     [InverseProperty("Country")]
-    public virtual ICollection<CmsState> CmsStates { get; set; } = new List<CmsState>();
+    public virtual ICollection<CmsState> CmsStates { get; set; } = [];
 
     [InverseProperty("AddressCountry")]
-    public virtual ICollection<ComAddress> ComAddresses { get; set; } = new List<ComAddress>();
+    public virtual ICollection<ComAddress> ComAddresses { get; set; } = [];
 
     [InverseProperty("AddressCountry")]
-    public virtual ICollection<ComOrderAddress> ComOrderAddresses { get; set; } = new List<ComOrderAddress>();
+    public virtual ICollection<ComOrderAddress> ComOrderAddresses { get; set; } = [];
 
     [InverseProperty("Country")]
-    public virtual ICollection<ComTaxClassCountry> ComTaxClassCountries { get; set; } = new List<ComTaxClassCountry>();
+    public virtual ICollection<ComTaxClassCountry> ComTaxClassCountries { get; set; } = [];
 
     [InverseProperty("AccountCountry")]
-    public virtual ICollection<OmAccount> OmAccounts { get; set; } = new List<OmAccount>();
+    public virtual ICollection<OmAccount> OmAccounts { get; set; } = [];
 
     [InverseProperty("ContactCountry")]
-    public virtual ICollection<OmContact> OmContacts { get; set; } = new List<OmContact>();
+    public virtual ICollection<OmContact> OmContacts { get; set; } = [];
 }

@@ -52,8 +52,8 @@ public class CmsSettingsCategory
     public virtual CmsResource? CategoryResource { get; set; }
 
     [InverseProperty("KeyCategory")]
-    public virtual ICollection<CmsSettingsKey> CmsSettingsKeys { get; set; } = new List<CmsSettingsKey>();
+    public virtual ICollection<CmsSettingsKey> CmsSettingsKeys { get; set; } = [];
 
     [InverseProperty("CategoryParent")]
-    public virtual ICollection<CmsSettingsCategory> InverseCategoryParent { get; set; } = new List<CmsSettingsCategory>();
+    public virtual ICollection<CmsSettingsCategory> InverseCategoryParent { get; set; } = [];
 }

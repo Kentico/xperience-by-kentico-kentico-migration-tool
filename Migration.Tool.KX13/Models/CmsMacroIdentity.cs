@@ -24,7 +24,7 @@ public class CmsMacroIdentity
     public int? MacroIdentityEffectiveUserId { get; set; }
 
     [InverseProperty("UserMacroIdentityMacroIdentity")]
-    public virtual ICollection<CmsUserMacroIdentity> CmsUserMacroIdentities { get; set; } = new List<CmsUserMacroIdentity>();
+    public virtual ICollection<CmsUserMacroIdentity> CmsUserMacroIdentities { get; set; } = [];
 
     [ForeignKey("MacroIdentityEffectiveUserId")]
     [InverseProperty("CmsMacroIdentities")]

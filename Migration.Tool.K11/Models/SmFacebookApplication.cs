@@ -38,5 +38,5 @@ public class SmFacebookApplication
     public virtual CmsSite FacebookApplicationSite { get; set; } = null!;
 
     [InverseProperty("FacebookAccountFacebookApplication")]
-    public virtual ICollection<SmFacebookAccount> SmFacebookAccounts { get; set; } = new List<SmFacebookAccount>();
+    public virtual ICollection<SmFacebookAccount> SmFacebookAccounts { get; set; } = [];
 }

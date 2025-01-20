@@ -32,7 +32,7 @@ public class ComExchangeTable
     public decimal? ExchangeTableRateFromGlobalCurrency { get; set; }
 
     [InverseProperty("ExchangeTable")]
-    public virtual ICollection<ComCurrencyExchangeRate> ComCurrencyExchangeRates { get; set; } = new List<ComCurrencyExchangeRate>();
+    public virtual ICollection<ComCurrencyExchangeRate> ComCurrencyExchangeRates { get; set; } = [];
 
     [ForeignKey("ExchangeTableSiteId")]
     [InverseProperty("ComExchangeTables")]

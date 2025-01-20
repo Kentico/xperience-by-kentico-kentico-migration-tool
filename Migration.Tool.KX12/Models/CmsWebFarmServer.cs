@@ -29,5 +29,5 @@ public class CmsWebFarmServer
     public bool IsExternalWebAppServer { get; set; }
 
     [InverseProperty("Server")]
-    public virtual ICollection<CmsWebFarmServerTask> CmsWebFarmServerTasks { get; set; } = new List<CmsWebFarmServerTask>();
+    public virtual ICollection<CmsWebFarmServerTask> CmsWebFarmServerTasks { get; set; } = [];
 }

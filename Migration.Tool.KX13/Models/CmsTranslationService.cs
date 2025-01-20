@@ -45,5 +45,5 @@ public class CmsTranslationService
     public bool? TranslationServiceSupportsCancel { get; set; }
 
     [InverseProperty("SubmissionService")]
-    public virtual ICollection<CmsTranslationSubmission> CmsTranslationSubmissions { get; set; } = new List<CmsTranslationSubmission>();
+    public virtual ICollection<CmsTranslationSubmission> CmsTranslationSubmissions { get; set; } = [];
 }

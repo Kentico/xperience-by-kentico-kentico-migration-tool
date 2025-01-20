@@ -43,8 +43,8 @@ public class CmsWebPartCategory
     public virtual CmsWebPartCategory? CategoryParent { get; set; }
 
     [InverseProperty("WebPartCategory")]
-    public virtual ICollection<CmsWebPart> CmsWebParts { get; set; } = new List<CmsWebPart>();
+    public virtual ICollection<CmsWebPart> CmsWebParts { get; set; } = [];
 
     [InverseProperty("CategoryParent")]
-    public virtual ICollection<CmsWebPartCategory> InverseCategoryParent { get; set; } = new List<CmsWebPartCategory>();
+    public virtual ICollection<CmsWebPartCategory> InverseCategoryParent { get; set; } = [];
 }

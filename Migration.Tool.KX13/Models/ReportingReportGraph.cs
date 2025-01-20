@@ -64,5 +64,5 @@ public class ReportingReportGraph
     public virtual ReportingReport GraphReport { get; set; } = null!;
 
     [InverseProperty("ReportSubscriptionGraph")]
-    public virtual ICollection<ReportingReportSubscription> ReportingReportSubscriptions { get; set; } = new List<ReportingReportSubscription>();
+    public virtual ICollection<ReportingReportSubscription> ReportingReportSubscriptions { get; set; } = [];
 }

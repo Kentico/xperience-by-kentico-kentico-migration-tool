@@ -69,40 +69,40 @@ public class CmsWorkflowStep
     public int? StepWorkflowType { get; set; }
 
     [InverseProperty("HistoryStep")]
-    public virtual ICollection<CmsAutomationHistory> CmsAutomationHistoryHistorySteps { get; set; } = new List<CmsAutomationHistory>();
+    public virtual ICollection<CmsAutomationHistory> CmsAutomationHistoryHistorySteps { get; set; } = [];
 
     [InverseProperty("HistoryTargetStep")]
-    public virtual ICollection<CmsAutomationHistory> CmsAutomationHistoryHistoryTargetSteps { get; set; } = new List<CmsAutomationHistory>();
+    public virtual ICollection<CmsAutomationHistory> CmsAutomationHistoryHistoryTargetSteps { get; set; } = [];
 
     [InverseProperty("StateStep")]
-    public virtual ICollection<CmsAutomationState> CmsAutomationStates { get; set; } = new List<CmsAutomationState>();
+    public virtual ICollection<CmsAutomationState> CmsAutomationStates { get; set; } = [];
 
     [InverseProperty("DocumentWorkflowStep")]
-    public virtual ICollection<CmsDocument> CmsDocuments { get; set; } = new List<CmsDocument>();
+    public virtual ICollection<CmsDocument> CmsDocuments { get; set; } = [];
 
     [InverseProperty("ObjectWorkflowStep")]
-    public virtual ICollection<CmsObjectSetting> CmsObjectSettings { get; set; } = new List<CmsObjectSetting>();
+    public virtual ICollection<CmsObjectSetting> CmsObjectSettings { get; set; } = [];
 
     [InverseProperty("VersionWorkflowStep")]
-    public virtual ICollection<CmsVersionHistory> CmsVersionHistories { get; set; } = new List<CmsVersionHistory>();
+    public virtual ICollection<CmsVersionHistory> CmsVersionHistories { get; set; } = [];
 
     [InverseProperty("Step")]
-    public virtual ICollection<CmsWorkflowHistory> CmsWorkflowHistorySteps { get; set; } = new List<CmsWorkflowHistory>();
+    public virtual ICollection<CmsWorkflowHistory> CmsWorkflowHistorySteps { get; set; } = [];
 
     [InverseProperty("TargetStep")]
-    public virtual ICollection<CmsWorkflowHistory> CmsWorkflowHistoryTargetSteps { get; set; } = new List<CmsWorkflowHistory>();
+    public virtual ICollection<CmsWorkflowHistory> CmsWorkflowHistoryTargetSteps { get; set; } = [];
 
     [InverseProperty("Step")]
-    public virtual ICollection<CmsWorkflowStepRole> CmsWorkflowStepRoles { get; set; } = new List<CmsWorkflowStepRole>();
+    public virtual ICollection<CmsWorkflowStepRole> CmsWorkflowStepRoles { get; set; } = [];
 
     [InverseProperty("Step")]
-    public virtual ICollection<CmsWorkflowStepUser> CmsWorkflowStepUsers { get; set; } = new List<CmsWorkflowStepUser>();
+    public virtual ICollection<CmsWorkflowStepUser> CmsWorkflowStepUsers { get; set; } = [];
 
     [InverseProperty("TransitionEndStep")]
-    public virtual ICollection<CmsWorkflowTransition> CmsWorkflowTransitionTransitionEndSteps { get; set; } = new List<CmsWorkflowTransition>();
+    public virtual ICollection<CmsWorkflowTransition> CmsWorkflowTransitionTransitionEndSteps { get; set; } = [];
 
     [InverseProperty("TransitionStartStep")]
-    public virtual ICollection<CmsWorkflowTransition> CmsWorkflowTransitionTransitionStartSteps { get; set; } = new List<CmsWorkflowTransition>();
+    public virtual ICollection<CmsWorkflowTransition> CmsWorkflowTransitionTransitionStartSteps { get; set; } = [];
 
     [ForeignKey("StepActionId")]
     [InverseProperty("CmsWorkflowSteps")]

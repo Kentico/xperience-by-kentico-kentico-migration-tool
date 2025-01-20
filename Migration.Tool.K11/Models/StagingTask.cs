@@ -49,13 +49,13 @@ public class StagingTask
     public string? TaskServers { get; set; }
 
     [InverseProperty("SynchronizationTask")]
-    public virtual ICollection<StagingSynchronization> StagingSynchronizations { get; set; } = new List<StagingSynchronization>();
+    public virtual ICollection<StagingSynchronization> StagingSynchronizations { get; set; } = [];
 
     [InverseProperty("Task")]
-    public virtual ICollection<StagingTaskGroupTask> StagingTaskGroupTasks { get; set; } = new List<StagingTaskGroupTask>();
+    public virtual ICollection<StagingTaskGroupTask> StagingTaskGroupTasks { get; set; } = [];
 
     [InverseProperty("Task")]
-    public virtual ICollection<StagingTaskUser> StagingTaskUsers { get; set; } = new List<StagingTaskUser>();
+    public virtual ICollection<StagingTaskUser> StagingTaskUsers { get; set; } = [];
 
     [ForeignKey("TaskSiteId")]
     [InverseProperty("StagingTasks")]

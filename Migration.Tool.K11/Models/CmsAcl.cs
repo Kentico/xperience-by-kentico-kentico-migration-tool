@@ -31,8 +31,8 @@ public class CmsAcl
     public virtual CmsSite? Aclsite { get; set; }
 
     [InverseProperty("Acl")]
-    public virtual ICollection<CmsAclitem> CmsAclitems { get; set; } = new List<CmsAclitem>();
+    public virtual ICollection<CmsAclitem> CmsAclitems { get; set; } = [];
 
     [InverseProperty("NodeAcl")]
-    public virtual ICollection<CmsTree> CmsTrees { get; set; } = new List<CmsTree>();
+    public virtual ICollection<CmsTree> CmsTrees { get; set; } = [];
 }

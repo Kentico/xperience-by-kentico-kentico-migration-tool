@@ -88,7 +88,7 @@ public class CmsUielement
     public bool ElementRequiresGlobalAdminPriviligeLevel { get; set; }
 
     [InverseProperty("HelpTopicUielement")]
-    public virtual ICollection<CmsHelpTopic> CmsHelpTopics { get; set; } = new List<CmsHelpTopic>();
+    public virtual ICollection<CmsHelpTopic> CmsHelpTopics { get; set; } = [];
 
     [ForeignKey("ElementPageTemplateId")]
     [InverseProperty("CmsUielements")]
@@ -103,13 +103,13 @@ public class CmsUielement
     public virtual CmsResource ElementResource { get; set; } = null!;
 
     [InverseProperty("ElementParent")]
-    public virtual ICollection<CmsUielement> InverseElementParent { get; set; } = new List<CmsUielement>();
+    public virtual ICollection<CmsUielement> InverseElementParent { get; set; } = [];
 
     [ForeignKey("ElementId")]
     [InverseProperty("Elements")]
-    public virtual ICollection<CmsRole> Roles { get; set; } = new List<CmsRole>();
+    public virtual ICollection<CmsRole> Roles { get; set; } = [];
 
     [ForeignKey("ElementId")]
     [InverseProperty("ElementsNavigation")]
-    public virtual ICollection<CmsRole> RolesNavigation { get; set; } = new List<CmsRole>();
+    public virtual ICollection<CmsRole> RolesNavigation { get; set; } = [];
 }

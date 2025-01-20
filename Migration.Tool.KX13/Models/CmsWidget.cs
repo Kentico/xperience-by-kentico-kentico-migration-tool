@@ -56,7 +56,7 @@ public class CmsWidget
     public string? WidgetIconClass { get; set; }
 
     [InverseProperty("Widget")]
-    public virtual ICollection<CmsWidgetRole> CmsWidgetRoles { get; set; } = new List<CmsWidgetRole>();
+    public virtual ICollection<CmsWidgetRole> CmsWidgetRoles { get; set; } = [];
 
     [ForeignKey("WidgetCategoryId")]
     [InverseProperty("CmsWidgets")]

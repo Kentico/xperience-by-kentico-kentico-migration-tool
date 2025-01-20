@@ -39,8 +39,8 @@ public class NotificationGateway
     public bool? GatewayEnabled { get; set; }
 
     [InverseProperty("SubscriptionGateway")]
-    public virtual ICollection<NotificationSubscription> NotificationSubscriptions { get; set; } = new List<NotificationSubscription>();
+    public virtual ICollection<NotificationSubscription> NotificationSubscriptions { get; set; } = [];
 
     [InverseProperty("Gateway")]
-    public virtual ICollection<NotificationTemplateText> NotificationTemplateTexts { get; set; } = new List<NotificationTemplateText>();
+    public virtual ICollection<NotificationTemplateText> NotificationTemplateTexts { get; set; } = [];
 }

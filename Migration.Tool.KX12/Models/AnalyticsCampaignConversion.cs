@@ -44,10 +44,10 @@ public class AnalyticsCampaignConversion
     public string? CampaignConversionUrl { get; set; }
 
     [InverseProperty("CampaignConversionHitsConversion")]
-    public virtual ICollection<AnalyticsCampaignConversionHit> AnalyticsCampaignConversionHits { get; set; } = new List<AnalyticsCampaignConversionHit>();
+    public virtual ICollection<AnalyticsCampaignConversionHit> AnalyticsCampaignConversionHits { get; set; } = [];
 
     [InverseProperty("CampaignObjectiveCampaignConversion")]
-    public virtual ICollection<AnalyticsCampaignObjective> AnalyticsCampaignObjectives { get; set; } = new List<AnalyticsCampaignObjective>();
+    public virtual ICollection<AnalyticsCampaignObjective> AnalyticsCampaignObjectives { get; set; } = [];
 
     [ForeignKey("CampaignConversionCampaignId")]
     [InverseProperty("AnalyticsCampaignConversions")]

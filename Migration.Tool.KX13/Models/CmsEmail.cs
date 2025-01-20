@@ -60,9 +60,9 @@ public class CmsEmail
     public DateTime? EmailCreated { get; set; }
 
     [InverseProperty("Email")]
-    public virtual ICollection<CmsEmailUser> CmsEmailUsers { get; set; } = new List<CmsEmailUser>();
+    public virtual ICollection<CmsEmailUser> CmsEmailUsers { get; set; } = [];
 
     [ForeignKey("EmailId")]
     [InverseProperty("Emails")]
-    public virtual ICollection<CmsEmailAttachment> Attachments { get; set; } = new List<CmsEmailAttachment>();
+    public virtual ICollection<CmsEmailAttachment> Attachments { get; set; } = [];
 }

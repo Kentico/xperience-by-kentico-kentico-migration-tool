@@ -65,7 +65,7 @@ public class ComDiscount
     public bool DiscountUsesCoupons { get; set; }
 
     [InverseProperty("CouponCodeDiscount")]
-    public virtual ICollection<ComCouponCode> ComCouponCodes { get; set; } = new List<ComCouponCode>();
+    public virtual ICollection<ComCouponCode> ComCouponCodes { get; set; } = [];
 
     [ForeignKey("DiscountSiteId")]
     [InverseProperty("ComDiscounts")]

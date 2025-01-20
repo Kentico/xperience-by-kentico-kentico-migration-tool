@@ -57,5 +57,5 @@ public class StagingServer
     public virtual CmsSite ServerSite { get; set; } = null!;
 
     [InverseProperty("SynchronizationServer")]
-    public virtual ICollection<StagingSynchronization> StagingSynchronizations { get; set; } = new List<StagingSynchronization>();
+    public virtual ICollection<StagingSynchronization> StagingSynchronizations { get; set; } = [];
 }

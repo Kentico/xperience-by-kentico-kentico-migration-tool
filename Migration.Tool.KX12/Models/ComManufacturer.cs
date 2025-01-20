@@ -39,7 +39,7 @@ public class ComManufacturer
     public string? ManufacturerName { get; set; }
 
     [InverseProperty("Skumanufacturer")]
-    public virtual ICollection<ComSku> ComSkus { get; set; } = new List<ComSku>();
+    public virtual ICollection<ComSku> ComSkus { get; set; } = [];
 
     [ForeignKey("ManufacturerSiteId")]
     [InverseProperty("ComManufacturers")]

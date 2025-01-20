@@ -96,7 +96,7 @@ public class CmsFormUserControl
     public string? UserControlClassName { get; set; }
 
     [InverseProperty("UserControlParent")]
-    public virtual ICollection<CmsFormUserControl> InverseUserControlParent { get; set; } = new List<CmsFormUserControl>();
+    public virtual ICollection<CmsFormUserControl> InverseUserControlParent { get; set; } = [];
 
     [ForeignKey("UserControlParentId")]
     [InverseProperty("InverseUserControlParent")]

@@ -39,10 +39,10 @@ public class OmScore
     public int? ScorePersonaId { get; set; }
 
     [InverseProperty("RuleScore")]
-    public virtual ICollection<OmRule> OmRules { get; set; } = new List<OmRule>();
+    public virtual ICollection<OmRule> OmRules { get; set; } = [];
 
     [InverseProperty("Score")]
-    public virtual ICollection<OmScoreContactRule> OmScoreContactRules { get; set; } = new List<OmScoreContactRule>();
+    public virtual ICollection<OmScoreContactRule> OmScoreContactRules { get; set; } = [];
 
     [ForeignKey("ScorePersonaId")]
     [InverseProperty("OmScore")]

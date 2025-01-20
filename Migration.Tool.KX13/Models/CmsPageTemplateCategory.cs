@@ -44,8 +44,8 @@ public class CmsPageTemplateCategory
     public virtual CmsPageTemplateCategory? CategoryParent { get; set; }
 
     [InverseProperty("PageTemplateCategory")]
-    public virtual ICollection<CmsPageTemplate> CmsPageTemplates { get; set; } = new List<CmsPageTemplate>();
+    public virtual ICollection<CmsPageTemplate> CmsPageTemplates { get; set; } = [];
 
     [InverseProperty("CategoryParent")]
-    public virtual ICollection<CmsPageTemplateCategory> InverseCategoryParent { get; set; } = new List<CmsPageTemplateCategory>();
+    public virtual ICollection<CmsPageTemplateCategory> InverseCategoryParent { get; set; } = [];
 }

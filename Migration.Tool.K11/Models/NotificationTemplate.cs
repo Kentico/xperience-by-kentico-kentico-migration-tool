@@ -28,10 +28,10 @@ public class NotificationTemplate
     public Guid TemplateGuid { get; set; }
 
     [InverseProperty("SubscriptionTemplate")]
-    public virtual ICollection<NotificationSubscription> NotificationSubscriptions { get; set; } = new List<NotificationSubscription>();
+    public virtual ICollection<NotificationSubscription> NotificationSubscriptions { get; set; } = [];
 
     [InverseProperty("Template")]
-    public virtual ICollection<NotificationTemplateText> NotificationTemplateTexts { get; set; } = new List<NotificationTemplateText>();
+    public virtual ICollection<NotificationTemplateText> NotificationTemplateTexts { get; set; } = [];
 
     [ForeignKey("TemplateSiteId")]
     [InverseProperty("NotificationTemplates")]

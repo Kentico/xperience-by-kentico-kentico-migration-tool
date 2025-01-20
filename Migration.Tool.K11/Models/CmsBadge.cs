@@ -30,5 +30,5 @@ public class CmsBadge
     public DateTime BadgeLastModified { get; set; }
 
     [InverseProperty("UserBadge")]
-    public virtual ICollection<CmsUserSetting> CmsUserSettings { get; set; } = new List<CmsUserSetting>();
+    public virtual ICollection<CmsUserSetting> CmsUserSettings { get; set; } = [];
 }

@@ -30,9 +30,9 @@ public class CmsRelationshipName
     public bool? RelationshipNameIsAdHoc { get; set; }
 
     [InverseProperty("RelationshipName")]
-    public virtual ICollection<CmsRelationship> CmsRelationships { get; set; } = new List<CmsRelationship>();
+    public virtual ICollection<CmsRelationship> CmsRelationships { get; set; } = [];
 
     [ForeignKey("RelationshipNameId")]
     [InverseProperty("RelationshipNames")]
-    public virtual ICollection<CmsSite> Sites { get; set; } = new List<CmsSite>();
+    public virtual ICollection<CmsSite> Sites { get; set; } = [];
 }

@@ -63,7 +63,7 @@ public class CmsTranslationSubmission
     public int? SubmissionSubmittedByUserId { get; set; }
 
     [InverseProperty("SubmissionItemSubmission")]
-    public virtual ICollection<CmsTranslationSubmissionItem> CmsTranslationSubmissionItems { get; set; } = new List<CmsTranslationSubmissionItem>();
+    public virtual ICollection<CmsTranslationSubmissionItem> CmsTranslationSubmissionItems { get; set; } = [];
 
     [ForeignKey("SubmissionServiceId")]
     [InverseProperty("CmsTranslationSubmissions")]

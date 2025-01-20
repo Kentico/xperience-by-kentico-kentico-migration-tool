@@ -34,7 +34,7 @@ public class ComSkufile
     public Guid? FileMetaFileGuid { get; set; }
 
     [InverseProperty("File")]
-    public virtual ICollection<ComOrderItemSkufile> ComOrderItemSkufiles { get; set; } = new List<ComOrderItemSkufile>();
+    public virtual ICollection<ComOrderItemSkufile> ComOrderItemSkufiles { get; set; } = [];
 
     [ForeignKey("FileSkuid")]
     [InverseProperty("ComSkufiles")]

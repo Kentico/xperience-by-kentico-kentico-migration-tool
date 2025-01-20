@@ -105,10 +105,10 @@ public class ComOrder
     public string? OrderCouponCodes { get; set; }
 
     [InverseProperty("OrderItemOrder")]
-    public virtual ICollection<ComOrderItem> ComOrderItems { get; set; } = new List<ComOrderItem>();
+    public virtual ICollection<ComOrderItem> ComOrderItems { get; set; } = [];
 
     [InverseProperty("Order")]
-    public virtual ICollection<ComOrderStatusUser> ComOrderStatusUsers { get; set; } = new List<ComOrderStatusUser>();
+    public virtual ICollection<ComOrderStatusUser> ComOrderStatusUsers { get; set; } = [];
 
     [ForeignKey("OrderBillingAddressId")]
     [InverseProperty("ComOrderOrderBillingAddresses")]

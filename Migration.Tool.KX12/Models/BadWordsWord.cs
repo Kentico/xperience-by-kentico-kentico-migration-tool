@@ -34,5 +34,5 @@ public class BadWordsWord
 
     [ForeignKey("WordId")]
     [InverseProperty("Words")]
-    public virtual ICollection<CmsCulture> Cultures { get; set; } = new List<CmsCulture>();
+    public virtual ICollection<CmsCulture> Cultures { get; set; } = [];
 }

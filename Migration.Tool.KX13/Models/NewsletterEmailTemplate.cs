@@ -47,16 +47,16 @@ public class NewsletterEmailTemplate
     public bool TemplateInlineCss { get; set; }
 
     [InverseProperty("Template")]
-    public virtual ICollection<NewsletterEmailWidgetTemplate> NewsletterEmailWidgetTemplates { get; set; } = new List<NewsletterEmailWidgetTemplate>();
+    public virtual ICollection<NewsletterEmailWidgetTemplate> NewsletterEmailWidgetTemplates { get; set; } = [];
 
     [InverseProperty("IssueTemplate")]
-    public virtual ICollection<NewsletterNewsletterIssue> NewsletterNewsletterIssues { get; set; } = new List<NewsletterNewsletterIssue>();
+    public virtual ICollection<NewsletterNewsletterIssue> NewsletterNewsletterIssues { get; set; } = [];
 
     [InverseProperty("NewsletterOptInTemplate")]
-    public virtual ICollection<NewsletterNewsletter> NewsletterNewsletterNewsletterOptInTemplates { get; set; } = new List<NewsletterNewsletter>();
+    public virtual ICollection<NewsletterNewsletter> NewsletterNewsletterNewsletterOptInTemplates { get; set; } = [];
 
     [InverseProperty("NewsletterUnsubscriptionTemplate")]
-    public virtual ICollection<NewsletterNewsletter> NewsletterNewsletterNewsletterUnsubscriptionTemplates { get; set; } = new List<NewsletterNewsletter>();
+    public virtual ICollection<NewsletterNewsletter> NewsletterNewsletterNewsletterUnsubscriptionTemplates { get; set; } = [];
 
     [ForeignKey("TemplateSiteId")]
     [InverseProperty("NewsletterEmailTemplates")]
@@ -64,5 +64,5 @@ public class NewsletterEmailTemplate
 
     [ForeignKey("TemplateId")]
     [InverseProperty("Templates")]
-    public virtual ICollection<NewsletterNewsletter> Newsletters { get; set; } = new List<NewsletterNewsletter>();
+    public virtual ICollection<NewsletterNewsletter> Newsletters { get; set; } = [];
 }

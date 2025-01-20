@@ -30,7 +30,7 @@ public class CmsMembership
     public int? MembershipSiteId { get; set; }
 
     [InverseProperty("Membership")]
-    public virtual ICollection<CmsMembershipUser> CmsMembershipUsers { get; set; } = new List<CmsMembershipUser>();
+    public virtual ICollection<CmsMembershipUser> CmsMembershipUsers { get; set; } = [];
 
     [ForeignKey("MembershipSiteId")]
     [InverseProperty("CmsMemberships")]
@@ -38,5 +38,5 @@ public class CmsMembership
 
     [ForeignKey("MembershipId")]
     [InverseProperty("Memberships")]
-    public virtual ICollection<CmsRole> Roles { get; set; } = new List<CmsRole>();
+    public virtual ICollection<CmsRole> Roles { get; set; } = [];
 }

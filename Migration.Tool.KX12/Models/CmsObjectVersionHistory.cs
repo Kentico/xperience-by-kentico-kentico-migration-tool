@@ -53,10 +53,10 @@ public class CmsObjectVersionHistory
     public string? VersionComment { get; set; }
 
     [InverseProperty("ObjectCheckedOutVersionHistory")]
-    public virtual ICollection<CmsObjectSetting> CmsObjectSettingObjectCheckedOutVersionHistories { get; set; } = new List<CmsObjectSetting>();
+    public virtual ICollection<CmsObjectSetting> CmsObjectSettingObjectCheckedOutVersionHistories { get; set; } = [];
 
     [InverseProperty("ObjectPublishedVersionHistory")]
-    public virtual ICollection<CmsObjectSetting> CmsObjectSettingObjectPublishedVersionHistories { get; set; } = new List<CmsObjectSetting>();
+    public virtual ICollection<CmsObjectSetting> CmsObjectSettingObjectPublishedVersionHistories { get; set; } = [];
 
     [ForeignKey("VersionDeletedByUserId")]
     [InverseProperty("CmsObjectVersionHistoryVersionDeletedByUsers")]

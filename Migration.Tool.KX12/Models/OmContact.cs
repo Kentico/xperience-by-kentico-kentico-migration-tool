@@ -102,7 +102,7 @@ public class OmContact
     public int? ContactPersonaId { get; set; }
 
     [InverseProperty("ConsentAgreementContact")]
-    public virtual ICollection<CmsConsentAgreement> CmsConsentAgreements { get; set; } = new List<CmsConsentAgreement>();
+    public virtual ICollection<CmsConsentAgreement> CmsConsentAgreements { get; set; } = [];
 
     [ForeignKey("ContactCountryId")]
     [InverseProperty("OmContacts")]
@@ -121,20 +121,20 @@ public class OmContact
     public virtual OmContactStatus? ContactStatus { get; set; }
 
     [InverseProperty("AccountPrimaryContact")]
-    public virtual ICollection<OmAccount> OmAccountAccountPrimaryContacts { get; set; } = new List<OmAccount>();
+    public virtual ICollection<OmAccount> OmAccountAccountPrimaryContacts { get; set; } = [];
 
     [InverseProperty("AccountSecondaryContact")]
-    public virtual ICollection<OmAccount> OmAccountAccountSecondaryContacts { get; set; } = new List<OmAccount>();
+    public virtual ICollection<OmAccount> OmAccountAccountSecondaryContacts { get; set; } = [];
 
     [InverseProperty("Contact")]
-    public virtual ICollection<OmAccountContact> OmAccountContacts { get; set; } = new List<OmAccountContact>();
+    public virtual ICollection<OmAccountContact> OmAccountContacts { get; set; } = [];
 
     [InverseProperty("Contact")]
-    public virtual ICollection<OmMembership> OmMemberships { get; set; } = new List<OmMembership>();
+    public virtual ICollection<OmMembership> OmMemberships { get; set; } = [];
 
     [InverseProperty("Contact")]
-    public virtual ICollection<OmScoreContactRule> OmScoreContactRules { get; set; } = new List<OmScoreContactRule>();
+    public virtual ICollection<OmScoreContactRule> OmScoreContactRules { get; set; } = [];
 
     [InverseProperty("VisitorToContactContact")]
-    public virtual ICollection<OmVisitorToContact> OmVisitorToContacts { get; set; } = new List<OmVisitorToContact>();
+    public virtual ICollection<OmVisitorToContact> OmVisitorToContacts { get; set; } = [];
 }

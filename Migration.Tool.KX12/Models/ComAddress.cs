@@ -63,11 +63,11 @@ public class ComAddress
     public virtual CmsState? AddressState { get; set; }
 
     [InverseProperty("ShoppingCartBillingAddress")]
-    public virtual ICollection<ComShoppingCart> ComShoppingCartShoppingCartBillingAddresses { get; set; } = new List<ComShoppingCart>();
+    public virtual ICollection<ComShoppingCart> ComShoppingCartShoppingCartBillingAddresses { get; set; } = [];
 
     [InverseProperty("ShoppingCartCompanyAddress")]
-    public virtual ICollection<ComShoppingCart> ComShoppingCartShoppingCartCompanyAddresses { get; set; } = new List<ComShoppingCart>();
+    public virtual ICollection<ComShoppingCart> ComShoppingCartShoppingCartCompanyAddresses { get; set; } = [];
 
     [InverseProperty("ShoppingCartShippingAddress")]
-    public virtual ICollection<ComShoppingCart> ComShoppingCartShoppingCartShippingAddresses { get; set; } = new List<ComShoppingCart>();
+    public virtual ICollection<ComShoppingCart> ComShoppingCartShoppingCartShippingAddresses { get; set; } = [];
 }

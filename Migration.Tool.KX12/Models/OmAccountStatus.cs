@@ -19,5 +19,5 @@ public class OmAccountStatus
     public string? AccountStatusDescription { get; set; }
 
     [InverseProperty("AccountStatus")]
-    public virtual ICollection<OmAccount> OmAccounts { get; set; } = new List<OmAccount>();
+    public virtual ICollection<OmAccount> OmAccounts { get; set; } = [];
 }

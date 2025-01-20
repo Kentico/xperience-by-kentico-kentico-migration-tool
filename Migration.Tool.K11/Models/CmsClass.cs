@@ -173,48 +173,48 @@ public class CmsClass
     public virtual CmsResource? ClassResource { get; set; }
 
     [InverseProperty("FormClass")]
-    public virtual ICollection<CmsAlternativeForm> CmsAlternativeFormFormClasses { get; set; } = new List<CmsAlternativeForm>();
+    public virtual ICollection<CmsAlternativeForm> CmsAlternativeFormFormClasses { get; set; } = [];
 
     [InverseProperty("FormCoupledClass")]
-    public virtual ICollection<CmsAlternativeForm> CmsAlternativeFormFormCoupledClasses { get; set; } = new List<CmsAlternativeForm>();
+    public virtual ICollection<CmsAlternativeForm> CmsAlternativeFormFormCoupledClasses { get; set; } = [];
 
     [InverseProperty("FormClass")]
-    public virtual ICollection<CmsForm> CmsForms { get; set; } = new List<CmsForm>();
+    public virtual ICollection<CmsForm> CmsForms { get; set; } = [];
 
     [InverseProperty("PageTemplateScopeClass")]
-    public virtual ICollection<CmsPageTemplateScope> CmsPageTemplateScopes { get; set; } = new List<CmsPageTemplateScope>();
+    public virtual ICollection<CmsPageTemplateScope> CmsPageTemplateScopes { get; set; } = [];
 
     [InverseProperty("Class")]
-    public virtual ICollection<CmsPermission> CmsPermissions { get; set; } = new List<CmsPermission>();
+    public virtual ICollection<CmsPermission> CmsPermissions { get; set; } = [];
 
     [InverseProperty("Class")]
-    public virtual ICollection<CmsQuery> CmsQueries { get; set; } = new List<CmsQuery>();
+    public virtual ICollection<CmsQuery> CmsQueries { get; set; } = [];
 
     [InverseProperty("TransformationClass")]
-    public virtual ICollection<CmsTransformation> CmsTransformations { get; set; } = new List<CmsTransformation>();
+    public virtual ICollection<CmsTransformation> CmsTransformations { get; set; } = [];
 
     [InverseProperty("NodeClass")]
-    public virtual ICollection<CmsTree> CmsTrees { get; set; } = new List<CmsTree>();
+    public virtual ICollection<CmsTree> CmsTrees { get; set; } = [];
 
     [InverseProperty("VersionClass")]
-    public virtual ICollection<CmsVersionHistory> CmsVersionHistories { get; set; } = new List<CmsVersionHistory>();
+    public virtual ICollection<CmsVersionHistory> CmsVersionHistories { get; set; } = [];
 
     [InverseProperty("ScopeClass")]
-    public virtual ICollection<CmsWorkflowScope> CmsWorkflowScopes { get; set; } = new List<CmsWorkflowScope>();
+    public virtual ICollection<CmsWorkflowScope> CmsWorkflowScopes { get; set; } = [];
 
     [ForeignKey("ParentClassId")]
     [InverseProperty("ParentClasses")]
-    public virtual ICollection<CmsClass> ChildClasses { get; set; } = new List<CmsClass>();
+    public virtual ICollection<CmsClass> ChildClasses { get; set; } = [];
 
     [ForeignKey("ChildClassId")]
     [InverseProperty("ChildClasses")]
-    public virtual ICollection<CmsClass> ParentClasses { get; set; } = new List<CmsClass>();
+    public virtual ICollection<CmsClass> ParentClasses { get; set; } = [];
 
     [ForeignKey("ClassId")]
     [InverseProperty("Classes")]
-    public virtual ICollection<CmsDocumentTypeScope> Scopes { get; set; } = new List<CmsDocumentTypeScope>();
+    public virtual ICollection<CmsDocumentTypeScope> Scopes { get; set; } = [];
 
     [ForeignKey("ClassId")]
     [InverseProperty("Classes")]
-    public virtual ICollection<CmsSite> Sites { get; set; } = new List<CmsSite>();
+    public virtual ICollection<CmsSite> Sites { get; set; } = [];
 }

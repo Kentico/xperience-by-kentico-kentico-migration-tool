@@ -36,5 +36,5 @@ public class PersonasPersona
     public int PersonaPointsThreshold { get; set; }
 
     [InverseProperty("PersonaContactHistoryPersona")]
-    public virtual ICollection<PersonasPersonaContactHistory> PersonasPersonaContactHistories { get; set; } = new List<PersonasPersonaContactHistory>();
+    public virtual ICollection<PersonasPersonaContactHistory> PersonasPersonaContactHistories { get; set; } = [];
 }

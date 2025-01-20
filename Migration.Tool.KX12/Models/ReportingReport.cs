@@ -45,17 +45,17 @@ public class ReportingReport
     public virtual ReportingReportCategory ReportCategory { get; set; } = null!;
 
     [InverseProperty("GraphReport")]
-    public virtual ICollection<ReportingReportGraph> ReportingReportGraphs { get; set; } = new List<ReportingReportGraph>();
+    public virtual ICollection<ReportingReportGraph> ReportingReportGraphs { get; set; } = [];
 
     [InverseProperty("ReportSubscriptionReport")]
-    public virtual ICollection<ReportingReportSubscription> ReportingReportSubscriptions { get; set; } = new List<ReportingReportSubscription>();
+    public virtual ICollection<ReportingReportSubscription> ReportingReportSubscriptions { get; set; } = [];
 
     [InverseProperty("TableReport")]
-    public virtual ICollection<ReportingReportTable> ReportingReportTables { get; set; } = new List<ReportingReportTable>();
+    public virtual ICollection<ReportingReportTable> ReportingReportTables { get; set; } = [];
 
     [InverseProperty("ValueReport")]
-    public virtual ICollection<ReportingReportValue> ReportingReportValues { get; set; } = new List<ReportingReportValue>();
+    public virtual ICollection<ReportingReportValue> ReportingReportValues { get; set; } = [];
 
     [InverseProperty("SavedReportReport")]
-    public virtual ICollection<ReportingSavedReport> ReportingSavedReports { get; set; } = new List<ReportingSavedReport>();
+    public virtual ICollection<ReportingSavedReport> ReportingSavedReports { get; set; } = [];
 }

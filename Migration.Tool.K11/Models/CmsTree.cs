@@ -108,31 +108,31 @@ public class CmsTree
     public string? NodeBodyScripts { get; set; }
 
     [InverseProperty("AliasNode")]
-    public virtual ICollection<CmsDocumentAlias> CmsDocumentAliases { get; set; } = new List<CmsDocumentAlias>();
+    public virtual ICollection<CmsDocumentAlias> CmsDocumentAliases { get; set; } = [];
 
     [InverseProperty("DocumentNode")]
-    public virtual ICollection<CmsDocument> CmsDocuments { get; set; } = new List<CmsDocument>();
+    public virtual ICollection<CmsDocument> CmsDocuments { get; set; } = [];
 
     [InverseProperty("LeftNode")]
-    public virtual ICollection<CmsRelationship> CmsRelationshipLeftNodes { get; set; } = new List<CmsRelationship>();
+    public virtual ICollection<CmsRelationship> CmsRelationshipLeftNodes { get; set; } = [];
 
     [InverseProperty("RightNode")]
-    public virtual ICollection<CmsRelationship> CmsRelationshipRightNodes { get; set; } = new List<CmsRelationship>();
+    public virtual ICollection<CmsRelationship> CmsRelationshipRightNodes { get; set; } = [];
 
     [InverseProperty("Node")]
-    public virtual ICollection<ComMultiBuyDiscountTree> ComMultiBuyDiscountTrees { get; set; } = new List<ComMultiBuyDiscountTree>();
+    public virtual ICollection<ComMultiBuyDiscountTree> ComMultiBuyDiscountTrees { get; set; } = [];
 
     [InverseProperty("AttendeeEventNode")]
-    public virtual ICollection<EventsAttendee> EventsAttendees { get; set; } = new List<EventsAttendee>();
+    public virtual ICollection<EventsAttendee> EventsAttendees { get; set; } = [];
 
     [InverseProperty("NodeLinkedNode")]
-    public virtual ICollection<CmsTree> InverseNodeLinkedNode { get; set; } = new List<CmsTree>();
+    public virtual ICollection<CmsTree> InverseNodeLinkedNode { get; set; } = [];
 
     [InverseProperty("NodeOriginalNode")]
-    public virtual ICollection<CmsTree> InverseNodeOriginalNode { get; set; } = new List<CmsTree>();
+    public virtual ICollection<CmsTree> InverseNodeOriginalNode { get; set; } = [];
 
     [InverseProperty("NodeParent")]
-    public virtual ICollection<CmsTree> InverseNodeParent { get; set; } = new List<CmsTree>();
+    public virtual ICollection<CmsTree> InverseNodeParent { get; set; } = [];
 
     [ForeignKey("NodeAclid")]
     [InverseProperty("CmsTrees")]
@@ -179,5 +179,5 @@ public class CmsTree
     public virtual CmsPageTemplate? NodeTemplate { get; set; }
 
     [InverseProperty("Node")]
-    public virtual ICollection<PersonasPersonaNode> PersonasPersonaNodes { get; set; } = new List<PersonasPersonaNode>();
+    public virtual ICollection<PersonasPersonaNode> PersonasPersonaNodes { get; set; } = [];
 }

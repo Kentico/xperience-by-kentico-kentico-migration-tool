@@ -39,10 +39,10 @@ public class CmsWidgetCategory
     public DateTime WidgetCategoryLastModified { get; set; }
 
     [InverseProperty("WidgetCategory")]
-    public virtual ICollection<CmsWidget> CmsWidgets { get; set; } = new List<CmsWidget>();
+    public virtual ICollection<CmsWidget> CmsWidgets { get; set; } = [];
 
     [InverseProperty("WidgetCategoryParent")]
-    public virtual ICollection<CmsWidgetCategory> InverseWidgetCategoryParent { get; set; } = new List<CmsWidgetCategory>();
+    public virtual ICollection<CmsWidgetCategory> InverseWidgetCategoryParent { get; set; } = [];
 
     [ForeignKey("WidgetCategoryParentId")]
     [InverseProperty("InverseWidgetCategoryParent")]

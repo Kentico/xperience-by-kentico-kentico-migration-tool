@@ -61,7 +61,7 @@ public class CmsPageTemplate
     public string? PageTemplateIconClass { get; set; }
 
     [InverseProperty("ElementPageTemplate")]
-    public virtual ICollection<CmsUielement> CmsUielements { get; set; } = new List<CmsUielement>();
+    public virtual ICollection<CmsUielement> CmsUielements { get; set; } = [];
 
     [ForeignKey("PageTemplateCategoryId")]
     [InverseProperty("CmsPageTemplates")]

@@ -35,26 +35,26 @@ public class CmsCulture
     public bool? CultureIsUiculture { get; set; }
 
     [InverseProperty("PageTemplateScopeCulture")]
-    public virtual ICollection<CmsPageTemplateScope> CmsPageTemplateScopes { get; set; } = new List<CmsPageTemplateScope>();
+    public virtual ICollection<CmsPageTemplateScope> CmsPageTemplateScopes { get; set; } = [];
 
     [InverseProperty("TranslationCulture")]
-    public virtual ICollection<CmsResourceTranslation> CmsResourceTranslations { get; set; } = new List<CmsResourceTranslation>();
+    public virtual ICollection<CmsResourceTranslation> CmsResourceTranslations { get; set; } = [];
 
     [InverseProperty("Culture")]
-    public virtual ICollection<CmsUserCulture> CmsUserCultures { get; set; } = new List<CmsUserCulture>();
+    public virtual ICollection<CmsUserCulture> CmsUserCultures { get; set; } = [];
 
     [InverseProperty("ScopeCulture")]
-    public virtual ICollection<CmsWorkflowScope> CmsWorkflowScopes { get; set; } = new List<CmsWorkflowScope>();
+    public virtual ICollection<CmsWorkflowScope> CmsWorkflowScopes { get; set; } = [];
 
     [ForeignKey("IndexCultureId")]
     [InverseProperty("IndexCultures")]
-    public virtual ICollection<CmsSearchIndex> Indices { get; set; } = new List<CmsSearchIndex>();
+    public virtual ICollection<CmsSearchIndex> Indices { get; set; } = [];
 
     [ForeignKey("CultureId")]
     [InverseProperty("Cultures")]
-    public virtual ICollection<CmsSite> Sites { get; set; } = new List<CmsSite>();
+    public virtual ICollection<CmsSite> Sites { get; set; } = [];
 
     [ForeignKey("CultureId")]
     [InverseProperty("Cultures")]
-    public virtual ICollection<BadWordsWord> Words { get; set; } = new List<BadWordsWord>();
+    public virtual ICollection<BadWordsWord> Words { get; set; } = [];
 }

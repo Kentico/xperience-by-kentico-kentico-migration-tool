@@ -33,5 +33,5 @@ public class CmsWebPartContainer
 
     [ForeignKey("ContainerId")]
     [InverseProperty("Containers")]
-    public virtual ICollection<CmsSite> Sites { get; set; } = new List<CmsSite>();
+    public virtual ICollection<CmsSite> Sites { get; set; } = [];
 }

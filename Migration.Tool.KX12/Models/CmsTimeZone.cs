@@ -37,5 +37,5 @@ public class CmsTimeZone
     public DateTime TimeZoneLastModified { get; set; }
 
     [InverseProperty("UserTimeZone")]
-    public virtual ICollection<CmsUserSetting> CmsUserSettings { get; set; } = new List<CmsUserSetting>();
+    public virtual ICollection<CmsUserSetting> CmsUserSettings { get; set; } = [];
 }

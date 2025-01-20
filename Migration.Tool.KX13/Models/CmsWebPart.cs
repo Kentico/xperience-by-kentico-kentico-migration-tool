@@ -61,13 +61,13 @@ public class CmsWebPart
     public string? WebPartIconClass { get; set; }
 
     [InverseProperty("WebPartLayoutWebPart")]
-    public virtual ICollection<CmsWebPartLayout> CmsWebPartLayouts { get; set; } = new List<CmsWebPartLayout>();
+    public virtual ICollection<CmsWebPartLayout> CmsWebPartLayouts { get; set; } = [];
 
     [InverseProperty("WidgetWebPart")]
-    public virtual ICollection<CmsWidget> CmsWidgets { get; set; } = new List<CmsWidget>();
+    public virtual ICollection<CmsWidget> CmsWidgets { get; set; } = [];
 
     [InverseProperty("WebPartParent")]
-    public virtual ICollection<CmsWebPart> InverseWebPartParent { get; set; } = new List<CmsWebPart>();
+    public virtual ICollection<CmsWebPart> InverseWebPartParent { get; set; } = [];
 
     [ForeignKey("WebPartCategoryId")]
     [InverseProperty("CmsWebParts")]

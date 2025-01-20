@@ -49,14 +49,14 @@ public class CmsLayout
     public string? LayoutIconClass { get; set; }
 
     [InverseProperty("SourceLayout")]
-    public virtual ICollection<CmsDeviceProfileLayout> CmsDeviceProfileLayoutSourceLayouts { get; set; } = new List<CmsDeviceProfileLayout>();
+    public virtual ICollection<CmsDeviceProfileLayout> CmsDeviceProfileLayoutSourceLayouts { get; set; } = [];
 
     [InverseProperty("TargetLayout")]
-    public virtual ICollection<CmsDeviceProfileLayout> CmsDeviceProfileLayoutTargetLayouts { get; set; } = new List<CmsDeviceProfileLayout>();
+    public virtual ICollection<CmsDeviceProfileLayout> CmsDeviceProfileLayoutTargetLayouts { get; set; } = [];
 
     [InverseProperty("PageTemplateLayoutNavigation")]
-    public virtual ICollection<CmsPageTemplate> CmsPageTemplates { get; set; } = new List<CmsPageTemplate>();
+    public virtual ICollection<CmsPageTemplate> CmsPageTemplates { get; set; } = [];
 
     [InverseProperty("Layout")]
-    public virtual ICollection<CmsTemplateDeviceLayout> CmsTemplateDeviceLayouts { get; set; } = new List<CmsTemplateDeviceLayout>();
+    public virtual ICollection<CmsTemplateDeviceLayout> CmsTemplateDeviceLayouts { get; set; } = [];
 }

@@ -19,5 +19,5 @@ public class OmContactStatus
     public string? ContactStatusDescription { get; set; }
 
     [InverseProperty("ContactStatus")]
-    public virtual ICollection<OmContact> OmContacts { get; set; } = new List<OmContact>();
+    public virtual ICollection<OmContact> OmContacts { get; set; } = [];
 }

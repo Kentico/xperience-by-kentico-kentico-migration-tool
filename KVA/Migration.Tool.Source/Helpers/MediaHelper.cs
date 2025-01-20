@@ -47,7 +47,7 @@ public static class MediaHelper
                             [var mediaFile] => mediaFile,
                             { Count: > 1 } => throw new InvalidOperationException($"Multiple media file were found for path {path}, site {linkSiteId} and library {libraryDir}"),
                             { Count: 0 } =>
-                                // this may happen and is valid scenaria
+                                // this may happen and is valid scenario
                                 null,
                             _ => null
                         };

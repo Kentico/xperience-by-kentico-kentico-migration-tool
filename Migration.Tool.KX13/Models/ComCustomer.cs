@@ -57,16 +57,16 @@ public class ComCustomer
     public DateTime? CustomerCreated { get; set; }
 
     [InverseProperty("AddressCustomer")]
-    public virtual ICollection<ComAddress> ComAddresses { get; set; } = new List<ComAddress>();
+    public virtual ICollection<ComAddress> ComAddresses { get; set; } = [];
 
     [InverseProperty("EventCustomer")]
-    public virtual ICollection<ComCustomerCreditHistory> ComCustomerCreditHistories { get; set; } = new List<ComCustomerCreditHistory>();
+    public virtual ICollection<ComCustomerCreditHistory> ComCustomerCreditHistories { get; set; } = [];
 
     [InverseProperty("OrderCustomer")]
-    public virtual ICollection<ComOrder> ComOrders { get; set; } = new List<ComOrder>();
+    public virtual ICollection<ComOrder> ComOrders { get; set; } = [];
 
     [InverseProperty("ShoppingCartCustomer")]
-    public virtual ICollection<ComShoppingCart> ComShoppingCarts { get; set; } = new List<ComShoppingCart>();
+    public virtual ICollection<ComShoppingCart> ComShoppingCarts { get; set; } = [];
 
     [ForeignKey("CustomerSiteId")]
     [InverseProperty("ComCustomers")]

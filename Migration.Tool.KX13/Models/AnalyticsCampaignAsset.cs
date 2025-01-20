@@ -26,7 +26,7 @@ public class AnalyticsCampaignAsset
     public string CampaignAssetType { get; set; } = null!;
 
     [InverseProperty("CampaignAssetUrlCampaignAsset")]
-    public virtual ICollection<AnalyticsCampaignAssetUrl> AnalyticsCampaignAssetUrls { get; set; } = new List<AnalyticsCampaignAssetUrl>();
+    public virtual ICollection<AnalyticsCampaignAssetUrl> AnalyticsCampaignAssetUrls { get; set; } = [];
 
     [ForeignKey("CampaignAssetCampaignId")]
     [InverseProperty("AnalyticsCampaignAssets")]

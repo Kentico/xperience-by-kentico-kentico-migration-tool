@@ -57,7 +57,7 @@ public class ComOrderItem
     public decimal OrderItemTotalPrice { get; set; }
 
     [InverseProperty("OrderItem")]
-    public virtual ICollection<ComOrderItemSkufile> ComOrderItemSkufiles { get; set; } = new List<ComOrderItemSkufile>();
+    public virtual ICollection<ComOrderItemSkufile> ComOrderItemSkufiles { get; set; } = [];
 
     [ForeignKey("OrderItemOrderId")]
     [InverseProperty("ComOrderItems")]

@@ -106,8 +106,8 @@ public class OmAccount
     public virtual OmAccount? AccountSubsidiaryOf { get; set; }
 
     [InverseProperty("AccountSubsidiaryOf")]
-    public virtual ICollection<OmAccount> InverseAccountSubsidiaryOf { get; set; } = new List<OmAccount>();
+    public virtual ICollection<OmAccount> InverseAccountSubsidiaryOf { get; set; } = [];
 
     [InverseProperty("Account")]
-    public virtual ICollection<OmAccountContact> OmAccountContacts { get; set; } = new List<OmAccountContact>();
+    public virtual ICollection<OmAccountContact> OmAccountContacts { get; set; } = [];
 }

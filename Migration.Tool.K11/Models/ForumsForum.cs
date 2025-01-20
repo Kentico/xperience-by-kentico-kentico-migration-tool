@@ -129,18 +129,18 @@ public class ForumsForum
     public virtual CmsSite ForumSite { get; set; } = null!;
 
     [InverseProperty("PostForum")]
-    public virtual ICollection<ForumsForumPost> ForumsForumPosts { get; set; } = new List<ForumsForumPost>();
+    public virtual ICollection<ForumsForumPost> ForumsForumPosts { get; set; } = [];
 
     [InverseProperty("Forum")]
-    public virtual ICollection<ForumsForumRole> ForumsForumRoles { get; set; } = new List<ForumsForumRole>();
+    public virtual ICollection<ForumsForumRole> ForumsForumRoles { get; set; } = [];
 
     [InverseProperty("SubscriptionForum")]
-    public virtual ICollection<ForumsForumSubscription> ForumsForumSubscriptions { get; set; } = new List<ForumsForumSubscription>();
+    public virtual ICollection<ForumsForumSubscription> ForumsForumSubscriptions { get; set; } = [];
 
     [InverseProperty("Forum")]
-    public virtual ICollection<ForumsUserFavorite> ForumsUserFavorites { get; set; } = new List<ForumsUserFavorite>();
+    public virtual ICollection<ForumsUserFavorite> ForumsUserFavorites { get; set; } = [];
 
     [ForeignKey("ForumId")]
     [InverseProperty("Forums")]
-    public virtual ICollection<CmsUser> Users { get; set; } = new List<CmsUser>();
+    public virtual ICollection<CmsUser> Users { get; set; } = [];
 }

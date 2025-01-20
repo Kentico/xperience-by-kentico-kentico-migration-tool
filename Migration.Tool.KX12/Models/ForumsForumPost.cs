@@ -94,16 +94,16 @@ public class ForumsForumPost
     public int? PostSiteId { get; set; }
 
     [InverseProperty("AttachmentPost")]
-    public virtual ICollection<ForumsAttachment> ForumsAttachments { get; set; } = new List<ForumsAttachment>();
+    public virtual ICollection<ForumsAttachment> ForumsAttachments { get; set; } = [];
 
     [InverseProperty("SubscriptionPost")]
-    public virtual ICollection<ForumsForumSubscription> ForumsForumSubscriptions { get; set; } = new List<ForumsForumSubscription>();
+    public virtual ICollection<ForumsForumSubscription> ForumsForumSubscriptions { get; set; } = [];
 
     [InverseProperty("Post")]
-    public virtual ICollection<ForumsUserFavorite> ForumsUserFavorites { get; set; } = new List<ForumsUserFavorite>();
+    public virtual ICollection<ForumsUserFavorite> ForumsUserFavorites { get; set; } = [];
 
     [InverseProperty("PostParent")]
-    public virtual ICollection<ForumsForumPost> InversePostParent { get; set; } = new List<ForumsForumPost>();
+    public virtual ICollection<ForumsForumPost> InversePostParent { get; set; } = [];
 
     [ForeignKey("PostApprovedByUserId")]
     [InverseProperty("ForumsForumPostPostApprovedByUsers")]

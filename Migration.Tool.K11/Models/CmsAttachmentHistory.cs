@@ -81,9 +81,9 @@ public class CmsAttachmentHistory
     public virtual CmsAttachmentHistory? AttachmentVariantParent { get; set; }
 
     [InverseProperty("AttachmentVariantParent")]
-    public virtual ICollection<CmsAttachmentHistory> InverseAttachmentVariantParent { get; set; } = new List<CmsAttachmentHistory>();
+    public virtual ICollection<CmsAttachmentHistory> InverseAttachmentVariantParent { get; set; } = [];
 
     [ForeignKey("AttachmentHistoryId")]
     [InverseProperty("AttachmentHistories")]
-    public virtual ICollection<CmsVersionHistory> VersionHistories { get; set; } = new List<CmsVersionHistory>();
+    public virtual ICollection<CmsVersionHistory> VersionHistories { get; set; } = [];
 }

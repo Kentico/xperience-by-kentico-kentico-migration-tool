@@ -58,8 +58,8 @@ public class ComOptionCategory
     public virtual CmsSite? CategorySite { get; set; }
 
     [InverseProperty("Category")]
-    public virtual ICollection<ComSkuoptionCategory> ComSkuoptionCategories { get; set; } = new List<ComSkuoptionCategory>();
+    public virtual ICollection<ComSkuoptionCategory> ComSkuoptionCategories { get; set; } = [];
 
     [InverseProperty("SkuoptionCategory")]
-    public virtual ICollection<ComSku> ComSkus { get; set; } = new List<ComSku>();
+    public virtual ICollection<ComSku> ComSkus { get; set; } = [];
 }

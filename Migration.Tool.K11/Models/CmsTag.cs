@@ -30,5 +30,5 @@ public class CmsTag
 
     [ForeignKey("TagId")]
     [InverseProperty("Tags")]
-    public virtual ICollection<CmsDocument> Documents { get; set; } = new List<CmsDocument>();
+    public virtual ICollection<CmsDocument> Documents { get; set; } = [];
 }

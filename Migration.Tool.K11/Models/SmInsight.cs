@@ -25,14 +25,14 @@ public class SmInsight
     public string? InsightValueName { get; set; }
 
     [InverseProperty("InsightHitInsight")]
-    public virtual ICollection<SmInsightHitDay> SmInsightHitDays { get; set; } = new List<SmInsightHitDay>();
+    public virtual ICollection<SmInsightHitDay> SmInsightHitDays { get; set; } = [];
 
     [InverseProperty("InsightHitInsight")]
-    public virtual ICollection<SmInsightHitMonth> SmInsightHitMonths { get; set; } = new List<SmInsightHitMonth>();
+    public virtual ICollection<SmInsightHitMonth> SmInsightHitMonths { get; set; } = [];
 
     [InverseProperty("InsightHitInsight")]
-    public virtual ICollection<SmInsightHitWeek> SmInsightHitWeeks { get; set; } = new List<SmInsightHitWeek>();
+    public virtual ICollection<SmInsightHitWeek> SmInsightHitWeeks { get; set; } = [];
 
     [InverseProperty("InsightHitInsight")]
-    public virtual ICollection<SmInsightHitYear> SmInsightHitYears { get; set; } = new List<SmInsightHitYear>();
+    public virtual ICollection<SmInsightHitYear> SmInsightHitYears { get; set; } = [];
 }

@@ -85,7 +85,7 @@ public class ContentItemMapper(
         }
 
         bool migratedAsContentFolder = sourceNodeClass.ClassName.Equals("cms.folder", StringComparison.InvariantCultureIgnoreCase) && !configuration.UseDeprecatedFolderPageType.GetValueOrDefault(false);
-        
+
         var contentItemGuid = spoiledGuidContext.EnsureNodeGuid(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsTree.NodeID);
         bool isMappedTypeReusable = (targetClassInfo?.ClassContentTypeType is ClassContentTypeType.REUSABLE) || configuration.ClassNamesConvertToContentHub.Contains(sourceNodeClass.ClassName);
         if (isMappedTypeReusable)

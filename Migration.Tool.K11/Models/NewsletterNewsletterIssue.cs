@@ -87,7 +87,7 @@ public class NewsletterNewsletterIssue
     public string? IssuePlainText { get; set; }
 
     [InverseProperty("IssueVariantOfIssue")]
-    public virtual ICollection<NewsletterNewsletterIssue> InverseIssueVariantOfIssue { get; set; } = new List<NewsletterNewsletterIssue>();
+    public virtual ICollection<NewsletterNewsletterIssue> InverseIssueVariantOfIssue { get; set; } = [];
 
     [ForeignKey("IssueNewsletterId")]
     [InverseProperty("NewsletterNewsletterIssues")]
@@ -109,17 +109,17 @@ public class NewsletterNewsletterIssue
     public virtual NewsletterAbtest? NewsletterAbtestTestIssue { get; set; }
 
     [InverseProperty("TestWinnerIssue")]
-    public virtual ICollection<NewsletterAbtest> NewsletterAbtestTestWinnerIssues { get; set; } = new List<NewsletterAbtest>();
+    public virtual ICollection<NewsletterAbtest> NewsletterAbtestTestWinnerIssues { get; set; } = [];
 
     [InverseProperty("EmailNewsletterIssue")]
-    public virtual ICollection<NewsletterEmail> NewsletterEmails { get; set; } = new List<NewsletterEmail>();
+    public virtual ICollection<NewsletterEmail> NewsletterEmails { get; set; } = [];
 
     [InverseProperty("LinkIssue")]
-    public virtual ICollection<NewsletterLink> NewsletterLinks { get; set; } = new List<NewsletterLink>();
+    public virtual ICollection<NewsletterLink> NewsletterLinks { get; set; } = [];
 
     [InverseProperty("OpenedEmailIssue")]
-    public virtual ICollection<NewsletterOpenedEmail> NewsletterOpenedEmails { get; set; } = new List<NewsletterOpenedEmail>();
+    public virtual ICollection<NewsletterOpenedEmail> NewsletterOpenedEmails { get; set; } = [];
 
     [InverseProperty("UnsubscriptionFromIssue")]
-    public virtual ICollection<NewsletterUnsubscription> NewsletterUnsubscriptions { get; set; } = new List<NewsletterUnsubscription>();
+    public virtual ICollection<NewsletterUnsubscription> NewsletterUnsubscriptions { get; set; } = [];
 }

@@ -63,10 +63,10 @@ public class ComShoppingCart
     public int? ShoppingCartContactId { get; set; }
 
     [InverseProperty("ShoppingCart")]
-    public virtual ICollection<ComShoppingCartCouponCode> ComShoppingCartCouponCodes { get; set; } = new List<ComShoppingCartCouponCode>();
+    public virtual ICollection<ComShoppingCartCouponCode> ComShoppingCartCouponCodes { get; set; } = [];
 
     [InverseProperty("ShoppingCart")]
-    public virtual ICollection<ComShoppingCartSku> ComShoppingCartSkus { get; set; } = new List<ComShoppingCartSku>();
+    public virtual ICollection<ComShoppingCartSku> ComShoppingCartSkus { get; set; } = [];
 
     [ForeignKey("ShoppingCartBillingAddressId")]
     [InverseProperty("ComShoppingCartShoppingCartBillingAddresses")]

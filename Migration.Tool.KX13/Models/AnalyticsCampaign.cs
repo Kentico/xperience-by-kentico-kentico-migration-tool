@@ -46,10 +46,10 @@ public class AnalyticsCampaign
     public int? CampaignVisitors { get; set; }
 
     [InverseProperty("CampaignAssetCampaign")]
-    public virtual ICollection<AnalyticsCampaignAsset> AnalyticsCampaignAssets { get; set; } = new List<AnalyticsCampaignAsset>();
+    public virtual ICollection<AnalyticsCampaignAsset> AnalyticsCampaignAssets { get; set; } = [];
 
     [InverseProperty("CampaignConversionCampaign")]
-    public virtual ICollection<AnalyticsCampaignConversion> AnalyticsCampaignConversions { get; set; } = new List<AnalyticsCampaignConversion>();
+    public virtual ICollection<AnalyticsCampaignConversion> AnalyticsCampaignConversions { get; set; } = [];
 
     [InverseProperty("CampaignObjectiveCampaign")]
     public virtual AnalyticsCampaignObjective? AnalyticsCampaignObjective { get; set; }
@@ -63,11 +63,11 @@ public class AnalyticsCampaign
     public virtual CmsSite CampaignSite { get; set; } = null!;
 
     [InverseProperty("FacebookPostCampaign")]
-    public virtual ICollection<SmFacebookPost> SmFacebookPosts { get; set; } = new List<SmFacebookPost>();
+    public virtual ICollection<SmFacebookPost> SmFacebookPosts { get; set; } = [];
 
     [InverseProperty("LinkedInPostCampaign")]
-    public virtual ICollection<SmLinkedInPost> SmLinkedInPosts { get; set; } = new List<SmLinkedInPost>();
+    public virtual ICollection<SmLinkedInPost> SmLinkedInPosts { get; set; } = [];
 
     [InverseProperty("TwitterPostCampaign")]
-    public virtual ICollection<SmTwitterPost> SmTwitterPosts { get; set; } = new List<SmTwitterPost>();
+    public virtual ICollection<SmTwitterPost> SmTwitterPosts { get; set; } = [];
 }

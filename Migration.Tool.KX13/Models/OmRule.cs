@@ -62,7 +62,7 @@ public class OmRule
     public string? RuleActivityItemDetailObjectType { get; set; }
 
     [InverseProperty("Rule")]
-    public virtual ICollection<OmScoreContactRule> OmScoreContactRules { get; set; } = new List<OmScoreContactRule>();
+    public virtual ICollection<OmScoreContactRule> OmScoreContactRules { get; set; } = [];
 
     [ForeignKey("RuleScoreId")]
     [InverseProperty("OmRules")]

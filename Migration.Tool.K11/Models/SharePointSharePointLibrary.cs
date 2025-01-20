@@ -47,5 +47,5 @@ public class SharePointSharePointLibrary
     public virtual CmsSite SharePointLibrarySite { get; set; } = null!;
 
     [InverseProperty("SharePointFileSharePointLibrary")]
-    public virtual ICollection<SharePointSharePointFile> SharePointSharePointFiles { get; set; } = new List<SharePointSharePointFile>();
+    public virtual ICollection<SharePointSharePointFile> SharePointSharePointFiles { get; set; } = [];
 }

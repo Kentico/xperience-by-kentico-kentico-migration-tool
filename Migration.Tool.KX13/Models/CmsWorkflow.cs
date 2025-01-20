@@ -64,30 +64,30 @@ public class CmsWorkflow
     public bool? WorkflowEnabled { get; set; }
 
     [InverseProperty("HistoryWorkflow")]
-    public virtual ICollection<CmsAutomationHistory> CmsAutomationHistories { get; set; } = new List<CmsAutomationHistory>();
+    public virtual ICollection<CmsAutomationHistory> CmsAutomationHistories { get; set; } = [];
 
     [InverseProperty("StateWorkflow")]
-    public virtual ICollection<CmsAutomationState> CmsAutomationStates { get; set; } = new List<CmsAutomationState>();
+    public virtual ICollection<CmsAutomationState> CmsAutomationStates { get; set; } = [];
 
     [InverseProperty("TriggerWorkflow")]
-    public virtual ICollection<CmsObjectWorkflowTrigger> CmsObjectWorkflowTriggers { get; set; } = new List<CmsObjectWorkflowTrigger>();
+    public virtual ICollection<CmsObjectWorkflowTrigger> CmsObjectWorkflowTriggers { get; set; } = [];
 
     [InverseProperty("VersionWorkflow")]
-    public virtual ICollection<CmsVersionHistory> CmsVersionHistories { get; set; } = new List<CmsVersionHistory>();
+    public virtual ICollection<CmsVersionHistory> CmsVersionHistories { get; set; } = [];
 
     [InverseProperty("HistoryWorkflow")]
-    public virtual ICollection<CmsWorkflowHistory> CmsWorkflowHistories { get; set; } = new List<CmsWorkflowHistory>();
+    public virtual ICollection<CmsWorkflowHistory> CmsWorkflowHistories { get; set; } = [];
 
     [InverseProperty("ScopeWorkflow")]
-    public virtual ICollection<CmsWorkflowScope> CmsWorkflowScopes { get; set; } = new List<CmsWorkflowScope>();
+    public virtual ICollection<CmsWorkflowScope> CmsWorkflowScopes { get; set; } = [];
 
     [InverseProperty("StepWorkflow")]
-    public virtual ICollection<CmsWorkflowStep> CmsWorkflowSteps { get; set; } = new List<CmsWorkflowStep>();
+    public virtual ICollection<CmsWorkflowStep> CmsWorkflowSteps { get; set; } = [];
 
     [InverseProperty("TransitionWorkflow")]
-    public virtual ICollection<CmsWorkflowTransition> CmsWorkflowTransitions { get; set; } = new List<CmsWorkflowTransition>();
+    public virtual ICollection<CmsWorkflowTransition> CmsWorkflowTransitions { get; set; } = [];
 
     [ForeignKey("WorkflowId")]
     [InverseProperty("Workflows")]
-    public virtual ICollection<CmsUser> Users { get; set; } = new List<CmsUser>();
+    public virtual ICollection<CmsUser> Users { get; set; } = [];
 }

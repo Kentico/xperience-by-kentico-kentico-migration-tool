@@ -19,5 +19,5 @@ public class OmContactRole
     public string? ContactRoleDescription { get; set; }
 
     [InverseProperty("ContactRole")]
-    public virtual ICollection<OmAccountContact> OmAccountContacts { get; set; } = new List<OmAccountContact>();
+    public virtual ICollection<OmAccountContact> OmAccountContacts { get; set; } = [];
 }

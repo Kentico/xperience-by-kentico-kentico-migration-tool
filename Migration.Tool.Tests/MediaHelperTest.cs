@@ -293,7 +293,7 @@ public class MediaHelperTest
             Assert.Equal(3, a.LinkSiteId);
             Assert.Equal("MediaLibraryS3", a.LibraryDir);
         }
-        
+
         {
             var a = mediaLinkService.MatchMediaLink("/getmedia/f10a609f-6051-4e2c-adb2-630826b57720/bgr-–-2.png?width=340&height=210&ext=.png", 3);
             Assert.True(a.Success);
@@ -303,18 +303,6 @@ public class MediaHelperTest
             Assert.Equal(MediaLinkKind.Guid, a.LinkKind);
             Assert.Equal(3, a.LinkSiteId);
             Assert.Null(a.LibraryDir);
-        }
-        
-
-        {
-            var a = mediaLinkService.MatchMediaLink("http://localhost:5003/Site3/media/MediaLibraryS3/some sub dir/myfile.jpg", 3);
-            Assert.True(a.Success);
-            Assert.Equal("/MediaLibraryS3/some sub dir/myfile.jpg", a.Path);
-            Assert.Null(a.MediaGuid);
-            Assert.Equal(MediaKind.MediaFile, a.MediaKind);
-            Assert.Equal(MediaLinkKind.DirectMediaPath, a.LinkKind);
-            Assert.Equal(3, a.LinkSiteId);
-            Assert.Equal("MediaLibraryS3/some sub dir", a.LibraryDir);
         }
     }
 

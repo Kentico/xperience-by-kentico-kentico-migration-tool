@@ -43,5 +43,5 @@ public class NewsletterEmailWidget
     public virtual CmsSite EmailWidgetSite { get; set; } = null!;
 
     [InverseProperty("EmailWidget")]
-    public virtual ICollection<NewsletterEmailWidgetTemplate> NewsletterEmailWidgetTemplates { get; set; } = new List<NewsletterEmailWidgetTemplate>();
+    public virtual ICollection<NewsletterEmailWidgetTemplate> NewsletterEmailWidgetTemplates { get; set; } = [];
 }

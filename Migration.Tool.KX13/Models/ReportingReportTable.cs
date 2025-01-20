@@ -38,7 +38,7 @@ public class ReportingReportTable
     public string? TableConnectionString { get; set; }
 
     [InverseProperty("ReportSubscriptionTable")]
-    public virtual ICollection<ReportingReportSubscription> ReportingReportSubscriptions { get; set; } = new List<ReportingReportSubscription>();
+    public virtual ICollection<ReportingReportSubscription> ReportingReportSubscriptions { get; set; } = [];
 
     [ForeignKey("TableReportId")]
     [InverseProperty("ReportingReportTables")]

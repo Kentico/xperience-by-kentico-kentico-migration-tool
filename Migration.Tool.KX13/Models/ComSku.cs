@@ -169,31 +169,31 @@ public class ComSku
     public int? SkucollectionId { get; set; }
 
     [InverseProperty("NodeSku")]
-    public virtual ICollection<CmsTree> CmsTrees { get; set; } = new List<CmsTree>();
+    public virtual ICollection<CmsTree> CmsTrees { get; set; } = [];
 
     [InverseProperty("MultiBuyDiscountApplyToSku")]
-    public virtual ICollection<ComMultiBuyDiscount> ComMultiBuyDiscounts { get; set; } = new List<ComMultiBuyDiscount>();
+    public virtual ICollection<ComMultiBuyDiscount> ComMultiBuyDiscounts { get; set; } = [];
 
     [InverseProperty("OrderItemSku")]
-    public virtual ICollection<ComOrderItem> ComOrderItems { get; set; } = new List<ComOrderItem>();
+    public virtual ICollection<ComOrderItem> ComOrderItems { get; set; } = [];
 
     [InverseProperty("Sku")]
-    public virtual ICollection<ComShoppingCartSku> ComShoppingCartSkus { get; set; } = new List<ComShoppingCartSku>();
+    public virtual ICollection<ComShoppingCartSku> ComShoppingCartSkus { get; set; } = [];
 
     [InverseProperty("FileSku")]
-    public virtual ICollection<ComSkufile> ComSkufiles { get; set; } = new List<ComSkufile>();
+    public virtual ICollection<ComSkufile> ComSkufiles { get; set; } = [];
 
     [InverseProperty("Sku")]
-    public virtual ICollection<ComSkuoptionCategory> ComSkuoptionCategories { get; set; } = new List<ComSkuoptionCategory>();
+    public virtual ICollection<ComSkuoptionCategory> ComSkuoptionCategories { get; set; } = [];
 
     [InverseProperty("VolumeDiscountSku")]
-    public virtual ICollection<ComVolumeDiscount> ComVolumeDiscounts { get; set; } = new List<ComVolumeDiscount>();
+    public virtual ICollection<ComVolumeDiscount> ComVolumeDiscounts { get; set; } = [];
 
     [InverseProperty("Sku")]
-    public virtual ICollection<ComWishlist> ComWishlists { get; set; } = new List<ComWishlist>();
+    public virtual ICollection<ComWishlist> ComWishlists { get; set; } = [];
 
     [InverseProperty("SkuparentSku")]
-    public virtual ICollection<ComSku> InverseSkuparentSku { get; set; } = new List<ComSku>();
+    public virtual ICollection<ComSku> InverseSkuparentSku { get; set; } = [];
 
     [ForeignKey("SkubrandId")]
     [InverseProperty("ComSkus")]
@@ -241,29 +241,29 @@ public class ComSku
 
     [ForeignKey("Skuid")]
     [InverseProperty("Skus")]
-    public virtual ICollection<ComSku> Bundles { get; set; } = new List<ComSku>();
+    public virtual ICollection<ComSku> Bundles { get; set; } = [];
 
     [ForeignKey("Skuid")]
     [InverseProperty("Skus")]
-    public virtual ICollection<ComMultiBuyDiscount> MultiBuyDiscounts { get; set; } = new List<ComMultiBuyDiscount>();
+    public virtual ICollection<ComMultiBuyDiscount> MultiBuyDiscounts { get; set; } = [];
 
     [ForeignKey("Skuid")]
     [InverseProperty("SkusNavigation")]
-    public virtual ICollection<ComSku> OptionSkus { get; set; } = new List<ComSku>();
+    public virtual ICollection<ComSku> OptionSkus { get; set; } = [];
 
     [ForeignKey("VariantSkuid")]
     [InverseProperty("VariantSkus")]
-    public virtual ICollection<ComSku> OptionSkusNavigation { get; set; } = new List<ComSku>();
+    public virtual ICollection<ComSku> OptionSkusNavigation { get; set; } = [];
 
     [ForeignKey("BundleId")]
     [InverseProperty("Bundles")]
-    public virtual ICollection<ComSku> Skus { get; set; } = new List<ComSku>();
+    public virtual ICollection<ComSku> Skus { get; set; } = [];
 
     [ForeignKey("OptionSkuid")]
     [InverseProperty("OptionSkus")]
-    public virtual ICollection<ComSku> SkusNavigation { get; set; } = new List<ComSku>();
+    public virtual ICollection<ComSku> SkusNavigation { get; set; } = [];
 
     [ForeignKey("OptionSkuid")]
     [InverseProperty("OptionSkusNavigation")]
-    public virtual ICollection<ComSku> VariantSkus { get; set; } = new List<ComSku>();
+    public virtual ICollection<ComSku> VariantSkus { get; set; } = [];
 }
