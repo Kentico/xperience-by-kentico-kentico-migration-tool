@@ -6,4 +6,10 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
 namespace Migration.Tool.Source.Mappers.ContentItemMapperDirectives;
-internal record OverrideTemplateDirective(string TemplateIdentifier, JObject TemplateProperties) : IContentItemDirective;
+internal abstract class ContentItemDirectiveBase
+{
+    public string? PageTemplateIdentifier { get; set; }
+    public JObject? PageTemplateProperties { get; set; }
+    public Guid? ContentFolderGuid { get; set; }
+
+}
