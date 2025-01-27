@@ -5,15 +5,18 @@ using CMS.Core;
 using CMS.Core.Internal;
 using CMS.DataEngine;
 using CMS.FormEngine;
+using CMS.MediaLibrary;
 using CMS.Websites;
 using CMS.Websites.Internal;
 using Kentico.Xperience.UMT.Model;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.Builders;
 using Migration.Tool.Common.Helpers;
+using Migration.Tool.Common.Model;
 using Migration.Tool.Common.Services;
 using Migration.Tool.KXP.Api.Auxiliary;
 using Migration.Tool.KXP.Api.Services.CmsClass;
@@ -26,9 +29,6 @@ using Migration.Tool.Source.Providers;
 using Migration.Tool.Source.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Migration.Tool.Common.Model;
-using Microsoft.Data.SqlClient;
-using CMS.MediaLibrary;
 
 namespace Migration.Tool.Source.Mappers;
 
@@ -91,7 +91,7 @@ public class ContentItemMapper(
             targetClassInfo = DataClassInfoProvider.ProviderObject.Get(mapping.TargetClassName) ?? throw new InvalidOperationException($"Unable to find target class '{mapping.TargetClassName}'");
             targetClassGuid = targetClassInfo.ClassGUID;
         }
-        
+
         var directive = GetDirective(new ContentItemSource(cmsTree, sourceNodeClass.ClassName, sourceSite));
         if (directive is DropDirective)
         {
@@ -512,7 +512,7 @@ public class ContentItemMapper(
         var directiveFacade = new ContentItemActionProvider();
         foreach (var director in directors)
         {
-            director.mediaInfoLoader = new Func<Guid, JToken>(LoadMediaInfo);
+            director.MediaInfoLoader = new Func<Guid, JToken>(LoadMediaInfo);
             director.Direct(contentItemSource, directiveFacade);
             if (directiveFacade.Directive is not null)
             {

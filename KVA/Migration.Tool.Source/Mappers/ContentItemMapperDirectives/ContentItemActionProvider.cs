@@ -6,7 +6,7 @@ internal class ContentItemActionProvider : IContentItemActionProvider
     internal ContentItemDirectiveBase Directive { get; private set; } = new PassthroughDirective();
 
     public void Drop() => Directive = new DropDirective();
-    public void AsWidget(string widgetType, Guid? widgetGuid, Guid? widgetVariantGuid, Action<IConvertToWidgetOptions> options) 
+    public void AsWidget(string widgetType, Guid? widgetGuid, Guid? widgetVariantGuid, Action<IConvertToWidgetOptions> options)
     {
         Directive = new ConvertToWidgetDirective(widgetType, widgetGuid, widgetVariantGuid);
         options((ConvertToWidgetDirective)Directive);

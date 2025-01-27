@@ -197,15 +197,9 @@ public class MigrateCategoriesCommandHandler(
                                                     {
                                                         if (variant.Identifier.Equals(widget.WidgetVariantGuid))
                                                         {
-                                                            JArray array;
-                                                            if (variant.Properties.ContainsKey(widgetCategoryFieldName))
-                                                            {
-                                                                array = variant.Properties.Value<JArray>(widgetCategoryFieldName);
-                                                            }
-                                                            else
-                                                            {
-                                                                array = new JArray();
-                                                            }
+                                                            var array = variant.Properties.ContainsKey(widgetCategoryFieldName)
+                                                                ? variant.Properties.Value<JArray>(widgetCategoryFieldName)
+                                                                : [];
                                                             array.Add(new JObject { { "identifier", tag.TagGUID.ToString() } });
                                                             variant.Properties[widgetCategoryFieldName] = array;
                                                         }

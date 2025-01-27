@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-
-namespace Migration.Tool.Source.Mappers.ContentItemMapperDirectives;
+﻿namespace Migration.Tool.Source.Mappers.ContentItemMapperDirectives;
 
 public interface IConvertToWidgetOptions
 {

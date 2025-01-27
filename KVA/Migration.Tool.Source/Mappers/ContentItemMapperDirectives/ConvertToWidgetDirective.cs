@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Identity.Client;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 
 namespace Migration.Tool.Source.Mappers.ContentItemMapperDirectives;
-internal class ConvertToWidgetDirective(string WidgetType, Guid? WidgetGuid, Guid? WidgetVariantGuid) : ContentItemDirectiveBase, IWidgetLocationOptions, IWidgetPropertiesOptions, IWidgetOnPageOptions, IConvertToWidgetOptions, IWidgetInEditableAreaOptions, IWidgetInSectionOptions
+internal class ConvertToWidgetDirective(string widgetType, Guid? widgetGuid, Guid? widgetVariantGuid) : ContentItemDirectiveBase, IWidgetLocationOptions, IWidgetPropertiesOptions, IWidgetOnPageOptions, IConvertToWidgetOptions, IWidgetInEditableAreaOptions, IWidgetInSectionOptions
 {
-    internal string WidgetType { get; } = WidgetType;
-    internal Guid? WidgetGuid { get; } = WidgetGuid;
-    internal Guid? WidgetVariantGuid { get; } = WidgetVariantGuid;
+    internal string WidgetType { get; } = widgetType;
+    internal Guid? WidgetGuid { get; } = widgetGuid;
+    internal Guid? WidgetVariantGuid { get; } = widgetVariantGuid;
 
     internal string EditableAreaIdentifier { get; set; }
     public IWidgetInEditableAreaOptions InEditableArea(string areaIdentifier)
