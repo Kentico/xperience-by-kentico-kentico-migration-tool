@@ -234,15 +234,13 @@ public class MigrateCategoriesCommandHandler(
 
                             foreach (var infoWithTag in infosWithTag)
                             {
-                                List<TagReference> tagReferences = [];
+                                HashSet<Guid> tagReferences = [];
                                 if (infoWithTag[categoryFieldName] is string jsonTags)
                                 {
-                                    tagReferences = JsonConvert.DeserializeObject<List<TagReference>>(jsonTags) ?? [];
+                                    tagReferences = new HashSet<Guid>(JsonConvert.DeserializeObject<List<TagReference>>(jsonTags)?.Select(x => x.Identifier) ?? []);
                                 }
-
-                                tagReferences.Add(new TagReference { Identifier = tag.TagGUID });
-
-                                infoWithTag[categoryFieldName] = JsonConvert.SerializeObject(tagReferences);
+                                tagReferences.Add(tag.TagGUID);
+                                infoWithTag[categoryFieldName] = JsonConvert.SerializeObject(tagReferences.Select(x => new TagReference { Identifier = x }).ToList());
 
                                 ContentItemCommonDataInfo.Provider.Set(infoWithTag);
                             }
