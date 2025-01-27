@@ -5,4 +5,4 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Migration.Tool.Source.Mappers.ContentItemMapperDirectives;
-internal record PassthroughDirective : IContentItemDirective;
+internal class PassthroughDirective : ContentItemDirectiveBase;

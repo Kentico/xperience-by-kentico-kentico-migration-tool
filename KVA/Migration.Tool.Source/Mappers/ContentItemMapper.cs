@@ -91,7 +91,7 @@ public class ContentItemMapper(
             targetClassInfo = DataClassInfoProvider.ProviderObject.Get(mapping.TargetClassName) ?? throw new InvalidOperationException($"Unable to find target class '{mapping.TargetClassName}'");
             targetClassGuid = targetClassInfo.ClassGUID;
         }
-
+        
         var directive = GetDirective(new ContentItemSource(cmsTree, sourceNodeClass.ClassName, sourceSite));
         if (directive is DropDirective)
         {
@@ -120,7 +120,8 @@ public class ContentItemMapper(
             ContentItemIsReusable = isMappedTypeReusable,
             ContentItemIsSecured = cmsTree.IsSecuredNode ?? false,
             ContentItemDataClassGuid = migratedAsContentFolder ? null : targetClassGuid,
-            ContentItemChannelGuid = isMappedTypeReusable ? null : siteGuid
+            ContentItemChannelGuid = isMappedTypeReusable ? null : siteGuid,
+            ContentItemContentFolderGUID = directive.ContentFolderGuid,
         };
         if (storeContentItem)
         {
@@ -256,9 +257,9 @@ public class ContentItemMapper(
                 (contentItemCommonDataVisualBuilderTemplateConfiguration, contentItemCommonDataVisualBuilderWidgets, ndp) = visualBuilderPatcher.PatchJsonDefinitions(source.CmsTree.NodeSiteID, contentItemCommonDataVisualBuilderTemplateConfiguration, contentItemCommonDataVisualBuilderWidgets).GetAwaiter().GetResult();
             }
 
-            if (directive is OverrideTemplateDirective templateDirective)
+            if (directive.PageTemplateIdentifier is not null)
             {
-                contentItemCommonDataVisualBuilderTemplateConfiguration = JsonConvert.SerializeObject(new PageTemplateConfiguration { Identifier = templateDirective.TemplateIdentifier, Properties = templateDirective.TemplateProperties });
+                contentItemCommonDataVisualBuilderTemplateConfiguration = JsonConvert.SerializeObject(new PageTemplateConfiguration { Identifier = directive.PageTemplateIdentifier, Properties = directive.PageTemplateProperties });
             }
 
             var documentGuid = spoiledGuidContext.EnsureDocumentGuid(
@@ -506,7 +507,7 @@ public class ContentItemMapper(
         }
     }
 
-    private IContentItemDirective GetDirective(ContentItemSource contentItemSource)
+    private ContentItemDirectiveBase GetDirective(ContentItemSource contentItemSource)
     {
         var directiveFacade = new ContentItemActionProvider();
         foreach (var director in directors)

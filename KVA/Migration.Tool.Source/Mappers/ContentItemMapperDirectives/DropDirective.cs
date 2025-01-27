@@ -5,4 +5,4 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Migration.Tool.Source.Mappers.ContentItemMapperDirectives;
-internal record DropDirective : IContentItemDirective;
+internal class DropDirective : ContentItemDirectiveBase;

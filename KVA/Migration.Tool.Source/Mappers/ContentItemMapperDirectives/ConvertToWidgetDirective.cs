@@ -7,7 +7,7 @@ using Microsoft.Identity.Client;
 using Newtonsoft.Json.Linq;
 
 namespace Migration.Tool.Source.Mappers.ContentItemMapperDirectives;
-internal class ConvertToWidgetDirective(string WidgetType, Guid? WidgetGuid, Guid? WidgetVariantGuid) : IContentItemDirective, IWidgetLocationOptions, IWidgetPropertiesOptions, IWidgetOnPageOptions, IConvertToWidgetOptions, IWidgetInEditableAreaOptions, IWidgetInSectionOptions
+internal class ConvertToWidgetDirective(string WidgetType, Guid? WidgetGuid, Guid? WidgetVariantGuid) : ContentItemDirectiveBase, IWidgetLocationOptions, IWidgetPropertiesOptions, IWidgetOnPageOptions, IConvertToWidgetOptions, IWidgetInEditableAreaOptions, IWidgetInSectionOptions
 {
     internal string WidgetType { get; } = WidgetType;
     internal Guid? WidgetGuid { get; } = WidgetGuid;

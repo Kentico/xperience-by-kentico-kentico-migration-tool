@@ -15,4 +15,5 @@ public interface IContentItemActionProvider
     void AsWidget(string widgetType, Guid? widgetGuid, Guid? widgetVariantGuid, Action<IConvertToWidgetOptions> options);
     void Drop();
     void OverridePageTemplate(string templateIdentifier, JObject? templateProperties = null);
+    void OverrideContentFolder(Guid contentFolderGuid);
 }
