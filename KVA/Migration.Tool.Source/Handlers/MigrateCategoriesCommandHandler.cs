@@ -16,6 +16,7 @@ using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.Builders;
 using Migration.Tool.Common.Helpers;
+using Migration.Tool.Common.Model;
 using Migration.Tool.KXP.Api;
 using Migration.Tool.Source.Mappers;
 using Migration.Tool.Source.Model;
@@ -23,6 +24,7 @@ using Migration.Tool.Source.Providers;
 using Migration.Tool.Source.Services;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Migration.Tool.Source.Handlers;
 
@@ -34,7 +36,8 @@ public class MigrateCategoriesCommandHandler(
     IUmtMapper<TagModelSource> tagModelMapper,
     SpoiledGuidContext spoiledGuidContext,
     KxpClassFacade kxpClassFacade,
-    ClassMappingProvider classMappingProvider
+    ClassMappingProvider classMappingProvider,
+    DeferredTreeNodesService deferredTreeNodesService
 ) : IRequestHandler<MigrateCategoriesCommand, CommandResult>
 {
     public async Task<CommandResult> Handle(MigrateCategoriesCommand request, CancellationToken cancellationToken)
@@ -69,6 +72,8 @@ public class MigrateCategoriesCommandHandler(
             var skippedClasses = new List<int>();
             var schemaGuid = Guid.Empty;
             string categoryFieldName = "Category_Legacy";
+            string widgetCategoryFieldName = "Category";
+
             foreach (var classWithCategoryUsage in classesWithCategories)
             {
                 var targetDataClass = DataClassInfoProvider.ProviderObject.Get(classWithCategoryUsage.ClassGuid);
@@ -171,6 +176,48 @@ public class MigrateCategoriesCommandHandler(
                                 }
                             }
 
+                            if (deferredTreeNodesService.WidgetizedDocuments.TryGetValue(dwc.DocumentGUID, out var widget))
+                            {
+                                var widgetHostPageCommonData = ContentItemCommonDataInfo.Provider.Get()
+                                    .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataGUID), widget.ContentItemCommonDataGuid)
+                                    .FirstOrDefault();
+
+                                if (widgetHostPageCommonData.ContentItemCommonDataVisualBuilderWidgets is not null)
+                                {
+                                    var visualBuilderWidgets = JsonConvert.DeserializeObject<EditableAreasConfiguration>(widgetHostPageCommonData.ContentItemCommonDataVisualBuilderWidgets);
+                                    foreach (var area in visualBuilderWidgets.EditableAreas)
+                                    {
+                                        foreach (var section in area.Sections)
+                                        {
+                                            foreach (var zone in section.Zones)
+                                            {
+                                                foreach (var w in zone.Widgets)
+                                                {
+                                                    foreach (var variant in w.Variants)
+                                                    {
+                                                        if (variant.Identifier.Equals(widget.WidgetVariantGuid))
+                                                        {
+                                                            JArray array;
+                                                            if (variant.Properties.ContainsKey(widgetCategoryFieldName))
+                                                            {
+                                                                array = variant.Properties.Value<JArray>(widgetCategoryFieldName);
+                                                            }
+                                                            else
+                                                            {
+                                                                array = new JArray();
+                                                            }
+                                                            array.Add(new JObject { { "identifier", tag.TagGUID.ToString() } });
+                                                            variant.Properties[widgetCategoryFieldName] = array;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    widgetHostPageCommonData.ContentItemCommonDataVisualBuilderWidgets = JsonConvert.SerializeObject(visualBuilderWidgets);
+                                    ContentItemCommonDataInfo.Provider.Set(widgetHostPageCommonData);
+                                }
+                            }
                             var commonData = ContentItemCommonDataInfo.Provider.Get()
                                 .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataGUID), dwc.DocumentGUID)
                                 .FirstOrDefault();
