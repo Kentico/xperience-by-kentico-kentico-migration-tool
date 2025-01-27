@@ -5,24 +5,29 @@ using CMS.Core;
 using CMS.Core.Internal;
 using CMS.DataEngine;
 using CMS.FormEngine;
+using CMS.MediaLibrary;
 using CMS.Websites;
 using CMS.Websites.Internal;
 using Kentico.Xperience.UMT.Model;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.Builders;
 using Migration.Tool.Common.Helpers;
+using Migration.Tool.Common.Model;
 using Migration.Tool.Common.Services;
 using Migration.Tool.KXP.Api.Auxiliary;
 using Migration.Tool.KXP.Api.Services.CmsClass;
 using Migration.Tool.Source.Auxiliary;
 using Migration.Tool.Source.Contexts;
 using Migration.Tool.Source.Helpers;
+using Migration.Tool.Source.Mappers.ContentItemMapperDirectives;
 using Migration.Tool.Source.Model;
 using Migration.Tool.Source.Providers;
 using Migration.Tool.Source.Services;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Migration.Tool.Source.Mappers;
@@ -36,7 +41,8 @@ public record CmsTreeMapperSource(
     string? TargetFormDefinition,
     string SourceFormDefinition,
     List<ICmsDocument> MigratedDocuments,
-    ICmsSite SourceSite
+    ICmsSite SourceSite,
+    bool Deferred
 );
 
 public record CustomTableMapperSource(
@@ -57,20 +63,22 @@ public class ContentItemMapper(
     ModelFacade modelFacade,
     ReusableSchemaService reusableSchemaService,
     DeferredPathService deferredPathService,
+    DeferredTreeNodesService deferredTreeNodesService,
     SpoiledGuidContext spoiledGuidContext,
     IAssetFacade assetFacade,
     MediaLinkServiceFactory mediaLinkServiceFactory,
     ToolConfiguration configuration,
     ClassMappingProvider classMappingProvider,
     VisualBuilderPatcher visualBuilderPatcher,
-    IServiceProvider serviceProvider
+    IServiceProvider serviceProvider,
+    IEnumerable<ContentItemDirectorBase> directors
     ) : UmtMapperBase<CmsTreeMapperSource>, IUmtMapper<CustomTableMapperSource>
 {
     private const string CLASS_FIELD_CONTROL_NAME = "controlname";
 
     protected override IEnumerable<IUmtModel> MapInternal(CmsTreeMapperSource source)
     {
-        (var cmsTree, string safeNodeName, var siteGuid, var nodeParentGuid, var cultureToLanguageGuid, string? targetFormDefinition, string sourceFormDefinition, var migratedDocuments, var sourceSite) = source;
+        (var cmsTree, string safeNodeName, var siteGuid, var nodeParentGuid, var cultureToLanguageGuid, string? targetFormDefinition, string sourceFormDefinition, var migratedDocuments, var sourceSite, bool deferred) = source;
 
         logger.LogTrace("Mapping {Value}", new { cmsTree.NodeAliasPath, cmsTree.NodeName, cmsTree.NodeGUID, cmsTree.NodeSiteID });
 
@@ -84,24 +92,41 @@ public class ContentItemMapper(
             targetClassGuid = targetClassInfo.ClassGUID;
         }
 
+        var directive = GetDirective(new ContentItemSource(cmsTree, sourceNodeClass.ClassName, sourceSite));
+        if (directive is DropDirective)
+        {
+            yield break;
+        }
+        else if (directive is ConvertToWidgetDirective && cmsTree.NodeHasChildren == true && !deferred)
+        {
+            deferredTreeNodesService.AddNode(cmsTree);
+            yield break;
+        }
+
         bool migratedAsContentFolder = sourceNodeClass.ClassName.Equals("cms.folder", StringComparison.InvariantCultureIgnoreCase) && !configuration.UseDeprecatedFolderPageType.GetValueOrDefault(false);
 
         var contentItemGuid = spoiledGuidContext.EnsureNodeGuid(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsTree.NodeID);
-        bool isMappedTypeReusable = (targetClassInfo?.ClassContentTypeType is ClassContentTypeType.REUSABLE) || configuration.ClassNamesConvertToContentHub.Contains(sourceNodeClass.ClassName);
+        bool isMappedTypeReusable = targetClassInfo?.ClassContentTypeType is ClassContentTypeType.REUSABLE || configuration.ClassNamesConvertToContentHub.Contains(sourceNodeClass.ClassName);
         if (isMappedTypeReusable)
         {
             logger.LogTrace("Target is reusable {Info}", new { cmsTree.NodeAliasPath, targetClassInfo?.ClassName });
         }
 
-        yield return new ContentItemModel
+        bool storeContentItem = !(directive is ConvertToWidgetDirective ctw && !ctw.WrapInReusableItem);
+        var contentItemModel = new ContentItemModel
         {
             ContentItemGUID = contentItemGuid,
             ContentItemName = safeNodeName,
             ContentItemIsReusable = isMappedTypeReusable,
             ContentItemIsSecured = cmsTree.IsSecuredNode ?? false,
             ContentItemDataClassGuid = migratedAsContentFolder ? null : targetClassGuid,
-            ContentItemChannelGuid = siteGuid
+            ContentItemChannelGuid = isMappedTypeReusable ? null : siteGuid,
+            ContentItemContentFolderGUID = directive.ContentFolderGuid,
         };
+        if (storeContentItem)
+        {
+            yield return contentItemModel;
+        }
 
         var targetWebPage = WebPageItemInfo.Provider.Get()
             .WhereEquals(nameof(WebPageItemInfo.WebPageItemGUID), contentItemGuid)
@@ -232,6 +257,11 @@ public class ContentItemMapper(
                 (contentItemCommonDataVisualBuilderTemplateConfiguration, contentItemCommonDataVisualBuilderWidgets, ndp) = visualBuilderPatcher.PatchJsonDefinitions(source.CmsTree.NodeSiteID, contentItemCommonDataVisualBuilderTemplateConfiguration, contentItemCommonDataVisualBuilderWidgets).GetAwaiter().GetResult();
             }
 
+            if (directive.PageTemplateIdentifier is not null)
+            {
+                contentItemCommonDataVisualBuilderTemplateConfiguration = JsonConvert.SerializeObject(new PageTemplateConfiguration { Identifier = directive.PageTemplateIdentifier, Properties = directive.PageTemplateProperties });
+            }
+
             var documentGuid = spoiledGuidContext.EnsureDocumentGuid(
                 cmsDocument.DocumentGUID ?? throw new InvalidOperationException("DocumentGUID is null"),
                 cmsTree.NodeSiteID,
@@ -336,40 +366,126 @@ public class ContentItemMapper(
                     }
                 }
 
-                yield return commonDataModel;
-                yield return dataModel;
+                if (storeContentItem)
+                {
+                    yield return commonDataModel;
+                    yield return dataModel;
+                }
+
+                if (directive is ConvertToWidgetDirective widgetDirective)
+                {
+                    // locate ancestor host page
+                    var hostNode = cmsTree;
+                    for (int i = 0; i < -widgetDirective.ParentLevel; i++)
+                    {
+                        hostNode = modelFacade.Select<ICmsTree>("NodeID = @nodeID", "NodeOrder", new SqlParameter("nodeID", hostNode.NodeParentID)).First();
+                    }
+                    var hostWebPageItem = WebPageItemInfo.Provider.Get(hostNode.NodeGUID) ?? throw new Exception("During conversion of ContentItem GUID={ContentItemGuid} to widget, host page was resolved to one with GUID={HostPageGuid}, but no such page was found");
+
+                    // load host page common data
+                    var languageInfo = ContentLanguageInfo.Provider.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageGUID), languageGuid).First();
+                    var hostPageCommonDataInfo = ContentItemCommonDataInfo.Provider.Get().WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataContentItemID), hostWebPageItem.WebPageItemContentItemID).And()
+                        .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataContentLanguageID), languageInfo.ContentLanguageID).First();
+                    var hostPageContentItemInfo = ContentItemInfo.Provider.Get(hostPageCommonDataInfo.ContentItemCommonDataContentItemID);
+                    var editableAreas = string.IsNullOrEmpty(hostPageCommonDataInfo.ContentItemCommonDataVisualBuilderWidgets)
+                        ? new EditableAreasConfiguration()
+                        : JsonConvert.DeserializeObject<EditableAreasConfiguration>(hostPageCommonDataInfo.ContentItemCommonDataVisualBuilderWidgets)!;
+
+                    // fill widget properties
+                    var childNodes = modelFacade.Select<ICmsTree>("NodeParentID = @nodeID", "NodeOrder", new SqlParameter("nodeID", cmsTree.NodeID));
+                    var childItemGUIDs = childNodes.Select(x => ContentItemInfo.Provider.Get(x.NodeGUID)?.ContentItemGUID).Where(x => x is not null).Select(x => x!.Value).ToList();   // don't presume that ContentItem matching the Node exists. Director might have dropped it
+
+                    var widgetProperties = widgetDirective.ItemToWidgetPropertiesMapping(commonDataModel.CustomProperties.Concat(dataModel.CustomProperties).ToDictionary(), storeContentItem ? contentItemModel.ContentItemGUID : null, childItemGUIDs);
+
+                    // attach widget object
+                    var editableArea = editableAreas.EditableAreas.FirstOrDefault(x => x.Identifier == widgetDirective.EditableAreaIdentifier);
+                    if (editableArea is null)
+                    {
+                        editableArea = new EditableAreaConfiguration { Identifier = widgetDirective.EditableAreaIdentifier };
+                        editableAreas.EditableAreas.Add(editableArea);
+                    }
+
+                    var section = editableArea.Sections.FirstOrDefault(x => x.Identifier.Equals(widgetDirective.SectionGuid));
+                    if (section is null)
+                    {
+                        section = new SectionConfiguration
+                        {
+                            TypeIdentifier = widgetDirective.SectionType,
+                            Identifier = widgetDirective.SectionGuid ?? Guid.NewGuid()
+                        };
+                        editableArea.Sections.Add(section);
+                    }
+
+                    var zone = widgetDirective.ZoneFirst
+                        ? section.Zones.Count == 0 ? null : section.Zones[0]
+                        : widgetDirective.ZoneName is not null
+                            ? section.Zones.FirstOrDefault(x => widgetDirective.ZoneName.Equals(x.Name, StringComparison.InvariantCultureIgnoreCase))
+                            : section.Zones.FirstOrDefault(x => widgetDirective.ZoneGuid.Equals(x.Identifier));
+                    if (zone is null)
+                    {
+                        zone = new ZoneConfiguration { Identifier = Guid.NewGuid() };
+                        section.Zones.Add(zone);
+                    }
+
+                    var widgetVariant = new WidgetVariantConfiguration { Identifier = widgetDirective.WidgetVariantGuid ?? Guid.NewGuid(), Properties = widgetProperties };
+                    var widgetConfig = new WidgetConfiguration
+                    {
+                        Identifier = widgetDirective.WidgetGuid ?? Guid.NewGuid(),
+                        TypeIdentifier = widgetDirective.WidgetType,
+                        Variants = [widgetVariant]
+                    };
+                    zone!.Widgets.Add(widgetConfig);
+
+                    // store modified common data of the host page
+                    var hostPageCommonDataModel = new ContentItemCommonDataModel
+                    {
+                        ContentItemCommonDataGUID = hostPageCommonDataInfo.ContentItemCommonDataGUID,
+                        ContentItemCommonDataContentItemGuid = hostPageContentItemInfo.ContentItemGUID,
+                        ContentItemCommonDataContentLanguageGuid = languageInfo.ContentLanguageGUID,
+                        ContentItemCommonDataIsLatest = hostPageCommonDataInfo.ContentItemCommonDataIsLatest,
+                        ContentItemCommonDataVersionStatus = hostPageCommonDataInfo.ContentItemCommonDataVersionStatus,
+                        ContentItemCommonDataVisualBuilderTemplateConfiguration = hostPageCommonDataInfo.ContentItemCommonDataVisualBuilderTemplateConfiguration,
+                        ContentItemCommonDataVisualBuilderWidgets = JsonConvert.SerializeObject(editableAreas)
+                    };
+
+                    deferredTreeNodesService.WidgetizedDocuments[documentGuid] = (hostPageCommonDataInfo.ContentItemCommonDataGUID, widgetVariant.Identifier);
+                    yield return hostPageCommonDataModel;
+                }
             }
 
-            Guid? documentCreatedByUserGuid = null;
-            if (modelFacade.TrySelectGuid<ICmsUser>(cmsDocument.DocumentCreatedByUserID, out var createdByUserGuid))
+            if (storeContentItem)
             {
-                documentCreatedByUserGuid = createdByUserGuid;
-            }
+                Guid? documentCreatedByUserGuid = null;
+                if (modelFacade.TrySelectGuid<ICmsUser>(cmsDocument.DocumentCreatedByUserID, out var createdByUserGuid))
+                {
+                    documentCreatedByUserGuid = createdByUserGuid;
+                }
 
-            Guid? documentModifiedByUserGuid = null;
-            if (modelFacade.TrySelectGuid<ICmsUser>(cmsDocument.DocumentModifiedByUserID, out var modifiedByUserGuid))
-            {
-                documentModifiedByUserGuid = modifiedByUserGuid;
-            }
+                Guid? documentModifiedByUserGuid = null;
+                if (modelFacade.TrySelectGuid<ICmsUser>(cmsDocument.DocumentModifiedByUserID, out var modifiedByUserGuid))
+                {
+                    documentModifiedByUserGuid = modifiedByUserGuid;
+                }
 
-            var languageMetadataInfo = new ContentItemLanguageMetadataModel
-            {
-                ContentItemLanguageMetadataGUID = documentGuid,
-                ContentItemLanguageMetadataContentItemGuid = contentItemGuid,
-                ContentItemLanguageMetadataDisplayName = cmsDocument.DocumentName, // For the admin UI only
-                ContentItemLanguageMetadataLatestVersionStatus = draftMigrated ? VersionStatus.Draft : versionStatus, // That's the latest status of th item for admin optimization
-                ContentItemLanguageMetadataCreatedWhen = cmsDocument.DocumentCreatedWhen, // DocumentCreatedWhen
-                ContentItemLanguageMetadataModifiedWhen = cmsDocument.DocumentModifiedWhen, // DocumentModifiedWhen
-                ContentItemLanguageMetadataCreatedByUserGuid = documentCreatedByUserGuid,
-                ContentItemLanguageMetadataModifiedByUserGuid = documentModifiedByUserGuid,
-                // logic inaccessible, not supported
-                // ContentItemLanguageMetadataHasImageAsset = ContentItemAssetHasImageArbiter.HasImage(contentItemDataInfo), // This is for admin UI optimization - set to true if latest version contains a field with an image asset
-                ContentItemLanguageMetadataHasImageAsset = false,
-                ContentItemLanguageMetadataContentLanguageGuid = languageGuid, // DocumentCulture -> language entity needs to be created and its ID used here
-                ContentItemLanguageMetadataScheduledPublishWhen = scheduledPublishWhen,
-                ContentItemLanguageMetadataScheduledUnpublishWhen = scheduleUnpublishWhen
-            };
-            yield return languageMetadataInfo;
+                var languageMetadataInfo = new ContentItemLanguageMetadataModel
+                {
+                    ContentItemLanguageMetadataGUID = documentGuid,
+                    ContentItemLanguageMetadataContentItemGuid = contentItemGuid,
+                    ContentItemLanguageMetadataDisplayName = cmsDocument.DocumentName, // For the admin UI only
+                    ContentItemLanguageMetadataLatestVersionStatus = draftMigrated ? VersionStatus.Draft : versionStatus, // That's the latest status of th item for admin optimization
+                    ContentItemLanguageMetadataCreatedWhen = cmsDocument.DocumentCreatedWhen, // DocumentCreatedWhen
+                    ContentItemLanguageMetadataModifiedWhen = cmsDocument.DocumentModifiedWhen, // DocumentModifiedWhen
+                    ContentItemLanguageMetadataCreatedByUserGuid = documentCreatedByUserGuid,
+                    ContentItemLanguageMetadataModifiedByUserGuid = documentModifiedByUserGuid,
+                    // logic inaccessible, not supported
+                    // ContentItemLanguageMetadataHasImageAsset = ContentItemAssetHasImageArbiter.HasImage(contentItemDataInfo), // This is for admin UI optimization - set to true if latest version contains a field with an image asset
+                    ContentItemLanguageMetadataHasImageAsset = false,
+                    ContentItemLanguageMetadataContentLanguageGuid = languageGuid, // DocumentCulture -> language entity needs to be created and its ID used here
+                    ContentItemLanguageMetadataScheduledPublishWhen = scheduledPublishWhen,
+                    ContentItemLanguageMetadataScheduledUnpublishWhen = scheduleUnpublishWhen
+                };
+                yield return languageMetadataInfo;
+            }
         }
 
         // mapping of linked nodes is not supported
@@ -389,6 +505,21 @@ public class ContentItemMapper(
                 WebPageItemOrder = cmsTree.NodeOrder ?? 0 // 0 is nullish value
             };
         }
+    }
+
+    private ContentItemDirectiveBase GetDirective(ContentItemSource contentItemSource)
+    {
+        var directiveFacade = new ContentItemActionProvider();
+        foreach (var director in directors)
+        {
+            director.MediaInfoLoader = new Func<Guid, JToken>(LoadMediaInfo);
+            director.Direct(contentItemSource, directiveFacade);
+            if (directiveFacade.Directive is not null)
+            {
+                break;
+            }
+        }
+        return directiveFacade.Directive!;
     }
 
     private IEnumerable<IUmtModel> MigrateDraft(ICmsVersionHistory checkoutVersion, ICmsTree cmsTree, string sourceFormClassDefinition, string targetFormDefinition, Guid contentItemGuid,
@@ -941,5 +1072,19 @@ public class ContentItemMapper(
 
             yield return languageMetadataInfo;
         }
+    }
+    internal static JToken LoadMediaInfo(Guid mediaFileGuid)
+    {
+        var info = MediaFileInfo.Provider.Get(mediaFileGuid);
+        return new JArray(new JObject
+        {
+            { "identifier", mediaFileGuid },
+            { "name", info.FileName },
+            { "size", info.FileSize },
+            { "dimensions", new JObject {
+                { "width", info.FileImageWidth },
+                { "height", info.FileImageHeight },
+            } },
+        });
     }
 }
