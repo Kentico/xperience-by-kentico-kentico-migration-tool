@@ -230,6 +230,7 @@ public class Kx13FormControls
         public const string SmurlShortenerSelector = "SMURLShortenerSelector";
         public const string ViewSecureText = "ViewSecureText";
         public const string WhereCondition = "WhereCondition";
+        public const string KenticoAdministrationRichTextEditor = "Kentico.Administration.RichTextEditor";
     }
 }
 
