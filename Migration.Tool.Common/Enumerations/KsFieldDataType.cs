@@ -17,6 +17,9 @@ public static partial class KsFieldDataType
     /// <summary>Long text.</summary>
     public const string LongText = "longtext";
 
+    /// <summary>Rich text HTML.</summary>
+    public const string RichTextHTML = "richtexthtml";
+
     /// <summary>Integer.</summary>
     public const string Integer = "integer";
 
