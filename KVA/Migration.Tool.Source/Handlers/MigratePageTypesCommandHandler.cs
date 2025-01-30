@@ -44,17 +44,24 @@ public class MigratePageTypesCommandHandler(
         );
 
         var manualMappings = classMappingProvider.ExecuteMappings();
+        var manuallyMappedSourceClassIDs = new HashSet<int>();
+        var manuallyMappedSourceClassNames = manualMappings.Values.SelectMany(x => x.mappping.SourceClassNames).ToHashSet();
 
         while (ksClasses.GetNext(out var di))
         {
             var (_, ksClass) = di;
+
+            if (manuallyMappedSourceClassNames.Contains(ksClass.ClassName))
+            {
+                manuallyMappedSourceClassIDs.Add(ksClass.ClassID);
+            }
 
             if (manualMappings.ContainsKey(ksClass.ClassName))
             {
                 continue;
             }
 
-            if (ksClass.ClassInheritsFromClassID is { } classInheritsFromClassId && !primaryKeyMappingContext.HasMapping<ICmsClass>(c => c.ClassID, classInheritsFromClassId))
+            if (ksClass.ClassInheritsFromClassID is { } classInheritsFromClassId && !(primaryKeyMappingContext.HasMapping<ICmsClass>(c => c.ClassID, classInheritsFromClassId) || manuallyMappedSourceClassIDs.Contains(classInheritsFromClassId)))
             {
                 // defer migration to later stage
                 if (ksClasses.TryDeferItem(di))
