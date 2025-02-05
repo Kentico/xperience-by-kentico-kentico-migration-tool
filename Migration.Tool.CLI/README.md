@@ -148,7 +148,7 @@ If the target instance is a [SaaS project](https://docs.kentico.com/x/saas_xp) (
 
 #### Pages
 
-Pages from older product versions can be migrated to either to [website channel pages](https://docs.kentico.com/x/JwKQC) (default behavior) or [reusable content items](https://docs.kentico.com/x/barWCQ) in Content hub. See  for detailed information.
+Pages from older product versions can be migrated to either to [website channel pages](https://docs.kentico.com/x/JwKQC) (default behavior) or [reusable content items](https://docs.kentico.com/x/barWCQ) in Content hub. See [Convert pages to Content hub](#convert-pages-to-content-hub) for detailed information.
 
 - The migration includes the following versions of pages:
   - _Published_
