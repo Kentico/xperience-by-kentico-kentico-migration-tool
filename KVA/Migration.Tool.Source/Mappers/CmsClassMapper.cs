@@ -159,7 +159,7 @@ public class CmsClassMapper(
             {
                 target.ClassType = ClassType.FORM;
                 target.ClassContentTypeType = "";
-
+                target = PatchFormDataClassInfo(target);
                 break;
             }
 
@@ -202,6 +202,31 @@ public class CmsClassMapper(
                 break;
         }
 
+        return target;
+    }
+
+    private DataClassInfo PatchFormDataClassInfo(DataClassInfo target)
+    {
+        var fi = new FormInfo(target.ClassFormDefinition);
+        bool legacyFormat = false;
+        foreach (var item in fi.ItemsList.OfType<FormFieldInfo>())
+        {
+            if (!item.Settings.ContainsKey("componentidentifier"))
+            {
+                legacyFormat = true;
+                item.Settings["componentidentifier"] = Kx13FormComponents.Kentico_TextInput;
+                if (item.Settings.ContainsKey("controlname"))
+                {
+                    item.Settings.Remove("controlname");
+                }
+            }
+        }
+        target.ClassFormDefinition = fi.GetXmlDefinition();
+
+        if (legacyFormat)
+        {
+            logger.LogWarning("Some fields of Form {FormName} have legacy format ClassFormDefinition and were converted to text input. Manual adjustments might be necessary", target.ClassName);
+        }
         return target;
     }
 
