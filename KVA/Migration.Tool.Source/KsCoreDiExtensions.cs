@@ -78,6 +78,7 @@ public static class KsCoreDiExtensions
 
         services.AddSingleton<SourceInstanceContext>();
         services.AddSingleton<DeferredPathService>();
+        services.AddSingleton<DeferredTreeNodesService>();
         services.AddTransient<IpcService>();
         services.AddTransient<ReusableSchemaService>();
 

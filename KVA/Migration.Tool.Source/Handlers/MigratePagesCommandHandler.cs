@@ -38,6 +38,7 @@ public class MigratePagesCommandHandler(
     IUmtMapper<CmsTreeMapperSource> mapper,
     ModelFacade modelFacade,
     DeferredPathService deferredPathService,
+    DeferredTreeNodesService deferredTreeNodesService,
     SpoiledGuidContext spoiledGuidContext,
     SourceInstanceContext sourceInstanceContext,
     ClassMappingProvider classMappingProvider
@@ -73,209 +74,207 @@ public class MigratePagesCommandHandler(
                 new SqlParameter("siteId", ksSite.SiteID)
             );
 
-            foreach (var ksTreeOriginal in ksTrees)
+            for (int pass = 0; pass < 2; pass++)
             {
-                logger.LogDebug("Page '{NodeAliasPath}' migration", ksTreeOriginal.NodeAliasPath);
-
-                protocol.FetchedSource(ksTreeOriginal);
-
-                var ksNode = ksTreeOriginal;
-                var nodeLinkedNode = modelFacade.SelectById<ICmsTree>(ksNode.NodeLinkedNodeID);
-                var migratedDocuments = modelFacade
-                    .SelectWhere<ICmsDocument>("DocumentNodeID = @nodeId", new SqlParameter("nodeId", ksNode.NodeID))
-                    .ToList();
-
-                bool wasLinkedNode = nodeLinkedNode != null;
-                if (wasLinkedNode)
+                deferredTreeNodesService.Clear();
+                foreach (var ksTreeOriginal in ksTrees)
                 {
-                    if (nodeLinkedNode?.NodeSiteID != ksNode.NodeSiteID)
+                    logger.LogDebug("Page '{NodeAliasPath}' migration", ksTreeOriginal.NodeAliasPath);
+
+                    protocol.FetchedSource(ksTreeOriginal);
+
+                    var ksNode = ksTreeOriginal;
+                    var nodeLinkedNode = modelFacade.SelectById<ICmsTree>(ksNode.NodeLinkedNodeID);
+                    var migratedDocuments = modelFacade
+                        .SelectWhere<ICmsDocument>("DocumentNodeID = @nodeId", new SqlParameter("nodeId", ksNode.NodeID))
+                        .ToList();
+
+                    bool wasLinkedNode = nodeLinkedNode != null;
+                    if (wasLinkedNode)
                     {
-                        // skip & write to protocol
-                        logger.LogWarning("Linked node with NodeGuid {NodeGuid} is linked from different site - unable to migrate", ksTreeOriginal.NodeGUID);
-                        protocol.Warning(HandbookReferences.CmsTreeTreeIsLinkFromDifferentSite, ksNode);
+                        if (nodeLinkedNode?.NodeSiteID != ksNode.NodeSiteID)
+                        {
+                            // skip & write to protocol
+                            logger.LogWarning("Linked node with NodeGuid {NodeGuid} is linked from different site - unable to migrate", ksTreeOriginal.NodeGUID);
+                            protocol.Warning(HandbookReferences.CmsTreeTreeIsLinkFromDifferentSite, ksNode);
+                            continue;
+                        }
+
+                        // materialize linked node & write to protocol
+                        var linkedNode = modelFacade.SelectWhere<ICmsTree>("NodeSiteID = @nodeSiteID AND NodeGUID = @nodeGuid",
+                            new SqlParameter("nodeSiteID", ksNode.NodeSiteID),
+                            new SqlParameter("nodeGuid", nodeLinkedNode.NodeGUID)
+                        ).SingleOrDefault();
+
+                        Debug.Assert(ksNode != null, nameof(ksNode) + " != null");
+                        Debug.Assert(linkedNode != null, nameof(linkedNode) + " != null");
+
+                        migratedDocuments.Clear();
+
+                        var linkedNodeDocuments = modelFacade
+                            .SelectWhere<ICmsDocument>("DocumentNodeID = @nodeId", new SqlParameter("nodeId", linkedNode.NodeID))
+                            .ToList();
+
+                        for (int i = 0; i < linkedNodeDocuments.Count; i++)
+                        {
+                            var linkedDocument = linkedNodeDocuments[i];
+                            var fixedDocumentGuid = GuidHelper.CreateDocumentGuid($"{linkedDocument.DocumentID}|{ksNode.NodeID}|{ksNode.NodeSiteID}"); //Guid.NewGuid();
+                            var patchedNodeGuid = spoiledGuidContext.EnsureNodeGuid(ksNode.NodeGUID, ksNode.NodeSiteID, ksNode.NodeID);
+                            if (ContentItemInfo.Provider.Get(patchedNodeGuid)?.ContentItemID is { } contentItemId)
+                            {
+                                if (cultureCodeToLanguageGuid.TryGetValue(linkedDocument.DocumentCulture, out var languageGuid) &&
+                                    ContentLanguageInfoProvider.ProviderObject.Get(languageGuid) is { } languageInfo)
+                                {
+                                    if (ContentItemCommonDataInfo.Provider.Get()
+                                            .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataContentItemID), contentItemId)
+                                            .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataContentLanguageID), languageInfo.ContentLanguageID)
+                                            .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataIsLatest), true)
+                                            .FirstOrDefault() is { } contentItemCommonDataInfo)
+                                    {
+                                        fixedDocumentGuid = contentItemCommonDataInfo.ContentItemCommonDataGUID;
+                                        logger.LogTrace("Page '{NodeAliasPath}' is linked => ContentItemCommonDataGUID copy to DocumentGuid", ksNode.NodeAliasPath);
+                                    }
+                                }
+                            }
+
+                            linkedNodeDocuments[i] = linkedDocument switch
+                            {
+                                CmsDocumentK11 doc => doc with { DocumentGUID = fixedDocumentGuid, DocumentID = 0 },
+                                CmsDocumentK12 doc => doc with { DocumentGUID = fixedDocumentGuid, DocumentID = 0 },
+                                CmsDocumentK13 doc => doc with { DocumentGUID = fixedDocumentGuid, DocumentID = 0 },
+                                _ => linkedNodeDocuments[i]
+                            };
+
+                            migratedDocuments.Add(linkedNodeDocuments[i]);
+                            ksNode = ksNode switch
+                            {
+                                CmsTreeK11 node => node with { NodeLinkedNodeID = null, NodeLinkedNodeSiteID = null },
+                                CmsTreeK12 node => node with { NodeLinkedNodeID = null, NodeLinkedNodeSiteID = null },
+                                CmsTreeK13 node => node with { NodeLinkedNodeID = null, NodeLinkedNodeSiteID = null },
+                                _ => ksNode
+                            };
+
+                            logger.LogWarning("Linked node with NodeGuid {NodeGuid} was materialized (Xperience by Kentico doesn't support links), it no longer serves as link to original document. This affect also routing, this document will have own link generated from node alias path", ksNode.NodeGUID);
+                        }
+                    }
+
+                    var ksNodeClass = modelFacade.SelectById<ICmsClass>(ksNode.NodeClassID) ?? throw new InvalidOperationException($"Node with missing class, node id '{ksNode.NodeID}'");
+                    string nodeClassClassName = ksNodeClass.ClassName;
+                    if (classEntityConfiguration.ExcludeCodeNames.Contains(nodeClassClassName, StringComparer.InvariantCultureIgnoreCase))
+                    {
+                        protocol.Warning(HandbookReferences.EntityExplicitlyExcludedByCodeName(nodeClassClassName, "PageType"), ksNode);
+                        logger.LogWarning("Page: page of class {ClassName} was skipped => it is explicitly excluded in configuration", nodeClassClassName);
                         continue;
                     }
 
-                    // materialize linked node & write to protocol
-                    var linkedNode = modelFacade.SelectWhere<ICmsTree>("NodeSiteID = @nodeSiteID AND NodeGUID = @nodeGuid",
-                        new SqlParameter("nodeSiteID", ksNode.NodeSiteID),
-                        new SqlParameter("nodeGuid", nodeLinkedNode.NodeGUID)
-                    ).SingleOrDefault();
-
-                    Debug.Assert(ksNode != null, nameof(ksNode) + " != null");
-                    Debug.Assert(linkedNode != null, nameof(linkedNode) + " != null");
-
-                    migratedDocuments.Clear();
-
-                    var linkedNodeDocuments = modelFacade
-                        .SelectWhere<ICmsDocument>("DocumentNodeID = @nodeId", new SqlParameter("nodeId", linkedNode.NodeID))
-                        .ToList();
-
-                    for (int i = 0; i < linkedNodeDocuments.Count; i++)
+                    if (nodeClassClassName == ClassCmsRoot)
                     {
-                        var linkedDocument = linkedNodeDocuments[i];
-                        var fixedDocumentGuid = GuidHelper.CreateDocumentGuid($"{linkedDocument.DocumentID}|{ksNode.NodeID}|{ksNode.NodeSiteID}"); //Guid.NewGuid();
-                        var patchedNodeGuid = spoiledGuidContext.EnsureNodeGuid(ksNode.NodeGUID, ksNode.NodeSiteID, ksNode.NodeID);
-                        if (ContentItemInfo.Provider.Get(patchedNodeGuid)?.ContentItemID is { } contentItemId)
-                        {
-                            if (cultureCodeToLanguageGuid.TryGetValue(linkedDocument.DocumentCulture, out var languageGuid) &&
-                                ContentLanguageInfoProvider.ProviderObject.Get(languageGuid) is { } languageInfo)
-                            {
-                                if (ContentItemCommonDataInfo.Provider.Get()
-                                        .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataContentItemID), contentItemId)
-                                        .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataContentLanguageID), languageInfo.ContentLanguageID)
-                                        .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataIsLatest), true)
-                                        .FirstOrDefault() is { } contentItemCommonDataInfo)
-                                {
-                                    fixedDocumentGuid = contentItemCommonDataInfo.ContentItemCommonDataGUID;
-                                    logger.LogTrace("Page '{NodeAliasPath}' is linked => ContentItemCommonDataGUID copy to DocumentGuid", ksNode.NodeAliasPath);
-                                }
-                            }
-                        }
-
-                        linkedNodeDocuments[i] = linkedDocument switch
-                        {
-                            CmsDocumentK11 doc => doc with { DocumentGUID = fixedDocumentGuid, DocumentID = 0 },
-                            CmsDocumentK12 doc => doc with { DocumentGUID = fixedDocumentGuid, DocumentID = 0 },
-                            CmsDocumentK13 doc => doc with { DocumentGUID = fixedDocumentGuid, DocumentID = 0 },
-                            _ => linkedNodeDocuments[i]
-                        };
-
-                        migratedDocuments.Add(linkedNodeDocuments[i]);
-                        ksNode = ksNode switch
-                        {
-                            CmsTreeK11 node => node with { NodeLinkedNodeID = null, NodeLinkedNodeSiteID = null },
-                            CmsTreeK12 node => node with { NodeLinkedNodeID = null, NodeLinkedNodeSiteID = null },
-                            CmsTreeK13 node => node with { NodeLinkedNodeID = null, NodeLinkedNodeSiteID = null },
-                            _ => ksNode
-                        };
-
-                        logger.LogWarning("Linked node with NodeGuid {NodeGuid} was materialized (Xperience by Kentico doesn't support links), it no longer serves as link to original document. This affect also routing, this document will have own link generated from node alias path", ksNode.NodeGUID);
+                        logger.LogInformation("Root node skipped, V27 has no support for root nodes");
+                        continue;
                     }
-                }
 
-                var ksNodeClass = modelFacade.SelectById<ICmsClass>(ksNode.NodeClassID) ?? throw new InvalidOperationException($"Node with missing class, node id '{ksNode.NodeID}'");
-                string nodeClassClassName = ksNodeClass.ClassName;
-                if (classEntityConfiguration.ExcludeCodeNames.Contains(nodeClassClassName, StringComparer.InvariantCultureIgnoreCase))
-                {
-                    protocol.Warning(HandbookReferences.EntityExplicitlyExcludedByCodeName(nodeClassClassName, "PageType"), ksNode);
-                    logger.LogWarning("Page: page of class {ClassName} was skipped => it is explicitly excluded in configuration", nodeClassClassName);
-                    continue;
-                }
+                    Debug.Assert(migratedDocuments.Count > 0, "migratedDocuments.Count > 0");
 
-                if (nodeClassClassName == ClassCmsRoot)
-                {
-                    logger.LogInformation("Root node skipped, V27 has no support for root nodes");
-                    continue;
-                }
+                    if (ksTreeOriginal is { NodeSKUID: not null })
+                    {
+                        logger.LogWarning("Page '{NodeAliasPath}' has SKU bound, SKU info will be discarded", ksTreeOriginal.NodeAliasPath);
+                        protocol.Append(HandbookReferences.NotCurrentlySupportedSkip()
+                            .WithMessage($"Page '{ksTreeOriginal.NodeAliasPath}' has SKU bound, SKU info will be discarded")
+                            .WithIdentityPrint(ksTreeOriginal)
+                            .WithData(new { ksTreeOriginal.NodeSKUID })
+                        );
+                    }
 
-                Debug.Assert(migratedDocuments.Count > 0, "migratedDocuments.Count > 0");
-
-                if (ksTreeOriginal is { NodeSKUID: not null })
-                {
-                    logger.LogWarning("Page '{NodeAliasPath}' has SKU bound, SKU info will be discarded", ksTreeOriginal.NodeAliasPath);
-                    protocol.Append(HandbookReferences.NotCurrentlySupportedSkip()
-                        .WithMessage($"Page '{ksTreeOriginal.NodeAliasPath}' has SKU bound, SKU info will be discarded")
-                        .WithIdentityPrint(ksTreeOriginal)
-                        .WithData(new { ksTreeOriginal.NodeSKUID })
-                    );
-                }
-
-                string safeNodeName = await Service.Resolve<IContentItemCodeNameProvider>().Get(ksNode.NodeName);
-                var ksNodeParent = modelFacade.SelectById<ICmsTree>(ksNode.NodeParentID);
-                var nodeParentGuid = ksNodeParent?.NodeAliasPath == "/" || ksNodeParent == null
-                    ? (Guid?)null
-                    : spoiledGuidContext.EnsureNodeGuid(ksNodeParent);
+                    string safeNodeName = await Service.Resolve<IContentItemCodeNameProvider>().Get(ksNode.NodeName);
+                    var ksNodeParent = modelFacade.SelectById<ICmsTree>(ksNode.NodeParentID);
+                    var nodeParentGuid = ksNodeParent?.NodeAliasPath == "/" || ksNodeParent == null
+                        ? (Guid?)null
+                        : spoiledGuidContext.EnsureNodeGuid(ksNodeParent);
 
                 var classMapping = classMappingProvider.GetMapping(ksNodeClass.ClassName);
                 var targetClass = classMapping != null
                     ? DataClassInfoProvider.ProviderObject.Get(classMapping.TargetClassName)
                     : DataClassInfoProvider.ProviderObject.Get(ksNodeClass.ClassGUID);
 
-                var results = mapper.Map(new CmsTreeMapperSource(
-                    ksNode,
-                    safeNodeName,
-                    ksSite.SiteGUID,
-                    nodeParentGuid,
-                    cultureCodeToLanguageGuid,
-                    targetClass?.ClassFormDefinition,
-                    ksNodeClass.ClassFormDefinition,
-                    migratedDocuments,
-                    ksSite
-                ));
-                try
-                {
-                    WebPageItemInfo? webPageItemInfo = null;
-                    var commonDataInfos = new List<ContentItemCommonDataInfo>();
-                    foreach (var umtModel in results)
+                    var results = mapper.Map(new CmsTreeMapperSource(
+                        ksNode,
+                        safeNodeName,
+                        ksSite.SiteGUID,
+                        nodeParentGuid,
+                        cultureCodeToLanguageGuid,
+                        targetClass?.ClassFormDefinition,
+                        ksNodeClass.ClassFormDefinition,
+                        migratedDocuments,
+                        ksSite,
+                        pass != 0
+                    ));
+                    try
                     {
-                        logger.LogTrace("UMT-M: {UMT}", umtModel.PrintMe());
-                        switch (await importer.ImportAsync(umtModel))
+                        WebPageItemInfo? webPageItemInfo = null;
+                        var commonDataInfos = new List<ContentItemCommonDataInfo>();
+                        ContentItemInfo? contentItemInfo = null;
+                        foreach (var umtModel in results)
                         {
-                            case { Success: false } result:
+                            switch (await importer.ImportAsync(umtModel))
                             {
-                                logger.LogError("Failed to import: {Exception}, {ValidationResults}", result.Exception, JsonConvert.SerializeObject(result.ModelValidationResults));
-                                break;
-                            }
-                            case { Success: true, Imported: ContentItemCommonDataInfo ccid }:
-                            {
-                                commonDataInfos.Add(ccid);
-                                Debug.Assert(ccid.ContentItemCommonDataContentLanguageID != 0, "ccid.ContentItemCommonDataContentLanguageID != 0");
-                                break;
-                            }
-                            case { Success: true, Imported: ContentItemLanguageMetadataInfo cclm }:
-                            {
-                                Debug.Assert(cclm.ContentItemLanguageMetadataContentLanguageID != 0, "ccid.ContentItemCommonDataContentLanguageID != 0");
-                                break;
-                            }
-                            case { Success: true, Imported: WebPageItemInfo wp }:
-                            {
-                                webPageItemInfo = wp;
-                                break;
-                            }
-                            case { } importResult:
-                            {
-                                logger.LogTrace("Unexpected state {UMT} Result: {Result}", umtModel.PrintMe(), new
+                                case { Success: false } result:
                                 {
-                                    importResult.Success,
-                                    importResult.PrimaryKey,
-                                    importResult.Imported,
-                                    importResult.Exception,
-                                    validationResults = JsonConvert.SerializeObject(importResult.ModelValidationResults ?? [])
-                                });
-                                break;
-                            }
-                            default:
-                            {
-                                logger.LogTrace("Unexpected state {UMT}", umtModel.PrintMe());
-                                break;
+                                    logger.LogError("Failed to import: {Exception}, {ValidationResults}", result.Exception, JsonConvert.SerializeObject(result.ModelValidationResults));
+                                    break;
+                                }
+                                case { Success: true, Imported: ContentItemCommonDataInfo ccid }:
+                                {
+                                    if (contentItemInfo is not null && ccid.ContentItemCommonDataContentItemID == contentItemInfo.ContentItemID)
+                                    {
+                                        commonDataInfos.Add(ccid);
+                                    }
+                                    Debug.Assert(ccid.ContentItemCommonDataContentLanguageID != 0, "ccid.ContentItemCommonDataContentLanguageID != 0");
+                                    break;
+                                }
+                                case { Success: true, Imported: ContentItemLanguageMetadataInfo cclm }:
+                                {
+                                    Debug.Assert(cclm.ContentItemLanguageMetadataContentLanguageID != 0, "ccid.ContentItemCommonDataContentLanguageID != 0");
+                                    break;
+                                }
+                                case { Success: true, Imported: WebPageItemInfo wp }:
+                                {
+                                    webPageItemInfo = wp;
+                                    break;
+                                }
+                                case { Success: true, Imported: ContentItemInfo cii }:
+                                {
+                                    contentItemInfo = cii;
+                                    break;
+                                }
+
+                                default:
+                                    break;
                             }
                         }
-                    }
 
-                    AsserVersionStatusRule(commonDataInfos);
+                        AsserVersionStatusRule(commonDataInfos);
 
-                    if (webPageItemInfo != null && targetClass is { ClassWebPageHasUrl: true })
-                    {
-                        await GenerateDefaultPageUrlPath(ksNode, webPageItemInfo, wasLinkedNode);
-
-                        foreach (var migratedDocument in migratedDocuments)
+                        if (webPageItemInfo != null && targetClass is { ClassWebPageHasUrl: true })
                         {
-                            var languageGuid = cultureCodeToLanguageGuid[migratedDocument.DocumentCulture];
+                            await GenerateDefaultPageUrlPath(ksNode, webPageItemInfo, wasLinkedNode);
 
-                            await MigratePageUrlPaths(ksSite.SiteGUID,
-                                languageGuid,
-                                commonDataInfos,
-                                migratedDocument,
-                                ksNode,
-                                migratedDocument.DocumentCulture,
-                                wasLinkedNode, webPageItemInfo);
-                        }
+                            foreach (var migratedDocument in migratedDocuments)
+                            {
+                                var languageGuid = cultureCodeToLanguageGuid[migratedDocument.DocumentCulture];
 
-                        MigrateFormerUrls(ksNode, webPageItemInfo);
+                                await MigratePageUrlPaths(ksSite.SiteGUID,
+                                    languageGuid,
+                                    commonDataInfos,
+                                    migratedDocument,
+                                    ksNode,
+                                    migratedDocument.DocumentCulture,
+                                    wasLinkedNode, webPageItemInfo);
+                            }
 
-                        var urls = WebPageUrlPathInfo.Provider.Get()
-                            .WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID), webPageItemInfo.WebPageItemID);
+                            MigrateFormerUrls(ksNode, webPageItemInfo);
+
+                            var urls = WebPageUrlPathInfo.Provider.Get()
+                                .WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID), webPageItemInfo.WebPageItemID);
 
                         if (urls.Count < 1)
                         {
@@ -295,15 +294,17 @@ public class MigratePagesCommandHandler(
                     }
                 }
 
-                catch (Exception ex)
-                {
-                    protocol.Append(HandbookReferences
-                        .ErrorCreatingTargetInstance<WebPageItemInfo>(ex)
-                        .NeedsManualAction()
-                        .WithIdentityPrint(ksNode)
-                    );
-                    logger.LogError("Failed to import content item: {Exception}", ex);
+                    catch (Exception ex)
+                    {
+                        protocol.Append(HandbookReferences
+                            .ErrorCreatingTargetInstance<WebPageItemInfo>(ex)
+                            .NeedsManualAction()
+                            .WithIdentityPrint(ksNode)
+                        );
+                        logger.LogError("Failed to import content item: {Exception}", ex);
+                    }
                 }
+                ksTrees = deferredTreeNodesService.GetNodes();
             }
         }
 
