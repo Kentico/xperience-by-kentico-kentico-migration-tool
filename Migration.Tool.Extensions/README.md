@@ -70,6 +70,14 @@ You can see samples:
 
 After implementing the migration, you need to [register the migration](#register-migrations) in the system.
 
+## Register migrations
+
+Register the migration in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as a `Transient` dependency into the service collection:
+
+- Field migrations - `services.AddTransient<IFieldMigration, MyFieldMigration>();`
+- Widget migrations - `services.AddTransient<IWidgetMigration, MyWidgetMigration>();`
+- Widget property migrations - `services.AddTransient<IWidgetPropertyMigration, MyWidgetPropertyMigration>();`
+
 ## Custom class mappings
 
 You can customize class mappings to adjust the content model between the source instance and the target Xperience by Kentico instance. For example, you can merge multiple page types into a single content type, or migrate specific page types to the [content hub](https://docs.kentico.com/x/barWCQ) as reusable content.
@@ -107,6 +115,7 @@ You can customize class mappings to adjust the content model between the source 
     var title = m.BuildField("Title");
 
     // You can map any number of source fields. The migration creates items of the target data class for every item from a mapped source data class.
+    // The default migration is skipped for any data class / page type where you map at least one source field
 
     // Maps the "EventTitle" field from the source data class "_ET.Event1"
     // Sets the isTemplate parameter to true, which makes the new field inherit the source field definition as a template
@@ -154,6 +163,8 @@ You can customize class mappings to adjust the content model between the source 
 
 8. Ensure that your class mapping extension methods run during the startup of the migration tool. Call the methods from `UseCustomizations` in the [ServiceCollectionExtensions](/Migration.Tool.Extensions/ServiceCollectionExtensions.cs) class.
 
+**Note**: Your mappings now replace the default migration functionality for all data classes (page types) that you use as a source. Any class where you set at least one source field is affected. If you map only some fields from a source class, the remaining fields are not migrated at all.
+
 ### Examples
 
 You can find sample class mappings in the [ClassMappingSample.cs](/Migration.Tool.Extensions/ClassMappings/ClassMappingSample.cs) file.
@@ -162,10 +173,4 @@ You can find sample class mappings in the [ClassMappingSample.cs](/Migration.Too
 - `AddClassMergeSample` showcases how to merge two page types into a single content type
 - `AddReusableRemodelingSample` showcases how to migrate a page type as reusable content
 
-## Register migrations
 
-Register the migration in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as a `Transient` dependency into the service collection:
-
-- Field migrations - `services.AddTransient<IFieldMigration, MyFieldMigration>();`
-- Widget migrations - `services.AddTransient<IWidgetMigration, MyWidgetMigration>();`
-- Widget property migrations - `services.AddTransient<IWidgetPropertyMigration, MyWidgetPropertyMigration>();`
