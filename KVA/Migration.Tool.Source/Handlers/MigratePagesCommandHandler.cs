@@ -191,10 +191,10 @@ public class MigratePagesCommandHandler(
                         ? (Guid?)null
                         : spoiledGuidContext.EnsureNodeGuid(ksNodeParent);
 
-                var classMapping = classMappingProvider.GetMapping(ksNodeClass.ClassName);
-                var targetClass = classMapping != null
-                    ? DataClassInfoProvider.ProviderObject.Get(classMapping.TargetClassName)
-                    : DataClassInfoProvider.ProviderObject.Get(ksNodeClass.ClassGUID);
+                    var classMapping = classMappingProvider.GetMapping(ksNodeClass.ClassName);
+                    var targetClass = classMapping != null
+                        ? DataClassInfoProvider.ProviderObject.Get(classMapping.TargetClassName)
+                        : DataClassInfoProvider.ProviderObject.Get(ksNodeClass.ClassGUID);
 
                     var results = mapper.Map(new CmsTreeMapperSource(
                         ksNode,
@@ -276,23 +276,23 @@ public class MigratePagesCommandHandler(
                             var urls = WebPageUrlPathInfo.Provider.Get()
                                 .WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID), webPageItemInfo.WebPageItemID);
 
-                        if (urls.Count < 1)
-                        {
-                            logger.LogWarning("No url for page {Page}", new { webPageItemInfo.WebPageItemName, webPageItemInfo.WebPageItemTreePath, webPageItemInfo.WebPageItemGUID });
-                        }
-                    }
-                    else
-                    {
-                        if (nodeParentGuid is { } npg && ContentItemInfo.Provider.Get(npg) is { ContentItemIsReusable: true })
-                        {
-                            logger.LogTrace("No webpage item produced for '{NodeAliasPath}' - parent is reusable, possibly converted with mapping?", ksNode.NodeAliasPath);
+                            if (urls.Count < 1)
+                            {
+                                logger.LogWarning("No url for page {Page}", new { webPageItemInfo.WebPageItemName, webPageItemInfo.WebPageItemTreePath, webPageItemInfo.WebPageItemGUID });
+                            }
                         }
                         else
                         {
-                            logger.LogTrace("No webpage item produced for '{NodeAliasPath}'", ksNode.NodeAliasPath);
+                            if (nodeParentGuid is { } npg && ContentItemInfo.Provider.Get(npg) is { ContentItemIsReusable: true })
+                            {
+                                logger.LogTrace("No webpage item produced for '{NodeAliasPath}' - parent is reusable, possibly converted with mapping?", ksNode.NodeAliasPath);
+                            }
+                            else
+                            {
+                                logger.LogTrace("No webpage item produced for '{NodeAliasPath}'", ksNode.NodeAliasPath);
+                            }
                         }
                     }
-                }
 
                     catch (Exception ex)
                     {

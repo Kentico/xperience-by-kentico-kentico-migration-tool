@@ -44,7 +44,7 @@ public static class MediaHelper
                                     new SqlParameter("fileSiteID", linkSiteId))
                                 .ToList() switch
                         {
-                            [var mediaFile] => mediaFile,
+                        [var mediaFile] => mediaFile,
                             { Count: > 1 } => throw new InvalidOperationException($"Multiple media file were found for path {path}, site {linkSiteId} and library {libraryDir}"),
                             { Count: 0 } =>
                                 // this may happen and is valid scenario
