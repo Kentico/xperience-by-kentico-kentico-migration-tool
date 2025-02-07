@@ -142,7 +142,7 @@ public class CmsClassMapper(
                 target.ClassType = ClassType.OTHER;
                 target.ClassContentTypeType = null;
 
-                target = PatchDataClassInfo(target, existingFieldGUIDs, out string? oldPrimaryKeyName, out string? documentNameField);
+                target = PatchDataClassInfo(target, existingFieldGUIDs, modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false), out string? oldPrimaryKeyName, out string? documentNameField);
 
                 break;
             }
@@ -176,7 +176,7 @@ public class CmsClassMapper(
                 target.ClassType = ClassType.CONTENT_TYPE;
                 target.ClassContentTypeType = ClassContentTypeType.REUSABLE;
 
-                target = PatchDataClassInfo(target, existingFieldGUIDs, out string? oldPrimaryKeyName, out string? documentNameField);
+                target = PatchDataClassInfo(target, existingFieldGUIDs, modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false), out string? oldPrimaryKeyName, out string? documentNameField);
                 break;
             }
 
@@ -194,7 +194,7 @@ public class CmsClassMapper(
                     ? ClassContentTypeType.REUSABLE
                     : ClassContentTypeType.WEBSITE;
 
-                target = PatchDataClassInfo(target, existingFieldGUIDs, out string? oldPrimaryKeyName, out string? documentNameField);
+                target = PatchDataClassInfo(target, existingFieldGUIDs, modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false), out string? oldPrimaryKeyName, out string? documentNameField);
                 break;
             }
 
@@ -230,10 +230,10 @@ public class CmsClassMapper(
         return target;
     }
 
-    public static DataClassInfo PatchDataClassInfo(DataClassInfo dataClass, Dictionary<string, Guid> existingFieldGUIDs, out string? oldPrimaryKeyName, out string? documentNameField)
+    public static DataClassInfo PatchDataClassInfo(DataClassInfo dataClass, Dictionary<string, Guid> existingFieldGUIDs, SemanticVersion version, bool includeExtendedMetadata, out string? oldPrimaryKeyName, out string? mappedLegacyField)
     {
         oldPrimaryKeyName = null;
-        documentNameField = null;
+        mappedLegacyField = null;
         if (dataClass.ClassType is ClassType.CONTENT_TYPE)
         {
             var fi = new FormInfo(dataClass.ClassFormDefinition);
@@ -291,8 +291,10 @@ public class CmsClassMapper(
 
             Debug.WriteLineIf(oldPrimaryKeyName == null, $"WARN: old PK is null for class '{dataClass.ClassName}'");
 
-            AppendDocumentNameField(nfi, dataClass.ClassName, out documentNameField);
-
+            foreach (var field in GetLegacyMetadataFields(version, includeExtendedMetadata))
+            {
+                AppendLegacyMetadataField(nfi, dataClass.ClassName, field, out mappedLegacyField);
+            }
             dataClass.ClassFormDefinition = nfi.GetXmlDefinition();
 
             return dataClass;
@@ -301,9 +303,22 @@ public class CmsClassMapper(
         return dataClass;
     }
 
-    public static string? GetLegacyDocumentName(FormInfo nfi, string className)
+    public static IEnumerable<LegacyDocumentMetadataFieldMapping> GetLegacyMetadataFields(SemanticVersion version, bool includeExtended)
     {
-        if (nfi.GetFields(true, true).FirstOrDefault(f => GuidHelper.CreateFieldGuid($"documentname|{className}").Equals(f.Guid)) is { } foundField)
+        List<LegacyDocumentMetadataFieldMapping> fields = [new("DocumentName", "Page Name", 100, false, x => x.DocumentName)];
+        if (includeExtended && version is { Major: 12 or 13 })
+        {
+            fields.AddRange([
+                new("DocumentPageTitle", "Page Title", -1, true, x => x.DocumentPageTitle),
+                new("DocumentPageDescription", "Page Description", -1, true, x => x.DocumentPageDescription),
+                new("DocumentPageKeywords", "Page Keywords", -1, true, x => x.DocumentPageKeyWords),
+            ]);
+        }
+        return fields;
+    }
+    public static string? GetMappedLegacyField(FormInfo nfi, string className, string legacyFieldName)
+    {
+        if (nfi.GetFields(true, true).FirstOrDefault(f => GuidHelper.CreateFieldGuid($"{legacyFieldName.ToLower()}|{className}").Equals(f.Guid)) is { } foundField)
         {
             return foundField.Name;
         }
@@ -311,33 +326,32 @@ public class CmsClassMapper(
         return null;
     }
 
-    private static void AppendDocumentNameField(FormInfo nfi, string newClassName, out string documentNameField)
+    private static void AppendLegacyMetadataField(FormInfo nfi, string newClassName, LegacyDocumentMetadataFieldMapping mapping, out string targetFieldName)
     {
-        if (GetLegacyDocumentName(nfi, newClassName) is { } fieldName)
+        if (GetMappedLegacyField(nfi, newClassName, mapping.LegacyFieldName) is { } fieldName)
         {
-            documentNameField = fieldName;
+            targetFieldName = fieldName;
             return;
         }
 
-        // no DocumentName in v27, we supply one in migration
-        documentNameField = "DocumentName";
+        targetFieldName = mapping.LegacyFieldName;
         int i = 0;
-        while (nfi.GetFormField(documentNameField) is not null)
+        while (nfi.GetFormField(targetFieldName) is not null)
         {
-            documentNameField = $"DocumentName{++i}";
+            targetFieldName = $"{mapping.LegacyFieldName}{++i}";
         }
 
         nfi.AddFormItem(new FormFieldInfo
         {
-            Caption = "Page name", // as in v26.x.x
-            Name = documentNameField,
-            AllowEmpty = false,
-            DataType = "text",
-            Size = 100,
+            Caption = mapping.TargetCaption,
+            Name = targetFieldName,
+            AllowEmpty = mapping.AllowEmpty,
+            DataType = mapping.TargetSize switch { -1 => "longtext", _ => "text" },
+            Size = mapping.TargetSize switch { -1 => 0, _ => mapping.TargetSize },
             Precision = 0,
             DefaultValue = null,
-            Guid = GuidHelper.CreateFieldGuid($"documentname|{newClassName}"),
-            System = false, // no longer system field, system doesn't rely on this field anymore
+            Guid = GuidHelper.CreateFieldGuid($"{mapping.LegacyFieldName.ToLower()}|{newClassName}"),
+            System = false,
             Settings = { { "controlname", "Kentico.Administration.TextInput" } }
         });
     }
