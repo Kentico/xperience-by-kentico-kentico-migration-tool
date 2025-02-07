@@ -649,7 +649,7 @@ The migration then converts the specified page types to content types for reusab
 
 **Note**: Page URLs and other page-specific configuration and metadata is not migrated in this scenario.
 
-For advanced scenarios, you can use the extensibility feature to implement [customizations](../Migration.Tool.Extensions/README.md#custom-class-mappings) that map specific page types or individual fields to reusable content types. For example, this allows you to migrate multiple page types to a single content type, or split fields of a single page type into multiple content types.
+For advanced scenarios, you can use the extensibility feature to implement [customizations](../Migration.Tool.Extensions/README.md#custom-class-mappings) that map specific page types or individual fields to reusable content types. For example, this allows you to migrate multiple page types to a single content type.
 
 ## Convert page types to reusable field schemas
 
