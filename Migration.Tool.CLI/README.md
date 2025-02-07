@@ -153,7 +153,7 @@ Pages from older product versions can be migrated to either to [website channel 
 - The migration includes the following versions of pages:
   - _Published_
   - _Latest draft version_ - for published pages, the version is migrated to the
-    _Draft (New version)_ [status](https://docs.xperience.io/x/JwKQC#page-life-cycle); for pages that do not have a
+    _Draft (New version)_ [status](https://docs.xperience.io/x/JwKQC); for pages that do not have a
     published version, the version is migrated to the _Draft (Initial)_ status.
   - _Archived_
 - Page URLs are included only when migrating to [website channel pages](https://docs.kentico.com/x/JwKQC) (default behavior). URL migration depends on the source instance version:
