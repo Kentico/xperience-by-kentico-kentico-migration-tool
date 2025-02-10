@@ -133,6 +133,11 @@ public class MigrateCustomModulesCommandHandler(
 
                     XNamespace nsSchema = "http://www.w3.org/2001/XMLSchema";
                     XNamespace msSchema = "urn:schemas-microsoft-com:xml-msdata";
+                    if (string.IsNullOrEmpty(xbkDataClass.ClassXmlSchema))
+                    {
+                        logger.LogError("CmsClass: {ClassName} has no XML schema. Migration incomplete", cmsClass.ClassName);
+                        continue;
+                    }
                     var xDoc = XDocument.Parse(xbkDataClass.ClassXmlSchema);
                     var autoIncrementColumns = xDoc.Descendants(nsSchema + "element")
                         .Where(x => x.Attribute(msSchema + "AutoIncrement")?.Value == "true")
