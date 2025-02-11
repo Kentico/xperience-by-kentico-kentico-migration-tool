@@ -27,6 +27,7 @@ using Migration.Tool.Source.Providers;
 using Migration.Tool.Source.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using static HotChocolate.ErrorCodes;
 
 namespace Migration.Tool.Source.Handlers;
 // ReSharper disable once UnusedType.Global
@@ -257,7 +258,7 @@ public class MigratePagesCommandHandler(
 
                         if (webPageItemInfo != null && targetClass is { ClassWebPageHasUrl: true })
                         {
-                            await GenerateDefaultPageUrlPath(ksNode, webPageItemInfo, wasLinkedNode);
+                            await GenerateDefaultPageUrlPath(ksNode, webPageItemInfo);
 
                             foreach (var migratedDocument in migratedDocuments)
                             {
@@ -508,15 +509,45 @@ public class MigratePagesCommandHandler(
         }
     }
 
-    private async Task GenerateDefaultPageUrlPath(ICmsTree ksTree, WebPageItemInfo webPageItemInfo, bool wasLinkedNode)
+    private async Task GenerateDefaultPageUrlPath(ICmsTree ksTree, WebPageItemInfo webPageItemInfo)
     {
         var man = Service.Resolve<IWebPageUrlManager>();
-        string alias = wasLinkedNode ? ksTree.NodeAlias : ksTree.NodeAliasPath;
-        var collisionData = await man.GeneratePageUrlPath(webPageItemInfo, alias, VersionStatus.InitialDraft, CancellationToken.None);
-        foreach (var data in collisionData)
+        IEnumerable<CollisionData> collisionData = [];
+        // in case of collision, try to avoid it by appending 4 random characters
+        bool hadCollision = false;
+        for (int i = 0; i < 200; i++)       // arbitrary high number just to avoid infinite loop that would normally fit here
         {
-            logger.LogError("WebPageUrlPath collision occured {Path}", data.Path);
+            var alias = ksTree.NodeAlias + (i != 0 ? $"-{Guid.NewGuid().ToString()[..4]}" : string.Empty);
+            var attemptCollisionData = await man.GeneratePageUrlPath(webPageItemInfo, alias, VersionStatus.InitialDraft, CancellationToken.None);
+            if (!attemptCollisionData.Any())
+            {
+                break;
+            }
+            else
+            {
+                collisionData = attemptCollisionData;
+                hadCollision = true;
+            }
         }
+
+        if (collisionData.Any())    // no attempt went through without collision
+        {
+            foreach (var data in collisionData)
+            {
+                logger.LogError("WebPageUrlPath collision occured and couldn't be resolved. {Path}", data.Path);
+            }
+        }
+        else
+        {
+            if (hadCollision)
+            {
+                foreach (var data in collisionData)
+                {
+                    logger.LogWarning("WebPageUrlPath collision occured and was resolved by appending random string. {Path}", data.Path);
+                }
+            }
+        }
+
     }
 
     private void CheckPathAlreadyExists(WebPageUrlPathModel webPageUrlPath,
