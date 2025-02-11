@@ -309,9 +309,9 @@ public class CmsClassMapper(
         if (includeExtended && version is { Major: 12 or 13 })
         {
             fields.AddRange([
-                new("DocumentPageTitle", "Page Title", -1, true, x => x.DocumentPageTitle),
-                new("DocumentPageDescription", "Page Description", -1, true, x => x.DocumentPageDescription),
-                new("DocumentPageKeywords", "Page Keywords", -1, true, x => x.DocumentPageKeyWords),
+                new(nameof(ICmsDocument.DocumentPageTitle), "Page Title", -1, true, x => x.DocumentPageTitle),
+                new(nameof(ICmsDocument.DocumentPageDescription), "Page Description", -1, true, x => x.DocumentPageDescription),
+                new(nameof(ICmsDocument.DocumentPageKeyWords), "Page Keywords", -1, true, x => x.DocumentPageKeyWords),
             ]);
         }
         return fields;
