@@ -39,5 +39,5 @@ public class CmsAvatar
     public int? AvatarImageWidth { get; set; }
 
     [InverseProperty("UserAvatar")]
-    public virtual ICollection<CmsUserSetting> CmsUserSettings { get; set; } = new List<CmsUserSetting>();
+    public virtual ICollection<CmsUserSetting> CmsUserSettings { get; set; } = [];
 }

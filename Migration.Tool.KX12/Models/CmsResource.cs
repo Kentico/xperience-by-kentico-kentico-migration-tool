@@ -49,36 +49,36 @@ public class CmsResource
     public string? ResourceInstalledVersion { get; set; }
 
     [InverseProperty("ClassResource")]
-    public virtual ICollection<CmsClass> CmsClasses { get; set; } = new List<CmsClass>();
+    public virtual ICollection<CmsClass> CmsClasses { get; set; } = [];
 
     [InverseProperty("UserControlResource")]
-    public virtual ICollection<CmsFormUserControl> CmsFormUserControls { get; set; } = new List<CmsFormUserControl>();
+    public virtual ICollection<CmsFormUserControl> CmsFormUserControls { get; set; } = [];
 
     [InverseProperty("ModuleLicenseKeyResource")]
-    public virtual ICollection<CmsModuleLicenseKey> CmsModuleLicenseKeys { get; set; } = new List<CmsModuleLicenseKey>();
+    public virtual ICollection<CmsModuleLicenseKey> CmsModuleLicenseKeys { get; set; } = [];
 
     [InverseProperty("Resource")]
-    public virtual ICollection<CmsPermission> CmsPermissions { get; set; } = new List<CmsPermission>();
+    public virtual ICollection<CmsPermission> CmsPermissions { get; set; } = [];
 
     [InverseProperty("ResourceLibraryResource")]
-    public virtual ICollection<CmsResourceLibrary> CmsResourceLibraries { get; set; } = new List<CmsResourceLibrary>();
+    public virtual ICollection<CmsResourceLibrary> CmsResourceLibraries { get; set; } = [];
 
     [InverseProperty("TaskResource")]
-    public virtual ICollection<CmsScheduledTask> CmsScheduledTasks { get; set; } = new List<CmsScheduledTask>();
+    public virtual ICollection<CmsScheduledTask> CmsScheduledTasks { get; set; } = [];
 
     [InverseProperty("CategoryResource")]
-    public virtual ICollection<CmsSettingsCategory> CmsSettingsCategories { get; set; } = new List<CmsSettingsCategory>();
+    public virtual ICollection<CmsSettingsCategory> CmsSettingsCategories { get; set; } = [];
 
     [InverseProperty("ElementResource")]
-    public virtual ICollection<CmsUielement> CmsUielements { get; set; } = new List<CmsUielement>();
+    public virtual ICollection<CmsUielement> CmsUielements { get; set; } = [];
 
     [InverseProperty("WebPartResource")]
-    public virtual ICollection<CmsWebPart> CmsWebParts { get; set; } = new List<CmsWebPart>();
+    public virtual ICollection<CmsWebPart> CmsWebParts { get; set; } = [];
 
     [InverseProperty("ActionResource")]
-    public virtual ICollection<CmsWorkflowAction> CmsWorkflowActions { get; set; } = new List<CmsWorkflowAction>();
+    public virtual ICollection<CmsWorkflowAction> CmsWorkflowActions { get; set; } = [];
 
     [ForeignKey("ResourceId")]
     [InverseProperty("Resources")]
-    public virtual ICollection<CmsSite> Sites { get; set; } = new List<CmsSite>();
+    public virtual ICollection<CmsSite> Sites { get; set; } = [];
 }

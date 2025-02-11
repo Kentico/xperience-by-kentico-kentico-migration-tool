@@ -30,8 +30,8 @@ public class OmContactGroup
     public int? ContactGroupStatus { get; set; }
 
     [InverseProperty("ContactGroup")]
-    public virtual ICollection<NewsletterIssueContactGroup> NewsletterIssueContactGroups { get; set; } = new List<NewsletterIssueContactGroup>();
+    public virtual ICollection<NewsletterIssueContactGroup> NewsletterIssueContactGroups { get; set; } = [];
 
     [InverseProperty("ContactGroupMemberContactGroup")]
-    public virtual ICollection<OmContactGroupMember> OmContactGroupMembers { get; set; } = new List<OmContactGroupMember>();
+    public virtual ICollection<OmContactGroupMember> OmContactGroupMembers { get; set; } = [];
 }

@@ -47,13 +47,13 @@ public class ComShippingOption
     public int? ShippingOptionTaxClassId { get; set; }
 
     [InverseProperty("OrderShippingOption")]
-    public virtual ICollection<ComOrder> ComOrders { get; set; } = new List<ComOrder>();
+    public virtual ICollection<ComOrder> ComOrders { get; set; } = [];
 
     [InverseProperty("ShippingCostShippingOption")]
-    public virtual ICollection<ComShippingCost> ComShippingCosts { get; set; } = new List<ComShippingCost>();
+    public virtual ICollection<ComShippingCost> ComShippingCosts { get; set; } = [];
 
     [InverseProperty("ShoppingCartShippingOption")]
-    public virtual ICollection<ComShoppingCart> ComShoppingCarts { get; set; } = new List<ComShoppingCart>();
+    public virtual ICollection<ComShoppingCart> ComShoppingCarts { get; set; } = [];
 
     [ForeignKey("ShippingOptionCarrierId")]
     [InverseProperty("ComShippingOptions")]

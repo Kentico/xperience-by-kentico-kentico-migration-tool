@@ -45,10 +45,10 @@ public class NewsletterSubscriber
     public int? SubscriberBounces { get; set; }
 
     [InverseProperty("EmailSubscriber")]
-    public virtual ICollection<NewsletterEmail> NewsletterEmails { get; set; } = new List<NewsletterEmail>();
+    public virtual ICollection<NewsletterEmail> NewsletterEmails { get; set; } = [];
 
     [InverseProperty("Subscriber")]
-    public virtual ICollection<NewsletterSubscriberNewsletter> NewsletterSubscriberNewsletters { get; set; } = new List<NewsletterSubscriberNewsletter>();
+    public virtual ICollection<NewsletterSubscriberNewsletter> NewsletterSubscriberNewsletters { get; set; } = [];
 
     [ForeignKey("SubscriberSiteId")]
     [InverseProperty("NewsletterSubscribers")]

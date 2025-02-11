@@ -64,5 +64,5 @@ public class OmAbtest
     public virtual CmsSite AbtestSite { get; set; } = null!;
 
     [InverseProperty("AbvariantTest")]
-    public virtual ICollection<OmAbvariant> OmAbvariants { get; set; } = new List<OmAbvariant>();
+    public virtual ICollection<OmAbvariant> OmAbvariants { get; set; } = [];
 }

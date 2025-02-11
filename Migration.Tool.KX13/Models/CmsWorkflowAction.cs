@@ -67,5 +67,5 @@ public class CmsWorkflowAction
     public virtual CmsResource? ActionResource { get; set; }
 
     [InverseProperty("StepAction")]
-    public virtual ICollection<CmsWorkflowStep> CmsWorkflowSteps { get; set; } = new List<CmsWorkflowStep>();
+    public virtual ICollection<CmsWorkflowStep> CmsWorkflowSteps { get; set; } = [];
 }

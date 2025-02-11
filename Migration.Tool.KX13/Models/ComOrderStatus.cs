@@ -40,22 +40,22 @@ public class ComOrderStatus
     public bool? StatusOrderIsPaid { get; set; }
 
     [InverseProperty("FromStatus")]
-    public virtual ICollection<ComOrderStatusUser> ComOrderStatusUserFromStatuses { get; set; } = new List<ComOrderStatusUser>();
+    public virtual ICollection<ComOrderStatusUser> ComOrderStatusUserFromStatuses { get; set; } = [];
 
     [InverseProperty("ToStatus")]
-    public virtual ICollection<ComOrderStatusUser> ComOrderStatusUserToStatuses { get; set; } = new List<ComOrderStatusUser>();
+    public virtual ICollection<ComOrderStatusUser> ComOrderStatusUserToStatuses { get; set; } = [];
 
     [InverseProperty("OrderStatus")]
-    public virtual ICollection<ComOrder> ComOrders { get; set; } = new List<ComOrder>();
+    public virtual ICollection<ComOrder> ComOrders { get; set; } = [];
 
     [InverseProperty("PaymentOptionAuthorizedOrderStatus")]
-    public virtual ICollection<ComPaymentOption> ComPaymentOptionPaymentOptionAuthorizedOrderStatuses { get; set; } = new List<ComPaymentOption>();
+    public virtual ICollection<ComPaymentOption> ComPaymentOptionPaymentOptionAuthorizedOrderStatuses { get; set; } = [];
 
     [InverseProperty("PaymentOptionFailedOrderStatus")]
-    public virtual ICollection<ComPaymentOption> ComPaymentOptionPaymentOptionFailedOrderStatuses { get; set; } = new List<ComPaymentOption>();
+    public virtual ICollection<ComPaymentOption> ComPaymentOptionPaymentOptionFailedOrderStatuses { get; set; } = [];
 
     [InverseProperty("PaymentOptionSucceededOrderStatus")]
-    public virtual ICollection<ComPaymentOption> ComPaymentOptionPaymentOptionSucceededOrderStatuses { get; set; } = new List<ComPaymentOption>();
+    public virtual ICollection<ComPaymentOption> ComPaymentOptionPaymentOptionSucceededOrderStatuses { get; set; } = [];
 
     [ForeignKey("StatusSiteId")]
     [InverseProperty("ComOrderStatuses")]

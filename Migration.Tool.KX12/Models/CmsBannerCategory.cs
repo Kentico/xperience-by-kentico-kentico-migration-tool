@@ -35,5 +35,5 @@ public class CmsBannerCategory
     public virtual CmsSite? BannerCategorySite { get; set; }
 
     [InverseProperty("BannerCategory")]
-    public virtual ICollection<CmsBanner> CmsBanners { get; set; } = new List<CmsBanner>();
+    public virtual ICollection<CmsBanner> CmsBanners { get; set; } = [];
 }

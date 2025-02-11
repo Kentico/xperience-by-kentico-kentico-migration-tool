@@ -37,5 +37,5 @@ public class CmsDocumentTypeScope
 
     [ForeignKey("ScopeId")]
     [InverseProperty("Scopes")]
-    public virtual ICollection<CmsClass> Classes { get; set; } = new List<CmsClass>();
+    public virtual ICollection<CmsClass> Classes { get; set; } = [];
 }

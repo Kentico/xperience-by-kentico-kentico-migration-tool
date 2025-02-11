@@ -31,7 +31,7 @@ public class ComInternalStatus
     public int? InternalStatusSiteId { get; set; }
 
     [InverseProperty("SkuinternalStatus")]
-    public virtual ICollection<ComSku> ComSkus { get; set; } = new List<ComSku>();
+    public virtual ICollection<ComSku> ComSkus { get; set; } = [];
 
     [ForeignKey("InternalStatusSiteId")]
     [InverseProperty("ComInternalStatuses")]

@@ -86,5 +86,5 @@ public class CmsForm
 
     [ForeignKey("FormId")]
     [InverseProperty("Forms")]
-    public virtual ICollection<CmsRole> Roles { get; set; } = new List<CmsRole>();
+    public virtual ICollection<CmsRole> Roles { get; set; } = [];
 }

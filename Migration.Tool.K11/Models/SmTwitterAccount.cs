@@ -51,7 +51,7 @@ public class SmTwitterAccount
     public bool? TwitterAccountIsDefault { get; set; }
 
     [InverseProperty("TwitterPostTwitterAccount")]
-    public virtual ICollection<SmTwitterPost> SmTwitterPosts { get; set; } = new List<SmTwitterPost>();
+    public virtual ICollection<SmTwitterPost> SmTwitterPosts { get; set; } = [];
 
     [ForeignKey("TwitterAccountSiteId")]
     [InverseProperty("SmTwitterAccounts")]

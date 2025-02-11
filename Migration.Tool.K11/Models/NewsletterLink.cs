@@ -29,5 +29,5 @@ public class NewsletterLink
     public virtual NewsletterNewsletterIssue LinkIssue { get; set; } = null!;
 
     [InverseProperty("ClickedLinkNewsletterLink")]
-    public virtual ICollection<NewsletterClickedLink> NewsletterClickedLinks { get; set; } = new List<NewsletterClickedLink>();
+    public virtual ICollection<NewsletterClickedLink> NewsletterClickedLinks { get; set; } = [];
 }

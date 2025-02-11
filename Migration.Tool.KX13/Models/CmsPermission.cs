@@ -44,10 +44,10 @@ public class CmsPermission
     public virtual CmsClass? Class { get; set; }
 
     [InverseProperty("Permission")]
-    public virtual ICollection<CmsWidgetRole> CmsWidgetRoles { get; set; } = new List<CmsWidgetRole>();
+    public virtual ICollection<CmsWidgetRole> CmsWidgetRoles { get; set; } = [];
 
     [InverseProperty("Permission")]
-    public virtual ICollection<MediaLibraryRolePermission> MediaLibraryRolePermissions { get; set; } = new List<MediaLibraryRolePermission>();
+    public virtual ICollection<MediaLibraryRolePermission> MediaLibraryRolePermissions { get; set; } = [];
 
     [ForeignKey("ResourceId")]
     [InverseProperty("CmsPermissions")]
@@ -55,5 +55,5 @@ public class CmsPermission
 
     [ForeignKey("PermissionId")]
     [InverseProperty("Permissions")]
-    public virtual ICollection<CmsRole> Roles { get; set; } = new List<CmsRole>();
+    public virtual ICollection<CmsRole> Roles { get; set; } = [];
 }

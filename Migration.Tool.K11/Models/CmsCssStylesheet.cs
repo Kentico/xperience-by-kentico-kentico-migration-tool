@@ -35,15 +35,15 @@ public class CmsCssStylesheet
     public string? StylesheetDynamicLanguage { get; set; }
 
     [InverseProperty("DocumentStylesheet")]
-    public virtual ICollection<CmsDocument> CmsDocuments { get; set; } = new List<CmsDocument>();
+    public virtual ICollection<CmsDocument> CmsDocuments { get; set; } = [];
 
     [InverseProperty("SiteDefaultEditorStylesheetNavigation")]
-    public virtual ICollection<CmsSite> CmsSiteSiteDefaultEditorStylesheetNavigations { get; set; } = new List<CmsSite>();
+    public virtual ICollection<CmsSite> CmsSiteSiteDefaultEditorStylesheetNavigations { get; set; } = [];
 
     [InverseProperty("SiteDefaultStylesheet")]
-    public virtual ICollection<CmsSite> CmsSiteSiteDefaultStylesheets { get; set; } = new List<CmsSite>();
+    public virtual ICollection<CmsSite> CmsSiteSiteDefaultStylesheets { get; set; } = [];
 
     [ForeignKey("StylesheetId")]
     [InverseProperty("Stylesheets")]
-    public virtual ICollection<CmsSite> Sites { get; set; } = new List<CmsSite>();
+    public virtual ICollection<CmsSite> Sites { get; set; } = [];
 }

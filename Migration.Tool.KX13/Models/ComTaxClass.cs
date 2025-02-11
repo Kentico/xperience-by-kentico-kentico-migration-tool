@@ -31,19 +31,19 @@ public class ComTaxClass
     public int? TaxClassSiteId { get; set; }
 
     [InverseProperty("DepartmentDefaultTaxClass")]
-    public virtual ICollection<ComDepartment> ComDepartments { get; set; } = new List<ComDepartment>();
+    public virtual ICollection<ComDepartment> ComDepartments { get; set; } = [];
 
     [InverseProperty("ShippingOptionTaxClass")]
-    public virtual ICollection<ComShippingOption> ComShippingOptions { get; set; } = new List<ComShippingOption>();
+    public virtual ICollection<ComShippingOption> ComShippingOptions { get; set; } = [];
 
     [InverseProperty("SkutaxClass")]
-    public virtual ICollection<ComSku> ComSkus { get; set; } = new List<ComSku>();
+    public virtual ICollection<ComSku> ComSkus { get; set; } = [];
 
     [InverseProperty("TaxClass")]
-    public virtual ICollection<ComTaxClassCountry> ComTaxClassCountries { get; set; } = new List<ComTaxClassCountry>();
+    public virtual ICollection<ComTaxClassCountry> ComTaxClassCountries { get; set; } = [];
 
     [InverseProperty("TaxClass")]
-    public virtual ICollection<ComTaxClassState> ComTaxClassStates { get; set; } = new List<ComTaxClassState>();
+    public virtual ICollection<ComTaxClassState> ComTaxClassStates { get; set; } = [];
 
     [ForeignKey("TaxClassSiteId")]
     [InverseProperty("ComTaxClasses")]

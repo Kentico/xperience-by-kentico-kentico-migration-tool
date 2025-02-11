@@ -45,5 +45,5 @@ public class SmLinkedInAccount
     public DateTime? LinkedInAccountAccessTokenExpiration { get; set; }
 
     [InverseProperty("LinkedInPostLinkedInAccount")]
-    public virtual ICollection<SmLinkedInPost> SmLinkedInPosts { get; set; } = new List<SmLinkedInPost>();
+    public virtual ICollection<SmLinkedInPost> SmLinkedInPosts { get; set; } = [];
 }

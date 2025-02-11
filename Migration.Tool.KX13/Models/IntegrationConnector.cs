@@ -31,5 +31,5 @@ public class IntegrationConnector
     public DateTime ConnectorLastModified { get; set; }
 
     [InverseProperty("SynchronizationConnector")]
-    public virtual ICollection<IntegrationSynchronization> IntegrationSynchronizations { get; set; } = new List<IntegrationSynchronization>();
+    public virtual ICollection<IntegrationSynchronization> IntegrationSynchronizations { get; set; } = [];
 }

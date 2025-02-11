@@ -50,7 +50,7 @@ public class CmsAutomationState
     public string? StateCustomData { get; set; }
 
     [InverseProperty("HistoryState")]
-    public virtual ICollection<CmsAutomationHistory> CmsAutomationHistories { get; set; } = new List<CmsAutomationHistory>();
+    public virtual ICollection<CmsAutomationHistory> CmsAutomationHistories { get; set; } = [];
 
     [ForeignKey("StateSiteId")]
     [InverseProperty("CmsAutomationStates")]

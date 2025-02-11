@@ -22,5 +22,5 @@ public class CmsResourceString
     public Guid StringGuid { get; set; }
 
     [InverseProperty("TranslationString")]
-    public virtual ICollection<CmsResourceTranslation> CmsResourceTranslations { get; set; } = new List<CmsResourceTranslation>();
+    public virtual ICollection<CmsResourceTranslation> CmsResourceTranslations { get; set; } = [];
 }

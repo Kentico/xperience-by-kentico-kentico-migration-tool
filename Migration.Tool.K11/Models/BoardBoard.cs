@@ -93,14 +93,14 @@ public class BoardBoard
     public virtual CommunityGroup? BoardGroup { get; set; }
 
     [InverseProperty("MessageBoard")]
-    public virtual ICollection<BoardMessage> BoardMessagesNavigation { get; set; } = new List<BoardMessage>();
+    public virtual ICollection<BoardMessage> BoardMessagesNavigation { get; set; } = [];
 
     [ForeignKey("BoardSiteId")]
     [InverseProperty("BoardBoards")]
     public virtual CmsSite BoardSite { get; set; } = null!;
 
     [InverseProperty("SubscriptionBoard")]
-    public virtual ICollection<BoardSubscription> BoardSubscriptions { get; set; } = new List<BoardSubscription>();
+    public virtual ICollection<BoardSubscription> BoardSubscriptions { get; set; } = [];
 
     [ForeignKey("BoardUserId")]
     [InverseProperty("BoardBoards")]
@@ -108,9 +108,9 @@ public class BoardBoard
 
     [ForeignKey("BoardId")]
     [InverseProperty("Boards")]
-    public virtual ICollection<CmsRole> Roles { get; set; } = new List<CmsRole>();
+    public virtual ICollection<CmsRole> Roles { get; set; } = [];
 
     [ForeignKey("BoardId")]
     [InverseProperty("Boards")]
-    public virtual ICollection<CmsUser> Users { get; set; } = new List<CmsUser>();
+    public virtual ICollection<CmsUser> Users { get; set; } = [];
 }

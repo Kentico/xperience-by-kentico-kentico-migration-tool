@@ -30,8 +30,8 @@ public class MemberInfoMapper(
     IDbContextFactory<K11Context> k11DbContextFactory)
     : EntityMapperBase<MemberInfoMapperSource, MemberInfo>(logger, primaryKeyMappingContext, protocol)
 {
-    public static IReadOnlyList<string> MigratedUserFields = new List<string>
-    {
+    public static IReadOnlyList<string> MigratedUserFields =
+    [
         nameof(CmsUser.UserGuid),
         nameof(CmsUser.UserName),
         nameof(CmsUser.Email),
@@ -39,7 +39,7 @@ public class MemberInfoMapper(
         nameof(CmsUser.UserEnabled),
         nameof(CmsUser.UserCreated),
         nameof(CmsUser.UserSecurityStamp)
-    };
+    ];
 
     protected override MemberInfo CreateNewInstance(MemberInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 

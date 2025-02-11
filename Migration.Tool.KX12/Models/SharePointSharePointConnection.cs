@@ -50,5 +50,5 @@ public class SharePointSharePointConnection
     public virtual CmsSite SharePointConnectionSite { get; set; } = null!;
 
     [InverseProperty("SharePointLibrarySharePointConnection")]
-    public virtual ICollection<SharePointSharePointLibrary> SharePointSharePointLibraries { get; set; } = new List<SharePointSharePointLibrary>();
+    public virtual ICollection<SharePointSharePointLibrary> SharePointSharePointLibraries { get; set; } = [];
 }

@@ -34,7 +34,7 @@ public class ComDepartment
     public int? DepartmentSiteId { get; set; }
 
     [InverseProperty("Skudepartment")]
-    public virtual ICollection<ComSku> ComSkus { get; set; } = new List<ComSku>();
+    public virtual ICollection<ComSku> ComSkus { get; set; } = [];
 
     [ForeignKey("DepartmentDefaultTaxClassId")]
     [InverseProperty("ComDepartments")]
@@ -46,5 +46,5 @@ public class ComDepartment
 
     [ForeignKey("DepartmentId")]
     [InverseProperty("Departments")]
-    public virtual ICollection<ComMultiBuyDiscount> MultiBuyDiscounts { get; set; } = new List<ComMultiBuyDiscount>();
+    public virtual ICollection<ComMultiBuyDiscount> MultiBuyDiscounts { get; set; } = [];
 }

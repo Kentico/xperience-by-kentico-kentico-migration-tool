@@ -87,137 +87,137 @@ public class CmsUser
     public long? UserMftimestep { get; set; }
 
     [InverseProperty("LastModifiedByUser")]
-    public virtual ICollection<CmsAclitem> CmsAclitemLastModifiedByUsers { get; set; } = new List<CmsAclitem>();
+    public virtual ICollection<CmsAclitem> CmsAclitemLastModifiedByUsers { get; set; } = [];
 
     [InverseProperty("User")]
-    public virtual ICollection<CmsAclitem> CmsAclitemUsers { get; set; } = new List<CmsAclitem>();
+    public virtual ICollection<CmsAclitem> CmsAclitemUsers { get; set; } = [];
 
     [InverseProperty("HistoryApprovedByUser")]
-    public virtual ICollection<CmsAutomationHistory> CmsAutomationHistories { get; set; } = new List<CmsAutomationHistory>();
+    public virtual ICollection<CmsAutomationHistory> CmsAutomationHistories { get; set; } = [];
 
     [InverseProperty("StateUser")]
-    public virtual ICollection<CmsAutomationState> CmsAutomationStates { get; set; } = new List<CmsAutomationState>();
+    public virtual ICollection<CmsAutomationState> CmsAutomationStates { get; set; } = [];
 
     [InverseProperty("CategoryUser")]
-    public virtual ICollection<CmsCategory> CmsCategories { get; set; } = new List<CmsCategory>();
+    public virtual ICollection<CmsCategory> CmsCategories { get; set; } = [];
 
     [InverseProperty("DocumentCheckedOutByUser")]
-    public virtual ICollection<CmsDocument> CmsDocumentDocumentCheckedOutByUsers { get; set; } = new List<CmsDocument>();
+    public virtual ICollection<CmsDocument> CmsDocumentDocumentCheckedOutByUsers { get; set; } = [];
 
     [InverseProperty("DocumentCreatedByUser")]
-    public virtual ICollection<CmsDocument> CmsDocumentDocumentCreatedByUsers { get; set; } = new List<CmsDocument>();
+    public virtual ICollection<CmsDocument> CmsDocumentDocumentCreatedByUsers { get; set; } = [];
 
     [InverseProperty("DocumentModifiedByUser")]
-    public virtual ICollection<CmsDocument> CmsDocumentDocumentModifiedByUsers { get; set; } = new List<CmsDocument>();
+    public virtual ICollection<CmsDocument> CmsDocumentDocumentModifiedByUsers { get; set; } = [];
 
     [InverseProperty("User")]
-    public virtual ICollection<CmsEmailUser> CmsEmailUsers { get; set; } = new List<CmsEmailUser>();
+    public virtual ICollection<CmsEmailUser> CmsEmailUsers { get; set; } = [];
 
     [InverseProperty("User")]
-    public virtual ICollection<CmsExternalLogin> CmsExternalLogins { get; set; } = new List<CmsExternalLogin>();
+    public virtual ICollection<CmsExternalLogin> CmsExternalLogins { get; set; } = [];
 
     [InverseProperty("MacroIdentityEffectiveUser")]
-    public virtual ICollection<CmsMacroIdentity> CmsMacroIdentities { get; set; } = new List<CmsMacroIdentity>();
+    public virtual ICollection<CmsMacroIdentity> CmsMacroIdentities { get; set; } = [];
 
     [InverseProperty("User")]
-    public virtual ICollection<CmsMembershipUser> CmsMembershipUsers { get; set; } = new List<CmsMembershipUser>();
+    public virtual ICollection<CmsMembershipUser> CmsMembershipUsers { get; set; } = [];
 
     [InverseProperty("ObjectCheckedOutByUser")]
-    public virtual ICollection<CmsObjectSetting> CmsObjectSettings { get; set; } = new List<CmsObjectSetting>();
+    public virtual ICollection<CmsObjectSetting> CmsObjectSettings { get; set; } = [];
 
     [InverseProperty("VersionDeletedByUser")]
-    public virtual ICollection<CmsObjectVersionHistory> CmsObjectVersionHistoryVersionDeletedByUsers { get; set; } = new List<CmsObjectVersionHistory>();
+    public virtual ICollection<CmsObjectVersionHistory> CmsObjectVersionHistoryVersionDeletedByUsers { get; set; } = [];
 
     [InverseProperty("VersionModifiedByUser")]
-    public virtual ICollection<CmsObjectVersionHistory> CmsObjectVersionHistoryVersionModifiedByUsers { get; set; } = new List<CmsObjectVersionHistory>();
+    public virtual ICollection<CmsObjectVersionHistory> CmsObjectVersionHistoryVersionModifiedByUsers { get; set; } = [];
 
     [InverseProperty("PersonalizationUser")]
-    public virtual ICollection<CmsPersonalization> CmsPersonalizations { get; set; } = new List<CmsPersonalization>();
+    public virtual ICollection<CmsPersonalization> CmsPersonalizations { get; set; } = [];
 
     [InverseProperty("TaskUser")]
-    public virtual ICollection<CmsScheduledTask> CmsScheduledTasks { get; set; } = new List<CmsScheduledTask>();
+    public virtual ICollection<CmsScheduledTask> CmsScheduledTasks { get; set; } = [];
 
     [InverseProperty("SubmissionSubmittedByUser")]
-    public virtual ICollection<CmsTranslationSubmission> CmsTranslationSubmissions { get; set; } = new List<CmsTranslationSubmission>();
+    public virtual ICollection<CmsTranslationSubmission> CmsTranslationSubmissions { get; set; } = [];
 
     [InverseProperty("NodeOwnerNavigation")]
-    public virtual ICollection<CmsTree> CmsTrees { get; set; } = new List<CmsTree>();
+    public virtual ICollection<CmsTree> CmsTrees { get; set; } = [];
 
     [InverseProperty("User")]
-    public virtual ICollection<CmsUserCulture> CmsUserCultures { get; set; } = new List<CmsUserCulture>();
+    public virtual ICollection<CmsUserCulture> CmsUserCultures { get; set; } = [];
 
     [InverseProperty("UserMacroIdentityUser")]
     public virtual CmsUserMacroIdentity? CmsUserMacroIdentity { get; set; }
 
     [InverseProperty("User")]
-    public virtual ICollection<CmsUserRole> CmsUserRoles { get; set; } = new List<CmsUserRole>();
+    public virtual ICollection<CmsUserRole> CmsUserRoles { get; set; } = [];
 
     [InverseProperty("UserActivatedByUser")]
-    public virtual ICollection<CmsUserSetting> CmsUserSettingUserActivatedByUsers { get; set; } = new List<CmsUserSetting>();
+    public virtual ICollection<CmsUserSetting> CmsUserSettingUserActivatedByUsers { get; set; } = [];
 
     [InverseProperty("UserSettingsUserNavigation")]
     public virtual CmsUserSetting? CmsUserSettingUserSettingsUserNavigation { get; set; }
 
-    public virtual ICollection<CmsUserSetting> CmsUserSettingUserSettingsUsers { get; set; } = new List<CmsUserSetting>();
+    public virtual ICollection<CmsUserSetting> CmsUserSettingUserSettingsUsers { get; set; } = [];
 
     [InverseProperty("User")]
-    public virtual ICollection<CmsUserSite> CmsUserSites { get; set; } = new List<CmsUserSite>();
+    public virtual ICollection<CmsUserSite> CmsUserSites { get; set; } = [];
 
     [InverseProperty("ModifiedByUser")]
-    public virtual ICollection<CmsVersionHistory> CmsVersionHistoryModifiedByUsers { get; set; } = new List<CmsVersionHistory>();
+    public virtual ICollection<CmsVersionHistory> CmsVersionHistoryModifiedByUsers { get; set; } = [];
 
     [InverseProperty("VersionDeletedByUser")]
-    public virtual ICollection<CmsVersionHistory> CmsVersionHistoryVersionDeletedByUsers { get; set; } = new List<CmsVersionHistory>();
+    public virtual ICollection<CmsVersionHistory> CmsVersionHistoryVersionDeletedByUsers { get; set; } = [];
 
     [InverseProperty("ApprovedByUser")]
-    public virtual ICollection<CmsWorkflowHistory> CmsWorkflowHistories { get; set; } = new List<CmsWorkflowHistory>();
+    public virtual ICollection<CmsWorkflowHistory> CmsWorkflowHistories { get; set; } = [];
 
     [InverseProperty("User")]
-    public virtual ICollection<CmsWorkflowStepUser> CmsWorkflowStepUsers { get; set; } = new List<CmsWorkflowStepUser>();
+    public virtual ICollection<CmsWorkflowStepUser> CmsWorkflowStepUsers { get; set; } = [];
 
     [InverseProperty("CustomerUser")]
-    public virtual ICollection<ComCustomer> ComCustomers { get; set; } = new List<ComCustomer>();
+    public virtual ICollection<ComCustomer> ComCustomers { get; set; } = [];
 
     [InverseProperty("ChangedByUser")]
-    public virtual ICollection<ComOrderStatusUser> ComOrderStatusUsers { get; set; } = new List<ComOrderStatusUser>();
+    public virtual ICollection<ComOrderStatusUser> ComOrderStatusUsers { get; set; } = [];
 
     [InverseProperty("OrderCreatedByUser")]
-    public virtual ICollection<ComOrder> ComOrders { get; set; } = new List<ComOrder>();
+    public virtual ICollection<ComOrder> ComOrders { get; set; } = [];
 
     [InverseProperty("ShoppingCartUser")]
-    public virtual ICollection<ComShoppingCart> ComShoppingCarts { get; set; } = new List<ComShoppingCart>();
+    public virtual ICollection<ComShoppingCart> ComShoppingCarts { get; set; } = [];
 
     [InverseProperty("User")]
-    public virtual ICollection<ComWishlist> ComWishlists { get; set; } = new List<ComWishlist>();
+    public virtual ICollection<ComWishlist> ComWishlists { get; set; } = [];
 
     [InverseProperty("ExportUser")]
-    public virtual ICollection<ExportHistory> ExportHistories { get; set; } = new List<ExportHistory>();
+    public virtual ICollection<ExportHistory> ExportHistories { get; set; } = [];
 
     [InverseProperty("FileCreatedByUser")]
-    public virtual ICollection<MediaFile> MediaFileFileCreatedByUsers { get; set; } = new List<MediaFile>();
+    public virtual ICollection<MediaFile> MediaFileFileCreatedByUsers { get; set; } = [];
 
     [InverseProperty("FileModifiedByUser")]
-    public virtual ICollection<MediaFile> MediaFileFileModifiedByUsers { get; set; } = new List<MediaFile>();
+    public virtual ICollection<MediaFile> MediaFileFileModifiedByUsers { get; set; } = [];
 
     [InverseProperty("AccountOwnerUser")]
-    public virtual ICollection<OmAccount> OmAccounts { get; set; } = new List<OmAccount>();
+    public virtual ICollection<OmAccount> OmAccounts { get; set; } = [];
 
     [InverseProperty("ContactOwnerUser")]
-    public virtual ICollection<OmContact> OmContacts { get; set; } = new List<OmContact>();
+    public virtual ICollection<OmContact> OmContacts { get; set; } = [];
 
     [InverseProperty("ReportSubscriptionUser")]
-    public virtual ICollection<ReportingReportSubscription> ReportingReportSubscriptions { get; set; } = new List<ReportingReportSubscription>();
+    public virtual ICollection<ReportingReportSubscription> ReportingReportSubscriptions { get; set; } = [];
 
     [InverseProperty("SavedReportCreatedByUser")]
-    public virtual ICollection<ReportingSavedReport> ReportingSavedReports { get; set; } = new List<ReportingSavedReport>();
+    public virtual ICollection<ReportingSavedReport> ReportingSavedReports { get; set; } = [];
 
     [InverseProperty("User")]
     public virtual StagingTaskGroupUser? StagingTaskGroupUser { get; set; }
 
     [InverseProperty("User")]
-    public virtual ICollection<StagingTaskUser> StagingTaskUsers { get; set; } = new List<StagingTaskUser>();
+    public virtual ICollection<StagingTaskUser> StagingTaskUsers { get; set; } = [];
 
     [ForeignKey("UserId")]
     [InverseProperty("Users")]
-    public virtual ICollection<CmsWorkflow> Workflows { get; set; } = new List<CmsWorkflow>();
+    public virtual ICollection<CmsWorkflow> Workflows { get; set; } = [];
 }

@@ -44,5 +44,5 @@ public class OmMvtcombination
 
     [ForeignKey("MvtcombinationId")]
     [InverseProperty("Mvtcombinations")]
-    public virtual ICollection<OmMvtvariant> Mvtvariants { get; set; } = new List<OmMvtvariant>();
+    public virtual ICollection<OmMvtvariant> Mvtvariants { get; set; } = [];
 }

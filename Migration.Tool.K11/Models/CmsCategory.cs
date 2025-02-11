@@ -62,5 +62,5 @@ public class CmsCategory
 
     [ForeignKey("CategoryId")]
     [InverseProperty("Categories")]
-    public virtual ICollection<CmsDocument> Documents { get; set; } = new List<CmsDocument>();
+    public virtual ICollection<CmsDocument> Documents { get; set; } = [];
 }

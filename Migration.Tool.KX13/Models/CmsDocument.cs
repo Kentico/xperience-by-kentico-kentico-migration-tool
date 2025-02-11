@@ -119,10 +119,10 @@ public class CmsDocument
     public bool DocumentShowInMenu { get; set; }
 
     [InverseProperty("AlternativeUrlDocument")]
-    public virtual ICollection<CmsAlternativeUrl> CmsAlternativeUrls { get; set; } = new List<CmsAlternativeUrl>();
+    public virtual ICollection<CmsAlternativeUrl> CmsAlternativeUrls { get; set; } = [];
 
     [InverseProperty("AttachmentDocument")]
-    public virtual ICollection<CmsAttachment> CmsAttachments { get; set; } = new List<CmsAttachment>();
+    public virtual ICollection<CmsAttachment> CmsAttachments { get; set; } = [];
 
     [ForeignKey("DocumentCheckedOutByUserId")]
     [InverseProperty("CmsDocumentDocumentCheckedOutByUsers")]
@@ -158,9 +158,9 @@ public class CmsDocument
 
     [ForeignKey("DocumentId")]
     [InverseProperty("Documents")]
-    public virtual ICollection<CmsCategory> Categories { get; set; } = new List<CmsCategory>();
+    public virtual ICollection<CmsCategory> Categories { get; set; } = [];
 
     [ForeignKey("DocumentId")]
     [InverseProperty("Documents")]
-    public virtual ICollection<CmsTag> Tags { get; set; } = new List<CmsTag>();
+    public virtual ICollection<CmsTag> Tags { get; set; } = [];
 }

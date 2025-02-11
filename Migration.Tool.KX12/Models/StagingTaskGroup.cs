@@ -18,8 +18,8 @@ public class StagingTaskGroup
     public string? TaskGroupDescription { get; set; }
 
     [InverseProperty("TaskGroup")]
-    public virtual ICollection<StagingTaskGroupTask> StagingTaskGroupTasks { get; set; } = new List<StagingTaskGroupTask>();
+    public virtual ICollection<StagingTaskGroupTask> StagingTaskGroupTasks { get; set; } = [];
 
     [InverseProperty("TaskGroup")]
-    public virtual ICollection<StagingTaskGroupUser> StagingTaskGroupUsers { get; set; } = new List<StagingTaskGroupUser>();
+    public virtual ICollection<StagingTaskGroupUser> StagingTaskGroupUsers { get; set; } = [];
 }

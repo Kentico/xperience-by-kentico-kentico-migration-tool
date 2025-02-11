@@ -100,28 +100,28 @@ public class CmsPageTemplate
     public string? PageTemplateIconClass { get; set; }
 
     [InverseProperty("ClassDefaultPageTemplate")]
-    public virtual ICollection<CmsClass> CmsClasses { get; set; } = new List<CmsClass>();
+    public virtual ICollection<CmsClass> CmsClasses { get; set; } = [];
 
     [InverseProperty("DocumentPageTemplate")]
-    public virtual ICollection<CmsDocument> CmsDocuments { get; set; } = new List<CmsDocument>();
+    public virtual ICollection<CmsDocument> CmsDocuments { get; set; } = [];
 
     [InverseProperty("PageTemplateScopeTemplate")]
-    public virtual ICollection<CmsPageTemplateScope> CmsPageTemplateScopes { get; set; } = new List<CmsPageTemplateScope>();
+    public virtual ICollection<CmsPageTemplateScope> CmsPageTemplateScopes { get; set; } = [];
 
     [InverseProperty("PageTemplate")]
-    public virtual ICollection<CmsTemplateDeviceLayout> CmsTemplateDeviceLayouts { get; set; } = new List<CmsTemplateDeviceLayout>();
+    public virtual ICollection<CmsTemplateDeviceLayout> CmsTemplateDeviceLayouts { get; set; } = [];
 
     [InverseProperty("NodeTemplate")]
-    public virtual ICollection<CmsTree> CmsTrees { get; set; } = new List<CmsTree>();
+    public virtual ICollection<CmsTree> CmsTrees { get; set; } = [];
 
     [InverseProperty("ElementPageTemplate")]
-    public virtual ICollection<CmsUielement> CmsUielements { get; set; } = new List<CmsUielement>();
+    public virtual ICollection<CmsUielement> CmsUielements { get; set; } = [];
 
     [InverseProperty("MvtvariantPageTemplate")]
-    public virtual ICollection<OmMvtvariant> OmMvtvariants { get; set; } = new List<OmMvtvariant>();
+    public virtual ICollection<OmMvtvariant> OmMvtvariants { get; set; } = [];
 
     [InverseProperty("VariantPageTemplate")]
-    public virtual ICollection<OmPersonalizationVariant> OmPersonalizationVariants { get; set; } = new List<OmPersonalizationVariant>();
+    public virtual ICollection<OmPersonalizationVariant> OmPersonalizationVariants { get; set; } = [];
 
     [ForeignKey("PageTemplateCategoryId")]
     [InverseProperty("CmsPageTemplates")]
@@ -137,5 +137,5 @@ public class CmsPageTemplate
 
     [ForeignKey("PageTemplateId")]
     [InverseProperty("PageTemplates")]
-    public virtual ICollection<CmsSite> Sites { get; set; } = new List<CmsSite>();
+    public virtual ICollection<CmsSite> Sites { get; set; } = [];
 }

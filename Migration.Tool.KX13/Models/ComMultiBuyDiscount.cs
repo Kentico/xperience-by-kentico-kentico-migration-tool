@@ -68,16 +68,16 @@ public class ComMultiBuyDiscount
     public bool MultiBuyDiscountIsProductCoupon { get; set; }
 
     [InverseProperty("MultiBuyCouponCodeMultiBuyDiscount")]
-    public virtual ICollection<ComMultiBuyCouponCode> ComMultiBuyCouponCodes { get; set; } = new List<ComMultiBuyCouponCode>();
+    public virtual ICollection<ComMultiBuyCouponCode> ComMultiBuyCouponCodes { get; set; } = [];
 
     [InverseProperty("MultiBuyDiscount")]
-    public virtual ICollection<ComMultiBuyDiscountBrand> ComMultiBuyDiscountBrands { get; set; } = new List<ComMultiBuyDiscountBrand>();
+    public virtual ICollection<ComMultiBuyDiscountBrand> ComMultiBuyDiscountBrands { get; set; } = [];
 
     [InverseProperty("MultibuyDiscount")]
-    public virtual ICollection<ComMultiBuyDiscountCollection> ComMultiBuyDiscountCollections { get; set; } = new List<ComMultiBuyDiscountCollection>();
+    public virtual ICollection<ComMultiBuyDiscountCollection> ComMultiBuyDiscountCollections { get; set; } = [];
 
     [InverseProperty("MultiBuyDiscount")]
-    public virtual ICollection<ComMultiBuyDiscountTree> ComMultiBuyDiscountTrees { get; set; } = new List<ComMultiBuyDiscountTree>();
+    public virtual ICollection<ComMultiBuyDiscountTree> ComMultiBuyDiscountTrees { get; set; } = [];
 
     [ForeignKey("MultiBuyDiscountApplyToSkuid")]
     [InverseProperty("ComMultiBuyDiscounts")]
@@ -89,9 +89,9 @@ public class ComMultiBuyDiscount
 
     [ForeignKey("MultiBuyDiscountId")]
     [InverseProperty("MultiBuyDiscounts")]
-    public virtual ICollection<ComDepartment> Departments { get; set; } = new List<ComDepartment>();
+    public virtual ICollection<ComDepartment> Departments { get; set; } = [];
 
     [ForeignKey("MultiBuyDiscountId")]
     [InverseProperty("MultiBuyDiscounts")]
-    public virtual ICollection<ComSku> Skus { get; set; } = new List<ComSku>();
+    public virtual ICollection<ComSku> Skus { get; set; } = [];
 }

@@ -52,11 +52,11 @@ public class ComOrderAddress
     public virtual CmsState? AddressState { get; set; }
 
     [InverseProperty("OrderBillingAddress")]
-    public virtual ICollection<ComOrder> ComOrderOrderBillingAddresses { get; set; } = new List<ComOrder>();
+    public virtual ICollection<ComOrder> ComOrderOrderBillingAddresses { get; set; } = [];
 
     [InverseProperty("OrderCompanyAddress")]
-    public virtual ICollection<ComOrder> ComOrderOrderCompanyAddresses { get; set; } = new List<ComOrder>();
+    public virtual ICollection<ComOrder> ComOrderOrderCompanyAddresses { get; set; } = [];
 
     [InverseProperty("OrderShippingAddress")]
-    public virtual ICollection<ComOrder> ComOrderOrderShippingAddresses { get; set; } = new List<ComOrder>();
+    public virtual ICollection<ComOrder> ComOrderOrderShippingAddresses { get; set; } = [];
 }

@@ -37,5 +37,5 @@ public class CmsWebFarmTask
     public bool? TaskIsMemory { get; set; }
 
     [InverseProperty("Task")]
-    public virtual ICollection<CmsWebFarmServerTask> CmsWebFarmServerTasks { get; set; } = new List<CmsWebFarmServerTask>();
+    public virtual ICollection<CmsWebFarmServerTask> CmsWebFarmServerTasks { get; set; } = [];
 }

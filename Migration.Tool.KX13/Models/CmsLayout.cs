@@ -39,5 +39,5 @@ public class CmsLayout
     public string? LayoutCss { get; set; }
 
     [InverseProperty("PageTemplateLayoutNavigation")]
-    public virtual ICollection<CmsPageTemplate> CmsPageTemplates { get; set; } = new List<CmsPageTemplate>();
+    public virtual ICollection<CmsPageTemplate> CmsPageTemplates { get; set; } = [];
 }

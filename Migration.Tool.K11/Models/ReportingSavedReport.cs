@@ -35,7 +35,7 @@ public class ReportingSavedReport
     public DateTime SavedReportLastModified { get; set; }
 
     [InverseProperty("SavedGraphSavedReport")]
-    public virtual ICollection<ReportingSavedGraph> ReportingSavedGraphs { get; set; } = new List<ReportingSavedGraph>();
+    public virtual ICollection<ReportingSavedGraph> ReportingSavedGraphs { get; set; } = [];
 
     [ForeignKey("SavedReportCreatedByUserId")]
     [InverseProperty("ReportingSavedReports")]

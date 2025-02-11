@@ -69,13 +69,13 @@ public class CmsVersionHistory
     public DateTime? VersionDeletedWhen { get; set; }
 
     [InverseProperty("DocumentCheckedOutVersionHistory")]
-    public virtual ICollection<CmsDocument> CmsDocumentDocumentCheckedOutVersionHistories { get; set; } = new List<CmsDocument>();
+    public virtual ICollection<CmsDocument> CmsDocumentDocumentCheckedOutVersionHistories { get; set; } = [];
 
     [InverseProperty("DocumentPublishedVersionHistory")]
-    public virtual ICollection<CmsDocument> CmsDocumentDocumentPublishedVersionHistories { get; set; } = new List<CmsDocument>();
+    public virtual ICollection<CmsDocument> CmsDocumentDocumentPublishedVersionHistories { get; set; } = [];
 
     [InverseProperty("VersionHistory")]
-    public virtual ICollection<CmsWorkflowHistory> CmsWorkflowHistories { get; set; } = new List<CmsWorkflowHistory>();
+    public virtual ICollection<CmsWorkflowHistory> CmsWorkflowHistories { get; set; } = [];
 
     [ForeignKey("ModifiedByUserId")]
     [InverseProperty("CmsVersionHistoryModifiedByUsers")]
@@ -103,5 +103,5 @@ public class CmsVersionHistory
 
     [ForeignKey("VersionHistoryId")]
     [InverseProperty("VersionHistories")]
-    public virtual ICollection<CmsAttachmentHistory> AttachmentHistories { get; set; } = new List<CmsAttachmentHistory>();
+    public virtual ICollection<CmsAttachmentHistory> AttachmentHistories { get; set; } = [];
 }

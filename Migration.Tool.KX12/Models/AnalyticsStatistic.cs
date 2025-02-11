@@ -29,19 +29,19 @@ public class AnalyticsStatistic
     public string? StatisticsObjectCulture { get; set; }
 
     [InverseProperty("HitsStatistics")]
-    public virtual ICollection<AnalyticsDayHit> AnalyticsDayHits { get; set; } = new List<AnalyticsDayHit>();
+    public virtual ICollection<AnalyticsDayHit> AnalyticsDayHits { get; set; } = [];
 
     [InverseProperty("HitsStatistics")]
-    public virtual ICollection<AnalyticsHourHit> AnalyticsHourHits { get; set; } = new List<AnalyticsHourHit>();
+    public virtual ICollection<AnalyticsHourHit> AnalyticsHourHits { get; set; } = [];
 
     [InverseProperty("HitsStatistics")]
-    public virtual ICollection<AnalyticsMonthHit> AnalyticsMonthHits { get; set; } = new List<AnalyticsMonthHit>();
+    public virtual ICollection<AnalyticsMonthHit> AnalyticsMonthHits { get; set; } = [];
 
     [InverseProperty("HitsStatistics")]
-    public virtual ICollection<AnalyticsWeekHit> AnalyticsWeekHits { get; set; } = new List<AnalyticsWeekHit>();
+    public virtual ICollection<AnalyticsWeekHit> AnalyticsWeekHits { get; set; } = [];
 
     [InverseProperty("HitsStatistics")]
-    public virtual ICollection<AnalyticsYearHit> AnalyticsYearHits { get; set; } = new List<AnalyticsYearHit>();
+    public virtual ICollection<AnalyticsYearHit> AnalyticsYearHits { get; set; } = [];
 
     [ForeignKey("StatisticsSiteId")]
     [InverseProperty("AnalyticsStatistics")]

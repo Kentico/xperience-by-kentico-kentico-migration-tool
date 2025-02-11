@@ -27,7 +27,7 @@ public class IntegrationSynchronization
     public bool? SynchronizationIsRunning { get; set; }
 
     [InverseProperty("SyncLogSynchronization")]
-    public virtual ICollection<IntegrationSyncLog> IntegrationSyncLogs { get; set; } = new List<IntegrationSyncLog>();
+    public virtual ICollection<IntegrationSyncLog> IntegrationSyncLogs { get; set; } = [];
 
     [ForeignKey("SynchronizationConnectorId")]
     [InverseProperty("IntegrationSynchronizations")]

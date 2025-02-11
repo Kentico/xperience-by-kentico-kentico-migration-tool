@@ -37,8 +37,8 @@ public class ComCollection
     public virtual CmsSite CollectionSite { get; set; } = null!;
 
     [InverseProperty("Collection")]
-    public virtual ICollection<ComMultiBuyDiscountCollection> ComMultiBuyDiscountCollections { get; set; } = new List<ComMultiBuyDiscountCollection>();
+    public virtual ICollection<ComMultiBuyDiscountCollection> ComMultiBuyDiscountCollections { get; set; } = [];
 
     [InverseProperty("Skucollection")]
-    public virtual ICollection<ComSku> ComSkus { get; set; } = new List<ComSku>();
+    public virtual ICollection<ComSku> ComSkus { get; set; } = [];
 }

@@ -41,7 +41,7 @@ public class CmsWebPartLayout
     public bool? WebPartLayoutIsDefault { get; set; }
 
     [InverseProperty("WidgetLayout")]
-    public virtual ICollection<CmsWidget> CmsWidgets { get; set; } = new List<CmsWidget>();
+    public virtual ICollection<CmsWidget> CmsWidgets { get; set; } = [];
 
     [ForeignKey("WebPartLayoutWebPartId")]
     [InverseProperty("CmsWebPartLayouts")]

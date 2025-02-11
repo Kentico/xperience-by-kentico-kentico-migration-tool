@@ -35,8 +35,8 @@ public class CmsDeviceProfile
     public DateTime? ProfileLastModified { get; set; }
 
     [InverseProperty("DeviceProfile")]
-    public virtual ICollection<CmsDeviceProfileLayout> CmsDeviceProfileLayouts { get; set; } = new List<CmsDeviceProfileLayout>();
+    public virtual ICollection<CmsDeviceProfileLayout> CmsDeviceProfileLayouts { get; set; } = [];
 
     [InverseProperty("Profile")]
-    public virtual ICollection<CmsTemplateDeviceLayout> CmsTemplateDeviceLayouts { get; set; } = new List<CmsTemplateDeviceLayout>();
+    public virtual ICollection<CmsTemplateDeviceLayout> CmsTemplateDeviceLayouts { get; set; } = [];
 }

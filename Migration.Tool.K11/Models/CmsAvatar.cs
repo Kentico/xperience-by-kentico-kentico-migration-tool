@@ -53,8 +53,8 @@ public class CmsAvatar
     public bool? DefaultUserAvatar { get; set; }
 
     [InverseProperty("UserAvatar")]
-    public virtual ICollection<CmsUserSetting> CmsUserSettings { get; set; } = new List<CmsUserSetting>();
+    public virtual ICollection<CmsUserSetting> CmsUserSettings { get; set; } = [];
 
     [InverseProperty("GroupAvatar")]
-    public virtual ICollection<CommunityGroup> CommunityGroups { get; set; } = new List<CommunityGroup>();
+    public virtual ICollection<CommunityGroup> CommunityGroups { get; set; } = [];
 }

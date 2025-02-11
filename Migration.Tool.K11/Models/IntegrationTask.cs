@@ -51,7 +51,7 @@ public class IntegrationTask
     public string? TaskDataType { get; set; }
 
     [InverseProperty("SynchronizationTask")]
-    public virtual ICollection<IntegrationSynchronization> IntegrationSynchronizations { get; set; } = new List<IntegrationSynchronization>();
+    public virtual ICollection<IntegrationSynchronization> IntegrationSynchronizations { get; set; } = [];
 
     [ForeignKey("TaskSiteId")]
     [InverseProperty("IntegrationTasks")]

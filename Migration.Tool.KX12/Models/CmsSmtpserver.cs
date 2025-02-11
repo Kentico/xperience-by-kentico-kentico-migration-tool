@@ -40,5 +40,5 @@ public class CmsSmtpserver
 
     [ForeignKey("ServerId")]
     [InverseProperty("Servers")]
-    public virtual ICollection<CmsSite> Sites { get; set; } = new List<CmsSite>();
+    public virtual ICollection<CmsSite> Sites { get; set; } = [];
 }

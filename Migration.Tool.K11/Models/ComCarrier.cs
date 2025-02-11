@@ -38,5 +38,5 @@ public class ComCarrier
     public virtual CmsSite CarrierSite { get; set; } = null!;
 
     [InverseProperty("ShippingOptionCarrier")]
-    public virtual ICollection<ComShippingOption> ComShippingOptions { get; set; } = new List<ComShippingOption>();
+    public virtual ICollection<ComShippingOption> ComShippingOptions { get; set; } = [];
 }

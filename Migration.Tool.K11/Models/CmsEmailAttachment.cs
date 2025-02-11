@@ -37,5 +37,5 @@ public class CmsEmailAttachment
 
     [ForeignKey("AttachmentId")]
     [InverseProperty("Attachments")]
-    public virtual ICollection<CmsEmail> Emails { get; set; } = new List<CmsEmail>();
+    public virtual ICollection<CmsEmail> Emails { get; set; } = [];
 }

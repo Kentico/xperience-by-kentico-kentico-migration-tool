@@ -76,7 +76,7 @@ public class ForumsForumGroup
     public string? GroupOptInApprovalUrl { get; set; }
 
     [InverseProperty("ForumGroup")]
-    public virtual ICollection<ForumsForum> ForumsForums { get; set; } = new List<ForumsForum>();
+    public virtual ICollection<ForumsForum> ForumsForums { get; set; } = [];
 
     [ForeignKey("GroupGroupId")]
     [InverseProperty("ForumsForumGroups")]

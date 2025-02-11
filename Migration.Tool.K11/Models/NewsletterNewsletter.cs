@@ -89,7 +89,7 @@ public class NewsletterNewsletter
     public virtual CmsScheduledTask? NewsletterDynamicScheduledTask { get; set; }
 
     [InverseProperty("IssueNewsletter")]
-    public virtual ICollection<NewsletterNewsletterIssue> NewsletterNewsletterIssues { get; set; } = new List<NewsletterNewsletterIssue>();
+    public virtual ICollection<NewsletterNewsletterIssue> NewsletterNewsletterIssues { get; set; } = [];
 
     [ForeignKey("NewsletterOptInTemplateId")]
     [InverseProperty("NewsletterNewsletterNewsletterOptInTemplates")]
@@ -100,16 +100,16 @@ public class NewsletterNewsletter
     public virtual CmsSite NewsletterSite { get; set; } = null!;
 
     [InverseProperty("Newsletter")]
-    public virtual ICollection<NewsletterSubscriberNewsletter> NewsletterSubscriberNewsletters { get; set; } = new List<NewsletterSubscriberNewsletter>();
+    public virtual ICollection<NewsletterSubscriberNewsletter> NewsletterSubscriberNewsletters { get; set; } = [];
 
     [ForeignKey("NewsletterUnsubscriptionTemplateId")]
     [InverseProperty("NewsletterNewsletterNewsletterUnsubscriptionTemplates")]
     public virtual NewsletterEmailTemplate NewsletterUnsubscriptionTemplate { get; set; } = null!;
 
     [InverseProperty("UnsubscriptionNewsletter")]
-    public virtual ICollection<NewsletterUnsubscription> NewsletterUnsubscriptions { get; set; } = new List<NewsletterUnsubscription>();
+    public virtual ICollection<NewsletterUnsubscription> NewsletterUnsubscriptions { get; set; } = [];
 
     [ForeignKey("NewsletterId")]
     [InverseProperty("Newsletters")]
-    public virtual ICollection<NewsletterEmailTemplate> Templates { get; set; } = new List<NewsletterEmailTemplate>();
+    public virtual ICollection<NewsletterEmailTemplate> Templates { get; set; } = [];
 }

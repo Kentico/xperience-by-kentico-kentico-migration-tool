@@ -22,37 +22,37 @@ public class ChatUser
     public DateTime ChatUserLastModification { get; set; }
 
     [InverseProperty("InitiatedChatRequestInitiatorChatUser")]
-    public virtual ICollection<ChatInitiatedChatRequest> ChatInitiatedChatRequests { get; set; } = new List<ChatInitiatedChatRequest>();
+    public virtual ICollection<ChatInitiatedChatRequest> ChatInitiatedChatRequests { get; set; } = [];
 
     [InverseProperty("ChatMessageRecipient")]
-    public virtual ICollection<ChatMessage> ChatMessageChatMessageRecipients { get; set; } = new List<ChatMessage>();
+    public virtual ICollection<ChatMessage> ChatMessageChatMessageRecipients { get; set; } = [];
 
     [InverseProperty("ChatMessageUser")]
-    public virtual ICollection<ChatMessage> ChatMessageChatMessageUsers { get; set; } = new List<ChatMessage>();
+    public virtual ICollection<ChatMessage> ChatMessageChatMessageUsers { get; set; } = [];
 
     [InverseProperty("ChatNotificationReceiver")]
-    public virtual ICollection<ChatNotification> ChatNotificationChatNotificationReceivers { get; set; } = new List<ChatNotification>();
+    public virtual ICollection<ChatNotification> ChatNotificationChatNotificationReceivers { get; set; } = [];
 
     [InverseProperty("ChatNotificationSender")]
-    public virtual ICollection<ChatNotification> ChatNotificationChatNotificationSenders { get; set; } = new List<ChatNotification>();
+    public virtual ICollection<ChatNotification> ChatNotificationChatNotificationSenders { get; set; } = [];
 
     [InverseProperty("ChatOnlineSupportChatUser")]
-    public virtual ICollection<ChatOnlineSupport> ChatOnlineSupports { get; set; } = new List<ChatOnlineSupport>();
+    public virtual ICollection<ChatOnlineSupport> ChatOnlineSupports { get; set; } = [];
 
     [InverseProperty("ChatOnlineUserChatUser")]
-    public virtual ICollection<ChatOnlineUser> ChatOnlineUsers { get; set; } = new List<ChatOnlineUser>();
+    public virtual ICollection<ChatOnlineUser> ChatOnlineUsers { get; set; } = [];
 
     [InverseProperty("ChatRoomUserChatUser")]
-    public virtual ICollection<ChatRoomUser> ChatRoomUsers { get; set; } = new List<ChatRoomUser>();
+    public virtual ICollection<ChatRoomUser> ChatRoomUsers { get; set; } = [];
 
     [InverseProperty("ChatRoomCreatedByChatUser")]
-    public virtual ICollection<ChatRoom> ChatRooms { get; set; } = new List<ChatRoom>();
+    public virtual ICollection<ChatRoom> ChatRooms { get; set; } = [];
 
     [InverseProperty("ChatSupportCannedResponseChatUser")]
-    public virtual ICollection<ChatSupportCannedResponse> ChatSupportCannedResponses { get; set; } = new List<ChatSupportCannedResponse>();
+    public virtual ICollection<ChatSupportCannedResponse> ChatSupportCannedResponses { get; set; } = [];
 
     [InverseProperty("ChatSupportTakenRoomChatUser")]
-    public virtual ICollection<ChatSupportTakenRoom> ChatSupportTakenRooms { get; set; } = new List<ChatSupportTakenRoom>();
+    public virtual ICollection<ChatSupportTakenRoom> ChatSupportTakenRooms { get; set; } = [];
 
     [ForeignKey("ChatUserUserId")]
     [InverseProperty("ChatUsers")]

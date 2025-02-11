@@ -62,28 +62,28 @@ public class CommunityGroup
     public bool? GroupLogActivity { get; set; }
 
     [InverseProperty("BoardGroup")]
-    public virtual ICollection<BoardBoard> BoardBoards { get; set; } = new List<BoardBoard>();
+    public virtual ICollection<BoardBoard> BoardBoards { get; set; } = [];
 
     [InverseProperty("RoleGroup")]
-    public virtual ICollection<CmsRole> CmsRoles { get; set; } = new List<CmsRole>();
+    public virtual ICollection<CmsRole> CmsRoles { get; set; } = [];
 
     [InverseProperty("NodeGroup")]
-    public virtual ICollection<CmsTree> CmsTrees { get; set; } = new List<CmsTree>();
+    public virtual ICollection<CmsTree> CmsTrees { get; set; } = [];
 
     [InverseProperty("MemberGroup")]
-    public virtual ICollection<CommunityGroupMember> CommunityGroupMembers { get; set; } = new List<CommunityGroupMember>();
+    public virtual ICollection<CommunityGroupMember> CommunityGroupMembers { get; set; } = [];
 
     [InverseProperty("Group")]
-    public virtual ICollection<CommunityGroupRolePermission> CommunityGroupRolePermissions { get; set; } = new List<CommunityGroupRolePermission>();
+    public virtual ICollection<CommunityGroupRolePermission> CommunityGroupRolePermissions { get; set; } = [];
 
     [InverseProperty("InvitationGroup")]
-    public virtual ICollection<CommunityInvitation> CommunityInvitations { get; set; } = new List<CommunityInvitation>();
+    public virtual ICollection<CommunityInvitation> CommunityInvitations { get; set; } = [];
 
     [InverseProperty("GroupGroup")]
-    public virtual ICollection<ForumsForumGroup> ForumsForumGroups { get; set; } = new List<ForumsForumGroup>();
+    public virtual ICollection<ForumsForumGroup> ForumsForumGroups { get; set; } = [];
 
     [InverseProperty("ForumCommunityGroup")]
-    public virtual ICollection<ForumsForum> ForumsForums { get; set; } = new List<ForumsForum>();
+    public virtual ICollection<ForumsForum> ForumsForums { get; set; } = [];
 
     [ForeignKey("GroupApprovedByUserId")]
     [InverseProperty("CommunityGroupGroupApprovedByUsers")]
@@ -102,8 +102,8 @@ public class CommunityGroup
     public virtual CmsSite GroupSite { get; set; } = null!;
 
     [InverseProperty("LibraryGroup")]
-    public virtual ICollection<MediaLibrary> MediaLibraries { get; set; } = new List<MediaLibrary>();
+    public virtual ICollection<MediaLibrary> MediaLibraries { get; set; } = [];
 
     [InverseProperty("PollGroup")]
-    public virtual ICollection<PollsPoll> PollsPolls { get; set; } = new List<PollsPoll>();
+    public virtual ICollection<PollsPoll> PollsPolls { get; set; } = [];
 }

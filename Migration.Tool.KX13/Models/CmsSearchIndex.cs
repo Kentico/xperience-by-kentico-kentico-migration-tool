@@ -66,9 +66,9 @@ public class CmsSearchIndex
 
     [ForeignKey("IndexId")]
     [InverseProperty("Indices")]
-    public virtual ICollection<CmsCulture> IndexCultures { get; set; } = new List<CmsCulture>();
+    public virtual ICollection<CmsCulture> IndexCultures { get; set; } = [];
 
     [ForeignKey("IndexId")]
     [InverseProperty("Indices")]
-    public virtual ICollection<CmsSite> IndexSites { get; set; } = new List<CmsSite>();
+    public virtual ICollection<CmsSite> IndexSites { get; set; } = [];
 }

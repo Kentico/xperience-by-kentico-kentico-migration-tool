@@ -26,8 +26,8 @@ public class CmsConsent
     public string ConsentHash { get; set; } = null!;
 
     [InverseProperty("ConsentAgreementConsent")]
-    public virtual ICollection<CmsConsentAgreement> CmsConsentAgreements { get; set; } = new List<CmsConsentAgreement>();
+    public virtual ICollection<CmsConsentAgreement> CmsConsentAgreements { get; set; } = [];
 
     [InverseProperty("ConsentArchiveConsent")]
-    public virtual ICollection<CmsConsentArchive> CmsConsentArchives { get; set; } = new List<CmsConsentArchive>();
+    public virtual ICollection<CmsConsentArchive> CmsConsentArchives { get; set; } = [];
 }

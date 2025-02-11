@@ -1,4 +1,5 @@
 using System.Reflection;
+using CMS.Base;
 using MediatR;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
@@ -36,6 +37,7 @@ string xbykDirPath = config.GetValue<string?>("Settings:XbyKDirPath").NullIf(Con
                      config.GetValue<string?>("Settings:XbKDirPath").NullIf(ConfigurationNames.TodoPlaceholder, StringComparison.InvariantCultureIgnoreCase) ??
                      throw new InvalidOperationException("Settings:XbKDirPath must be set to valid directory path");
 Directory.SetCurrentDirectory(xbykDirPath);
+SystemContext.WebApplicationPhysicalPath = xbykDirPath;
 
 var validationErrors = ConfigurationValidator.GetValidationErrors(config);
 bool anyValidationErrors = false;

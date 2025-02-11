@@ -43,8 +43,8 @@ public class ReportingReportCategory
     public virtual ReportingReportCategory? CategoryParent { get; set; }
 
     [InverseProperty("CategoryParent")]
-    public virtual ICollection<ReportingReportCategory> InverseCategoryParent { get; set; } = new List<ReportingReportCategory>();
+    public virtual ICollection<ReportingReportCategory> InverseCategoryParent { get; set; } = [];
 
     [InverseProperty("ReportCategory")]
-    public virtual ICollection<ReportingReport> ReportingReports { get; set; } = new List<ReportingReport>();
+    public virtual ICollection<ReportingReport> ReportingReports { get; set; } = [];
 }

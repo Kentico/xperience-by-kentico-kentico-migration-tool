@@ -191,9 +191,8 @@ public class MigratePagesCommandHandler(
                         ? (Guid?)null
                         : spoiledGuidContext.EnsureNodeGuid(ksNodeParent);
 
-                    DataClassInfo targetClass = null!;
                     var classMapping = classMappingProvider.GetMapping(ksNodeClass.ClassName);
-                    targetClass = classMapping != null
+                    var targetClass = classMapping != null
                         ? DataClassInfoProvider.ProviderObject.Get(classMapping.TargetClassName)
                         : DataClassInfoProvider.ProviderObject.Get(ksNodeClass.ClassGUID);
 
@@ -284,7 +283,14 @@ public class MigratePagesCommandHandler(
                         }
                         else
                         {
-                            logger.LogTrace("No webpage item produced for '{NodeAliasPath}'", ksNode.NodeAliasPath);
+                            if (nodeParentGuid is { } npg && ContentItemInfo.Provider.Get(npg) is { ContentItemIsReusable: true })
+                            {
+                                logger.LogTrace("No webpage item produced for '{NodeAliasPath}' - parent is reusable, possibly converted with mapping?", ksNode.NodeAliasPath);
+                            }
+                            else
+                            {
+                                logger.LogTrace("No webpage item produced for '{NodeAliasPath}'", ksNode.NodeAliasPath);
+                            }
                         }
                     }
 

@@ -53,8 +53,8 @@ public class MediaLibrary
     public virtual CmsSite LibrarySite { get; set; } = null!;
 
     [InverseProperty("FileLibrary")]
-    public virtual ICollection<MediaFile> MediaFiles { get; set; } = new List<MediaFile>();
+    public virtual ICollection<MediaFile> MediaFiles { get; set; } = [];
 
     [InverseProperty("Library")]
-    public virtual ICollection<MediaLibraryRolePermission> MediaLibraryRolePermissions { get; set; } = new List<MediaLibraryRolePermission>();
+    public virtual ICollection<MediaLibraryRolePermission> MediaLibraryRolePermissions { get; set; } = [];
 }

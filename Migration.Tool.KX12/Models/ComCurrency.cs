@@ -41,13 +41,13 @@ public class ComCurrency
     public int? CurrencySiteId { get; set; }
 
     [InverseProperty("ExchangeRateToCurrency")]
-    public virtual ICollection<ComCurrencyExchangeRate> ComCurrencyExchangeRates { get; set; } = new List<ComCurrencyExchangeRate>();
+    public virtual ICollection<ComCurrencyExchangeRate> ComCurrencyExchangeRates { get; set; } = [];
 
     [InverseProperty("OrderCurrency")]
-    public virtual ICollection<ComOrder> ComOrders { get; set; } = new List<ComOrder>();
+    public virtual ICollection<ComOrder> ComOrders { get; set; } = [];
 
     [InverseProperty("ShoppingCartCurrency")]
-    public virtual ICollection<ComShoppingCart> ComShoppingCarts { get; set; } = new List<ComShoppingCart>();
+    public virtual ICollection<ComShoppingCart> ComShoppingCarts { get; set; } = [];
 
     [ForeignKey("CurrencySiteId")]
     [InverseProperty("ComCurrencies")]

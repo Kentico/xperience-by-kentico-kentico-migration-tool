@@ -59,13 +59,13 @@ public class PollsPoll
     public virtual CmsSite? PollSite { get; set; }
 
     [InverseProperty("AnswerPoll")]
-    public virtual ICollection<PollsPollAnswer> PollsPollAnswers { get; set; } = new List<PollsPollAnswer>();
+    public virtual ICollection<PollsPollAnswer> PollsPollAnswers { get; set; } = [];
 
     [ForeignKey("PollId")]
     [InverseProperty("Polls")]
-    public virtual ICollection<CmsRole> Roles { get; set; } = new List<CmsRole>();
+    public virtual ICollection<CmsRole> Roles { get; set; } = [];
 
     [ForeignKey("PollId")]
     [InverseProperty("Polls")]
-    public virtual ICollection<CmsSite> Sites { get; set; } = new List<CmsSite>();
+    public virtual ICollection<CmsSite> Sites { get; set; } = [];
 }

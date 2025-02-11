@@ -86,5 +86,5 @@ public class CmsAttachment
     public virtual CmsAttachment? AttachmentVariantParent { get; set; }
 
     [InverseProperty("AttachmentVariantParent")]
-    public virtual ICollection<CmsAttachment> InverseAttachmentVariantParent { get; set; } = new List<CmsAttachment>();
+    public virtual ICollection<CmsAttachment> InverseAttachmentVariantParent { get; set; } = [];
 }

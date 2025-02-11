@@ -32,10 +32,10 @@ public class CmsTagGroup
     public Guid TagGroupGuid { get; set; }
 
     [InverseProperty("DocumentTagGroup")]
-    public virtual ICollection<CmsDocument> CmsDocuments { get; set; } = new List<CmsDocument>();
+    public virtual ICollection<CmsDocument> CmsDocuments { get; set; } = [];
 
     [InverseProperty("TagGroup")]
-    public virtual ICollection<CmsTag> CmsTags { get; set; } = new List<CmsTag>();
+    public virtual ICollection<CmsTag> CmsTags { get; set; } = [];
 
     [ForeignKey("TagGroupSiteId")]
     [InverseProperty("CmsTagGroups")]

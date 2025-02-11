@@ -27,9 +27,7 @@ public static class MediaHelper
                     throw new InvalidOperationException($"Cannot determine media file for link match {matchResult}");
                 }
 
-                string where = modelFacade.SelectVersion() is { Major: 13 }
-                    ? "LibraryUseDirectPathForContent = 1 AND LibraryFolder = @libraryFolder AND LibrarySiteID = @librarySiteID"
-                    : "LibraryFolder = @libraryFolder AND LibrarySiteID = @librarySiteID";
+                var where = "LibraryFolder = @libraryFolder AND LibrarySiteID = @librarySiteID";
                 var mediaLibraries = modelFacade.SelectWhere<IMediaLibrary>(
                     where,
                     new SqlParameter("libraryFolder", libraryDir),
@@ -46,10 +44,10 @@ public static class MediaHelper
                                     new SqlParameter("fileSiteID", linkSiteId))
                                 .ToList() switch
                         {
-                            [var mediaFile] => mediaFile,
+                        [var mediaFile] => mediaFile,
                             { Count: > 1 } => throw new InvalidOperationException($"Multiple media file were found for path {path}, site {linkSiteId} and library {libraryDir}"),
                             { Count: 0 } =>
-                                // this may happen and is valid scenaria
+                                // this may happen and is valid scenario
                                 null,
                             _ => null
                         };

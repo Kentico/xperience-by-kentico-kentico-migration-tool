@@ -220,22 +220,22 @@ public class CmsDocument
     public string? DocumentAbtestConfiguration { get; set; }
 
     [InverseProperty("CommentPostDocument")]
-    public virtual ICollection<BlogComment> BlogComments { get; set; } = new List<BlogComment>();
+    public virtual ICollection<BlogComment> BlogComments { get; set; } = [];
 
     [InverseProperty("SubscriptionPostDocument")]
-    public virtual ICollection<BlogPostSubscription> BlogPostSubscriptions { get; set; } = new List<BlogPostSubscription>();
+    public virtual ICollection<BlogPostSubscription> BlogPostSubscriptions { get; set; } = [];
 
     [InverseProperty("BoardDocument")]
-    public virtual ICollection<BoardBoard> BoardBoards { get; set; } = new List<BoardBoard>();
+    public virtual ICollection<BoardBoard> BoardBoards { get; set; } = [];
 
     [InverseProperty("AlternativeUrlDocument")]
-    public virtual ICollection<CmsAlternativeUrl> CmsAlternativeUrls { get; set; } = new List<CmsAlternativeUrl>();
+    public virtual ICollection<CmsAlternativeUrl> CmsAlternativeUrls { get; set; } = [];
 
     [InverseProperty("AttachmentDocument")]
-    public virtual ICollection<CmsAttachment> CmsAttachments { get; set; } = new List<CmsAttachment>();
+    public virtual ICollection<CmsAttachment> CmsAttachments { get; set; } = [];
 
     [InverseProperty("PersonalizationDocument")]
-    public virtual ICollection<CmsPersonalization> CmsPersonalizations { get; set; } = new List<CmsPersonalization>();
+    public virtual ICollection<CmsPersonalization> CmsPersonalizations { get; set; } = [];
 
     [ForeignKey("DocumentCheckedOutByUserId")]
     [InverseProperty("CmsDocumentDocumentCheckedOutByUsers")]
@@ -278,16 +278,16 @@ public class CmsDocument
     public virtual CmsWorkflowStep? DocumentWorkflowStep { get; set; }
 
     [InverseProperty("ForumDocument")]
-    public virtual ICollection<ForumsForum> ForumsForums { get; set; } = new List<ForumsForum>();
+    public virtual ICollection<ForumsForum> ForumsForums { get; set; } = [];
 
     [InverseProperty("VariantDocument")]
-    public virtual ICollection<OmPersonalizationVariant> OmPersonalizationVariants { get; set; } = new List<OmPersonalizationVariant>();
+    public virtual ICollection<OmPersonalizationVariant> OmPersonalizationVariants { get; set; } = [];
 
     [ForeignKey("DocumentId")]
     [InverseProperty("Documents")]
-    public virtual ICollection<CmsCategory> Categories { get; set; } = new List<CmsCategory>();
+    public virtual ICollection<CmsCategory> Categories { get; set; } = [];
 
     [ForeignKey("DocumentId")]
     [InverseProperty("Documents")]
-    public virtual ICollection<CmsTag> Tags { get; set; } = new List<CmsTag>();
+    public virtual ICollection<CmsTag> Tags { get; set; } = [];
 }

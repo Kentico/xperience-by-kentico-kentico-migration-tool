@@ -76,31 +76,31 @@ public class CmsTree
     public bool NodeIsAclowner { get; set; }
 
     [InverseProperty("DocumentNode")]
-    public virtual ICollection<CmsDocument> CmsDocuments { get; set; } = new List<CmsDocument>();
+    public virtual ICollection<CmsDocument> CmsDocuments { get; set; } = [];
 
     [InverseProperty("PageFormerUrlPathNode")]
-    public virtual ICollection<CmsPageFormerUrlPath> CmsPageFormerUrlPaths { get; set; } = new List<CmsPageFormerUrlPath>();
+    public virtual ICollection<CmsPageFormerUrlPath> CmsPageFormerUrlPaths { get; set; } = [];
 
     [InverseProperty("PageUrlPathNode")]
-    public virtual ICollection<CmsPageUrlPath> CmsPageUrlPaths { get; set; } = new List<CmsPageUrlPath>();
+    public virtual ICollection<CmsPageUrlPath> CmsPageUrlPaths { get; set; } = [];
 
     [InverseProperty("LeftNode")]
-    public virtual ICollection<CmsRelationship> CmsRelationshipLeftNodes { get; set; } = new List<CmsRelationship>();
+    public virtual ICollection<CmsRelationship> CmsRelationshipLeftNodes { get; set; } = [];
 
     [InverseProperty("RightNode")]
-    public virtual ICollection<CmsRelationship> CmsRelationshipRightNodes { get; set; } = new List<CmsRelationship>();
+    public virtual ICollection<CmsRelationship> CmsRelationshipRightNodes { get; set; } = [];
 
     [InverseProperty("Node")]
-    public virtual ICollection<ComMultiBuyDiscountTree> ComMultiBuyDiscountTrees { get; set; } = new List<ComMultiBuyDiscountTree>();
+    public virtual ICollection<ComMultiBuyDiscountTree> ComMultiBuyDiscountTrees { get; set; } = [];
 
     [InverseProperty("NodeLinkedNode")]
-    public virtual ICollection<CmsTree> InverseNodeLinkedNode { get; set; } = new List<CmsTree>();
+    public virtual ICollection<CmsTree> InverseNodeLinkedNode { get; set; } = [];
 
     [InverseProperty("NodeOriginalNode")]
-    public virtual ICollection<CmsTree> InverseNodeOriginalNode { get; set; } = new List<CmsTree>();
+    public virtual ICollection<CmsTree> InverseNodeOriginalNode { get; set; } = [];
 
     [InverseProperty("NodeParent")]
-    public virtual ICollection<CmsTree> InverseNodeParent { get; set; } = new List<CmsTree>();
+    public virtual ICollection<CmsTree> InverseNodeParent { get; set; } = [];
 
     [ForeignKey("NodeAclid")]
     [InverseProperty("CmsTrees")]

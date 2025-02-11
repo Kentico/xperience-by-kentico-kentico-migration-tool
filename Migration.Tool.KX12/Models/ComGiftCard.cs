@@ -50,7 +50,7 @@ public class ComGiftCard
     public string? GiftCardRoles { get; set; }
 
     [InverseProperty("GiftCardCouponCodeGiftCard")]
-    public virtual ICollection<ComGiftCardCouponCode> ComGiftCardCouponCodes { get; set; } = new List<ComGiftCardCouponCode>();
+    public virtual ICollection<ComGiftCardCouponCode> ComGiftCardCouponCodes { get; set; } = [];
 
     [ForeignKey("GiftCardSiteId")]
     [InverseProperty("ComGiftCards")]

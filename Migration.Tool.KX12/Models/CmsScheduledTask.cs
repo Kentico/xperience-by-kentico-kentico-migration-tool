@@ -89,13 +89,13 @@ public class CmsScheduledTask
     public bool TaskIsRunning { get; set; }
 
     [InverseProperty("CampaignScheduledTask")]
-    public virtual ICollection<AnalyticsCampaign> AnalyticsCampaigns { get; set; } = new List<AnalyticsCampaign>();
+    public virtual ICollection<AnalyticsCampaign> AnalyticsCampaigns { get; set; } = [];
 
     [InverseProperty("TestWinnerScheduledTask")]
-    public virtual ICollection<NewsletterAbtest> NewsletterAbtests { get; set; } = new List<NewsletterAbtest>();
+    public virtual ICollection<NewsletterAbtest> NewsletterAbtests { get; set; } = [];
 
     [InverseProperty("NewsletterDynamicScheduledTask")]
-    public virtual ICollection<NewsletterNewsletter> NewsletterNewsletters { get; set; } = new List<NewsletterNewsletter>();
+    public virtual ICollection<NewsletterNewsletter> NewsletterNewsletters { get; set; } = [];
 
     [ForeignKey("TaskResourceId")]
     [InverseProperty("CmsScheduledTasks")]

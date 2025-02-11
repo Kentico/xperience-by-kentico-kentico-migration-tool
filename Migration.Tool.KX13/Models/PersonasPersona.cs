@@ -33,5 +33,5 @@ public class PersonasPersona
     public virtual OmScore? OmScore { get; set; }
 
     [InverseProperty("PersonaContactHistoryPersona")]
-    public virtual ICollection<PersonasPersonaContactHistory> PersonasPersonaContactHistories { get; set; } = new List<PersonasPersonaContactHistory>();
+    public virtual ICollection<PersonasPersonaContactHistory> PersonasPersonaContactHistories { get; set; } = [];
 }

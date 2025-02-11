@@ -43,8 +43,8 @@ public class ComBrand
     public virtual CmsSite BrandSite { get; set; } = null!;
 
     [InverseProperty("Brand")]
-    public virtual ICollection<ComMultiBuyDiscountBrand> ComMultiBuyDiscountBrands { get; set; } = new List<ComMultiBuyDiscountBrand>();
+    public virtual ICollection<ComMultiBuyDiscountBrand> ComMultiBuyDiscountBrands { get; set; } = [];
 
     [InverseProperty("Skubrand")]
-    public virtual ICollection<ComSku> ComSkus { get; set; } = new List<ComSku>();
+    public virtual ICollection<ComSku> ComSkus { get; set; } = [];
 }

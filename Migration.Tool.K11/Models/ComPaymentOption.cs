@@ -59,10 +59,10 @@ public class ComPaymentOption
     public int? PaymentOptionAuthorizedOrderStatusId { get; set; }
 
     [InverseProperty("OrderPaymentOption")]
-    public virtual ICollection<ComOrder> ComOrders { get; set; } = new List<ComOrder>();
+    public virtual ICollection<ComOrder> ComOrders { get; set; } = [];
 
     [InverseProperty("ShoppingCartPaymentOption")]
-    public virtual ICollection<ComShoppingCart> ComShoppingCarts { get; set; } = new List<ComShoppingCart>();
+    public virtual ICollection<ComShoppingCart> ComShoppingCarts { get; set; } = [];
 
     [ForeignKey("PaymentOptionAuthorizedOrderStatusId")]
     [InverseProperty("ComPaymentOptionPaymentOptionAuthorizedOrderStatuses")]
