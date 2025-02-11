@@ -315,7 +315,7 @@ public class ContentItemMapper(
                     var targetColumns = commonFields
                         .Select(cf => ReusableSchemaService.RemoveClassPrefix(sourceNodeClass.ClassName, cf.Name))
                         .Union(fi.GetColumnNames(false))
-                        .Except([CmsClassMapper.GetLegacyDocumentName(fi, targetClassInfo?.ClassName)])
+                        .Except(CmsClassMapper.GetLegacyMetadataFields(modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false)).Select(x => CmsClassMapper.GetMappedLegacyField(fi, targetClassInfo?.ClassName, x.LegacyFieldName)))
                         .ToList();
 
                     var coupledDataRow = coupledDataService.GetSourceCoupledDataRow(sourceNodeClass.ClassTableName, primaryKeyName, cmsDocument.DocumentForeignKeyValue);
@@ -353,16 +353,19 @@ public class ContentItemMapper(
                 }
 
                 string targetClassName = mapping?.TargetClassName ?? sourceNodeClass.ClassName;
-                if (CmsClassMapper.GetLegacyDocumentName(fi, targetClassInfo.ClassName) is { } legacyDocumentNameFieldName)
+                foreach (var legacyField in CmsClassMapper.GetLegacyMetadataFields(modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false)))
                 {
-                    if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(targetClassName))
+                    if (CmsClassMapper.GetMappedLegacyField(fi, targetClassInfo.ClassName, legacyField.LegacyFieldName) is { } legacyDocumentNameFieldName)
                     {
-                        string fieldName = ReusableSchemaService.GetUniqueFieldName(targetClassName, legacyDocumentNameFieldName);
-                        commonDataModel.CustomProperties.Add(fieldName, cmsDocument.DocumentName);
-                    }
-                    else
-                    {
-                        dataModel.CustomProperties.Add(legacyDocumentNameFieldName, cmsDocument.DocumentName);
+                        if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(targetClassName))
+                        {
+                            string fieldName = ReusableSchemaService.GetUniqueFieldName(targetClassName, legacyDocumentNameFieldName);
+                            commonDataModel.CustomProperties.Add(fieldName, legacyField.GetValue(cmsDocument));
+                        }
+                        else
+                        {
+                            dataModel.CustomProperties.Add(legacyDocumentNameFieldName, legacyField.GetValue(cmsDocument));
+                        }
                     }
                 }
 
@@ -609,7 +612,7 @@ public class ContentItemMapper(
                 var sourceColumns = commonFields
                     .Select(cf => ReusableSchemaService.RemoveClassPrefix(sourceNodeClass.ClassName, cf.Name))
                     .Union(fi.GetColumnNames(false))
-                    .Except([CmsClassMapper.GetLegacyDocumentName(fi, targetClassName)])
+                    .Except(CmsClassMapper.GetLegacyMetadataFields(modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false)).Select(x => CmsClassMapper.GetMappedLegacyField(fi, targetClassName, x.LegacyFieldName)))
                     .ToList();
 
                 var sourceObjectContext = new DocumentSourceObjectContext(cmsTree, sourceNodeClass, sourceSite, sfi, fi, adapter.DocumentID);
@@ -644,15 +647,18 @@ public class ContentItemMapper(
                 }
             }
 
-            // supply document name
-            if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(sourceNodeClass.ClassName))
+            // supply legacy document metadata fields
+            foreach (var legacyField in CmsClassMapper.GetLegacyMetadataFields(modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false)))
             {
-                string fieldName = ReusableSchemaService.GetUniqueFieldName(sourceNodeClass.ClassName, "DocumentName");
-                commonDataModel.CustomProperties.Add(fieldName, adapter.DocumentName);
-            }
-            else
-            {
-                dataModel.CustomProperties.Add("DocumentName", adapter.DocumentName);
+                if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(sourceNodeClass.ClassName))
+                {
+                    string fieldName = ReusableSchemaService.GetUniqueFieldName(sourceNodeClass.ClassName, legacyField.LegacyFieldName);
+                    commonDataModel.CustomProperties.Add(fieldName, adapter.GetValue(legacyField.LegacyFieldName));
+                }
+                else
+                {
+                    dataModel.CustomProperties.Add(legacyField.LegacyFieldName, adapter.GetValue(legacyField.LegacyFieldName));
+                }
             }
         }
         catch (Exception ex)
@@ -718,7 +724,7 @@ public class ContentItemMapper(
                 targetFieldName.Equals("ContentItemDataID", StringComparison.InvariantCultureIgnoreCase) ||
                 targetFieldName.Equals("ContentItemDataCommonDataID", StringComparison.InvariantCultureIgnoreCase) ||
                 targetFieldName.Equals("ContentItemDataGUID", StringComparison.InvariantCultureIgnoreCase) ||
-                targetFieldName.Equals(CmsClassMapper.GetLegacyDocumentName(newFormInfo, targetClassName), StringComparison.InvariantCultureIgnoreCase)
+                CmsClassMapper.GetLegacyMetadataFields(modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false)).Any(x => targetFieldName.Equals(x.LegacyFieldName, StringComparison.InvariantCultureIgnoreCase))
             )
             {
                 logger.LogTrace("Skipping '{FieldName}'", targetFieldName);
@@ -997,7 +1003,7 @@ public class ContentItemMapper(
             var targetColumns = commonFields
                 .Select(cf => ReusableSchemaService.RemoveClassPrefix(sourceClass.ClassName, cf.Name))
                 .Union(fi.GetColumnNames(false))
-                .Except([CmsClassMapper.GetLegacyDocumentName(fi, targetClassInfo.ClassName)])
+                .Except(CmsClassMapper.GetLegacyMetadataFields(modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false)).Select(x => CmsClassMapper.GetMappedLegacyField(fi, targetClassInfo.ClassName, x.LegacyFieldName)))
                 .ToList();
 
             var sourceObjectContext = new CustomTableSourceObjectContext();
@@ -1017,10 +1023,13 @@ public class ContentItemMapper(
                 targetClassInfo.ClassName
             ).GetAwaiter().GetResult();
 
-            string? documentNameFieldName = CmsClassMapper.GetLegacyDocumentName(fi, targetClassInfo.ClassName);
-            if (documentNameFieldName is not null)
+            foreach (var legacyField in CmsClassMapper.GetLegacyMetadataFields(modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false)))
             {
-                dataModel.CustomProperties[documentNameFieldName] = contentItemModel.ContentItemName;
+                string? documentNameFieldName = CmsClassMapper.GetMappedLegacyField(fi, targetClassInfo.ClassName, legacyField.LegacyFieldName);
+                if (documentNameFieldName is not null)
+                {
+                    dataModel.CustomProperties[documentNameFieldName] = contentItemModel.ContentItemName;
+                }
             }
 
             foreach (var formFieldInfo in commonFields)

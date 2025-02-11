@@ -28,6 +28,9 @@ public class ToolConfiguration
     [ConfigurationKeyName(ConfigurationNames.MigrateOnlyMediaFileInfo)]
     public bool? MigrateOnlyMediaFileInfo { get; set; } = false;
 
+    [ConfigurationKeyName(ConfigurationNames.IncludeExtendedMetadata)]
+    public bool? IncludeExtendedMetadata { get; set; } = false;
+
     [ConfigurationKeyName(ConfigurationNames.UseOmActivityNodeRelationAutofix)]
     public AutofixEnum? UseOmActivityNodeRelationAutofix { get; set; } = AutofixEnum.Error;
 
