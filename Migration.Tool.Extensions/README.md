@@ -70,12 +70,21 @@ You can see samples:
 
 After implementing the migration, you need to [register the migration](#register-migrations) in the system.
 
+## Register migrations
+
+Register the migration in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as a `Transient` dependency into the service collection:
+
+- Field migrations - `services.AddTransient<IFieldMigration, MyFieldMigration>();`
+- Widget migrations - `services.AddTransient<IWidgetMigration, MyWidgetMigration>();`
+- Widget property migrations - `services.AddTransient<IWidgetPropertyMigration, MyWidgetPropertyMigration>();`
+
 ## Custom class mappings
 
 You can customize class mappings to adjust the content model between the source instance and the target Xperience by Kentico instance. For example, you can merge multiple page types into a single content type, or migrate specific page types to the [content hub](https://docs.kentico.com/x/barWCQ) as reusable content.
 
 1. Create a new class.
-2. Define a new `MultiClassMapping` object:
+2. Add an `IServiceCollection` extension method. Use a separate method for every class mapping that you wish to configure.
+3. Within the extension method, define a new `MultiClassMapping` object:
 
     ```csharp
     var m = new MultiClassMapping(targetClassName, target =>
@@ -88,40 +97,45 @@ You can customize class mappings to adjust the content model between the source 
       target.ClassDisplayName = "My new transformed event";
       // Type of the class (specifies that the class is a content type)
       target.ClassType = ClassType.CONTENT_TYPE;
-      // Use of the content type
+      // What the content type is used for (reusable content, pages, email, or headless)
       target.ClassContentTypeType = ClassContentTypeType.WEBSITE;
     });
     ```
 
-3. Define a new primary key:
+4. Define a new primary key:
 
     ```csharp
     m.BuildField("EventID").AsPrimaryKey();
     ```
 
-4. Define individual fields of the new content type:
+5. Define individual fields of the new content type:
 
     ```csharp
-    // Build a new title field
+    // Builds a new title field
     var title = m.BuildField("Title");
 
-    // Map "EventTitle" field form source data class "_ET.Event1"
-    // Set the isTemplate parameter to 'true' to inherit the definition
-    // of the source field as a template
+    // You can map any number of source fields. The migration creates items of the target data class for every item from a mapped source data class.
+    // The default migration is skipped for any data class / page type where you map at least one source field
+
+    // Maps the "EventTitle" field from the source data class "_ET.Event1"
+    // Sets the isTemplate parameter to true, which makes the new field inherit the source field definition as a template
+    // The field definition is migrated according to the migration tool's data type and form control/component mappings
     title.SetFrom("_ET.Event1", "EventTitle", true);
-    // Map "EventTitle" field form a second source data class "_ET.Event2"
-    // The isTemplate is not set, so only the value is taken from this source
+    // Maps the "EventTitle" field from a second source data class "_ET.Event2"
+    // The isTemplate parameter is not set, so only the value is taken from this source field
     title.SetFrom("_ET.Event2", "EventTitle");
+
     // You can modify the field definition, e.g., change the caption of the field
     title.WithFieldPatch(f => f.Caption = "Event title");
     ```
 
-5. (*Optional*) You can add custom value conversions:
+6. (*Optional*) You can add custom value conversions:
 
     ```csharp
     var startDate = m.BuildField("StartDate");
     startDate.SetFrom("_ET.Event1", "EventDateStart", true);
-    // Use value conversion to modify the field value
+    
+    // Uses value conversion to modify the field value
     startDate.ConvertFrom("_ET.Event2", "EventStartDateAsText", false,
         (v, context) =>
         {
@@ -132,7 +146,7 @@ You can customize class mappings to adjust the content model between the source 
                     // (var nodeGuid, int nodeSiteId, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
                     break;
                 default:
-                    // No context is available (possibly when tool is extended with other conversion possibilities)
+                    // No context is available (possibly when the tool is extended with other conversion possibilities)
                     break;
             }
 
@@ -141,13 +155,15 @@ You can customize class mappings to adjust the content model between the source 
     startDate.WithFieldPatch(f => f.Caption = "Event start date");
     ```
 
-1. Register the class mapping to the dependency injection container:
+7. Register the class mapping to the dependency injection container:
 
     ```csharp
     serviceCollection.AddSingleton<IClassMapping>(m);
     ```
 
-After implementing the custom mapping, you need to [register the mapping](#register-migrations) in the system.
+8. Ensure that your class mapping extension methods run during the startup of the migration tool. Call the methods from `UseCustomizations` in the [ServiceCollectionExtensions](/Migration.Tool.Extensions/ServiceCollectionExtensions.cs) class.
+
+**Note**: Your mappings now replace the default migration functionality for all data classes (page types) that you use as a source. Any class where you set at least one source field is affected. If you map only some fields from a source class, the remaining fields are not migrated at all.
 
 ### Examples
 
@@ -157,11 +173,4 @@ You can find sample class mappings in the [ClassMappingSample.cs](/Migration.Too
 - `AddClassMergeSample` showcases how to merge two page types into a single content type
 - `AddReusableRemodelingSample` showcases how to migrate a page type as reusable content
 
-## Register migrations
 
-Register the migration in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as a `Transient` dependency into the service collection:
-
-- Field migrations - `services.AddTransient<IFieldMigration, MyFieldMigration>();`
-- Widget migrations - `services.AddTransient<IWidgetMigration, MyWidgetMigration>();`
-- Widget property migrations - `services.AddTransient<IWidgetPropertyMigration, MyWidgetPropertyMigration>();`
-- Custom class mappings - `services.AddMyCustomMapping();`

@@ -57,7 +57,7 @@ Migration.Tool.CLI.exe migrate --sites --custom-modules --users --members --form
 | `--members`                 | Enables migration of live site user accounts to [members](https://docs.xperience.io/x/BIsuCw). <br /><br />See: [Migration details for specific object types - Members](#members)                                                                                                                                                                                                       | `--sites`, `--custom-modules`                  |
 | `--settings-keys`           | Enables migration of values for [settings](https://docs.xperience.io/x/7YjFC) that are available in Xperience by Kentico.                                                                                                                                                                                                                                                               | `--sites`                                      |
 | `--page-types`              | Enables migration of [content types](https://docs.xperience.io/x/gYHWCQ) (originally _page types_ in Kentico Xperience 13) and [preset page templates](https://docs.xperience.io/x/KZnWCQ) (originally _custom page templates_). Required to migrate Pages.<br /><br />See: [Migration details for specific object types - Content types](#content-types)                               | `--sites`                                      |
-| `--pages`                   | Enables migration of [pages](https://docs.xperience.io/x/bxzfBw).<br /><br />The target instance must not contain pages other than those created by previous runs of the Kentico Migration Tool.<br /><br />See: [Migration details for specific object types - Pages](#pages)                                                                                                          | `--sites`, `--users`, `--page-types`           |
+| `--pages`                   | Enables migration of [pages](https://docs.kentico.com/x/AQqRBg). Pages can be migrated either to [website channel pages](https://docs.kentico.com/x/JwKQC) (default behavior) or [reusable content items](https://docs.kentico.com/x/barWCQ) in Content hub. <br /><br />When migrating to website channel pages, the target instance must not contain pages other than those created by previous runs of the Kentico Migration Tool. <br /><br />See: [Migration details for specific object types - Pages](#pages)                                                                                                     | `--sites`, `--users`, `--page-types`           |
 | `--categories`              | Enables migration of categories to taxonomies. Xperience by Kentico uses a different approach to categorization. Categories are migrated to [taxonomies](https://docs.kentico.com/x/taxonomies_xp) and selected categories for each page are assigned to pages in the target instance via a [reusable field schema](https://docs.kentico.com/x/D4_OD). See [`Categories`](#categories). | `--sites`, `--users`, `--pagetypes`, `--pages` |
 | `--attachments`             | Enables migration of page attachments to [content hub](https://docs.kentico.com/x/barWCQ) as content item assets (page attachments are not supported in Xperience by Kentico).<br /><br />See: [Migration details for specific object types - Attachments](#attachments)                                                                                                                | `--sites`, `--custom-modules`                  |
 | `--contact-management`      | Enables migration of [contacts](https://docs.xperience.io/x/nYPWCQ) and [activities](https://docs.xperience.io/x/oYPWCQ). The target instance must not contain any contacts or activities. May run for a long time depending on the number of contacts in the source database.                                                                                                          | `--users`, `--custom-modules`                  |
@@ -138,7 +138,7 @@ most common components and selectors.
 
 You can create [reusable field schemas](https://docs.kentico.com/x/D4_OD) from page types from which other page types
 inherit, by setting
-the `Settings.CreateReusableFieldSchemaForClasses` [configuration option](#convert-page-types-to-reusable-field-schemas).
+the `Settings.CreateReusableFieldSchemaForClasses` configuration option. See [Convert page types to reusable field schemas](#convert-page-types-to-reusable-field-schemas) for detailed information.
 
 Additionally, you can use the extensibility feature to implement [customizations](../Migration.Tool.Extensions/README.md) that allow you to inject reusable field schemas into content types.
 
@@ -148,13 +148,15 @@ If the target instance is a [SaaS project](https://docs.kentico.com/x/saas_xp) (
 
 #### Pages
 
+Pages from older product versions can be migrated to either to [website channel pages](https://docs.kentico.com/x/JwKQC) (default behavior) or [reusable content items](https://docs.kentico.com/x/barWCQ) in Content hub. See [Convert pages to Content hub](#convert-pages-to-content-hub) for detailed information.
+
 - The migration includes the following versions of pages:
   - _Published_
   - _Latest draft version_ - for published pages, the version is migrated to the
-    _Draft_ [workflow step](https://docs.xperience.io/x/JwKQC#Pages-Pageworkflow); for pages that do not have a
-    published version, the version is migrated to the _Draft (initial)_ workflow step.
+    _Draft (New version)_ [status](https://docs.xperience.io/x/JwKQC); for pages that do not have a
+    published version, the version is migrated to the _Draft (Initial)_ status.
   - _Archived_
-- URLs are migrated depending on the source instance version:
+- Page URLs are included only when migrating to [website channel pages](https://docs.kentico.com/x/JwKQC) (default behavior). URL migration depends on the source instance version:
   - For Kentico Xperience 13, the migration:
     - includes the URL paths of pages and Former URLs
     - does not include Alternative URLs
@@ -415,6 +417,7 @@ Add the options under the `Settings` section in the configuration file.
 | XbyKDirPath                                                       | The absolute file system path of the root of the target Xperience by Kentico project. Required to migrate media library and page attachment files.                                                                                                                                                                                                                                                                                                                                                                                        |
 | XbyKApiSettings                                                   | Configuration options set for the API when creating migrated objects in the target application.<br /><br />The `ConnectionStrings.CMSConnectionString`option is required - set the connection string to the target Xperience by Kentico database (the same value as obsolete `XbKConnectionString`).                                                                                                                                                                                                                                      |
 | MigrationProtocolPath                                             | The absolute file system path of the location where the [migration protocol file](./MIGRATION_PROTOCOL_REFERENCE.md) is generated.<br /><br />For example: `"C:\\Logs\\Migration.Tool.Protocol.log"`                                                                                                                                                                                                                                                                                                                                      |
+| ConvertClassesToContentHub                                         | Specifies which page types are migrated to [reusable content items](https://docs.kentico.com/x/barWCQ) instead of website channel pages. Enter page type code names, separated with either `;` or `,`. See [Convert pages to Content hub](#convert-pages-to-content-hub) for detailed information.                                                                                                                                                                                                                                                                                                                                      |
 | MigrateOnlyMediaFileInfo                                          | If set to `true`, only the database representations of media files are migrated, without the files in the media folder in the project's file system. For example, enable this option if your media library files are mapped to a shared directory or Cloud storage.<br /><br />If `false`, media files are migrated based on the `KxCmsDirPath` location.                                                                                                                                                                                 |
 | MigrateMediaToMediaLibrary                                        | Determines whether media library files and attachments from the source instance are migrated to the target instance as media libraries or as [content item assets](https://docs.kentico.com/x/barWCQ) in the content hub. The default value is `false` – media files and attachments are migrated as content item assets. <br /><br /> See [Convert attachments and media library files to media libraries instad of content item assets](#convert-attachments-and-media-library-files-to-media-libraries-instead-of-content-item-assets) |
 | LegacyFlatAssetTree                                               | Use legacy behaviour of versions up to 2.3.0. Content folders for asset content items will be created in a flat structure (all under root folder)                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -458,6 +461,7 @@ Add the options under the `Settings` section in the configuration file.
     },
     "MigrationProtocolPath": "C:\\_Development\\xperience-migration-toolkit-master\\Migration.Tool.Protocol.log",
     "MemberIncludeUserSystemFields": "FirstName|MiddleName|LastName|FullName|UserPrivilegeLevel|UserIsExternal|LastLogon|UserLastModified|UserGender|UserDateOfBirth",
+    "ConvertClassesToContentHub": "Acme.Article,Acme.Product",
     "MigrateOnlyMediaFileInfo": false,
     "MigrateMediaToMediaLibrary": false,
     "UseOmActivityNodeRelationAutofix": "AttemptFix",
@@ -474,8 +478,8 @@ Add the options under the `Settings` section in the configuration file.
         "ExcludeCodeNames": [
           "CMS.File",
           "CMS.MenuItem",
-          "ACME.News",
-          "ACME.Office",
+          "Acme.News",
+          "Acme.Office",
           "CMS.Blog",
           "CMS.BlogPost"
         ]
@@ -629,6 +633,26 @@ setup is correct, the response should be: `{ "pong": true }`
 
 When you now [migrate data](#migrate-data), the tool performs API discovery of page builder component code on the source
 instance and advanced migration of page builder data.
+
+## Convert pages to Content hub
+
+You can migrate pages to [Content hub items](https://docs.kentico.com/x/barWCQ) instead of website channel pages. This can be useful if you wish to transition your project's content model to utilize reusable content in Xperience by Kentico.
+
+Specify a list of page type code names (separated with either `;` or `,`) in the `Settings.ConvertClassesToContentHub` [configuration option](#configuration).
+
+```json
+"Settings":{
+  ...
+
+  "ConvertClassesToContentHub": "Acme.Article,Acme.Product",
+},
+```
+
+The migration then converts the specified page types to content types for reusable content, and all pages of the given types to items in Content hub.
+
+**Note**: Page URLs and other page-specific configuration and metadata is not migrated in this scenario.
+
+For advanced scenarios, you can use the extensibility feature to implement [customizations](../Migration.Tool.Extensions/README.md#custom-class-mappings) that map specific page types or individual fields to reusable content types. For example, this allows you to migrate multiple page types to a single content type.
 
 ## Convert page types to reusable field schemas
 
