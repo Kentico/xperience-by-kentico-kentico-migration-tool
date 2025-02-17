@@ -92,9 +92,10 @@ public class ContentItemMapper(
             targetClassGuid = targetClassInfo.ClassGUID;
         }
 
-        var directive = GetDirective(new ContentItemSource(cmsTree, sourceNodeClass.ClassName, sourceSite));
+        var directive = GetDirective(new ContentItemSource(cmsTree, sourceNodeClass.ClassName, mapping?.TargetClassName ?? sourceNodeClass.ClassName, sourceSite));
         if (directive is DropDirective)
         {
+            logger.LogInformation("Content item skipped. Reason: {Explicit drop directive} NodeGUID: {NodeGUID} NodeAliasPath: {NodeAliasPath}", "Explicit drop directive", cmsTree.NodeGUID, cmsTree.NodeAliasPath);
             yield break;
         }
         else if (directive is ConvertToWidgetDirective && cmsTree.NodeHasChildren == true && !deferred)
