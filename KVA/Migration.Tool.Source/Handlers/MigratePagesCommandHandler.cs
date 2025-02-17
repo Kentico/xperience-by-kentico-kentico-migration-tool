@@ -515,12 +515,14 @@ public class MigratePagesCommandHandler(
         IEnumerable<CollisionData> collisionData = [];
         // in case of collision, try to avoid it by appending 4 random characters
         bool hadCollision = false;
+        bool resolved = false;
         for (int i = 0; i < 200; i++)       // arbitrary high number just to avoid infinite loop that would normally fit here
         {
             var alias = ksTree.NodeAlias + (i != 0 ? $"-{Guid.NewGuid().ToString()[..4]}" : string.Empty);
             var attemptCollisionData = await man.GeneratePageUrlPath(webPageItemInfo, alias, VersionStatus.InitialDraft, CancellationToken.None);
             if (!attemptCollisionData.Any())
             {
+                resolved = true;
                 break;
             }
             else
@@ -530,7 +532,7 @@ public class MigratePagesCommandHandler(
             }
         }
 
-        if (collisionData.Any())    // no attempt went through without collision
+        if (!resolved)    // no attempt went through without collision
         {
             foreach (var data in collisionData)
             {
