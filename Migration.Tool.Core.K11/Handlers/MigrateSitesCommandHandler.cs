@@ -24,20 +24,33 @@ public class MigrateSitesCommandHandler(
     ILogger<MigrateSitesCommandHandler> logger,
     IDbContextFactory<K11Context> k11ContextFactory,
     IProtocol protocol,
-    IImporter importer)
+    IImporter importer,
+    ToolConfiguration toolConfiguration)
     : IRequestHandler<MigrateSitesCommand, CommandResult>
 {
     public async Task<CommandResult> Handle(MigrateSitesCommand request, CancellationToken cancellationToken)
     {
         await using var k11Context = await k11ContextFactory.CreateDbContextAsync(cancellationToken);
         var migratedCultureCodes = new Dictionary<string, ContentLanguageInfo>(StringComparer.CurrentCultureIgnoreCase);
-        int fallbackDomainPort = 5000;
         var migratedDomains = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase);
+        var entityConfiguration = toolConfiguration.EntityConfigurations.GetEntityConfiguration<CmsSite>();
+        var domainSanitizer = new WebsiteChannelDomainSanitizer(logger, WebsiteChannelInfo.Provider.Get());
+        var existingChannels = ChannelInfo.Provider.Get();
 
         foreach (var k11CmsSite in k11Context.CmsSites.Include(s => s.Cultures).Include(cmsSite => cmsSite.CmsSiteDomainAliases))
         {
             protocol.FetchedSource(k11CmsSite);
-            logger.LogTrace("Migrating site {SiteName} with SiteGuid {SiteGuid}", k11CmsSite.SiteName, k11CmsSite.SiteGuid);
+            logger.LogInformation("Migrating site {SiteName} with SiteGuid {SiteGuid}", k11CmsSite.SiteName, k11CmsSite.SiteGuid);
+            if (existingChannels.Any(ch => ch.ChannelName == k11CmsSite.SiteName))
+            {
+                logger.LogInformation("Site skipped. It already exists.");
+                continue;
+            }
+            if (entityConfiguration.ExcludeCodeNames.Contains(k11CmsSite.SiteName, StringComparer.OrdinalIgnoreCase))
+            {
+                logger.LogInformation("Site excluded in settings");
+                continue;
+            }
 
             string defaultCultureCode = GetSiteCulture(k11CmsSite);
             var migratedSiteCultures = k11CmsSite.Cultures.ToList();
@@ -99,46 +112,9 @@ public class MigrateSitesCommandHandler(
                 ? bool.TryParse(storeFormerUrlsStr, out bool sfu) ? sfu : null
                 : true;
 
-            var result = UriHelper.GetUniqueDomainCandidate(
-                k11CmsSite.SiteDomainName,
-                ref fallbackDomainPort,
-                candidate => !migratedDomains.Contains(candidate)
-            );
-
-            string webSiteChannelDomain;
-            switch (result)
+            if (!domainSanitizer.GetCandidate(k11CmsSite.SiteName, k11CmsSite.SiteDomainName, out var domainName))
             {
-                case (true, false, var candidate, null):
-                {
-                    webSiteChannelDomain = candidate;
-                    break;
-                }
-                case (true, true, var candidate, null):
-                {
-                    webSiteChannelDomain = candidate;
-                    logger.LogWarning("Domain '{Domain}' of site '{SiteName}' is not unique. '{Fallback}' is used instead", k11CmsSite.SiteDomainName, k11CmsSite.SiteName, candidate);
-                    protocol.Warning(HandbookReferences
-                        .InvalidSourceData<CmsSite>()
-                        .WithMessage($"Domain '{k11CmsSite.SiteDomainName}' of site '{k11CmsSite.SiteName}' is not unique. '{candidate}' is used instead"), k11CmsSite);
-                    break;
-                }
-                case { Success: false, Fallback: { } fallback }:
-                {
-                    webSiteChannelDomain = fallback;
-                    logger.LogWarning("Unable to use domain '{Domain}' of site '{SiteName}' as channel domain. Fallback '{Fallback}' is used", k11CmsSite.SiteDomainName, k11CmsSite.SiteName, fallback);
-                    protocol.Warning(HandbookReferences
-                        .InvalidSourceData<CmsSite>()
-                        .WithMessage($"Non-unique domain name '{k11CmsSite.SiteDomainName}', fallback '{fallback}' used"), k11CmsSite);
-                    break;
-                }
-                default:
-                {
-                    logger.LogError("Unable to use domain '{Domain}' of site '{SiteName}' as channel domain. No fallback available, skipping site", k11CmsSite.SiteDomainName, k11CmsSite.SiteName);
-                    protocol.Warning(HandbookReferences
-                        .InvalidSourceData<CmsSite>()
-                        .WithMessage($"Invalid domain name for migration '{k11CmsSite.SiteDomainName}'"), k11CmsSite);
-                    continue;
-                }
+                continue;
             }
 
             await importer.ImportAsync(new ChannelModel { ChannelDisplayName = k11CmsSite.SiteDisplayName, ChannelName = k11CmsSite.SiteName, ChannelGUID = k11CmsSite.SiteGuid, ChannelType = ChannelType.Website });
@@ -147,7 +123,7 @@ public class MigrateSitesCommandHandler(
             {
                 WebsiteChannelGUID = k11CmsSite.SiteGuid,
                 WebsiteChannelChannelGuid = k11CmsSite.SiteGuid,
-                WebsiteChannelDomain = webSiteChannelDomain,
+                WebsiteChannelDomain = domainName,
                 WebsiteChannelHomePage = homePageNodeAliasPath ?? "/",
                 WebsiteChannelPrimaryContentLanguageGuid = migratedCultureCodes[defaultCultureCode].ContentLanguageGUID,
                 WebsiteChannelDefaultCookieLevel = cookieLevel,
@@ -173,8 +149,7 @@ public class MigrateSitesCommandHandler(
 
             if (webSiteChannelResult.Imported is WebsiteChannelInfo webSiteChannel)
             {
-                migratedDomains.Add(webSiteChannelDomain);
-
+                domainSanitizer.CommitCandidate(domainName);
                 string? cmsReCaptchaPublicKey = KenticoHelper.GetSettingsKey(k11ContextFactory, k11CmsSite.SiteId, "CMSReCaptchaPublicKey");
                 string? cmsReCaptchaPrivateKey = KenticoHelper.GetSettingsKey(k11ContextFactory, k11CmsSite.SiteId, "CMSReCaptchaPrivateKey");
 
