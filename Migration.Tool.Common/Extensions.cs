@@ -14,17 +14,20 @@ public static class Extensions
 {
     public static T Unbox<T>(this IDataReader reader, string propertyName)
     {
-        if (reader.GetOrdinal(propertyName) < 0)
+        for (int i = 0; i < reader.FieldCount; i++)
         {
-            throw new InvalidOperationException($"Property '{propertyName}' not exists");
+            if (reader.GetName(i) == propertyName)
+            {
+                return reader[propertyName] switch
+                {
+                    T r => r,
+                    DBNull => default!,
+                    _ => throw new InvalidCastException($"Unboxing property '{propertyName}' of type '{reader[propertyName].GetType().FullName}' to type '{typeof(T).FullName}' failed")
+                };
+            }
         }
 
-        return reader[propertyName] switch
-        {
-            T r => r,
-            DBNull => default!,
-            _ => throw new InvalidCastException($"Unboxing property '{propertyName}' of type '{reader[propertyName].GetType().FullName}' to type '{typeof(T).FullName}' failed")
-        };
+        return default;
     }
 
     public static bool IsIn<T>(this T value, params T[] values) => values.Contains(value);
