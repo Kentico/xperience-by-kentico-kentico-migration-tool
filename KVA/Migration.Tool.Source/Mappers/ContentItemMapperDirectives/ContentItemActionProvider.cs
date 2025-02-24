@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 
 namespace Migration.Tool.Source.Mappers.ContentItemMapperDirectives;
-internal class ContentItemActionProvider : IContentItemActionProvider
+internal partial class ContentItemActionProvider : IContentItemActionProvider
 {
     internal ContentItemDirectiveBase Directive { get; private set; } = new PassthroughDirective();
 
@@ -16,5 +16,6 @@ internal class ContentItemActionProvider : IContentItemActionProvider
         Directive.PageTemplateIdentifier = templateIdentifier;
         Directive.PageTemplateProperties = templateProperties;
     }
-    public void OverrideContentFolder(Guid contentFolderGuid) => Directive.ContentFolderGuid = contentFolderGuid;
+    public void OverrideContentFolder(Guid contentFolderGuid) => Directive.ContentFolderOptions = new ContentFolderOptions(Guid: contentFolderGuid);
+    public void OverrideContentFolder(string displayNamePath) => Directive.ContentFolderOptions = new ContentFolderOptions(DisplayNamePath: displayNamePath);
 }
