@@ -15,6 +15,7 @@ public class ContentFolderService
         this.logger = logger;
         defaultWorkspaceGuid = WorkspaceInfo.Provider.Get().FirstOrDefault()?.WorkspaceGUID ?? throw new Exception("No workspace found in target instance. At least Default workspace is expected");
     }
+
     /// <summary>
     /// Folder tree path as key
     /// </summary>
@@ -27,7 +28,6 @@ public class ContentFolderService
     /// Iterates over the folder path. If a folder doesn't exist, it gets created
     /// </summary>
     /// <param name="folderPathTemplate"></param>
-    /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
     public async Task<Guid?> EnsureFolderStructure(IEnumerable<(Guid Guid, string Name, string DisplayName, string PathSegmentName)> folderPathTemplate)
     {
@@ -102,10 +102,17 @@ public class ContentFolderService
     private static string DisplayNamePathToTreePath(string displayNamePath) => string.Join("/", displayNamePath.Split('/').Select(x => ValidationHelper.GetCodeName(x, 0)));
     private static string FolderDisplayNameToName(string displayName) => ValidationHelper.GetCodeName(displayName, 0);
 
+    /// <summary>
+    /// Returns standard attributes of a new folder derived from its display name
+    /// </summary>
     public static (Guid Guid, string Name, string DisplayName, string PathSegmentName) StandardFolderTemplate(string siteHash, string folderDisplayName, string absoluteDisplayNamePath)
         => (GuidHelper.CreateFolderGuid($"{siteHash}|{DisplayNamePathToTreePath(absoluteDisplayNamePath)}"), FolderDisplayNameToName(folderDisplayName), folderDisplayName, FolderDisplayNameToName(folderDisplayName));
 
     public delegate void FolderPathSegmentCallback(string segmentDisplayName, string path);
+
+    /// <summary>
+    /// Walks folder path folder by folder and for each of them invokes callback with both segment name and absolute path
+    /// </summary>
     public static void WalkFolderPath(string path, FolderPathSegmentCallback segmentCallback)
     {
         var segmentDisplayNames = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
@@ -117,6 +124,10 @@ public class ContentFolderService
         }
     }
 
+    /// <summary>
+    /// Accepts path where segments represent folder display names and returns path template, 
+    /// i.e. sequence of folder templates, composed of standard folder templates derived from the display names
+    /// </summary>
     public static List<(Guid Guid, string Name, string DisplayName, string PathSegmentName)> StandardPathTemplate(string siteHash, string absolutePath)
     {
         var pathTemplate = new List<(Guid Guid, string Name, string DisplayName, string PathSegmentName)>();
@@ -124,5 +135,10 @@ public class ContentFolderService
         return pathTemplate;
     }
 
+    /// <summary>
+    /// Ensures that all folders in the folder path exist. The path segments represent display name 
+    /// of the folders and the attributes of a folder that is to be created are derived from its display name 
+    /// in a defined standard way
+    /// </summary>
     public Task<Guid?> EnsureStandardFolderStructure(string siteHash, string absolutePath) => EnsureFolderStructure(StandardPathTemplate(siteHash, absolutePath));
 }
