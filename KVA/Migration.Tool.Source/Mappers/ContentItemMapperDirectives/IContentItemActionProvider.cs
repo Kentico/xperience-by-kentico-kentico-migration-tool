@@ -11,4 +11,5 @@ public interface IContentItemActionProvider
     void Drop();
     void OverridePageTemplate(string templateIdentifier, JObject? templateProperties = null);
     void OverrideContentFolder(Guid contentFolderGuid);
+    void OverrideContentFolder(string displayNamePath);
 }

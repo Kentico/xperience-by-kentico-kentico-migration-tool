@@ -1,18 +1,16 @@
-using System;
 using System.Diagnostics;
-using System.Text;
 using CMS.Base;
 using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
 using CMS.Core;
 using CMS.DataEngine;
-using CMS.Helpers;
 using Kentico.Xperience.UMT.Model;
 using Kentico.Xperience.UMT.Services;
 using Microsoft.Extensions.Logging;
 using Migration.Tool.Common;
 using Migration.Tool.Common.Helpers;
 using Migration.Tool.Common.MigrationProtocol;
+using Migration.Tool.Common.Services;
 using Migration.Tool.Source.Auxiliary;
 using Migration.Tool.Source.Helpers;
 using Migration.Tool.Source.Model;
@@ -62,6 +60,7 @@ public class AssetFacade(
         EntityIdentityFacade entityIdentityFacade,
         ToolConfiguration toolConfiguration,
         ModelFacade modelFacade,
+        ContentFolderService contentFolderService,
         IImporter importer,
         ILogger<AssetFacade> logger,
         IProtocol protocol
@@ -211,11 +210,6 @@ public class AssetFacade(
         return contentItem;
     }
 
-    /// <summary>
-    /// Folder tree path as key
-    /// </summary>
-    private readonly Dictionary<string, Guid> folderGuidCache = [];
-
     private ContentLanguageInfo? defaultContentLanguage;
 
     private async Task<Guid?> EnsureMediaFolder(string sourceFolderFilesystemPath, ICmsSite site)
@@ -243,104 +237,10 @@ public class AssetFacade(
 
             string absolutePath = $"{rootPath.TrimEnd('/')}/{folderSubPath.TrimStart('/')}";
 
-            WalkFolderPath(absolutePath, (segmentDisplayName, path) => pathTemplate.Add(StandardFolderTemplate(site.SiteName, segmentDisplayName, path)));
+            pathTemplate.AddRange(ContentFolderService.StandardPathTemplate(site.SiteName, absolutePath));
         }
 
-        return await EnsureFolderStructure(pathTemplate);
-    }
-
-    private delegate void FolderPathSegmentCallback(string segmentDisplayName, string path);
-    private void WalkFolderPath(string path, FolderPathSegmentCallback segmentCallback)
-    {
-        var segmentDisplayNames = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        for (int i = 0; i < segmentDisplayNames.Length; i++)
-        {
-            string segmentDisplayName = segmentDisplayNames[i];
-            string treePath = string.Join("/", segmentDisplayNames[..(i + 1)]);
-            segmentCallback?.Invoke(segmentDisplayName, treePath);
-        }
-    }
-
-    private static string DisplayNamePathToTreePath(string displayNamePath) => string.Join("/", displayNamePath.Split('/').Select(ValidationHelper.GetCodeName));
-    private static string FolderDisplayNameToName(string displayName) => ValidationHelper.GetCodeName(displayName);
-
-    private (Guid Guid, string Name, string DisplayName, string PathSegmentName) StandardFolderTemplate(string site, string folderDisplayName, string absoluteDisplayNamePath)
-        => (GuidHelper.CreateFolderGuid($"{site}|{DisplayNamePathToTreePath(absoluteDisplayNamePath)}"), FolderDisplayNameToName(folderDisplayName), folderDisplayName, FolderDisplayNameToName(folderDisplayName));
-
-
-    /// <summary>
-    /// Iterates over the folder path. If a folder doesn't exist, it gets created<paramref name="folderPathTemplate"/>. If a folder with 
-    /// </summary>
-    /// <param name="folderPathTemplate"></param>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    private async Task<Guid?> EnsureFolderStructure(IEnumerable<(Guid Guid, string Name, string DisplayName, string PathSegmentName)> folderPathTemplate)
-    {
-        Guid? parentGuid = null;
-
-        var currentPath = string.Empty;
-        foreach (var folderTemplate in folderPathTemplate)
-        {
-            Guid newParentGuid;
-            currentPath += $"/{folderTemplate.PathSegmentName}";
-            if (folderGuidCache.TryGetValue(currentPath.ToString(), out var folderGuid))
-            {
-                newParentGuid = folderGuid;
-            }
-            else
-            {
-                var folderInfo = ContentFolderInfo.Provider.Get()
-                    .WhereEquals(nameof(ContentFolderInfo.ContentFolderGUID), parentGuid)
-                    .And().WhereEquals(nameof(ContentFolderInfo.ContentFolderDisplayName), folderTemplate.DisplayName)
-                    .FirstOrDefault();
-
-                if (folderInfo is null)
-                {
-                    var newFolderModel = new ContentFolderModel
-                    {
-                        ContentFolderGUID = folderTemplate.Guid,
-                        ContentFolderName = CodeNameHelper.MakeUnique(folderTemplate.Name),
-                        ContentFolderDisplayName = folderTemplate.DisplayName,
-                        ContentFolderTreePath = currentPath,
-                        ContentFolderParentFolderGUID = parentGuid
-                    };
-
-                    switch (await importer.ImportAsync(newFolderModel))
-                    {
-                        case { Success: true }:
-                        {
-                            newParentGuid = folderGuidCache[currentPath] = folderTemplate.Guid;
-                            break;
-                        }
-                        case { Success: false, Exception: { } exception }:
-                        {
-                            logger.LogError("Failed to import asset migration folder: {Error} {Prerequisite}", exception.ToString(), newFolderModel.PrintMe());
-                            return null;
-                        }
-                        case { Success: false, ModelValidationResults: { } validation }:
-                        {
-                            foreach (var validationResult in validation)
-                            {
-                                logger.LogError("Failed to import asset migration folder {Members}: {Error} - {Prerequisite}", string.Join(",", validationResult.MemberNames), validationResult.ErrorMessage, newFolderModel.PrintMe());
-                            }
-                            return null;
-                        }
-                        default:
-                        {
-                            throw new InvalidOperationException($"Asset migration cannot continue, cannot prepare prerequisite - unknown result");
-                        }
-                    }
-                }
-                else
-                {
-                    newParentGuid = folderInfo.ContentFolderGUID;
-                }
-            }
-
-            parentGuid = newParentGuid;
-        }
-
-        return parentGuid;
+        return await contentFolderService.EnsureFolderStructure(pathTemplate);
     }
 
     /// <inheritdoc />

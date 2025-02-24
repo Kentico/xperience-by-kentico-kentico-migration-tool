@@ -8,6 +8,7 @@ using CMS.FormEngine;
 using CMS.MediaLibrary;
 using CMS.Websites;
 using CMS.Websites.Internal;
+using Kentico.Xperience.Admin.Base.Internal;
 using Kentico.Xperience.UMT.Model;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
@@ -71,7 +72,8 @@ public class ContentItemMapper(
     ClassMappingProvider classMappingProvider,
     VisualBuilderPatcher visualBuilderPatcher,
     IServiceProvider serviceProvider,
-    IEnumerable<ContentItemDirectorBase> directors
+    IEnumerable<ContentItemDirectorBase> directors,
+    ContentFolderService contentFolderService
     ) : UmtMapperBase<CmsTreeMapperSource>, IUmtMapper<CustomTableMapperSource>
 {
     private const string CLASS_FIELD_CONTROL_NAME = "controlname";
@@ -114,6 +116,17 @@ public class ContentItemMapper(
         }
 
         bool storeContentItem = !(directive is ConvertToWidgetDirective ctw && !ctw.WrapInReusableItem);
+
+        Guid? contentFolderGuid = isMappedTypeReusable
+            ? directive.ContentFolderOptions switch
+            {
+                null => null,
+                { Guid: { } guid } => guid,
+                { DisplayNamePath: { } displayNamePath } => contentFolderService.EnsureStandardFolderStructure(siteGuid.ToString(), displayNamePath).GetAwaiter().GetResult(),
+                _ => throw new InvalidOperationException($"{nameof(ContentFolderOptions)} has neither {nameof(ContentFolderOptions.Guid)} nor {nameof(ContentFolderOptions.DisplayNamePath)} specified")
+            }
+            : null;
+
         var contentItemModel = new ContentItemModel
         {
             ContentItemGUID = contentItemGuid,
@@ -122,7 +135,7 @@ public class ContentItemMapper(
             ContentItemIsSecured = cmsTree.IsSecuredNode ?? false,
             ContentItemDataClassGuid = migratedAsContentFolder ? null : targetClassGuid,
             ContentItemChannelGuid = isMappedTypeReusable ? null : siteGuid,
-            ContentItemContentFolderGUID = directive.ContentFolderGuid,
+            ContentItemContentFolderGUID = contentFolderGuid,
         };
         if (storeContentItem)
         {

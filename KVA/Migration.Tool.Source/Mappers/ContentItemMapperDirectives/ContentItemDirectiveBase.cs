@@ -5,6 +5,6 @@ internal abstract class ContentItemDirectiveBase
 {
     public string? PageTemplateIdentifier { get; set; }
     public JObject? PageTemplateProperties { get; set; }
-    public Guid? ContentFolderGuid { get; set; }
+    public ContentFolderOptions? ContentFolderOptions { get; set; }
 
 }
