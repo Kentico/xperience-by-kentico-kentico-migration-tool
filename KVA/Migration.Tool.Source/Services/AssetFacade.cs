@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Migration.Tool.Common;
 using Migration.Tool.Common.Helpers;
 using Migration.Tool.Common.MigrationProtocol;
+using Migration.Tool.Common.Services;
 using Migration.Tool.Source.Auxiliary;
 using Migration.Tool.Source.Helpers;
 using Migration.Tool.Source.Model;
@@ -59,6 +60,7 @@ public class AssetFacade(
         EntityIdentityFacade entityIdentityFacade,
         ToolConfiguration toolConfiguration,
         ModelFacade modelFacade,
+        ContentFolderService contentFolderService,
         IImporter importer,
         ILogger<AssetFacade> logger,
         IProtocol protocol
@@ -131,14 +133,14 @@ public class AssetFacade(
 
         string mediaFolder = Path.Combine(mediaLibrary.LibraryFolder, Path.GetDirectoryName(mediaFile.FilePath)!);
 
-        var folder = GetAssetFolder(site);
+        var folderGuid = await EnsureMediaFolder(mediaFolder, site);
 
         string? contentItemSafeName = await Service.Resolve<IContentItemCodeNameProvider>().Get($"{mediaFile.FileName}_{translatedMediaGuid}");
         var contentItem = new ContentItemSimplifiedModel
         {
             CustomProperties = [],
             ContentItemGUID = translatedMediaGuid,
-            ContentItemContentFolderGUID = (await EnsureFolderStructure(mediaFolder, folder))?.ContentFolderGUID ?? folder.ContentFolderGUID,
+            ContentItemContentFolderGUID = folderGuid,
             IsSecured = null,
             ContentTypeName = LegacyMediaFileContentType.ClassName,
             Name = contentItemSafeName,
@@ -191,13 +193,13 @@ public class AssetFacade(
             mediaFolder += referencedNode.NodeAliasPath.StartsWith("/") ? referencedNode.NodeAliasPath : $"/{referencedNode.NodeAliasPath}";
         }
 
-        var folder = GetAssetFolder(site);
+        var rootFolder = await EnsureMediaFolder(mediaFolder, site);
 
         string? contentItemSafeName = await Service.Resolve<IContentItemCodeNameProvider>().Get($"{attachment.AttachmentGUID}_{translatedAttachmentGuid}");
         var contentItem = new ContentItemSimplifiedModel
         {
             ContentItemGUID = translatedAttachmentGuid,
-            ContentItemContentFolderGUID = (await EnsureFolderStructure(mediaFolder, folder))?.ContentFolderGUID ?? folder.ContentFolderGUID,
+            ContentItemContentFolderGUID = rootFolder,
             IsSecured = null,
             ContentTypeName = LegacyAttachmentContentType.ClassName,
             Name = contentItemSafeName,
@@ -208,93 +210,37 @@ public class AssetFacade(
         return contentItem;
     }
 
-    private readonly Dictionary<string, ContentFolderModel> contentFolderModels = [];
     private ContentLanguageInfo? defaultContentLanguage;
 
-    private async Task<ContentFolderModel?> EnsureFolderStructure(string folderPath, ContentFolderModel rootFolder)
+    private async Task<Guid?> EnsureMediaFolder(string sourceFolderFilesystemPath, ICmsSite site)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(folderPath);
+        string folderSubPath = sourceFolderFilesystemPath.Replace(Path.DirectorySeparatorChar, '/');
 
-        string rootKey = $"root|{rootFolder.ContentFolderGUID}";
-        if (!contentFolderModels.TryGetValue(rootKey, out _))
+        var pathTemplate = new List<(Guid Guid, string Name, string DisplayName, string PathSegmentName)>();
+
+        if (toolConfiguration.LegacyFlatAssetTree == true)
         {
-            switch (await importer.ImportAsync(rootFolder))
-            {
-                case { Success: true }:
-                {
-                    contentFolderModels[rootKey] = rootFolder;
-                    break;
-                }
-                case { Success: false, Exception: { } exception }:
-                {
-                    logger.LogError("Failed to import asset migration folder: {Error} {Prerequisite}", exception.ToString(), rootFolder.PrintMe());
-                    break;
-                }
-                case { Success: false, ModelValidationResults: { } validation }:
-                {
-                    foreach (var validationResult in validation)
-                    {
-                        logger.LogError("Failed to import asset migration folder {Members}: {Error} - {Prerequisite}", string.Join(",", validationResult.MemberNames), validationResult.ErrorMessage, rootFolder.PrintMe());
-                    }
+            // Root folder
+            var rootFolderGuid = GuidHelper.CreateFolderGuid($"{site.SiteName}|{site.SiteGUID}");
+            var rootFolderName = $"{site.SiteName}-assets";
+            pathTemplate.Add((rootFolderGuid, $"{rootFolderGuid}", $"{site.SiteDisplayName} assets", rootFolderName));
 
-                    break;
-                }
-                default:
-                {
-                    throw new InvalidOperationException($"Asset migration cannot continue, cannot prepare prerequisite - unknown result");
-                }
-            }
-            contentFolderModels[rootKey] = rootFolder;
+            // Subfolders. Legacy behavior is leaf folder directly under root
+            string leafFolderName = folderSubPath.Split('/').Last();
+            Guid guid = GuidHelper.CreateFolderGuid($"{rootFolderGuid}|/{rootFolderName}/{folderSubPath}");
+            pathTemplate.Add((guid, $"{guid}", leafFolderName, folderSubPath));
+        }
+        else
+        {
+            string rootPath = (toolConfiguration?.AssetRootFolders?.TryGetValue(site.SiteName, out var userRootPath) ?? false)
+                ? $"/{userRootPath.TrimStart('/')}" : $"/{site.SiteDisplayName} assets";
+
+            string absolutePath = $"{rootPath.TrimEnd('/')}/{folderSubPath.TrimStart('/')}";
+
+            pathTemplate.AddRange(ContentFolderService.StandardPathTemplate(site.SiteName, absolutePath));
         }
 
-        string[] pathSplit = folderPath.Split(Path.DirectorySeparatorChar);
-        ContentFolderModel? lastFolder = null;
-        for (int i = 0; i < pathSplit.Length; i++)
-        {
-            string current = pathSplit[i];
-            string currentPath = string.Join("/", rootFolder.ContentFolderTreePath!, string.Join("/", pathSplit[..(i + 1)]));
-            var folderGuid = GuidHelper.CreateFolderGuid($"{rootFolder.ContentFolderGUID}|{currentPath}");
-            string folderKey = $"{currentPath}";
-            if (!contentFolderModels.TryGetValue(folderKey, out lastFolder))
-            {
-                lastFolder = new ContentFolderModel
-                {
-                    ContentFolderGUID = folderGuid,
-                    ContentFolderName = $"{folderGuid}",
-                    ContentFolderDisplayName = current,
-                    ContentFolderTreePath = currentPath,
-                    ContentFolderParentFolderGUID = lastFolder?.ContentFolderGUID ?? rootFolder.ContentFolderGUID
-                };
-                switch (await importer.ImportAsync(lastFolder))
-                {
-                    case { Success: true }:
-                    {
-                        contentFolderModels[folderKey] = lastFolder;
-                        break;
-                    }
-                    case { Success: false, Exception: { } exception }:
-                    {
-                        logger.LogError("Failed to import asset migration folder: {Error} {Prerequisite}", exception.ToString(), lastFolder.PrintMe());
-                        break;
-                    }
-                    case { Success: false, ModelValidationResults: { } validation }:
-                    {
-                        foreach (var validationResult in validation)
-                        {
-                            logger.LogError("Failed to import asset migration folder {Members}: {Error} - {Prerequisite}", string.Join(",", validationResult.MemberNames), validationResult.ErrorMessage, lastFolder.PrintMe());
-                        }
-
-                        break;
-                    }
-                    default:
-                    {
-                        throw new InvalidOperationException($"Asset migration cannot continue, cannot prepare prerequisite - unknown result");
-                    }
-                }
-            }
-        }
-
-        return lastFolder;
+        return await contentFolderService.EnsureFolderStructure(pathTemplate);
     }
 
     /// <inheritdoc />
@@ -418,19 +364,6 @@ public class AssetFacade(
                     LegacyAttachmentAssetField
             ]
     };
-
-    internal static ContentFolderModel GetAssetFolder(ICmsSite site)
-    {
-        var folderGuid = GuidHelper.CreateFolderGuid($"{site.SiteName}|{site.SiteGUID}");
-        return new ContentFolderModel
-        {
-            ContentFolderGUID = folderGuid,
-            ContentFolderName = $"{folderGuid}",
-            ContentFolderDisplayName = $"{site.SiteDisplayName} assets",
-            ContentFolderTreePath = $"/{site.SiteName}-assets",
-            ContentFolderParentFolderGUID = null // root
-        };
-    }
 
     private static readonly IUmtModel[] prerequisites =
     [

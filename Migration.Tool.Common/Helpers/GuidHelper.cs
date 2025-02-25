@@ -3,6 +3,7 @@ namespace Migration.Tool.Common.Helpers;
 public static class GuidHelper
 {
     public static readonly Guid GuidNsWebPageUrlPathInfo = new("436E024E-BA61-435F-96A7-EC7E34160DCE");
+    public static readonly Guid GuidNsWebPageFormerUrlPathInfo = new("7ECD3157-4BD0-4ABF-AFA5-4B6FF901AF25");
     public static readonly Guid GuidNsReusableSchema = new("2702A9E7-D859-49F0-B620-FE4268A92596");
     public static readonly Guid GuidNsDocument = new("DCBADED0-54FC-4EEC-BB50-D6E7110E499D");
     public static readonly Guid GuidNsNode = new("8691FEE4-FFFF-4642-8605-1B20B9D05360");
@@ -16,6 +17,7 @@ public static class GuidHelper
     public static readonly Guid GuidNsContentItemLanguageMetadata = new("AAC0C3A9-3DE7-436E-AFAB-49C1E29D5DE2");
 
     public static Guid CreateWebPageUrlPathGuid(string hash) => GuidV5.NewNameBased(GuidNsWebPageUrlPathInfo, hash);
+    public static Guid CreateWebPageFormerUrlPathGuid(string hash) => GuidV5.NewNameBased(GuidNsWebPageFormerUrlPathInfo, hash);
     public static Guid CreateReusableSchemaGuid(string name) => GuidV5.NewNameBased(GuidNsReusableSchema, name);
     public static Guid CreateDocumentGuid(string name) => GuidV5.NewNameBased(GuidNsDocument, name);
     public static Guid CreateNodeGuid(string name) => GuidV5.NewNameBased(GuidNsNode, name);

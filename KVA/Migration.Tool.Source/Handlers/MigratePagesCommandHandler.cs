@@ -47,15 +47,140 @@ public class MigratePagesCommandHandler(
 {
     private const string ClassCmsRoot = "CMS.Root";
 
-    private readonly ConcurrentDictionary<string, ContentLanguageInfo> languages = new(StringComparer.InvariantCultureIgnoreCase);
-
+    private EntityConfiguration? classEntityConfiguration;
+    private Dictionary<string, Guid>? cultureCodeToLanguageGuid;
     public async Task<CommandResult> Handle(MigratePagesCommand request, CancellationToken cancellationToken)
     {
-        var classEntityConfiguration = toolConfiguration.EntityConfigurations.GetEntityConfiguration<DataClassInfo>();
-
-        var cultureCodeToLanguageGuid = modelFacade.SelectAll<ICmsCulture>()
+        classEntityConfiguration = toolConfiguration.EntityConfigurations.GetEntityConfiguration<DataClassInfo>();
+        cultureCodeToLanguageGuid = modelFacade.SelectAll<ICmsCulture>()
             .ToDictionary(c => c.CultureCode, c => c.CultureGUID, StringComparer.InvariantCultureIgnoreCase);
 
+        await MigratePages();
+
+        await ExecDeferredVisualBuilderPatch();
+
+        await MigrateRedirects();
+
+        return new GenericCommandResult();
+    }
+
+    private async Task MigrateRedirects()
+    {
+        if (modelFacade.SelectVersion() is { Major: 13 })
+        {
+            Dictionary<string, (Guid ContentItemGuid, ContentLanguageInfo LanguageInfo)> pathToXbykPage = [];
+            List<(Guid DocumentGuid, Guid SiteGuid, ContentLanguageInfo LanguageInfo, Guid ContentItemGuid, string RedirectUrl)> sourceInstanceRedirects = [];
+
+            var sites = modelFacade.SelectAll<ICmsSite>();
+            // Walk all pages in source instance. Gather their redirections & mapping from their original URLs to webpage entities in target instance
+            foreach (var ksSite in sites)
+            {
+                var channelInfo = ChannelInfoProvider.ProviderObject.Get(ksSite.SiteGUID);
+
+                var ksTrees = modelFacade.Select<ICmsTree>(
+                    "NodeSiteId = @siteId",
+                    "NodeLevel, NodeOrder",
+                    new SqlParameter("siteId", ksSite.SiteID)
+                );
+
+                foreach (var ksTree in ksTrees)
+                {
+                    var xbykContentItemGuid = spoiledGuidContext.EnsureNodeGuid(ksTree.NodeGUID, ksTree.NodeSiteID, ksTree.NodeID);
+                    var ksUrlPaths = modelFacade.Select<ICmsPageUrlPath>("PageUrlPathNodeID = @nodeId", "PageUrlPathID", new SqlParameter("nodeId", ksTree.NodeID));
+                    foreach (CmsPageUrlPathK13 ksPath in ksUrlPaths)
+                    {
+                        var xbykLanguageInfo = GetLanguageInfo(ksPath.PageUrlPathCulture);
+                        pathToXbykPage[$"{ksSite.SiteGUID}|{NormalizeUrlPath(ksPath.PageUrlPathUrlPath)}"] = (xbykContentItemGuid, xbykLanguageInfo);
+                    }
+
+                    var ksDocuments = modelFacade
+                        .SelectWhere<ICmsDocument>("DocumentNodeID = @nodeId", new SqlParameter("nodeId", ksTree.NodeID))
+                        .ToList();
+
+                    foreach (CmsDocumentK13 ksDocument in ksDocuments)
+                    {
+                        if (ksDocument.DocumentUnpublishedRedirectUrl is not null)
+                        {
+                            sourceInstanceRedirects.Add((ksDocument.DocumentGUID!.Value, ksSite.SiteGUID, GetLanguageInfo(ksDocument.DocumentCulture), xbykContentItemGuid, NormalizeUrlPath(ksDocument.DocumentUnpublishedRedirectUrl)));
+                        }
+                    }
+                }
+            }
+
+            foreach (var (DocumentGuid, SiteGuid, LanguageInfo, ContentItemGuid, RedirectUrl) in sourceInstanceRedirects)
+            {
+                if (pathToXbykPage.TryGetValue($"{SiteGuid}|{NormalizeUrlPath(RedirectUrl)}", out var targetPage))
+                {
+                    var targetContentItem = ContentItemInfo.Provider.Get(targetPage.ContentItemGuid);
+                    var targetWebPageItem = WebPageItemInfo.Provider.Get().WhereEquals(nameof(WebPageItemInfo.WebPageItemContentItemID), targetContentItem.ContentItemID).FirstOrDefault();
+                    if (targetWebPageItem is null)
+                    {
+                        logger.LogWarning("Unpublished redirect URL path '{RedirectURLPath}' of source Document '{DocumentGuid}' could not be migrated. WebPageItem related to the redirection target page was not found", RedirectUrl, DocumentGuid);
+                        continue;
+                    }
+
+                    bool webPageItemFound = false;
+                    var redirectedContentItem = ContentItemInfo.Provider.Get(ContentItemGuid);
+                    var redirectedContentItemLanguageMetadata = ContentItemLanguageMetadataInfo.Provider.Get().WhereEquals(nameof(ContentItemLanguageMetadataInfo.ContentItemLanguageMetadataContentItemID), redirectedContentItem.ContentItemID)
+                        .WhereEquals(nameof(ContentItemLanguageMetadataInfo.ContentItemLanguageMetadataContentLanguageID), LanguageInfo.ContentLanguageID).FirstOrDefault();
+
+                    if (redirectedContentItem is not null && redirectedContentItemLanguageMetadata is not null)
+                    {
+                        var redirectedWebPageItem = WebPageItemInfo.Provider.Get().WhereEquals(nameof(WebPageItemInfo.WebPageItemContentItemID), redirectedContentItem.ContentItemID).FirstOrDefault();
+                        if (redirectedWebPageItem is not null)
+                        {
+                            var redirectedWebPageUrlPath = WebPageUrlPathInfo.Provider.Get().WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathIsLatest), true)
+                                    .And().WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathContentLanguageID), LanguageInfo.ContentLanguageID)
+                                    .And().WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID), redirectedWebPageItem.WebPageItemID).FirstOrDefault();
+                            if (redirectedWebPageUrlPath != null)
+                            {
+                                webPageItemFound = true;
+                                var now = Service.Resolve<IDateTimeNowService>().GetDateTimeNow();
+                                bool isScheduled = redirectedContentItemLanguageMetadata.ContentItemLanguageMetadataScheduledUnpublishWhen is { } scheduledUnpublishDate && scheduledUnpublishDate > now;
+                                var formerUrlModel = new WebPageFormerUrlPathModel
+                                {
+                                    WebPageFormerUrlPathGUID = GuidHelper.CreateWebPageFormerUrlPathGuid($"redirect|{DocumentGuid}"),
+                                    WebPageFormerUrlPath = redirectedWebPageUrlPath.WebPageUrlPath,
+                                    WebPageFormerUrlPathContentLanguageGuid = LanguageInfo.ContentLanguageGUID,
+                                    WebPageFormerUrlPathIsRedirect = true,
+                                    WebPageFormerUrlPathIsRedirectScheduled = isScheduled,
+                                    WebPageFormerUrlPathWebPageItemGuid = targetWebPageItem.WebPageItemGUID,
+                                    WebPageFormerUrlPathSourceWebPageItemGuid = redirectedWebPageItem.WebPageItemGUID,
+                                    WebPageFormerUrlPathWebsiteChannelGuid = SiteGuid
+                                };
+                                var importResult = await importer.ImportAsync(formerUrlModel);
+                                if (importResult is { Success: true })
+                                {
+                                    logger.LogInformation("Unpublish redirect for Document '{DocumentGuid}' imported", DocumentGuid);
+                                }
+                                else
+                                {
+                                    logger.LogError("Failed to import WebPageFormerUrlPathModel for Document '{DocumentGuid}': {Exception}", DocumentGuid, importResult.Exception);
+                                }
+                            }
+                        }
+                    }
+
+                    if (!webPageItemFound)
+                    {
+                        logger.LogError("Unpublish redirect URL path '{RedirectURLPath}' of source Document '{DocumentGuid}' could not be migrated. One of the following entities related to the Document was not found: ContentItem, ContentItemLanguageMetadata, WebPageItem, WebPageUrlPath", RedirectUrl, DocumentGuid);
+                        continue;
+                    }
+                }
+                else
+                {
+                    logger.LogError("Unpublished redirect URL path '{RedirectURLPath}' of source Document '{DocumentGuid}' could not be migrated. Path not found in target instance.", RedirectUrl, DocumentGuid);
+                    continue;
+                }
+            }
+
+        }
+    }
+
+    private string NormalizeUrlPath(string path) => path.ToLower().TrimStart('~').TrimStart('/').TrimEnd('/');
+
+    private async Task MigratePages()
+    {
         var sites = modelFacade.SelectAll<ICmsSite>();
         foreach (var ksSite in sites)
         {
@@ -122,7 +247,7 @@ public class MigratePagesCommandHandler(
                             var patchedNodeGuid = spoiledGuidContext.EnsureNodeGuid(ksNode.NodeGUID, ksNode.NodeSiteID, ksNode.NodeID);
                             if (ContentItemInfo.Provider.Get(patchedNodeGuid)?.ContentItemID is { } contentItemId)
                             {
-                                if (cultureCodeToLanguageGuid.TryGetValue(linkedDocument.DocumentCulture, out var languageGuid) &&
+                                if (cultureCodeToLanguageGuid!.TryGetValue(linkedDocument.DocumentCulture, out var languageGuid) &&
                                     ContentLanguageInfoProvider.ProviderObject.Get(languageGuid) is { } languageInfo)
                                 {
                                     if (ContentItemCommonDataInfo.Provider.Get()
@@ -160,7 +285,7 @@ public class MigratePagesCommandHandler(
 
                     var ksNodeClass = modelFacade.SelectById<ICmsClass>(ksNode.NodeClassID) ?? throw new InvalidOperationException($"Node with missing class, node id '{ksNode.NodeID}'");
                     string nodeClassClassName = ksNodeClass.ClassName;
-                    if (classEntityConfiguration.ExcludeCodeNames.Contains(nodeClassClassName, StringComparer.InvariantCultureIgnoreCase))
+                    if (classEntityConfiguration!.ExcludeCodeNames.Contains(nodeClassClassName, StringComparer.InvariantCultureIgnoreCase))
                     {
                         protocol.Warning(HandbookReferences.EntityExplicitlyExcludedByCodeName(nodeClassClassName, "PageType"), ksNode);
                         logger.LogWarning("Page: page of class {ClassName} was skipped => it is explicitly excluded in configuration", nodeClassClassName);
@@ -202,7 +327,7 @@ public class MigratePagesCommandHandler(
                         safeNodeName,
                         ksSite.SiteGUID,
                         nodeParentGuid,
-                        cultureCodeToLanguageGuid,
+                        cultureCodeToLanguageGuid!,
                         targetClass?.ClassFormDefinition,
                         ksNodeClass.ClassFormDefinition,
                         migratedDocuments,
@@ -257,11 +382,11 @@ public class MigratePagesCommandHandler(
 
                         if (webPageItemInfo != null && targetClass is { ClassWebPageHasUrl: true })
                         {
-                            await GenerateDefaultPageUrlPath(ksNode, webPageItemInfo, wasLinkedNode);
+                            await GenerateDefaultPageUrlPath(ksNode, webPageItemInfo);
 
                             foreach (var migratedDocument in migratedDocuments)
                             {
-                                var languageGuid = cultureCodeToLanguageGuid[migratedDocument.DocumentCulture];
+                                var languageGuid = cultureCodeToLanguageGuid![migratedDocument.DocumentCulture];
 
                                 await MigratePageUrlPaths(ksSite.SiteGUID,
                                     languageGuid,
@@ -301,10 +426,6 @@ public class MigratePagesCommandHandler(
                 ksTrees = deferredTreeNodesService.GetNodes();
             }
         }
-
-        await ExecDeferredVisualBuilderPatch();
-
-        return new GenericCommandResult();
     }
 
     [Conditional("DEBUG")]
@@ -508,15 +629,47 @@ public class MigratePagesCommandHandler(
         }
     }
 
-    private async Task GenerateDefaultPageUrlPath(ICmsTree ksTree, WebPageItemInfo webPageItemInfo, bool wasLinkedNode)
+    private async Task GenerateDefaultPageUrlPath(ICmsTree ksTree, WebPageItemInfo webPageItemInfo)
     {
         var man = Service.Resolve<IWebPageUrlManager>();
-        string alias = wasLinkedNode ? ksTree.NodeAlias : ksTree.NodeAliasPath;
-        var collisionData = await man.GeneratePageUrlPath(webPageItemInfo, alias, VersionStatus.InitialDraft, CancellationToken.None);
-        foreach (var data in collisionData)
+        IEnumerable<CollisionData> collisionData = [];
+        // in case of collision, try to avoid it by appending 4 random characters
+        bool hadCollision = false;
+        bool resolved = false;
+        for (int i = 0; i < 200; i++)       // arbitrary high number just to avoid infinite loop that would normally fit here
         {
-            logger.LogError("WebPageUrlPath collision occured {Path}", data.Path);
+            var alias = ksTree.NodeAlias + (i != 0 ? $"-{Guid.NewGuid().ToString()[..4]}" : string.Empty);
+            var attemptCollisionData = await man.GeneratePageUrlPath(webPageItemInfo, alias, VersionStatus.InitialDraft, CancellationToken.None);
+            if (!attemptCollisionData.Any())
+            {
+                resolved = true;
+                break;
+            }
+            else
+            {
+                collisionData = attemptCollisionData;
+                hadCollision = true;
+            }
         }
+
+        if (!resolved)    // no attempt went through without collision
+        {
+            foreach (var data in collisionData)
+            {
+                logger.LogError("WebPageUrlPath collision occured and couldn't be resolved. {Path}", data.Path);
+            }
+        }
+        else
+        {
+            if (hadCollision)
+            {
+                foreach (var data in collisionData)
+                {
+                    logger.LogWarning("WebPageUrlPath collision occured and was resolved by appending random string. {Path}", data.Path);
+                }
+            }
+        }
+
     }
 
     private void CheckPathAlreadyExists(WebPageUrlPathModel webPageUrlPath,
@@ -598,11 +751,7 @@ public class MigratePagesCommandHandler(
                     {
                         try
                         {
-                            var languageInfo = languages.GetOrAdd(
-                                pfup.PageFormerUrlPathCulture,
-                                s => ContentLanguageInfoProvider.ProviderObject.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageName), s).SingleOrDefault() ?? throw new InvalidOperationException($"Missing content language '{s}'")
-                            );
-
+                            var languageInfo = GetLanguageInfo(pfup.PageFormerUrlPathCulture);
                             var ktPath = WebPageFormerUrlPathInfo.Provider.Get()
                                 .WhereEquals(nameof(WebPageFormerUrlPathInfo.WebPageFormerUrlPathHash), GetWebPageUrlPathHashQueryExpression(pfup.PageFormerUrlPathUrlPath))
                                 .WhereEquals(nameof(WebPageFormerUrlPathInfo.WebPageFormerUrlPathWebsiteChannelID), targetPage.WebPageItemWebsiteChannelID)
@@ -647,6 +796,12 @@ public class MigratePagesCommandHandler(
             logger.LogDebug("CmsPageFormerUrlPath not supported in source instance");
         }
     }
+
+    private readonly ConcurrentDictionary<string, ContentLanguageInfo> languages = new(StringComparer.InvariantCultureIgnoreCase);
+    private ContentLanguageInfo GetLanguageInfo(string culture) => languages.GetOrAdd(
+                culture,
+                s => ContentLanguageInfoProvider.ProviderObject.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageName), s).SingleOrDefault() ?? throw new InvalidOperationException($"Missing content language '{s}'")
+            );
 
     internal static QueryExpression GetWebPageUrlPathHashQueryExpression(string urlPath) => $"CONVERT(VARCHAR(64), HASHBYTES('SHA2_256', LOWER(N'{SqlHelper.EscapeQuotes(urlPath)}')), 2)".AsExpression();
 

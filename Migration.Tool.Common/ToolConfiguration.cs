@@ -28,6 +28,9 @@ public class ToolConfiguration
     [ConfigurationKeyName(ConfigurationNames.MigrateOnlyMediaFileInfo)]
     public bool? MigrateOnlyMediaFileInfo { get; set; } = false;
 
+    [ConfigurationKeyName(ConfigurationNames.IncludeExtendedMetadata)]
+    public bool? IncludeExtendedMetadata { get; set; } = false;
+
     [ConfigurationKeyName(ConfigurationNames.UseOmActivityNodeRelationAutofix)]
     public AutofixEnum? UseOmActivityNodeRelationAutofix { get; set; } = AutofixEnum.Error;
 
@@ -42,6 +45,12 @@ public class ToolConfiguration
 
     [ConfigurationKeyName(ConfigurationNames.MigrateMediaToMediaLibrary)]
     public bool MigrateMediaToMediaLibrary { get; set; }
+
+    [ConfigurationKeyName(ConfigurationNames.LegacyFlatAssetTree)]
+    public bool? LegacyFlatAssetTree { get; set; }
+
+    [ConfigurationKeyName(ConfigurationNames.AssetRootFolders)]
+    public Dictionary<string, string>? AssetRootFolders { get; set; }
 
     [ConfigurationKeyName(ConfigurationNames.UseDeprecatedFolderPageType)]
     public bool? UseDeprecatedFolderPageType { get; set; }

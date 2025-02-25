@@ -11,10 +11,12 @@ using Microsoft.Extensions.Logging;
 
 using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
+using Migration.Tool.Common.Helpers;
 using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.Core.KX13.Helpers;
 using Migration.Tool.KX13;
 using Migration.Tool.KX13.Context;
+using Migration.Tool.KX13.Models;
 
 namespace Migration.Tool.Core.KX13.Handlers;
 
@@ -23,17 +25,32 @@ public class MigrateSitesCommandHandler(
     ILogger<MigrateSitesCommandHandler> logger,
     IDbContextFactory<KX13Context> kx13ContextFactory,
     IProtocol protocol,
-    IImporter importer)
+    IImporter importer,
+    ToolConfiguration toolConfiguration)
     : IRequestHandler<MigrateSitesCommand, CommandResult>
 {
     public async Task<CommandResult> Handle(MigrateSitesCommand request, CancellationToken cancellationToken)
     {
         await using var kx13Context = await kx13ContextFactory.CreateDbContextAsync(cancellationToken);
         var migratedCultureCodes = new Dictionary<string, ContentLanguageInfo>(StringComparer.CurrentCultureIgnoreCase);
+        var entityConfiguration = toolConfiguration.EntityConfigurations.GetEntityConfiguration<CmsSite>();
+        var domainSanitizer = new WebsiteChannelDomainSanitizer(logger, WebsiteChannelInfo.Provider.Get());
+        var existingChannels = ChannelInfo.Provider.Get();
+
         foreach (var kx13CmsSite in kx13Context.CmsSites.Include(s => s.Cultures))
         {
             protocol.FetchedSource(kx13CmsSite);
-            logger.LogTrace("Migrating site {SiteName} with SiteGuid {SiteGuid}", kx13CmsSite.SiteName, kx13CmsSite.SiteGuid);
+            logger.LogInformation("Migrating site {SiteName} with SiteGuid {SiteGuid}", kx13CmsSite.SiteName, kx13CmsSite.SiteGuid);
+            if (existingChannels.Any(ch => ch.ChannelName == kx13CmsSite.SiteName))
+            {
+                logger.LogInformation("Site skipped. It already exists.");
+                continue;
+            }
+            if (entityConfiguration.ExcludeCodeNames.Contains(kx13CmsSite.SiteName, StringComparer.OrdinalIgnoreCase))
+            {
+                logger.LogInformation("Site excluded in settings");
+                continue;
+            }
 
             string defaultCultureCode = GetSiteCulture(kx13CmsSite);
             var migratedSiteCultures = kx13CmsSite.Cultures.ToList();
@@ -95,18 +112,24 @@ public class MigrateSitesCommandHandler(
                 ? bool.TryParse(storeFormerUrlsStr, out bool sfu) ? sfu : null
                 : null;
 
+            if (!domainSanitizer.GetCandidate(kx13CmsSite.SiteName, kx13CmsSite.SiteDomainName.Trim('/'), out var domainName))
+            {
+                continue;
+            }
+
             var channelResult = await importer.ImportAsync(new ChannelModel { ChannelDisplayName = kx13CmsSite.SiteDisplayName, ChannelName = kx13CmsSite.SiteName, ChannelGUID = kx13CmsSite.SiteGuid, ChannelType = ChannelType.Website });
 
-            var webSiteChannelResult = await importer.ImportAsync(new WebsiteChannelModel
+            var websiteChannelModel = new WebsiteChannelModel
             {
                 WebsiteChannelGUID = kx13CmsSite.SiteGuid,
                 WebsiteChannelChannelGuid = kx13CmsSite.SiteGuid,
-                WebsiteChannelDomain = kx13CmsSite.SiteDomainName.Trim('/'),
+                WebsiteChannelDomain = domainName,
                 WebsiteChannelHomePage = homePagePath,
                 WebsiteChannelPrimaryContentLanguageGuid = migratedCultureCodes[defaultCultureCode].ContentLanguageGUID,
                 WebsiteChannelDefaultCookieLevel = cookieLevel,
                 WebsiteChannelStoreFormerUrls = storeFormerUrls
-            });
+            };
+            var webSiteChannelResult = await importer.ImportAsync(websiteChannelModel);
 
             if (!webSiteChannelResult.Success)
             {
@@ -127,6 +150,7 @@ public class MigrateSitesCommandHandler(
 
             if (webSiteChannelResult.Imported is WebsiteChannelInfo webSiteChannel)
             {
+                domainSanitizer.CommitCandidate(domainName);
                 string? cmsReCaptchaPublicKey = KenticoHelper.GetSettingsKey(kx13ContextFactory, kx13CmsSite.SiteId, "CMSReCaptchaPublicKey");
                 string? cmsReCaptchaPrivateKey = KenticoHelper.GetSettingsKey(kx13ContextFactory, kx13CmsSite.SiteId, "CMSReCaptchaPrivateKey");
 
@@ -178,7 +202,7 @@ public class MigrateSitesCommandHandler(
         return new GenericCommandResult();
     }
 
-    private string GetSiteCulture(KX13M.CmsSite site)
+    private string GetSiteCulture(CmsSite site)
     {
         // simplified logic from CMS.DocumentEngine.DefaultPreferredCultureEvaluator.Evaluate()
         // domain alias skipped, HttpContext logic skipped

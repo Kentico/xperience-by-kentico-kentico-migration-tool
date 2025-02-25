@@ -21,7 +21,11 @@ public class ConfigurationNames
     public const string UrlProtocol = "UrlProtocol";
 
     public const string MemberIncludeUserSystemFields = "MemberIncludeUserSystemFields";
+
     public const string MigrateMediaToMediaLibrary = "MigrateMediaToMediaLibrary";
+    public const string LegacyFlatAssetTree = "LegacyFlatAssetTree";
+    public const string AssetRootFolders = "AssetRootFolders";
+
     public const string UseDeprecatedFolderPageType = "UseDeprecatedFolderPageType";
 
     public const string ExcludeCodeNames = "ExcludeCodeNames";
@@ -33,6 +37,8 @@ public class ConfigurationNames
     public const string Secret = "Secret";
 
     public const string CreateReusableFieldSchemaForClasses = "CreateReusableFieldSchemaForClasses";
+
+    public const string IncludeExtendedMetadata = "IncludeExtendedMetadata";
 
     public const string TodoPlaceholder = "[TODO]";
 

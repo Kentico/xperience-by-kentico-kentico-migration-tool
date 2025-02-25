@@ -1,5 +1,4 @@
 using System.Diagnostics;
-
 using CMS.DataEngine;
 using CMS.FormEngine;
 
@@ -69,4 +68,9 @@ public class KxpClassFacade
             }
         }
     }
+
+    /// <summary>
+    /// Gets all classes in XbyK, filtered by content-type type
+    /// </summary>
+    public IEnumerable<DataClassInfo> GetClasses(string contentTypeType) => DataClassInfoProvider.GetClasses().WhereEquals(nameof(DataClassInfo.ClassContentTypeType), contentTypeType);
 }
