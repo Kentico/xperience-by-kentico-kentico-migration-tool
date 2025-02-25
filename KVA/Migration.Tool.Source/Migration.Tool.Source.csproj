@@ -12,7 +12,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Kentico.Xperience.UMT" Version="3.3.0" />
         <PackageReference Include="MediatR" Version="12.4.1" />
     </ItemGroup>
 

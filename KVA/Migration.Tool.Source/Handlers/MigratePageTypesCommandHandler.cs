@@ -1,5 +1,7 @@
 using CMS.ContentEngine;
 using CMS.DataEngine;
+using Kentico.Xperience.UMT.Model;
+using Kentico.Xperience.UMT.Services;
 using MediatR;
 
 using Microsoft.Data.SqlClient;
@@ -28,7 +30,8 @@ public class MigratePageTypesCommandHandler(
     ModelFacade modelFacade,
     PageTemplateMigrator pageTemplateMigrator,
     ReusableSchemaService reusableSchemaService,
-    ClassMappingProvider classMappingProvider
+    ClassMappingProvider classMappingProvider,
+    IImporter importer
     )
     : IRequestHandler<MigratePageTypesCommand, CommandResult>
 {
@@ -144,7 +147,31 @@ public class MigratePageTypesCommandHandler(
 
         await MigratePageTemplateConfigurations();
 
+        await BypassAllowedChildClasses();  // Temporary bypass. Implementation of this features is already planned
+
         return new GenericCommandResult();
+    }
+
+    private async Task BypassAllowedChildClasses()
+    {
+        var websiteContentTypes = kxpClassFacade.GetClasses(ClassContentTypeType.WEBSITE);
+        foreach (var parent in websiteContentTypes)
+        {
+            foreach (var child in websiteContentTypes)
+            {
+                var model = new AllowedChildContentTypeModel
+                {
+                    AllowedChildContentTypeParentGuid = parent.ClassGUID,
+                    AllowedChildContentTypeChildGuid = child.ClassGUID
+                };
+
+                var importResult = await importer.ImportAsync(model);
+                if (importResult is { Success: false })
+                {
+                    logger.LogError("Failed to define allowed child content type '{ChildClassGuid}' of parent type '{ParentClassGuid}'", model.AllowedChildContentTypeChildGuid, model.AllowedChildContentTypeParentGuid);
+                }
+            }
+        }
     }
 
     private async Task MigratePageTemplateConfigurations()
