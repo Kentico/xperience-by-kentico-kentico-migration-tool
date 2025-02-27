@@ -9,11 +9,14 @@ public static class UniqueNameHelper
     {
         string uniqueCodeName = name;
         int attemptIndex = 0;
-        while (!availabilityChecker(uniqueCodeName)) // While conflict, try new GUID suffix to make unique
+        while (attemptIndex < UniqueSuffixCount && !availabilityChecker(uniqueCodeName)) // While conflict, try new GUID suffix to make unique
         {
             uniqueCodeName = $"{name}-{GetSuffix(attemptIndex++)}";
         }
-
+        if (attemptIndex >= UniqueSuffixCount)
+        {
+            throw new Exception("Unable to obtain unique name");
+        }
         return uniqueCodeName;
     }
 

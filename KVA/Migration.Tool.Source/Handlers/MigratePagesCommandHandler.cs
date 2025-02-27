@@ -560,10 +560,20 @@ public class MigratePagesCommandHandler(
                         string? hash = ksPath.PageUrlPathUrlPathHash;
 
                         // Check collisions with other pages
-                        string uniquePath = PreventUrlPathCollisions(webPageItemInfo, path);
+                        string uniquePath;
+                        try
+                        {
+                            uniquePath = PreventUrlPathCollisions(webPageItemInfo, path);
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.LogError(ex, "Unable to resolve collision");
+                            continue;
+                        }
+
                         if (!string.Equals(uniquePath, path, StringComparison.OrdinalIgnoreCase))
                         {
-                            logger.LogWarning("Path '{Path}' of tree node GUID='{NodeGuid}', NodeAliasPath='{NodeAliasPath}' could not be used as is due to collision with already existing path(s)." +
+                            logger.LogWarning("Path '{Path}' of tree node GUID='{NodeGuid}', NodeAliasPath='{NodeAliasPath}' could not be used as is due to collision with already existing path(s). " +
                                 "Unique identifier was appended. New path = '{NewPath}'", path, ksTree.NodeGUID, ksTree.NodeAliasPath, uniquePath);
                             path = uniquePath;
                             hash = null;    // Let UMT compute new hash
@@ -652,24 +662,28 @@ public class MigratePagesCommandHandler(
         }
     }
     private string PreventUrlPathCollisions(WebPageItemInfo webPageItemInfo, string path) =>
-        UniqueNameHelper.MakeUnique(path, testedUniquePath => {
-            var collidingPaths = GetCollidingPaths(stored => stored.Where(x => string.Equals(NormalizeUrlPath(x.Path), NormalizeUrlPath(path))).Concat([new PagePath(webPageItemInfo.WebPageItemID, testedUniquePath)])).Where(x => x.WebPageItemID != webPageItemInfo.WebPageItemID);
+        UniqueNameHelper.MakeUnique(path, testedUniquePath =>
+        {
+            var collidingPaths = GetCollidingPaths(stored => stored.Where(x => string.Equals(NormalizeUrlPath(x.Path), NormalizeUrlPath(path))).Concat([new PagePath(webPageItemInfo.WebPageItemID, webPageItemInfo.WebPageItemWebsiteChannelID, testedUniquePath)])).Where(x => x.WebPageItemID != webPageItemInfo.WebPageItemID);
 
             return !collidingPaths.Any();
         });
 
-    private record PagePath(int WebPageItemID, string Path);
+    private record PagePath(int WebPageItemID, int WebsiteChannelID, string Path);
     private IEnumerable<PagePath> GetCollidingPaths(Func<IEnumerable<PagePath>, IEnumerable<PagePath>>? preprocessTestedSet = null)
     {
         var storedPaths = WebPageUrlPathInfo.Provider.Get()
-            .Columns(nameof(WebPageUrlPathInfo.WebPageUrlPath), nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID)).ToArray()
-            .Select(x => new PagePath(x.WebPageUrlPathWebPageItemID, x.WebPageUrlPath));
+            .Columns(nameof(WebPageUrlPathInfo.WebPageUrlPath), nameof(WebPageUrlPathInfo.WebPageUrlPathWebsiteChannelID), nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID)).ToArray()
+            .Select(x => new PagePath(x.WebPageUrlPathWebPageItemID, x.WebPageUrlPathWebsiteChannelID, x.WebPageUrlPath));
 
         var testedPaths = preprocessTestedSet is null ? storedPaths : preprocessTestedSet(storedPaths);
 
-        var groups = testedPaths.Select(x => (x.Path, NormalizedPath: NormalizeUrlPath(x.Path), x.WebPageItemID)).GroupBy(x => x.NormalizedPath);
+        var groups = testedPaths.Select(x => (x.Path, NormalizedPath: NormalizeUrlPath(x.Path), x.WebsiteChannelID, x.WebPageItemID)).GroupBy(x => $"{x.WebsiteChannelID}|{x.NormalizedPath}");
 
-        return groups.Where(x => x.Count() > 1).SelectMany(x => x.Select(y => new PagePath(y.WebPageItemID, y.Path)));
+        // If one WebPageItem has multiple WebPageUrlPath entries (e.g. in draft), we will have multiple entries in a group, but this isn't really a collision
+        var groupsFiltered = groups.Select(g => g.DistinctBy(x => $"{x.WebPageItemID}|{x.WebsiteChannelID}|{x.NormalizedPath}"));
+
+        return groupsFiltered.Where(x => x.Count() > 1).SelectMany(x => x.Select(y => new PagePath(y.WebPageItemID, y.WebsiteChannelID, y.Path)));
     }
 
     private async Task GenerateDefaultPageUrlPath(ICmsTree ksTree, WebPageItemInfo webPageItemInfo)
