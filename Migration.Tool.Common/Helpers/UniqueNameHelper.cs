@@ -2,20 +2,18 @@
 public static class UniqueNameHelper
 {
     /// <summary>
-    /// 
+    /// Makes name unique by trying to append pseudorandom suffixes. Candidates are offered to 
+    /// <paramref name="availabilityChecker"/>, which determines, whether the candidate can be used
     /// </summary>
-    /// <param name="codeName"></param>
-    /// <param name="suffixGenerator">Creates suffix from attempt index</param>
-    /// <param name="availabilityChecker"></param>
-    /// <returns></returns>
-    public static string MakeUnique(string codeName, Func<string, bool> availabilityChecker)
+    public static string MakeUnique(string name, Func<string, bool> availabilityChecker)
     {
-        string uniqueCodeName = codeName;
+        string uniqueCodeName = name;
         int attemptIndex = 0;
         while (!availabilityChecker(uniqueCodeName)) // While conflict, try new GUID suffix to make unique
         {
-            uniqueCodeName = $"{codeName}-{GetSuffix(attemptIndex++)}";
+            uniqueCodeName = $"{name}-{GetSuffix(attemptIndex++)}";
         }
+
         return uniqueCodeName;
     }
 

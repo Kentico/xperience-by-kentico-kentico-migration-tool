@@ -654,6 +654,7 @@ public class MigratePagesCommandHandler(
     private string PreventUrlPathCollisions(WebPageItemInfo webPageItemInfo, string path) =>
         UniqueNameHelper.MakeUnique(path, testedUniquePath => {
             var collidingPaths = GetCollidingPaths(stored => stored.Where(x => string.Equals(NormalizeUrlPath(x.Path), NormalizeUrlPath(path))).Concat([new PagePath(webPageItemInfo.WebPageItemID, testedUniquePath)])).Where(x => x.WebPageItemID != webPageItemInfo.WebPageItemID);
+
             return !collidingPaths.Any();
         });
 
