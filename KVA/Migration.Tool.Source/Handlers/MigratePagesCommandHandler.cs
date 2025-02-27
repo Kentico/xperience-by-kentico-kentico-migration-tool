@@ -27,7 +27,6 @@ using Migration.Tool.Source.Providers;
 using Migration.Tool.Source.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Org.BouncyCastle.Utilities.Collections;
 
 namespace Migration.Tool.Source.Handlers;
 // ReSharper disable once UnusedType.Global
