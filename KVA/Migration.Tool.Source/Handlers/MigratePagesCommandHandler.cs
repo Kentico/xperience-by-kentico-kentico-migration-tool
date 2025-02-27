@@ -27,6 +27,7 @@ using Migration.Tool.Source.Providers;
 using Migration.Tool.Source.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Org.BouncyCastle.Utilities.Collections;
 
 namespace Migration.Tool.Source.Handlers;
 // ReSharper disable once UnusedType.Global
@@ -555,13 +556,26 @@ public class MigratePagesCommandHandler(
 
                         Debug.Assert(!string.IsNullOrWhiteSpace(ksPath.PageUrlPathUrlPath), "!string.IsNullOrWhiteSpace(kx13PageUrlPath.PageUrlPathUrlPath)");
 
+                        string path = ksPath.PageUrlPathUrlPath.TrimStart('/');
+                        string? hash = ksPath.PageUrlPathUrlPathHash;
+
+                        // Check collisions with other pages
+                        string uniquePath = PreventUrlPathCollisions(webPageItemInfo, path);
+                        if (!string.Equals(uniquePath, path, StringComparison.OrdinalIgnoreCase))
+                        {
+                            logger.LogWarning("Path '{Path}' of tree node GUID='{NodeGuid}', NodeAliasPath='{NodeAliasPath}' could not be used as is due to collision with already existing path(s)." +
+                                "Unique identifier was appended. New path = '{NewPath}'", path, ksTree.NodeGUID, ksTree.NodeAliasPath, uniquePath);
+                            path = uniquePath;
+                            hash = null;    // Let UMT compute new hash
+                        }
+
                         var webPageUrlPath = new WebPageUrlPathModel
                         {
                             WebPageUrlPathGUID = contentItemCommonDataInfo.ContentItemCommonDataVersionStatus == VersionStatus.Draft
                                 ? Guid.NewGuid()
                                 : ksPath.PageUrlPathGUID,
-                            WebPageUrlPath = ksPath.PageUrlPathUrlPath.TrimStart('/'),
-                            WebPageUrlPathHash = ksPath.PageUrlPathUrlPathHash,
+                            WebPageUrlPath = path,
+                            WebPageUrlPathHash = hash,
                             WebPageUrlPathWebPageItemGuid = webPageItemInfo.WebPageItemGUID,
                             WebPageUrlPathWebsiteChannelGuid = webSiteChannelGuid,
                             WebPageUrlPathContentLanguageGuid = languageGuid,
@@ -601,6 +615,15 @@ public class MigratePagesCommandHandler(
 
                 if (urlPath is not null)
                 {
+                    // Check collisions with other pages
+                    string uniquePath = PreventUrlPathCollisions(webPageItemInfo, urlPath);
+                    if (!string.Equals(uniquePath, urlPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        logger.LogWarning("Path '{Path}' of tree node GUID='{NodeGuid}', NodeAliasPath='{NodeAliasPath}' could not be used as is due to collision with already existing path(s)." +
+                            "Unique identifier was appended. New path = '{NewPath}'", urlPath, ksTree.NodeGUID, ksTree.NodeAliasPath, uniquePath);
+                        urlPath = uniquePath;
+                    }
+
                     var webPageUrlPath = new WebPageUrlPathModel
                     {
                         WebPageUrlPathGUID = GuidHelper.CreateWebPageUrlPathGuid($"{urlPath}|{documentCulture}|{webSiteChannel.WebsiteChannelGUID}|{ksTree.NodeID}"),
@@ -628,46 +651,70 @@ public class MigratePagesCommandHandler(
             }
         }
     }
+    private string PreventUrlPathCollisions(WebPageItemInfo webPageItemInfo, string path) =>
+        UniqueNameHelper.MakeUnique(path, testedUniquePath => {
+            var collidingPaths = GetCollidingPaths(stored => stored.Where(x => string.Equals(NormalizeUrlPath(x.Path), NormalizeUrlPath(path))).Concat([new PagePath(webPageItemInfo.WebPageItemID, testedUniquePath)])).Where(x => x.WebPageItemID != webPageItemInfo.WebPageItemID);
+            return !collidingPaths.Any();
+        });
+
+    private record PagePath(int WebPageItemID, string Path);
+    private IEnumerable<PagePath> GetCollidingPaths(Func<IEnumerable<PagePath>, IEnumerable<PagePath>>? preprocessTestedSet = null)
+    {
+        var storedPaths = WebPageUrlPathInfo.Provider.Get()
+            .Columns(nameof(WebPageUrlPathInfo.WebPageUrlPath), nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID)).ToArray()
+            .Select(x => new PagePath(x.WebPageUrlPathWebPageItemID, x.WebPageUrlPath));
+
+        var testedPaths = preprocessTestedSet is null ? storedPaths : preprocessTestedSet(storedPaths);
+
+        var groups = testedPaths.Select(x => (x.Path, NormalizedPath: NormalizeUrlPath(x.Path), x.WebPageItemID)).GroupBy(x => x.NormalizedPath);
+
+        return groups.Where(x => x.Count() > 1).SelectMany(x => x.Select(y => new PagePath(y.WebPageItemID, y.Path)));
+    }
 
     private async Task GenerateDefaultPageUrlPath(ICmsTree ksTree, WebPageItemInfo webPageItemInfo)
     {
         var man = Service.Resolve<IWebPageUrlManager>();
-        IEnumerable<CollisionData> collisionData = [];
-        // in case of collision, try to avoid it by appending 4 random characters
-        bool hadCollision = false;
+
+        // In case of collision, try to avoid it by appending 4 random characters
         bool resolved = false;
-        for (int i = 0; i < 200; i++)       // arbitrary high number just to avoid infinite loop that would normally fit here
+        List<PagePath> collisions = [];
+
+        for (int i = 0; i < UniqueNameHelper.UniqueSuffixCount; i++)
         {
-            var alias = ksTree.NodeAlias + (i != 0 ? $"-{Guid.NewGuid().ToString()[..4]}" : string.Empty);
-            var attemptCollisionData = await man.GeneratePageUrlPath(webPageItemInfo, alias, VersionStatus.InitialDraft, CancellationToken.None);
-            if (!attemptCollisionData.Any())
+            var alias = ksTree.NodeAlias + (i != 0 ? $"-{UniqueNameHelper.GetSuffix(i)}" : string.Empty);
+            var collisionData = await man.GeneratePageUrlPath(webPageItemInfo, alias, VersionStatus.InitialDraft, CancellationToken.None);
+            collisionData = collisionData.Where(x => x.WebPageItemID != webPageItemInfo.WebPageItemID);
+
+            resolved = !collisionData.Any();
+
+            // Catch collision cases that GeneratePageUrlPath doesn't catch
+            var collidingPaths = GetCollidingPaths().Where(x => x.WebPageItemID == webPageItemInfo.WebPageItemID);
+            if (collidingPaths.Any())
             {
-                resolved = true;
-                break;
+                collisions.AddRange(collidingPaths);
+                resolved = false;
+                // Cleanup added paths
+                WebPageUrlPathInfo.Provider.BulkDelete(new WhereCondition().WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID), webPageItemInfo.WebPageItemID));
             }
-            else
+
+            if (resolved)
             {
-                collisionData = attemptCollisionData;
-                hadCollision = true;
+                break;
             }
         }
 
-        if (!resolved)    // no attempt went through without collision
+        if (resolved)
         {
-            foreach (var data in collisionData)
+            if (collisions.Any())
             {
-                logger.LogError("WebPageUrlPath collision occured and couldn't be resolved. {Path}", data.Path);
+                logger.LogWarning("Default path for tree node GUID='{NodeGuid}', NodeAliasPath='{NodeAliasPath}' had to be suffixed with unique identifier, because the original URL path was already occupied. " +
+                    "Note that the default path may not be used in the end, if there exists path for this tree node in the source instance", ksTree.NodeGUID, ksTree.NodeAliasPath);
             }
         }
-        else
+        else        // No attempt went through without collision. This shouldn't happen in any concievable case, but if so, we want to know about it
         {
-            if (hadCollision)
-            {
-                foreach (var data in collisionData)
-                {
-                    logger.LogWarning("WebPageUrlPath collision occured and was resolved by appending random string. {Path}", data.Path);
-                }
-            }
+            logger.LogError("Cannot generate default path for tree node GUID='{NodeGuid}', NodeAliasPath='{NodeAliasPath}'. The following paths were tried, but all are in collision with already existing data. " +
+                "Note that the default path may not be used in the end, if there exists path for this tree node in the source instance. Collisions: {Collisions}", ksTree.NodeGUID, ksTree.NodeAliasPath, string.Join(";", collisions.Select(x => x.Path)));
         }
 
     }
