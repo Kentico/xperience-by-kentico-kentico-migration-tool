@@ -54,7 +54,7 @@ public class ContentFolderService
                     var newFolderModel = new ContentFolderModel
                     {
                         ContentFolderGUID = folderTemplate.Guid,
-                        ContentFolderName = CodeNameHelper.MakeUnique(folderTemplate.Name),
+                        ContentFolderName = UniqueNameHelper.MakeUnique(folderTemplate.Name, x => !ContentFolderInfo.Provider.Get().WhereEquals(nameof(ContentFolderInfo.ContentFolderName), x).Any()),
                         ContentFolderDisplayName = folderTemplate.DisplayName,
                         ContentFolderTreePath = currentPath,
                         ContentFolderParentFolderGUID = parentGuid,
