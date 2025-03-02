@@ -220,25 +220,16 @@ public class ContentItemMapper(
             {
                 if (cmsDocument.DocumentPublishFrom is { } publishFrom)
                 {
-                    var now = Service.Resolve<IDateTimeNowService>().GetDateTimeNow();
-                    if (publishFrom > now)
+                    if (versionStatus == VersionStatus.Published)
                     {
-                        versionStatus = VersionStatus.Unpublished;
+                        versionStatus = VersionStatus.InitialDraft;
                     }
-                    else
-                    {
-                        scheduledPublishWhen = publishFrom;
-                    }
+                    scheduledPublishWhen = publishFrom;
                 }
 
                 if (cmsDocument.DocumentPublishTo is { } publishTo)
                 {
-                    var now = Service.Resolve<IDateTimeNowService>().GetDateTimeNow();
-                    if (publishTo < now)
-                    {
-                        versionStatus = VersionStatus.Unpublished;
-                    }
-                    else
+                    if (versionStatus == VersionStatus.Published)
                     {
                         scheduleUnpublishWhen = publishTo;
                     }
