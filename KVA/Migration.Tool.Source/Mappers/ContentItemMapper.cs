@@ -339,6 +339,33 @@ public class ContentItemMapper(
                         targetClassInfo.ClassName
                     ).GetAwaiter().GetResult();
 
+                    var refFields = fi.GetFields<FormFieldInfo>().Concat(commonFields).Where(x => x.DataType == "contentitemreference");
+                    foreach (var refField in refFields)
+                    {
+                        if (dataModel.CustomProperties.TryGetValue(refField.Name, out var serializedValue) || commonDataModel.CustomProperties.TryGetValue(refField.Name, out serializedValue))
+                        {
+                            if (serializedValue is string valueString && !string.IsNullOrEmpty(valueString))
+                            {
+                                var value = JToken.Parse(valueString);
+                                foreach (var targetGuid in value.Select(x => new Guid(x["Identifier"]!.Value<string>()!)).ToArray())
+                                {
+                                    if (ContentItemInfo.Provider.Get(targetGuid) is null)
+                                    {
+                                        // If the referenced object does not exist yet, create a placeholder
+                                        yield return new ContentItemModel
+                                        {
+                                            ContentItemChannelGuid = ChannelInfo.Provider.Get().First().ChannelGUID,
+                                            ContentItemDataClassGuid = DataClassInfoProvider.GetDataClassInfo("CMS.ContentItemCommonData").ClassGUID,
+                                            ContentItemGUID = targetGuid,
+                                            ContentItemName = $"{targetGuid}",
+                                            ContentItemIsReusable = true
+                                        };
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     foreach (var formFieldInfo in commonFields)
                     {
                         string originalFieldName = ReusableSchemaService.RemoveClassPrefix(sourceNodeClass.ClassName, formFieldInfo.Name);
