@@ -354,7 +354,6 @@ public class ContentItemMapper(
                                         // If the referenced object does not exist yet, create a placeholder
                                         yield return new ContentItemModel
                                         {
-                                            ContentItemChannelGuid = ChannelInfo.Provider.Get().First().ChannelGUID,
                                             ContentItemDataClassGuid = DataClassInfoProvider.GetDataClassInfo("CMS.ContentItemCommonData").ClassGUID,
                                             ContentItemGUID = targetGuid,
                                             ContentItemName = $"{targetGuid}",
