@@ -2,7 +2,6 @@ using System.Diagnostics;
 using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
 using CMS.Core;
-using CMS.Core.Internal;
 using CMS.DataEngine;
 using CMS.FormEngine;
 using CMS.MediaLibrary;
@@ -220,25 +219,16 @@ public class ContentItemMapper(
             {
                 if (cmsDocument.DocumentPublishFrom is { } publishFrom)
                 {
-                    var now = Service.Resolve<IDateTimeNowService>().GetDateTimeNow();
-                    if (publishFrom > now)
+                    if (versionStatus == VersionStatus.Published)
                     {
-                        versionStatus = VersionStatus.Unpublished;
+                        versionStatus = VersionStatus.InitialDraft;
                     }
-                    else
-                    {
-                        scheduledPublishWhen = publishFrom;
-                    }
+                    scheduledPublishWhen = publishFrom;
                 }
 
                 if (cmsDocument.DocumentPublishTo is { } publishTo)
                 {
-                    var now = Service.Resolve<IDateTimeNowService>().GetDateTimeNow();
-                    if (publishTo < now)
-                    {
-                        versionStatus = VersionStatus.Unpublished;
-                    }
-                    else
+                    if (versionStatus == VersionStatus.Published)
                     {
                         scheduleUnpublishWhen = publishTo;
                     }
@@ -347,6 +337,32 @@ public class ContentItemMapper(
                         convertorContext,
                         targetClassInfo.ClassName
                     ).GetAwaiter().GetResult();
+
+                    var refFields = fi.GetFields<FormFieldInfo>().Concat(commonFields).Where(x => x.DataType == "contentitemreference");
+                    foreach (var refField in refFields)
+                    {
+                        if (dataModel.CustomProperties.TryGetValue(refField.Name, out var serializedValue) || commonDataModel.CustomProperties.TryGetValue(refField.Name, out serializedValue))
+                        {
+                            if (serializedValue is string valueString && !string.IsNullOrEmpty(valueString))
+                            {
+                                var value = JToken.Parse(valueString);
+                                foreach (var targetGuid in value.Select(x => new Guid(x["Identifier"]!.Value<string>()!)).ToArray())
+                                {
+                                    if (ContentItemInfo.Provider.Get(targetGuid) is null)
+                                    {
+                                        // If the referenced object does not exist yet, create a placeholder
+                                        yield return new ContentItemModel
+                                        {
+                                            ContentItemDataClassGuid = DataClassInfoProvider.GetDataClassInfo("CMS.ContentItemCommonData").ClassGUID,
+                                            ContentItemGUID = targetGuid,
+                                            ContentItemName = $"{targetGuid}",
+                                            ContentItemIsReusable = true
+                                        };
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     foreach (var formFieldInfo in commonFields)
                     {
