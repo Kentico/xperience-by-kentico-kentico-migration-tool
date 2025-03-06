@@ -143,3 +143,13 @@ public record MigrateCustomTablesCommand : IRequest<CommandResult>, ICommand
 
     public Type[] Dependencies => [];
 }
+
+public record MigrateContentTypeRestrictionsCommand : IRequest<CommandResult>, ICommand
+{
+    public static readonly int Rank = 10 + MigrateSitesCommand.Rank + MigratePageTypesCommand.Rank + MigratePagesCommand.Rank;
+
+    public static string Moniker => "type-restrictions";
+    public static string MonikerFriendly => "Content type restrictions";
+
+    public Type[] Dependencies => [typeof(MigrateSitesCommand), typeof(MigratePageTypesCommand), typeof(MigratePagesCommand)];
+}

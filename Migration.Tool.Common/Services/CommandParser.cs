@@ -118,6 +118,11 @@ public class CommandParser : ICommandParser
             {
                 commands.Add(new MigrateCustomTablesCommand());
             }
+
+            if (arg == $"--{MigrateContentTypeRestrictionsCommand.Moniker}")
+            {
+                commands.Add(new MigrateContentTypeRestrictionsCommand());
+            }
         }
 
         return commands;
