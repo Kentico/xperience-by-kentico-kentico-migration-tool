@@ -24,6 +24,8 @@ public class KxpClassFacade
     }
 
     public DataClassInfo GetClass(Guid classGuid) => DataClassInfoProvider.GetDataClassInfo(classGuid);
+    
+    public DataClassInfo GetClass(int classID) => DataClassInfoProvider.GetDataClassInfo(classID);
 
     public DataClassInfo GetClass(string className) => DataClassInfoProvider.GetDataClassInfo(className);
 

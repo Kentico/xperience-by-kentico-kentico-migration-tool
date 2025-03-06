@@ -147,7 +147,10 @@ public class MigratePageTypesCommandHandler(
 
         await MigratePageTemplateConfigurations();
 
-        await BypassAllowedChildClasses();  // Temporary bypass. Implementation of this features is already planned
+        // By default all restrictions are bypassed.
+        // To migrate the restrictions, include --type-restrictions in your migrate command,
+        // which will migrate the actual restrictions in the next stage
+        await BypassAllowedChildClasses();
 
         return new GenericCommandResult();
     }
