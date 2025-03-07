@@ -12,4 +12,12 @@ public interface IContentItemActionProvider
     void OverridePageTemplate(string templateIdentifier, JObject? templateProperties = null);
     void OverrideContentFolder(Guid contentFolderGuid);
     void OverrideContentFolder(string displayNamePath);
+
+    /// <summary>
+    /// Let the system generate URL path for all cultures and skip migrating URL path from source instance
+    /// </summary>
+    void RegenerateUrlPath();
+    void OverrideFormerUrlPaths(IEnumerable<FormerPageUrlPath> formerPaths);
 }
+
+public record FormerPageUrlPath(string LanguageName, string Path, DateTime? LastModified = null);
