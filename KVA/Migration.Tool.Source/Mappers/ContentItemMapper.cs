@@ -845,6 +845,7 @@ public class ContentItemMapper(
                     case { Success: false }:
                     {
                         logger.LogError("Error while migrating field '{Field}' value {Value}", targetFieldName, sourceValue);
+                        target[targetFieldName] = null;
                         break;
                     }
 
