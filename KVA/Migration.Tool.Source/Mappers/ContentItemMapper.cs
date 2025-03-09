@@ -880,7 +880,7 @@ public class ContentItemMapper(
                         {
                             case { LinkKind: MediaLinkKind.Guid or MediaLinkKind.DirectMediaPath, MediaKind: MediaKind.MediaFile }:
                             {
-                                var mediaFile = MediaHelper.GetMediaFile(result, modelFacade);
+                                var mediaFile = MediaHelper.GetMediaFile(result, modelFacade, original, logger);
                                 if (mediaFile is null)
                                 {
                                     return original;

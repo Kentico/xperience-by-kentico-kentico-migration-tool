@@ -25,11 +25,7 @@ public class MigrateAttachmentsCommandHandler(
                 continue;
             }
 
-            (_, bool canContinue) = await attachmentMigrator.MigrateAttachment(ksCmsAttachment);
-            if (!canContinue)
-            {
-                break;
-            }
+            await attachmentMigrator.MigrateAttachment(ksCmsAttachment);
         }
 
         return new GenericCommandResult();

@@ -160,6 +160,7 @@ public class MigratePageTypesCommandHandler(
         var websiteContentTypes = kxpClassFacade.GetClasses(ClassContentTypeType.WEBSITE);
         foreach (var parent in websiteContentTypes)
         {
+            logger.LogInformation("Preliminarily allowing any child content type for parent type {ParentTypeName} ({ParentTypeGuid})", parent.ClassName, parent.ClassGUID);
             foreach (var child in websiteContentTypes)
             {
                 var model = new AllowedChildContentTypeModel
