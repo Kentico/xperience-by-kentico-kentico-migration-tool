@@ -39,7 +39,8 @@ public class AttachmentMigratorToMediaLibrary(
     {
         if (string.IsNullOrWhiteSpace(documentPath))
         {
-            return new MigrateAttachmentResultMediaFile(false, false);
+            logger.LogError("Failed to migrate attachment by path. Document path is null or whitespace.");
+            return new MigrateAttachmentResultMediaFile(false);
         }
 
         documentPath = $"/{documentPath.Trim('/')}";
@@ -56,12 +57,17 @@ public class AttachmentMigratorToMediaLibrary(
                     """, new SqlParameter("nodeAliasPath", documentPath)).ToList()
             ;
 
-        Debug.Assert(attachments.Count == 1, "attachments.Count == 1");
         var attachment = attachments.FirstOrDefault();
 
-        return attachment != null
-            ? await MigrateAttachment(attachment, additionalPath)
-            : new MigrateAttachmentResultMediaFile(false, false);
+        if (attachment is not null)
+        {
+            return await MigrateAttachment(attachment, additionalPath);
+        }
+        else
+        {
+            logger.LogError("Failed to migrate attachment by path. No attachments found at documents of node NodeAliasPath='{NodeAliasPath}'", documentPath);
+            return new MigrateAttachmentResultMediaFile(false);
+        }
     }
 
     public async IAsyncEnumerable<IMigrateAttachmentResult> MigrateGroupedAttachments(int documentId, Guid attachmentGroupGuid, string fieldName)
@@ -96,7 +102,7 @@ public class AttachmentMigratorToMediaLibrary(
             {
                 logger.LogWarning("Attachment '{AttachmentGuid}' not found! => skipping", ksAttachmentGuid);
                 protocol.Append(HandbookReferences.TemporaryAttachmentMigrationIsNotSupported.WithData(new { AttachmentGuid = ksAttachmentGuid }));
-                return new MigrateAttachmentResultMediaFile(false, true);
+                return new MigrateAttachmentResultMediaFile(false);
             }
             case [var attachment]:
             {
@@ -106,7 +112,7 @@ public class AttachmentMigratorToMediaLibrary(
             {
                 logger.LogWarning("Attachment '{AttachmentGuid}' found multiple times! => skipping", ksAttachmentGuid);
                 protocol.Append(HandbookReferences.NonUniqueEntityGuid.WithData(new { AttachmentGuid = ksAttachmentGuid, AttachmentIds = attachments.Select(a => a.AttachmentID) }));
-                return new MigrateAttachmentResultMediaFile(false, true);
+                return new MigrateAttachmentResultMediaFile(false);
             }
         }
     }
@@ -119,7 +125,7 @@ public class AttachmentMigratorToMediaLibrary(
         {
             logger.LogWarning("Attachment '{AttachmentGuid}' is temporary => skipping", ksAttachment.AttachmentGUID);
             protocol.Append(HandbookReferences.TemporaryAttachmentMigrationIsNotSupported.WithData(new { ksAttachment.AttachmentID, ksAttachment.AttachmentGUID, ksAttachment.AttachmentName, ksAttachment.AttachmentSiteID }));
-            return new MigrateAttachmentResultMediaFile(false, true);
+            return new MigrateAttachmentResultMediaFile(false);
         }
 
         var ksAttachmentDocument = ksAttachment.AttachmentDocumentID is { } attachmentDocumentId
@@ -133,7 +139,7 @@ public class AttachmentMigratorToMediaLibrary(
         var site = modelFacade.SelectById<ICmsSite>(ksAttachment.AttachmentSiteID) ?? throw new InvalidOperationException("Site not exists!");
         if (!TryEnsureTargetLibraryExists(ksAttachment.AttachmentSiteID, site.SiteName, out int targetMediaLibraryId))
         {
-            return new MigrateAttachmentResultMediaFile(false, false);
+            return new MigrateAttachmentResultMediaFile(false);
         }
 
         var uploadedFile = CreateUploadFileFromAttachment(ksAttachment);
@@ -144,7 +150,7 @@ public class AttachmentMigratorToMediaLibrary(
                 .WithIdentityPrint(ksAttachment)
                 .WithMessage("Failed to create dummy upload file containing data")
             );
-            return new MigrateAttachmentResultMediaFile(false, true);
+            return new MigrateAttachmentResultMediaFile(false);
         }
 
         (bool isFixed, var newAttachmentGuid) = entityIdentityFacade.Translate(ksAttachment);
@@ -187,7 +193,7 @@ public class AttachmentMigratorToMediaLibrary(
                 protocol.Success(ksAttachmentDocument, mediaFileInfo, mapped);
                 logger.LogEntitySetAction(newInstance, mediaFileInfo);
 
-                return new MigrateAttachmentResultMediaFile(true, true, mediaFileInfo, MediaLibraryInfoProvider.ProviderObject.Get(targetMediaLibraryId));
+                return new MigrateAttachmentResultMediaFile(true, mediaFileInfo, MediaLibraryInfoProvider.ProviderObject.Get(targetMediaLibraryId));
             }
             catch (Exception exception)
             {
@@ -200,7 +206,7 @@ public class AttachmentMigratorToMediaLibrary(
             }
         }
 
-        return new MigrateAttachmentResultMediaFile(false, true);
+        return new MigrateAttachmentResultMediaFile(false);
     }
 
     private IUploadedFile? CreateUploadFileFromAttachment(ICmsAttachment attachment)

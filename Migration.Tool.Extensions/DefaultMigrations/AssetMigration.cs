@@ -67,7 +67,7 @@ public class AssetMigration(
                 {
                     switch (await attachmentMigrator.TryMigrateAttachmentByPath(path, $"__{fieldName}"))
                     {
-                        case MigrateAttachmentResultMediaFile(true, _, var x, _):
+                        case MigrateAttachmentResultMediaFile(true, var x, _):
                         {
                             mfis = [new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
                             hasMigratedAsset = true;
@@ -102,7 +102,7 @@ public class AssetMigration(
             {
                 if (mediaKind == MediaKind.MediaFile)
                 {
-                    var sourceMediaFile = MediaHelper.GetMediaFile(result, modelFacade);
+                    var sourceMediaFile = MediaHelper.GetMediaFile(result, modelFacade, link, logger);
                     if (sourceMediaFile != null)
                     {
                         if (configuration.MigrateMediaToMediaLibrary)
@@ -133,7 +133,7 @@ public class AssetMigration(
                 {
                     switch (await attachmentMigrator.MigrateAttachment(mg, $"__{fieldName}", cmsSite.SiteID))
                     {
-                        case MigrateAttachmentResultMediaFile(true, _, var x, _):
+                        case MigrateAttachmentResultMediaFile(true, var x, _):
                         {
                             mfis = [new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
                             hasMigratedAsset = true;
@@ -195,7 +195,7 @@ public class AssetMigration(
                     {
                         switch (await attachmentMigrator.MigrateAttachment(attachmentGuid, $"__{fieldName}", cmsSite.SiteID))
                         {
-                            case MigrateAttachmentResultMediaFile(true, _, var mfi, _):
+                            case MigrateAttachmentResultMediaFile(true, var mfi, _):
                             {
                                 mfis = [new AssetRelatedItem { Identifier = mfi.FileGUID, Dimensions = new AssetDimensions { Height = mfi.FileImageHeight, Width = mfi.FileImageWidth }, Name = mfi.FileName, Size = mfi.FileSize }];
                                 hasMigratedAsset = true;

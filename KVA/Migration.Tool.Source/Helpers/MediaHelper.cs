@@ -1,4 +1,5 @@
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 using Migration.Tool.Common.Helpers;
 using Migration.Tool.Source.Model;
 
@@ -6,7 +7,7 @@ namespace Migration.Tool.Source.Helpers;
 
 public static class MediaHelper
 {
-    public static IMediaFile? GetMediaFile(MatchMediaLinkResult matchResult, ModelFacade modelFacade)
+    public static IMediaFile? GetMediaFile(MatchMediaLinkResult matchResult, ModelFacade modelFacade, string originalLink, ILogger logger)
     {
         switch (matchResult)
         {
@@ -22,9 +23,10 @@ public static class MediaHelper
             }
             case { Success: true, LinkKind: MediaLinkKind.DirectMediaPath, LibraryDir: var libraryDir, Path: var path, LinkSiteId: var linkSiteId }:
             {
-                if (path == null)
+                if (libraryDir is null || path is null || linkSiteId is null)
                 {
-                    throw new InvalidOperationException($"Cannot determine media file for link match {matchResult}");
+                    logger.LogWarning("Cannot determine media file for link '{OriginalLink}'", originalLink);
+                    return null;
                 }
 
                 string where = modelFacade.SelectVersion() is { Major: 13 }

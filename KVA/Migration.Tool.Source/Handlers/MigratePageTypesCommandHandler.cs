@@ -147,7 +147,10 @@ public class MigratePageTypesCommandHandler(
 
         await MigratePageTemplateConfigurations();
 
-        await BypassAllowedChildClasses();  // Temporary bypass. Implementation of this features is already planned
+        // By default all restrictions are bypassed.
+        // To migrate the restrictions, include --type-restrictions in your migrate command,
+        // which will migrate the actual restrictions in the next stage
+        await BypassAllowedChildClasses();
 
         return new GenericCommandResult();
     }
@@ -157,6 +160,7 @@ public class MigratePageTypesCommandHandler(
         var websiteContentTypes = kxpClassFacade.GetClasses(ClassContentTypeType.WEBSITE);
         foreach (var parent in websiteContentTypes)
         {
+            logger.LogInformation("Preliminarily allowing any child content type for parent type {ParentTypeName} ({ParentTypeGuid})", parent.ClassName, parent.ClassGUID);
             foreach (var child in websiteContentTypes)
             {
                 var model = new AllowedChildContentTypeModel

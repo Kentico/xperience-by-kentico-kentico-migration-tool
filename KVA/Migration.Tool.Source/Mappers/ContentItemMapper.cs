@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
@@ -15,6 +16,7 @@ using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.Builders;
 using Migration.Tool.Common.Helpers;
+using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.Common.Model;
 using Migration.Tool.Common.Services;
 using Migration.Tool.KXP.Api.Auxiliary;
@@ -55,6 +57,7 @@ public record CustomTableMapperSource(
 
 public class ContentItemMapper(
     ILogger<ContentItemMapper> logger,
+    IProtocol protocol,
     CoupledDataService coupledDataService,
     IAttachmentMigrator attachmentMigrator,
     CmsRelationshipService relationshipService,
@@ -92,7 +95,11 @@ public class ContentItemMapper(
             targetClassGuid = targetClassInfo.ClassGUID;
         }
 
-        var directive = GetDirective(new ContentItemSource(cmsTree, sourceNodeClass.ClassName, mapping?.TargetClassName ?? sourceNodeClass.ClassName, sourceSite));
+        var formerUrlPaths = GetFormerUrlPaths(cmsTree);
+
+        var directive = GetDirective(new ContentItemSource(cmsTree, sourceNodeClass.ClassName, mapping?.TargetClassName ?? sourceNodeClass.ClassName, sourceSite, formerUrlPaths));
+        yield return directive;
+
         if (directive is DropDirective)
         {
             logger.LogInformation("Content item skipped. Reason: {Explicit drop directive} NodeGUID: {NodeGUID} NodeAliasPath: {NodeAliasPath}", "Explicit drop directive", cmsTree.NodeGUID, cmsTree.NodeAliasPath);
@@ -539,6 +546,25 @@ public class ContentItemMapper(
         }
     }
 
+    private IEnumerable<FormerPageUrlPath> GetFormerUrlPaths(ICmsTree ksNode) => modelFacade.IsAvailable<ICmsPageFormerUrlPath>()
+            ? modelFacade.SelectWhere<ICmsPageFormerUrlPath>(
+                "PageFormerUrlPathSiteID = @siteId AND PageFormerUrlPathNodeID = @nodeId",
+                new SqlParameter("siteId", ksNode.NodeSiteID),
+                new SqlParameter("nodeId", ksNode.NodeID)
+            ).Select(x => x switch
+            {
+                CmsPageFormerUrlPathK13 k13Path => new FormerPageUrlPath(k13Path.PageFormerUrlPathCulture, k13Path.PageFormerUrlPathUrlPath, k13Path.PageFormerUrlPathLastModified),
+                _ => throw new NotImplementedException("Internal error 60fc462d-f59c-473c-bc4b-852263bb0ad7. Report this issue.")
+            }).ToArray()
+            : (IEnumerable<FormerPageUrlPath>)([]);
+
+
+    private readonly ConcurrentDictionary<string, ContentLanguageInfo> languages = new(StringComparer.InvariantCultureIgnoreCase);
+    private ContentLanguageInfo GetLanguageInfo(string culture) => languages.GetOrAdd(
+                culture,
+                s => ContentLanguageInfoProvider.ProviderObject.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageName), s).SingleOrDefault() ?? throw new InvalidOperationException($"Missing content language '{s}'")
+            );
+
     private ContentItemDirectiveBase GetDirective(ContentItemSource contentItemSource)
     {
         var directiveFacade = new ContentItemActionProvider();
@@ -551,6 +577,7 @@ public class ContentItemMapper(
                 break;
             }
         }
+        directiveFacade.Directive!.FormerUrlPaths ??= contentItemSource.FormerUrlPaths;
         return directiveFacade.Directive!;
     }
 
@@ -845,6 +872,7 @@ public class ContentItemMapper(
                     case { Success: false }:
                     {
                         logger.LogError("Error while migrating field '{Field}' value {Value}", targetFieldName, sourceValue);
+                        target[targetFieldName] = null;
                         break;
                     }
 
@@ -880,7 +908,7 @@ public class ContentItemMapper(
                         {
                             case { LinkKind: MediaLinkKind.Guid or MediaLinkKind.DirectMediaPath, MediaKind: MediaKind.MediaFile }:
                             {
-                                var mediaFile = MediaHelper.GetMediaFile(result, modelFacade);
+                                var mediaFile = MediaHelper.GetMediaFile(result, modelFacade, original, logger);
                                 if (mediaFile is null)
                                 {
                                     return original;
