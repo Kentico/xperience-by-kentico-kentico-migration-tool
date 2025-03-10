@@ -554,7 +554,7 @@ public class ContentItemMapper(
             ).Select(x => x switch
             {
                 CmsPageFormerUrlPathK13 k13Path => new FormerPageUrlPath(k13Path.PageFormerUrlPathCulture, k13Path.PageFormerUrlPathUrlPath, k13Path.PageFormerUrlPathLastModified),
-                _ => throw new NotImplementedException()
+                _ => throw new NotImplementedException("Internal error 60fc462d-f59c-473c-bc4b-852263bb0ad7. Report this issue.")
             }).ToArray()
             : (IEnumerable<FormerPageUrlPath>)([]);
 
