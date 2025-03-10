@@ -14,19 +14,12 @@ public interface IAttachmentMigrator
 public interface IMigrateAttachmentResult
 {
     bool Success { get; init; }
-    bool CanContinue { get; init; }
-    void Deconstruct(out bool success, out bool canContinue)
-    {
-        success = Success;
-        canContinue = CanContinue;
-    }
 }
 
 public record MigrateAttachmentResultMediaFile(
     bool Success,
-    bool CanContinue,
     MediaFileInfo? MediaFileInfo = null,
     MediaLibraryInfo? MediaLibraryInfo = null
 ) : IMigrateAttachmentResult;
 
-public record MigrateAttachmentResultContentItem(bool Success, bool CanContinue, Guid? ContentItemGuid) : IMigrateAttachmentResult;
+public record MigrateAttachmentResultContentItem(bool Success, Guid? ContentItemGuid) : IMigrateAttachmentResult;

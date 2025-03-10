@@ -23,7 +23,7 @@ public class AttachmentMigratorToContentItem(
     {
         if (string.IsNullOrWhiteSpace(documentPath))
         {
-            return new MigrateAttachmentResultContentItem(false, false, null);
+            return new MigrateAttachmentResultContentItem(false, null);
         }
 
         documentPath = $"/{documentPath.Trim('/')}";
@@ -40,12 +40,10 @@ public class AttachmentMigratorToContentItem(
                     """, new SqlParameter("nodeAliasPath", documentPath)).ToList()
             ;
 
-        Debug.Assert(attachments.Count == 1, "attachments.Count == 1");
         var attachment = attachments.FirstOrDefault();
-
-        return attachment != null
+        return attachment is not null
             ? await MigrateAttachment(attachment, additionalPath)
-            : new MigrateAttachmentResultContentItem(false, false, null);
+            : new MigrateAttachmentResultContentItem(false, null);
     }
 
     public async IAsyncEnumerable<IMigrateAttachmentResult> MigrateGroupedAttachments(int documentId, Guid attachmentGroupGuid, string fieldName)
@@ -80,7 +78,7 @@ public class AttachmentMigratorToContentItem(
             {
                 logger.LogWarning("Attachment '{AttachmentGuid}' not found! => skipping", ksAttachmentGuid);
                 protocol.Append(HandbookReferences.TemporaryAttachmentMigrationIsNotSupported.WithData(new { AttachmentGuid = ksAttachmentGuid }));
-                return new MigrateAttachmentResultContentItem(false, true, null);
+                return new MigrateAttachmentResultContentItem(false, null);
             }
             case [var attachment]:
             {
@@ -90,7 +88,7 @@ public class AttachmentMigratorToContentItem(
             {
                 logger.LogWarning("Attachment '{AttachmentGuid}' found multiple times! => skipping", ksAttachmentGuid);
                 protocol.Append(HandbookReferences.NonUniqueEntityGuid.WithData(new { AttachmentGuid = ksAttachmentGuid, AttachmentIds = attachments.Select(a => a.AttachmentID) }));
-                return new MigrateAttachmentResultContentItem(false, true, null);
+                return new MigrateAttachmentResultContentItem(false, null);
             }
         }
     }
@@ -110,7 +108,7 @@ public class AttachmentMigratorToContentItem(
         {
             logger.LogWarning("Attachment '{AttachmentGuid}' is temporary => skipping", ksAttachment.AttachmentGUID);
             protocol.Append(HandbookReferences.TemporaryAttachmentMigrationIsNotSupported.WithData(new { ksAttachment.AttachmentID, ksAttachment.AttachmentGUID, ksAttachment.AttachmentName, ksAttachment.AttachmentSiteID }));
-            return new MigrateAttachmentResultContentItem(false, true, null);
+            return new MigrateAttachmentResultContentItem(false, null);
         }
 
         var ksAttachmentDocument = ksAttachment.AttachmentDocumentID is { } attachmentDocumentId
@@ -149,12 +147,12 @@ public class AttachmentMigratorToContentItem(
             case { Success: true }:
             {
                 logger.LogInformation("Media file '{File}' imported", ksAttachment.AttachmentGUID);
-                return new MigrateAttachmentResultContentItem(true, true, asset.ContentItemGUID);
+                return new MigrateAttachmentResultContentItem(true, asset.ContentItemGUID);
             }
             case { Success: false, Exception: { } exception }:
             {
                 logger.LogError("Media file '{File}' not migrated: {Error}", ksAttachment.AttachmentGUID, exception);
-                return new MigrateAttachmentResultContentItem(false, true, null);
+                return new MigrateAttachmentResultContentItem(false, null);
             }
             case { Success: false, ModelValidationResults: { } validation }:
             {
@@ -163,10 +161,10 @@ public class AttachmentMigratorToContentItem(
                     logger.LogError("Media file '{File}' not migrated: {Members}: {Error}", ksAttachment.AttachmentGUID, string.Join(",", validationResult.MemberNames), validationResult.ErrorMessage);
                 }
 
-                return new MigrateAttachmentResultContentItem(false, true, null);
+                return new MigrateAttachmentResultContentItem(false, null);
             }
             default:
-                return new MigrateAttachmentResultContentItem(false, false, null);
+                return new MigrateAttachmentResultContentItem(false, null);
         }
     }
 }
