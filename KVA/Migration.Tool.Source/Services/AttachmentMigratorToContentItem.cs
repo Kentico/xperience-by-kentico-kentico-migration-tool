@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using CMS.ContentEngine.Internal;
 using CMS.Core;
 using Kentico.Xperience.UMT.Services;
