@@ -43,7 +43,7 @@ public class MigrateCustomModulesCommandHandler(
 {
     public async Task<CommandResult> Handle(MigrateCustomModulesCommand request, CancellationToken cancellationToken)
     {
-        var entityConfiguration = toolConfiguration.EntityConfigurations.GetEntityConfiguration<ICmsClass>();
+        var entityConfiguration = toolConfiguration.EntityConfigurations.GetEntityConfiguration<DataClassInfo>();
 
         await MigrateResources(cancellationToken);
 
