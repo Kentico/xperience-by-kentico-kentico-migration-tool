@@ -89,5 +89,7 @@ The following types of data exist in Xperience by Kentico but are currently **no
     4. Recalculate the contact groups.
 - **License keys**
   - Xperience by Kentico uses a different license key format.
+- **Marketing automation**
+  - Migration of Marketing automation is currently not supported
 
 Additionally, object values or other content with **Macros** will not work correctly after the migration. Macro expressions are currently not supported for most data in Xperience by Kentico.
