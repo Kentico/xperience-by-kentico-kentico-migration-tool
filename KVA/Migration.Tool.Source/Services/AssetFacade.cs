@@ -118,7 +118,7 @@ public class AssetFacade(
             VersionStatus = VersionStatus.Published,
             ContentItemData = new Dictionary<string, object?>
             {
-                ["Asset"] = new AssetFileSource
+                [LegacyMediaFileAssetField.Column!] = new AssetFileSource
                 {
                     ContentItemGuid = translatedMediaGuid,
                     Identifier = GuidHelper.CreateAssetGuid(translatedMediaGuid, contentLanguageName),
@@ -172,7 +172,7 @@ public class AssetFacade(
                 VersionStatus = VersionStatus.Published,
                 ContentItemData = new Dictionary<string, object?>
                 {
-                    ["Asset"] = new AssetDataSource
+                    [LegacyAttachmentAssetField.Column!] = new AssetDataSource
                     {
                         ContentItemGuid = translatedAttachmentGuid,
                         Identifier = GuidHelper.CreateAssetGuid(translatedAttachmentGuid, contentLanguageName),
@@ -311,7 +311,7 @@ public class AssetFacade(
 
     internal static readonly FormField LegacyMediaFileAssetField = new()
     {
-        Column = "Asset",
+        Column = "LegacyMediaFileAsset",
         ColumnType = "contentitemasset",
         AllowEmpty = true,
         Visible = true,
@@ -339,7 +339,7 @@ public class AssetFacade(
 
     internal static readonly FormField LegacyAttachmentAssetField = new()
     {
-        Column = "Asset",
+        Column = "LegacyAttachmentAsset",
         ColumnType = "contentitemasset",
         AllowEmpty = true,
         Visible = true,
