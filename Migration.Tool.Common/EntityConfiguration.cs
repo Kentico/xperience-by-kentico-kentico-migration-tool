@@ -24,6 +24,8 @@ public class EntityConfigurations : Dictionary<string, EntityConfiguration>
     public EntityConfiguration GetEntityConfiguration<TModel>()
     {
         string? tableName = ReflectionHelper<TModel>.GetFirstAttributeOrNull<TableAttribute>()?.Name;
+        tableName ??= ReflectionHelper<TModel>.GetStaticPropertyOrNull("TableName") as string;
+
         if (tableName is null)
         {
             // If table is not specified by annotation at the type, try deriving the table name from OBJECT_TYPE static field (works for ProviderInfos)

@@ -73,7 +73,7 @@ public class MigratePagesCommandHandler(
             Dictionary<string, (Guid ContentItemGuid, ContentLanguageInfo LanguageInfo)> pathToXbykPage = [];
             List<(Guid DocumentGuid, Guid SiteGuid, ContentLanguageInfo LanguageInfo, Guid ContentItemGuid, string RedirectUrl)> sourceInstanceRedirects = [];
 
-            var sites = modelFacade.SelectAll<ICmsSite>();
+            var sites = modelFacade.GetMigratedSites();
             // Walk all pages in source instance. Gather their redirections & mapping from their original URLs to webpage entities in target instance
             foreach (var ksSite in sites)
             {
@@ -183,7 +183,7 @@ public class MigratePagesCommandHandler(
 
     private async Task MigratePages()
     {
-        var sites = modelFacade.SelectAll<ICmsSite>();
+        var sites = modelFacade.GetMigratedSites();
         foreach (var ksSite in sites)
         {
             var channelInfo = ChannelInfoProvider.ProviderObject.Get(ksSite.SiteGUID);

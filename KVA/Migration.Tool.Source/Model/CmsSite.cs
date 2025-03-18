@@ -4,6 +4,7 @@ using System.Data;
 using Migration.Tool.Common;
 
 namespace Migration.Tool.Source.Model;
+
 public partial interface ICmsSite : ISourceModel<ICmsSite>
 {
     int SiteID { get; }

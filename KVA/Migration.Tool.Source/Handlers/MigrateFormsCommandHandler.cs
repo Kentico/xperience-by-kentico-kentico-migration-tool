@@ -183,7 +183,7 @@ public class MigrateFormsCommandHandler(
 
     private async Task GlobalizeBizFormFiles()
     {
-        foreach (var cmsSite in modelFacade.SelectAll<ICmsSite>())
+        foreach (var cmsSite in modelFacade.GetMigratedSites())
         {
             string globalBizformFiles = CMS.IO.Path.Combine(SystemContext.WebApplicationPhysicalPath, "BizFormFiles");
             string siteBizFormFiles = CMS.IO.Path.Combine(configuration.KxCmsDirPath, cmsSite.SiteName, "bizformfiles");
