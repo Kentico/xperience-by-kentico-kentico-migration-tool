@@ -70,7 +70,15 @@ public class MigrateFormsCommandHandler(
 
                     try
                     {
+                        int formItems = cmsForm.FormItems;
                         BizFormInfo.Provider.Set(cmsForm!);
+
+                        // Update FormItems manually, as BizFormInfo provider always resets the value to 0
+                        using (var conn = ConnectionHelper.GetConnection())
+                        {
+                            conn.DataConnection.ExecuteNonQuery("UPDATE [CMS_Form] SET FormItems=@formItems WHERE FormID=@formID", new QueryDataParameters() { { "formItems", formItems }, { "formID", cmsForm.FormID } }, QueryTypeEnum.SQLQuery, true);
+                        }
+
                         logger.LogEntitySetAction(newInstance, cmsForm);
 
                         primaryKeyMappingContext.SetMapping<BizFormInfo>(
