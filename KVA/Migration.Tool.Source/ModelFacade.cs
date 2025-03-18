@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Migration.Tool.Common;
+using Migration.Tool.Source.Model;
 
 namespace Migration.Tool.Source;
 
@@ -248,4 +249,6 @@ public class ModelFacade(ILogger<ModelFacade> logger, ToolConfiguration configur
 
         throw new InvalidOperationException($"Unable to hash path '{path}'");
     }
+
+    public IEnumerable<ICmsSite> GetMigratedSites(string? orderBy = null) => SelectAll<ICmsSite>(orderBy).Where(x => !configuration.EntityConfigurations.GetEntityConfiguration<CmsSiteK13>().ExcludeCodeNames.Contains(x.SiteName, StringComparer.OrdinalIgnoreCase)).ToArray();
 }

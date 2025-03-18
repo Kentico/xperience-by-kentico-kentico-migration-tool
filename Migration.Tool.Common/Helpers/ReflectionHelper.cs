@@ -99,6 +99,8 @@ public static class ReflectionHelper<T>
         var type = typeof(T);
         return type.GetField(memberName, BindingFlags.Static | BindingFlags.Public)?.GetValue(type);
     }
+
+    public static object? GetStaticPropertyOrNull(string propertyName) => (!StaticPropertyGetterMaps.ContainsKey(propertyName)) ? null : StaticPropertyGetterMaps[propertyName].PropertyGetMethod!.Invoke(null, Array.Empty<object>());
 }
 
 public class ObjectPropertyGetterMap

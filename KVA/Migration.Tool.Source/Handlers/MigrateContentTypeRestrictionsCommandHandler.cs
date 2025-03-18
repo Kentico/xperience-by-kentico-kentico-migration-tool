@@ -1,3 +1,4 @@
+using AngleSharp.Text;
 using CMS.ContentEngine.Internal;
 using CMS.DataEngine;
 using CMS.Websites;
@@ -119,11 +120,12 @@ public class MigrateContentTypeRestrictionsCommandHandler(
     private async Task MigratePageScopes()
     {
         var ksScopes = modelFacade.SelectAll<ICmsDocumentTypeScope>();
-        var ksScopeClasses = modelFacade.SelectAll<ICmsDocumentTypeScopeClass>();
         var ksSitesById = modelFacade.SelectAll<ICmsSite>().ToDictionary(x => x.SiteID);
+        var ksScopesWithoutUnmigratedSites = ksScopes.Where(x => x.ScopeSiteID is null || !toolConfiguration.EntityConfigurations.GetEntityConfiguration<CmsSiteK13>().ExcludeCodeNames.Contains(ksSitesById[x.ScopeSiteID.Value].SiteName, StringComparison.OrdinalIgnoreCase));
+        var ksScopeClasses = modelFacade.SelectAll<ICmsDocumentTypeScopeClass>();
         var ksClassesById = modelFacade.SelectAll<ICmsClass>().ToDictionary(x => x.ClassID);
 
-        foreach (var ksScope in ksScopes)
+        foreach (var ksScope in ksScopesWithoutUnmigratedSites)
         {
             if (ksScope.ScopeSiteID is null)
             {
