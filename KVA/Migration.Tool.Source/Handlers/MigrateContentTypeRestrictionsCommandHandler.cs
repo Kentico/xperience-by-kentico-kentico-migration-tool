@@ -158,7 +158,7 @@ public class MigrateContentTypeRestrictionsCommandHandler(
                     .Columns(nameof(WebPageItemInfo.WebPageItemGUID)).FirstOrDefault()?.WebPageItemGUID;
                 if (kxWebPageItemGuid is null)
                 {
-                    logger.LogError("Cannot migrate scope GUID='{ScopeGUID}'. No WebPageItem of tree path '{ScopePath}' in website channel {WebsiteChannelGUID}", ksScope.ScopeGUID, ksScope.ScopePath, kxWebsiteChannel.WebsiteChannelGUID);
+                    logger.LogWarning("Cannot migrate scope GUID='{ScopeGUID}'. No WebPageItem of tree path '{ScopePath}' in website channel {WebsiteChannelGUID}", ksScope.ScopeGUID, ksScope.ScopePath, kxWebsiteChannel.WebsiteChannelGUID);
                     continue;
                 }
             }
