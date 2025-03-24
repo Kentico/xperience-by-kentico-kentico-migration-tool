@@ -11,7 +11,7 @@ public partial interface IMediaLibrary : ISourceGuidEntity
     static FrozenDictionary<Guid, int[]> ISourceGuidEntity.Load(ModelFacade modelFacade) =>
         modelFacade
             .Select("SELECT LibraryGUID, LibrarySiteID, LibraryName FROM Media_Library", (reader, _) => new { LibraryGUID = reader.Unbox<Guid?>("LibraryGUID"), LibrarySiteID = reader.Unbox<int>("LibrarySiteID"), LibraryName = reader.Unbox<string>("LibraryName") })
-            .ToLookup(x => x.LibraryGUID ?? GuidHelper.CreateGuidFromLibraryAndSiteID(x.LibraryName, x.LibrarySiteID))
+            .ToLookup(x => x.LibraryGUID ?? GuidHelper.CreateGuidFromLibraryAndSiteID(x.LibraryName!, x.LibrarySiteID))
             .ToFrozenDictionary(
                 x => x.Key,
                 x => x.Select(z => z.LibrarySiteID).ToArray()

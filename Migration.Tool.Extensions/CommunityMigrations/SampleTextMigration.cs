@@ -1,15 +1,13 @@
 using System.Xml.Linq;
 using CMS.DataEngine;
-using Microsoft.Extensions.Logging;
 using Migration.Tool.Common;
 using Migration.Tool.KXP.Api.Auxiliary;
 using Migration.Tool.KXP.Api.Services.CmsClass;
 using Migration.Tool.Source.Contexts;
-using Migration.Tool.Source.Services;
 
 namespace Migration.Tool.Extensions.CommunityMigrations;
 
-public class SampleTextMigration(ILogger<SampleTextMigration> logger, SpoiledGuidContext spoiledGuidContext) : IFieldMigration
+public class SampleTextMigration : IFieldMigration
 {
     // Migrations will be sorted by this number before checking with "ShallMigrate" method. Set rank to number bellow 100 000 (default migration will have 100 000 or higher)
     public int Rank => 5000;
@@ -45,7 +43,7 @@ public class SampleTextMigration(ILogger<SampleTextMigration> logger, SpoiledGui
         settings.EnsureElement("ConfigurationName", e => e.Value = "Kentico.Administration.StructuredContent");
     }
 
-    public async Task<FieldMigrationResult> MigrateValue(object? sourceValue, FieldMigrationContext context)
+    public Task<FieldMigrationResult> MigrateValue(object? sourceValue, FieldMigrationContext context)
     {
         // if required, migrate value (for example cut out any unsupported features or migrated them to supported product variants if available)
 
@@ -55,11 +53,11 @@ public class SampleTextMigration(ILogger<SampleTextMigration> logger, SpoiledGui
             // do migration logic
 
             // return result
-            return new FieldMigrationResult(true, sourceValue);
+            return Task.FromResult(new FieldMigrationResult(true, sourceValue));
         }
         else
         {
-            return new FieldMigrationResult(false, null);
+            return Task.FromResult(new FieldMigrationResult(false, null));
         }
     }
 }

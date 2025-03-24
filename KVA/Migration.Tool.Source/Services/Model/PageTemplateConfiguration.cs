@@ -14,7 +14,7 @@ public class PageTemplateConfiguration
     /// <summary>Identifier of the page template.</summary>
     [DataMember]
     [JsonProperty("identifier")]
-    public string Identifier { get; set; }
+    public string Identifier { get; set; } = null!;
 
     /// <summary>
     ///     Identifier of the page template configuration based on which the page was created.
@@ -26,5 +26,5 @@ public class PageTemplateConfiguration
     /// <summary>Page template properties.</summary>
     [DataMember]
     [JsonProperty("properties")]
-    public JObject Properties { get; set; }
+    public JObject Properties { get; set; } = null!;
 }

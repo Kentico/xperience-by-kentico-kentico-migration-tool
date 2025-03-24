@@ -144,7 +144,7 @@ public class MemberInfoMapper(
                 try
                 {
                     string query =
-                        $"SELECT {string.Join(", ", userSettingsCustomizedFields.Select(x => x.FieldName))} FROM {usDci.ClassTableName} WHERE UserSettingsID = @id";
+                        $"SELECT {string.Join(", ", userSettingsCustomizedFields.Select(x => x.FieldName))} FROM {usDci!.ClassTableName} WHERE UserSettingsID = @id";
 
                     using var conn = new SqlConnection(toolConfiguration.KxConnectionString);
                     using var cmd = conn.CreateCommand();

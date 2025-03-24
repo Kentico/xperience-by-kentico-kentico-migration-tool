@@ -71,4 +71,4 @@ public static class Kx13SystemResource
 
     public static HashSet<string> ConvertToNonSysResource = new(new[] { cms_customsystemmodule }, StringComparer.CurrentCultureIgnoreCase);
 }
-#pragma warning enable IDE1006
+#pragma warning restore IDE1006

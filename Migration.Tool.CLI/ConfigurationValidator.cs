@@ -38,6 +38,7 @@ public static class ConfigurationValidator
             yield return new ValidationMessage(ValidationMessageType.Warning, Resources.ConfigurationValidator_GetValidationErrors_SourceCmsDirPath_IsRecommended);
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         if (settings?.GetValue<string>(ConfigurationNames.XbKConnectionString) is not null)
         {
             yield return new ValidationMessage(ValidationMessageType.Warning, $"Configuration key '{ConfigurationNames.XbKConnectionString}' is deprecated, use 'Settings:XbyKApiSettings:ConnectionStrings:CMSConnectionString' instead");
@@ -48,6 +49,7 @@ public static class ConfigurationValidator
             yield return new ValidationMessage(ValidationMessageType.Error,
                 Resources.ConfigurationValidator_GetValidationErrors_TargetCmsDirPath_IsRequired);
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         var targetKxpApiSettings = settings?.GetSectionWithFallback(ConfigurationNames.XbyKApiSettings, ConfigurationNames.XbKApiSettings);
         if (targetKxpApiSettings?.Exists() != true)

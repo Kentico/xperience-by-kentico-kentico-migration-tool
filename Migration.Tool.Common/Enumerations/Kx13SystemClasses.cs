@@ -174,4 +174,4 @@ public static class Kx13SystemClass
     public static HashSet<string> Customizable = new(new[] { cms_user, cms_usersettings, media_file, OM_Account, OM_Contact }, StringComparer.InvariantCultureIgnoreCase);
     public static HashSet<string> NoLongerSupported = new(new[] { cms_usersettings }, StringComparer.InvariantCultureIgnoreCase);
 }
-#pragma warning enable IDE1006
+#pragma warning restore IDE1006

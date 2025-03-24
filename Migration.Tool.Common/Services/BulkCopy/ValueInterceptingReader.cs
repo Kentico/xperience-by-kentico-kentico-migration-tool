@@ -28,7 +28,9 @@ public class ValueInterceptingReader : DataReaderProxyBase
         this.columnOrdinals = columnOrdinals.ToDictionary(x => x.OrdinalPosition, x => x.ColumnName);
     }
 
+#pragma warning disable CS8764 // Nullability of return type doesn't match overridden member (possibly because of nullability attributes).
     public override object? GetValue(int i) => overwrittenValues.ContainsKey(i) ? overwrittenValues[i] : base.GetValue(i);
+#pragma warning restore CS8764 // Nullability of return type doesn't match overridden member (possibly because of nullability attributes).
 
     public override bool Read()
     {
@@ -37,7 +39,7 @@ public class ValueInterceptingReader : DataReaderProxyBase
             overwrittenValues = [];
 
             bool skipCurrentDataRow = false;
-            var currentRow = columnOrdinals.ToDictionary(k => k.Value, v => base.GetValue(v.Key));
+            var currentRow = columnOrdinals.ToDictionary(k => k.Value, v => (object?)base.GetValue(v.Key));
             foreach ((int columnOrdinal, string columnName) in columnOrdinals)
             {
                 (object? newValue, bool overwriteValue, bool skipDataRow) = valueInterceptor.Invoke(columnOrdinal, columnName, base.GetValue(columnOrdinal), currentRow);

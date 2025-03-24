@@ -417,7 +417,10 @@ public class MigratePagesCommandHandler(
                                     }
                                 }
 
-                                MigrateFormerUrls(ksNode, webPageItemInfo, contentItemDirective.FormerUrlPaths);
+                                if (contentItemDirective.FormerUrlPaths is not null)
+                                {
+                                    MigrateFormerUrls(ksNode, webPageItemInfo, contentItemDirective.FormerUrlPaths);
+                                }
 
                                 var urls = WebPageUrlPathInfo.Provider.Get()
                                     .WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID), webPageItemInfo.WebPageItemID);

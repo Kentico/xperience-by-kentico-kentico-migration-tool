@@ -44,7 +44,7 @@ public class AlternativeFormMapper(
             formCoupledClass?.ClassName is { } coupledClassName &&
             K12SystemClass.NoLongerSupported.Contains(coupledClassName);
 
-        bool classIsSysInternal = K12SystemClass.All.Contains(formClass.ClassName);
+        bool classIsSysInternal = K12SystemClass.All.Contains(formClass!.ClassName);
 
         string mergedDefinition = formClass.ClassFormDefinition;
         if (formCoupledClass != null)

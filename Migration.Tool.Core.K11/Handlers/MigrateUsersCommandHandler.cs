@@ -72,7 +72,7 @@ public class MigrateUsersCommandHandler(
             var mapped = userInfoMapper.Map(k11User, xbkUserInfo);
             protocol.MappedTarget(mapped);
 
-            SaveUserUsingKenticoApi(mapped, k11User);
+            SaveUserUsingKenticoApi(mapped!, k11User);
         }
 
         await MigrateUserCmsRoles(k11Context, cancellationToken);

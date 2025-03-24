@@ -69,7 +69,7 @@ public class MultiClassMapping(string targetClassName, Action<DataClassInfo> cla
     string IClassMapping.TargetClassName => targetClassName;
 
     public List<IFieldMapping> Mappings { get; } = [];
-    public string PrimaryKey { get; set; }
+    public string PrimaryKey { get; set; } = null!;
 
     public HashSet<string> SourceClassNames = new(StringComparer.InvariantCultureIgnoreCase);
 

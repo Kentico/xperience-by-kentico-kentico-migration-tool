@@ -182,7 +182,7 @@ public class MigrateCustomModulesCommandHandler(
         await MigrateMemberClass(cancellationToken);
     }
 
-    private async Task MigrateMemberClass(CancellationToken cancellationToken)
+    private Task MigrateMemberClass(CancellationToken cancellationToken)
     {
         var cmsUser = modelFacade.SelectAll<ICmsClass>().FirstOrDefault(x => x.ClassName == K12SystemClass.cms_user);
         var cmsUserSettings = modelFacade.SelectAll<ICmsClass>().FirstOrDefault(x => x.ClassName == K12SystemClass.cms_usersettings);
@@ -190,13 +190,13 @@ public class MigrateCustomModulesCommandHandler(
         if (cmsUser == null)
         {
             protocol.Warning<ICmsUser>(HandbookReferences.InvalidSourceData<ICmsUser>().WithMessage($"{K12SystemClass.cms_user} class not found"), null);
-            return;
+            return Task.CompletedTask;
         }
 
         if (cmsUserSettings == null)
         {
             protocol.Warning<ICmsUserSetting>(HandbookReferences.InvalidSourceData<ICmsUserSetting>().WithMessage($"{K12SystemClass.cms_usersettings} class not found"), null);
-            return;
+            return Task.CompletedTask;
         }
 
         var target = kxpClassFacade.GetClass("CMS.Member");
@@ -242,6 +242,7 @@ public class MigrateCustomModulesCommandHandler(
 
         target.ClassFormDefinition = memberFormInfo.GetXmlDefinition();
         DataClassInfoProvider.ProviderObject.Set(target);
+        return Task.CompletedTask;
     }
 
     private void PatchClass(ICmsClass cmsClass, out ClassStructureInfo classStructureInfo, out FormInfo cmsUserFormInfo)
@@ -262,7 +263,7 @@ public class MigrateCustomModulesCommandHandler(
         cmsUserFormInfo = new FormInfo(result);
     }
 
-    private async Task MigrateAlternativeForms(ICmsClass k12Class, DataClassInfo xbkDataClass, CancellationToken cancellationToken)
+    private Task MigrateAlternativeForms(ICmsClass k12Class, DataClassInfo xbkDataClass, CancellationToken cancellationToken)
     {
         var k12AlternativeForms = modelFacade.SelectAll<ICmsAlternativeForm>()
             .Where(af => af.FormClassID == k12Class.ClassID);
@@ -302,6 +303,7 @@ public class MigrateCustomModulesCommandHandler(
                 logger.LogError(ex, "Error while saving alternative form {ResourceName}", k12AlternativeForm.FormName);
             }
         }
+        return Task.CompletedTask;
     }
 
     private Task<List<ICmsClass>> GetResourceClasses(int k12ResourceId) => Task.FromResult(modelFacade
@@ -316,7 +318,9 @@ public class MigrateCustomModulesCommandHandler(
         {
             protocol.FetchedSource(k12CmsResource);
 
+#pragma warning disable CS0618 // Type or member is obsolete
             var xbkResource = ResourceInfoProvider.ProviderObject.Get(k12CmsResource.ResourceGUID);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             protocol.FetchedTarget(xbkResource);
 
@@ -377,7 +381,9 @@ public class MigrateCustomModulesCommandHandler(
                     (var resourceInfo, bool newInstance) = mapped;
                     ArgumentNullException.ThrowIfNull(resourceInfo, nameof(resourceInfo));
 
+#pragma warning disable CS0618 // Type or member is obsolete
                     ResourceInfoProvider.ProviderObject.Set(resourceInfo);
+#pragma warning restore CS0618 // Type or member is obsolete
 
                     protocol.Success(k12CmsResource, resourceInfo, mapped);
                     logger.LogEntitySetAction(newInstance, resourceInfo);

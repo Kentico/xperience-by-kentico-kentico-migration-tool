@@ -15,7 +15,7 @@ public record FormComponentReplacement(string OldFormComponent, string NewFormCo
 public record DataTypeMigrationModel(
     FieldMigration[] FieldMigrations,
     FormComponentReplacement[] NotSupportedInKxpLegacyMode,
-    [property: Obsolete("Legacy mode is no longer supported")] string[] SupportedInKxpLegacyMode
+    string[] SupportedInKxpLegacyMode
 );
 
 public interface ISourceObjectContext;

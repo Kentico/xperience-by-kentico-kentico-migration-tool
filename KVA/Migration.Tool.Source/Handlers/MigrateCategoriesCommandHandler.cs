@@ -80,10 +80,10 @@ public class MigrateCategoriesCommandHandler(
                 if (targetDataClass is null)
                 {
                     // No direct-mapped target class found. Try to identify custom-mapped target class
-                    var classMapping = classMappingProvider.GetMapping(classWithCategoryUsage.ClassName);
+                    var classMapping = classMappingProvider.GetMapping(classWithCategoryUsage.ClassName!);
                     if (classMapping is not null)
                     {
-                        if (classWithCategoryUsage.Categories.Any(cat => classMapping.IsCategoryMapped(classWithCategoryUsage.ClassName, cat)))
+                        if (classWithCategoryUsage.Categories.Any(cat => classMapping.IsCategoryMapped(classWithCategoryUsage.ClassName!, cat)))
                         {
                             targetDataClass = kxpClassFacade.GetClass(classMapping.TargetClassName);
                         }
@@ -166,11 +166,11 @@ public class MigrateCategoriesCommandHandler(
                                 continue;
                             }
 
-                            var classMapping = classMappingProvider.GetMapping(dwc.NodeClassName);
+                            var classMapping = classMappingProvider.GetMapping(dwc.NodeClassName!);
                             if (classMapping is not null)
                             {
                                 Debug.Assert(dwc.CategoryID.HasValue, "dwc.CategoryID should have value, otherwise the row would not be included in the query due to inner join");
-                                if (!classMapping.IsCategoryMapped(dwc.NodeClassName, dwc.CategoryID.Value))
+                                if (!classMapping.IsCategoryMapped(dwc.NodeClassName!, dwc.CategoryID.Value))
                                 {
                                     continue;
                                 }
@@ -182,10 +182,10 @@ public class MigrateCategoriesCommandHandler(
                                     .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataGUID), widget.ContentItemCommonDataGuid)
                                     .FirstOrDefault();
 
-                                if (widgetHostPageCommonData.ContentItemCommonDataVisualBuilderWidgets is not null)
+                                if (widgetHostPageCommonData?.ContentItemCommonDataVisualBuilderWidgets is not null)
                                 {
                                     var visualBuilderWidgets = JsonConvert.DeserializeObject<EditableAreasConfiguration>(widgetHostPageCommonData.ContentItemCommonDataVisualBuilderWidgets);
-                                    foreach (var area in visualBuilderWidgets.EditableAreas)
+                                    foreach (var area in visualBuilderWidgets!.EditableAreas)
                                     {
                                         foreach (var section in area.Sections)
                                         {
@@ -195,12 +195,12 @@ public class MigrateCategoriesCommandHandler(
                                                 {
                                                     foreach (var variant in w.Variants)
                                                     {
-                                                        if (variant.Identifier.Equals(widget.WidgetVariantGuid))
+                                                        if (variant!.Identifier.Equals(widget.WidgetVariantGuid))
                                                         {
                                                             var array = variant.Properties.ContainsKey(widgetCategoryFieldName)
                                                                 ? variant.Properties.Value<JArray>(widgetCategoryFieldName)
                                                                 : [];
-                                                            array.Add(new JObject { { "identifier", tag.TagGUID.ToString() } });
+                                                            array!.Add(new JObject { { "identifier", tag.TagGUID.ToString() } });
                                                             variant.Properties[widgetCategoryFieldName] = array;
                                                         }
                                                     }

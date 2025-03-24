@@ -131,7 +131,7 @@ public class PrimaryKeyLocatorService(
             if (sourceType == typeof(ICmsUser))
             {
                 var source = modelFacade.SelectById<ICmsUser>(sourceId);
-                targetId = UserInfo.Provider.Get().WhereEquals(nameof(UserInfo.UserGUID), source.UserGUID).Or().WhereEquals(nameof(UserInfo.UserName), source.UserName).Select(x => x.UserID).Single();
+                targetId = UserInfo.Provider.Get().WhereEquals(nameof(UserInfo.UserGUID), source!.UserGUID).Or().WhereEquals(nameof(UserInfo.UserName), source.UserName).Select(x => x.UserID).Single();
                 return true;
             }
 

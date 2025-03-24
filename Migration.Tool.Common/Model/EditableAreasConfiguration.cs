@@ -34,7 +34,7 @@ public sealed class EditableAreaConfiguration
     /// <summary>Identifier of the editable area.</summary>
     [DataMember]
     [JsonProperty("identifier")]
-    public string Identifier { get; set; }
+    public string Identifier { get; set; } = null!;
 
     /// <summary>Sections within editable area.</summary>
     [DataMember]
@@ -83,7 +83,7 @@ public sealed class SectionConfiguration
     /// <summary>Type section identifier.</summary>
     [DataMember]
     [JsonProperty("type")]
-    public string TypeIdentifier { get; set; }
+    public string TypeIdentifier { get; set; } = null!;
 
     /// <summary>Section properties.</summary>
     [DataMember]
@@ -117,7 +117,7 @@ public sealed class ZoneConfiguration
     /// <summary>Name of the widget zone.</summary>
     [DataMember]
     [JsonProperty("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     /// <summary>List of widgets within the zone.</summary>
     [DataMember]
@@ -145,12 +145,12 @@ public sealed class WidgetConfiguration
     /// <summary>Type widget identifier.</summary>
     [DataMember]
     [JsonProperty("type")]
-    public string TypeIdentifier { get; set; }
+    public string TypeIdentifier { get; set; } = null!;
 
     /// <summary>Personalization condition type identifier.</summary>
     [DataMember]
     [JsonProperty("conditionType")]
-    public string PersonalizationConditionTypeIdentifier { get; set; }
+    public string PersonalizationConditionTypeIdentifier { get; set; } = null!;
 
     /// <summary>List of widget variants.</summary>
     [DataMember]
@@ -173,19 +173,19 @@ public sealed class WidgetVariantConfiguration
     /// <summary>Widget variant name.</summary>
     [DataMember]
     [JsonProperty("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     /// <summary>Widget variant properties.</summary>
     [DataMember]
     [JsonProperty("properties")]
     // public IWidgetProperties Properties { get; set; }
-    public JObject Properties { get; set; }
+    public JObject Properties { get; set; } = null!;
 
     /// <summary>Widget variant personalization condition type.</summary>
     /// <remarks>Only personalization condition type parameters are serialized to JSON.</remarks>
     [DataMember]
     [JsonProperty("conditionTypeParameters")]
-    public JObject PersonalizationConditionType { get; set; }
+    public JObject PersonalizationConditionType { get; set; } = null!;
 }
 
 #endregion

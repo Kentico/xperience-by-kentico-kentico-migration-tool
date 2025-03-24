@@ -3,7 +3,7 @@
 namespace Migration.Tool.Source.Mappers.ContentItemMapperDirectives;
 public abstract class ContentItemDirectorBase
 {
-    internal Func<Guid, JToken> MediaInfoLoader;
+    internal Func<Guid, JToken> MediaInfoLoader = null!;
 
     public abstract void Direct(ContentItemSource source, IContentItemActionProvider options);
     protected JToken IdentifierArrayPropertyValue(IEnumerable<Guid> itemGuids) => new JArray(itemGuids.Select(x => new JObject { { "identifier", x } }));
