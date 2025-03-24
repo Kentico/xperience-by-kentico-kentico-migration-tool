@@ -93,7 +93,7 @@ public class ClassMappingHandlerWrapper(IClassMappingHandler impl, ILogger logge
             }
 
             default:
-                break;
+                throw new NotImplementedException("Internal error 0376d796-bc54-4bf6-bc0c-4f320a1ba7ed. Report this issue.");
         }
     }
 

@@ -116,7 +116,6 @@ public class CmsClassMapper(
                 :
             {
                 throw new Exception("Unable to map obsolete dataclass");
-                return target;
             }
             // Target Other,null
             // Target System,null

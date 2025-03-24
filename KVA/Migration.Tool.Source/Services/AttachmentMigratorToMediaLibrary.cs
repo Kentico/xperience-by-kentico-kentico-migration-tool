@@ -117,7 +117,7 @@ public class AttachmentMigratorToMediaLibrary(
         }
     }
 
-    public async Task<IMigrateAttachmentResult> MigrateAttachment(ICmsAttachment ksAttachment, string? additionalMediaPath = null)
+    public Task<IMigrateAttachmentResult> MigrateAttachment(ICmsAttachment ksAttachment, string? additionalMediaPath = null)
     {
         protocol.FetchedSource(ksAttachment);
 
@@ -125,7 +125,7 @@ public class AttachmentMigratorToMediaLibrary(
         {
             logger.LogWarning("Attachment '{AttachmentGuid}' is temporary => skipping", ksAttachment.AttachmentGUID);
             protocol.Append(HandbookReferences.TemporaryAttachmentMigrationIsNotSupported.WithData(new { ksAttachment.AttachmentID, ksAttachment.AttachmentGUID, ksAttachment.AttachmentName, ksAttachment.AttachmentSiteID }));
-            return new MigrateAttachmentResultMediaFile(false);
+            return Task.FromResult((IMigrateAttachmentResult)new MigrateAttachmentResultMediaFile(false));
         }
 
         var ksAttachmentDocument = ksAttachment.AttachmentDocumentID is { } attachmentDocumentId
@@ -139,7 +139,7 @@ public class AttachmentMigratorToMediaLibrary(
         var site = modelFacade.SelectById<ICmsSite>(ksAttachment.AttachmentSiteID) ?? throw new InvalidOperationException("Site not exists!");
         if (!TryEnsureTargetLibraryExists(ksAttachment.AttachmentSiteID, site.SiteName, out int targetMediaLibraryId))
         {
-            return new MigrateAttachmentResultMediaFile(false);
+            return Task.FromResult((IMigrateAttachmentResult)new MigrateAttachmentResultMediaFile(false));
         }
 
         var uploadedFile = CreateUploadFileFromAttachment(ksAttachment);
@@ -150,7 +150,7 @@ public class AttachmentMigratorToMediaLibrary(
                 .WithIdentityPrint(ksAttachment)
                 .WithMessage("Failed to create dummy upload file containing data")
             );
-            return new MigrateAttachmentResultMediaFile(false);
+            return Task.FromResult((IMigrateAttachmentResult)new MigrateAttachmentResultMediaFile(false));
         }
 
         (bool isFixed, var newAttachmentGuid) = entityIdentityFacade.Translate(ksAttachment);
@@ -193,7 +193,7 @@ public class AttachmentMigratorToMediaLibrary(
                 protocol.Success(ksAttachmentDocument, mediaFileInfo, mapped);
                 logger.LogEntitySetAction(newInstance, mediaFileInfo);
 
-                return new MigrateAttachmentResultMediaFile(true, mediaFileInfo, MediaLibraryInfoProvider.ProviderObject.Get(targetMediaLibraryId));
+                return Task.FromResult((IMigrateAttachmentResult)new MigrateAttachmentResultMediaFile(true, mediaFileInfo, MediaLibraryInfoProvider.ProviderObject.Get(targetMediaLibraryId)));
             }
             catch (Exception exception)
             {
@@ -206,7 +206,7 @@ public class AttachmentMigratorToMediaLibrary(
             }
         }
 
-        return new MigrateAttachmentResultMediaFile(false);
+        return Task.FromResult((IMigrateAttachmentResult)new MigrateAttachmentResultMediaFile(false));
     }
 
     private IUploadedFile? CreateUploadFileFromAttachment(ICmsAttachment attachment)

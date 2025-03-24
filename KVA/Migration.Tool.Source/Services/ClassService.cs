@@ -22,7 +22,7 @@ public class ClassService(ILogger<ClassService> logger, ModelFacade modelFacade)
 
             return cmsFormUserControl;
         }
-        catch (Exception ex)
+        catch
         {
             logger.LogError("Error while retrieving FormUserControl with codename {CodeName}", s);
         }

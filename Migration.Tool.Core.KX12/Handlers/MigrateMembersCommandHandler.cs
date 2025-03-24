@@ -60,10 +60,16 @@ public class MigrateMembersCommandHandler(
                 continue;
             }
 
-            var mapped = memberInfoMapper.Map(new MemberInfoMapperSource(k12User, k12User.CmsUserSettingUserSettingsUserNavigation), xbkMemberInfo);
+            if (k12User.CmsUserSettingUserSettingsUserNavigation is null)
+            {
+                logger.LogError("User settings for user {UserName} with UserGuid {UserGuid} not found", k12User.UserName, k12User.UserGuid);
+                continue;
+            }
+
+            var mapped = memberInfoMapper.Map(new MemberInfoMapperSource(k12User, k12User.CmsUserSettingUserSettingsUserNavigation!), xbkMemberInfo);
             protocol.MappedTarget(mapped);
 
-            SaveUserUsingKenticoApi(mapped, k12User);
+            SaveUserUsingKenticoApi(mapped!, k12User);
         }
 
         return new GenericCommandResult();

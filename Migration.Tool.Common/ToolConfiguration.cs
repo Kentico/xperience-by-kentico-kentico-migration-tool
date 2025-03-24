@@ -93,7 +93,9 @@ public class ToolConfiguration
 
     #region Connection string of target instance
 
+#pragma warning disable CS0618 // Type or member is obsolete
     [ConfigurationKeyName(ConfigurationNames.XbKConnectionString)]
+#pragma warning restore CS0618 // Type or member is obsolete
     public string XbKConnectionString
     {
         get => xbkConnectionString!;
@@ -116,7 +118,9 @@ public class ToolConfiguration
     private HashSet<string>? classNamesCreateReusableSchema;
     private string? xbkConnectionString;
 
+#pragma warning disable CS0618 // Type or member is obsolete
     [ConfigurationKeyName(ConfigurationNames.XbKDirPath)]
+#pragma warning restore CS0618 // Type or member is obsolete
     public string? XbKDirPath { get; set; } = null;
 
     [ConfigurationKeyName(ConfigurationNames.XbyKDirPath)]

@@ -7,7 +7,7 @@ public class SourceInstanceDiscoveredInfo
     public Dictionary<string, List<EditingFormControlModel>>? PageTemplateProperties { get; set; }
     public Dictionary<string, List<EditingFormControlModel>>? SectionProperties { get; set; }
     public List<PageModel> PageModels { get; set; } = [];
-    public string SiteName { get; set; }
+    public string SiteName { get; set; } = null!;
 }
 
 public record PageModel(
@@ -32,11 +32,11 @@ public class EditingFormControlModel
     ///     <see cref="T:Kentico.Forms.Web.Mvc.RegisterFormComponentAttribute" />.
     /// </remarks>
     /// <seealso cref="T:Kentico.Forms.Web.Mvc.RegisterFormComponentAttribute" />
-    public string FormComponentIdentifier { get; set; }
+    public string FormComponentIdentifier { get; set; } = null!;
 
     /// <summary>Gets or sets the label of the form component.</summary>
     /// <seealso cref="P:Kentico.Forms.Web.Mvc.FormComponentProperties.Label" />
-    public string Label { get; set; }
+    public string Label { get; set; } = null!;
 
     /// <summary>Gets or sets the default value of the form component.</summary>
     /// <seealso cref="P:Kentico.Forms.Web.Mvc.FormComponentProperties`1.DefaultValue" />
@@ -46,15 +46,15 @@ public class EditingFormControlModel
     ///     Gets or sets the explanation text of the form component.
     /// </summary>
     /// <seealso cref="P:Kentico.Forms.Web.Mvc.FormComponentProperties.ExplanationText" />
-    public string ExplanationText { get; set; }
+    public string ExplanationText { get; set; } = null!;
 
     /// <summary>Gets or sets the tooltip of the form component.</summary>
     /// <seealso cref="P:Kentico.Forms.Web.Mvc.FormComponentProperties.Tooltip" />
-    public string Tooltip { get; set; }
+    public string Tooltip { get; set; } = null!;
 
     /// <summary>Gets or sets the order weight of the form component.</summary>
     /// <seealso cref="T:Kentico.Forms.Web.Mvc.EditingComponentOrder" />
     public int? Order { get; set; }
 
-    public string PropertyName { get; set; }
+    public string PropertyName { get; set; } = null!;
 }

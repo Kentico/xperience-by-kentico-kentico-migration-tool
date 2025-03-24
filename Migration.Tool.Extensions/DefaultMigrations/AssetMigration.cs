@@ -69,7 +69,7 @@ public class AssetMigration(
                     {
                         case MigrateAttachmentResultMediaFile(true, var x, _):
                         {
-                            mfis = [new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
+                            mfis = [new AssetRelatedItem { Identifier = x!.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
                             hasMigratedAsset = true;
                             logger.LogTrace("'{FieldName}' migrated Match={Value}", fieldName, result);
                             break;
@@ -135,7 +135,7 @@ public class AssetMigration(
                     {
                         case MigrateAttachmentResultMediaFile(true, var x, _):
                         {
-                            mfis = [new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
+                            mfis = [new AssetRelatedItem { Identifier = x!.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
                             hasMigratedAsset = true;
                             logger.LogTrace("MediaFile migrated from attachment '{Field}': '{Value}'", fieldName, mg);
                             break;
@@ -185,7 +185,7 @@ public class AssetMigration(
                 }
             }
         }
-        else if (classService.GetFormControlDefinition(sourceFormControl) is { } formControl)
+        else if (classService.GetFormControlDefinition(sourceFormControl!) is { } formControl)
         {
             switch (formControl)
             {
@@ -197,7 +197,7 @@ public class AssetMigration(
                         {
                             case MigrateAttachmentResultMediaFile(true, var mfi, _):
                             {
-                                mfis = [new AssetRelatedItem { Identifier = mfi.FileGUID, Dimensions = new AssetDimensions { Height = mfi.FileImageHeight, Width = mfi.FileImageWidth }, Name = mfi.FileName, Size = mfi.FileSize }];
+                                mfis = [new AssetRelatedItem { Identifier = mfi!.FileGUID, Dimensions = new AssetDimensions { Height = mfi.FileImageHeight, Width = mfi.FileImageWidth }, Name = mfi.FileName, Size = mfi.FileSize }];
                                 hasMigratedAsset = true;
                                 logger.LogTrace("MediaFile migrated from attachment '{Field}': '{Value}'", fieldName, attachmentGuid);
                                 break;

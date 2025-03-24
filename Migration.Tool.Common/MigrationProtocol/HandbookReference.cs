@@ -7,7 +7,7 @@ namespace Migration.Tool.Common.MigrationProtocol;
 
 public class HandbookReference
 {
-    public static IPrintService PrintService = default;
+    public static IPrintService? PrintService = default;
 
     /// <summary>
     ///     Use <see cref="HandbookReferences" /> class to store factory methods, don't create instances directly in code.
@@ -26,7 +26,7 @@ public class HandbookReference
     public string ReferenceName { get; }
     public string? AdditionalInfo { get; }
     public Dictionary<string, object?>? Data { get; private set; }
-    public string Suggestion { get; private set; }
+    public string? Suggestion { get; private set; }
 
     public override string ToString()
     {
@@ -126,7 +126,7 @@ public class HandbookReference
         Data ??= [];
         var dataUpdate = data.GetType()
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .ToDictionary(p => p.Name, p => p.GetMethod.Invoke(data, Array.Empty<object>())
+            .ToDictionary(p => p.Name, p => p.GetMethod!.Invoke(data, Array.Empty<object>())
             );
         foreach ((string key, object? value) in dataUpdate)
         {
@@ -148,7 +148,7 @@ public class HandbookReference
     public HandbookReference WithIdentityPrint<T>(T model)
     {
         Data ??= [];
-        Data.Add("Entity", PrintService.GetEntityIdentityPrint(model));
+        Data.Add("Entity", PrintService!.GetEntityIdentityPrint(model));
         return this;
     }
 
@@ -164,7 +164,7 @@ public class HandbookReference
     public HandbookReference WithIdentityPrints<T>(IEnumerable<T> models)
     {
         Data ??= [];
-        Data.Add("Entity", PrintService.GetEntityIdentityPrint(models));
+        Data.Add("Entity", PrintService!.GetEntityIdentityPrint(models));
         return this;
     }
 

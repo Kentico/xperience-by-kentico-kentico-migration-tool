@@ -64,9 +64,6 @@ public class BulkDataCopyService(ToolConfiguration configuration, ILogger<BulkDa
         return anyFailedColumnCheck;
     }
 
-    public bool CheckForTableColumnsDifferences(string tableName, out List<(string sourceColumn, string targetColumn)> columnsWithFailedCheck)
-        => CheckForTableColumnsDifferences(tableName, null, out columnsWithFailedCheck);
-
     public void CopyTableToTable(BulkCopyRequest request)
     {
         (string tableName, var columnFilter, var dataFilter, int batchSize, var columns, var valueInterceptor, var skippedRowCallback, string? orderBy) = request;

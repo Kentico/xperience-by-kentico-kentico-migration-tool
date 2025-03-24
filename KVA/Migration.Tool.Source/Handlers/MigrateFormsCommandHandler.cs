@@ -181,7 +181,7 @@ public class MigrateFormsCommandHandler(
 
     #region Directory globalization
 
-    private async Task GlobalizeBizFormFiles()
+    private Task GlobalizeBizFormFiles()
     {
         foreach (var cmsSite in modelFacade.GetMigratedSites())
         {
@@ -206,6 +206,7 @@ public class MigrateFormsCommandHandler(
                 Debug.WriteLine($"Directory '{siteBizFormFiles}' not exists");
             }
         }
+        return Task.CompletedTask;
     }
 
     internal static void CopyAll(CMS.IO.DirectoryInfo source, CMS.IO.DirectoryInfo target)

@@ -52,6 +52,8 @@ public class PageTemplateConfigurationMapper(
             return target;
         }
 
+#pragma warning disable CS8603 // Possible null reference return.
         return null;
+#pragma warning restore CS8603 // Possible null reference return.
     }
 }

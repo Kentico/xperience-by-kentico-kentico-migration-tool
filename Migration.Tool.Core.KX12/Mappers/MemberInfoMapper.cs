@@ -133,7 +133,7 @@ public class MemberInfoMapper(
         var usDci = kx12Context.CmsClasses.Select(x => new { x.ClassFormDefinition, x.ClassName, x.ClassTableName }).FirstOrDefault(x => x.ClassName == K12SystemClass.cms_usersettings);
         if (usDci != null)
         {
-            var userSettingsCustomizedFields = kxpClassFacade.GetCustomizedFieldInfos(new FormInfo(usDci?.ClassFormDefinition)).ToList();
+            var userSettingsCustomizedFields = kxpClassFacade.GetCustomizedFieldInfos(new FormInfo(usDci!.ClassFormDefinition)).ToList();
             if (userSettingsCustomizedFields.Count > 0)
             {
                 try

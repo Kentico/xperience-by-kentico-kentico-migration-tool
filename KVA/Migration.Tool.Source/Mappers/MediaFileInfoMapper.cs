@@ -49,7 +49,7 @@ public class MediaFileInfoMapper(
 
     protected override MediaFileInfo MapInternal(MediaFileInfoMapperSource source, MediaFileInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
-        (string fullMediaFilePath, var mediaFile, int targetLibraryId, var file, _, bool migrateOnlyMediaFileInfo, var safeMediaFileGuid) = source;
+        (string? fullMediaFilePath, var mediaFile, int targetLibraryId, var file, _, bool migrateOnlyMediaFileInfo, var safeMediaFileGuid) = source;
 
         target.FileName = mediaFile.FileName;
         target.FileTitle = mediaFile.FileTitle;

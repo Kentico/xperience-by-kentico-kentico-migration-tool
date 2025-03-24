@@ -232,13 +232,13 @@ public class FormDefinitionPatcher
                         break;
                     case TfcDirective.CopySourceControl:
                         logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:{TcaDirective} => {ControlName}", fieldDescriptor, targetFormComponent, controlName);
-                        controlNameElem?.SetValue(controlName);
+                        controlNameElem?.SetValue(controlName!);
                         PerformActionsOnField(field, fieldDescriptor, actions);
                         break;
                     default:
                     {
                         logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:NONE => from control '{ControlName}' => {TargetFormComponent}", fieldDescriptor, controlName, targetFormComponent);
-                        controlNameElem?.SetValue(targetFormComponent);
+                        controlNameElem?.SetValue(targetFormComponent!);
                         PerformActionsOnField(field, fieldDescriptor, actions);
                         break;
                     }
