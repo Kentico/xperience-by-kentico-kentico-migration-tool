@@ -6,6 +6,7 @@ To create custom migrations:
     - [Field migrations](#customize-field-migrations)
     - [Widget migrations](#customize-widget-migrations)
     - [Widget property migrations](#customize-widget-property-migrations)
+    - [Page to widget migrations](#migrate-pages-to-widgets)
     - [Custom class mappings](#custom-class-mappings)
 2. [Register the migration](#register-migrations)
 
