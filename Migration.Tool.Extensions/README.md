@@ -73,13 +73,13 @@ After implementing the migration, you need to [register the migration](#register
 
 ## Migrate pages to widgets
 
-This migration allows you to migrate pages from the source instance as [widgets](https://docs.kentico.com/x/7gWiCQ) in the target instance. For example, you have a page that serves as a listing and displays content from child pages, you can convert the child pages into widgets.
+This migration allows you to migrate pages from the source instance as [widgets](https://docs.kentico.com/x/7gWiCQ) in the target instance. For example, you have a page that serves as a listing and displays content from child pages, you can convert the child pages into widgets, convert the child to pages to content items in the content hub, and link them from the widgets.
 
 > :warning: The target page (with an editable area) and any [Page Builder components](https://docs.kentico.com/x/6QWiCQ) used in the migration need to be present in the system before you migrate content.
 
 In `Migration.Tool.Extensions/CommunityMigrations`, create a new file with a class that inherits from the `ContentItemDirectorBase` class and override the `Direct(source, options)` method:
 
-1. Ensure that the target page has a page template if the source page uses a page template.
+1. Ensure that the target page has a [page template](https://docs.kentico.com/x/iInWCQ) if the source page uses a page template.
 
     ```csharp
     // Store page uses a template and is the parent listing page
