@@ -70,6 +70,74 @@ You can see samples:
 
 After implementing the migration, you need to [register the migration](#register-migrations) in the system.
 
+## Migrate pages to widgets
+
+This migration allows you to migrate pages from the source instance as [widgets](https://docs.kentico.com/x/7gWiCQ) in the target instance. For example, you have a page that serves as a listing and displays content from child pages, you can convert the child pages into widgets.
+
+> :warning: The target page (with an editable area) and any [Page Builder components](https://docs.kentico.com/x/6QWiCQ) used in the migration need to be present in the system before you migrate content.
+
+In `Migration.Tool.Extensions/CommunityMigrations`, create a new file with a class that inherits from the `ContentItemDirectorBase` class and override the `Direct(source, options)` method:
+
+1. Ensure that the target page has a page template if the source page uses a page template.
+
+    ```csharp
+    // Store page uses a template and is the parent listing page
+    if (source.SourceNode.SourceClassName == "Acme.Store")
+    {
+      // Ensures the page template is present in the system
+      options.OverridePageTemplate("StorePageTemplate");
+    }
+    ```
+
+2. Identify pages you want to migrate to widgets and use the `options.AsWidget()` action.
+
+    ```csharp
+    // Identifies pages by their content type
+    else if (source.SourceNode.SourceClassName == "Acme.Coffee")
+    {
+        options.AsWidget("Acme.CoffeeSampleWidget", null, null, options =>
+        {
+            // Determines where to place the widget
+            options.Location
+                // Negative indexing is used - '-1' signifies direct parent node
+                .OnAncestorPage(-1)
+                .InEditableArea("main-area")
+                .InSection("SingleColumnSection")
+                .InFirstZone();
+
+            // Specifies the widget's properties
+            options.Properties.Fill(true, (itemProps, reusableItemGuid, childGuids) =>
+            {
+                // Simple way to achieve basic conversion of all properties, properties can be refined in the following steps
+                var widgetProps = JObject.FromObject(itemProps);
+
+                // The converted page is linked as a reusable content item into a single property of the widget.
+                // NOTE: List the page class name app settings in ConvertClassesToContentHub to make it reusable!
+                widgetProps["LinkedContent"] = LinkedItemPropertyValue(reusableItemGuid!.Value);
+
+                // Link reusable content items created from page's original subnodes
+                // NOTE: List the page class names in app settings in ConvertClassesToContentHub to make it reusable!
+                widgetProps["LinkedChildren"] = LinkedItemsPropertyValue(childGuids);
+
+                return widgetProps;
+            });
+        });
+    }
+    ```
+
+3. Drop all other pages from this migration:
+
+    ```csharp
+    else
+    {
+        options.Drop();
+    }
+    ```
+
+You can see a sample: [SamplePageToWidgetDirector.cs](./CommunityMigrations/SamplePageToWidgetDirector.cs)
+
+After implementing the migration, you need to [register the migration](#register-migrations) in the system.
+
 ## Register migrations
 
 Register the migration in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as a `Transient` dependency into the service collection:
