@@ -127,7 +127,9 @@ public class AssetFacade(
                     Size = null,
                     LastModified = null,
                     FilePath = mediaFilePath
-                }
+                },
+                [LegacyMediaFileTitleField.Column!] = mediaFile.FileTitle,
+                [LegacyMediaFileDescriptionField.Column!] = mediaFile.FileDescription,
             }
         }));
 
@@ -320,6 +322,30 @@ public class AssetFacade(
         Properties = new FormFieldProperties { FieldCaption = "Asset", },
         Settings = new FormFieldSettings { CustomProperties = new Dictionary<string, object?> { { "AllowedExtensions", "_INHERITED_" } }, ControlName = "Kentico.Administration.ContentItemAssetUploader" }
     };
+
+    internal static readonly FormField LegacyMediaFileTitleField = new()
+    {
+        Column = "LegacyMediaFileTitle",
+        ColumnType = "text",
+        ColumnSize = 250,
+        AllowEmpty = true,
+        Visible = true,
+        Enabled = true,
+        Guid = new Guid("83650744-916B-4E19-A31F-B0250166D47D"),
+        Properties = new FormFieldProperties { FieldCaption = "Title", },
+    };
+
+    internal static readonly FormField LegacyMediaFileDescriptionField = new()
+    {
+        Column = "LegacyMediaFileDescription",
+        ColumnType = "text",
+        AllowEmpty = true,
+        Visible = true,
+        Enabled = true,
+        Guid = new Guid("98F43915-B540-478D-80A4-E294E631C431"),
+        Properties = new FormFieldProperties { FieldCaption = "Description", },
+    };
+
     public static readonly DataClassModel LegacyMediaFileContentType = new()
     {
         ClassName = "Legacy.MediaFile",
@@ -333,7 +359,9 @@ public class AssetFacade(
         ClassWebPageHasUrl = false,
         Fields =
             [
-                    LegacyMediaFileAssetField
+                LegacyMediaFileAssetField,
+                LegacyMediaFileTitleField,
+                LegacyMediaFileDescriptionField
             ]
     };
 
