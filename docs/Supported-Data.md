@@ -13,6 +13,7 @@ Currently, the Kentico Migration Tool supports the following types of data:
 - **Content types** (_Page types_ in earlier Kentico versions)
   - The Kentico Migration Tool attempts to map the _Data type_ and _Form control_ of page type fields to an appropriate equivalent in Xperience by Kentico. This mapping is not always possible and does not work for custom data types or form controls. We recommend checking your content type fields after the migration and adjusting them if necessary.
   - The migration includes only page types assigned to at least one site on the source instance.
+  - The migration supports [content type restrictions](https://docs.kentico.com/x/bw2RBg) (scopes and allowed child types).
   - Xperience by Kentico currently does not support:
     - Macro expressions in page type field default values or other settings. Content type fields containing macros will not work correctly after the migration.
     - Categories for page type fields. Field categories are not migrated with page types.
@@ -20,9 +21,10 @@ Currently, the Kentico Migration Tool supports the following types of data:
       - However, you can create [reusable field schemas](../Migration.Tool.CLI/README.md#convert-page-types-to-reusable-field-schemas) for page types from which other page types inherit.
   - All migrated Content types have the **Include in routing** option enabled (the migration never creates pages without URL and routing).
 - **Pages**
+  - Pages can be migrated to either to [website channel pages](https://docs.kentico.com/x/JwKQC) (default behavior) or [reusable content items](https://docs.kentico.com/x/barWCQ) in Content hub.
   - The migration includes the following versions of pages:
     - _Published_
-    - _Latest draft version_ - for published pages, the version is migrated to the _Draft_ [status](https://docs.kentico.com/x/JwKQC); for pages that do not have a published version, the version is migrated to the _Draft (initial)_ workflow step.
+    - _Latest draft version_ - for published pages, the version is migrated to the _Draft (New version)_ [status](https://docs.kentico.com/x/JwKQC); for pages that do not have a published version, the version is migrated to the _Draft (Initial)_ status.
     - _Archived_ pages are migrated to the _Unpublished_ status.
   - Each page gets assigned under its corresponding website channel.
   - Linked pages are currently not supported in Xperience by Kentico. The migration creates standard page copies for any linked pages on the source instance.
@@ -66,8 +68,7 @@ Currently, the Kentico Migration Tool supports the following types of data:
     - Module permissions (permissions work differently in Xperience by Kentico - see [Role management](https://docs.kentico.com/x/7IVwCg) and [UI page permission checks](https://docs.kentico.com/x/8IKyCg))
     - As with all object types, the Kentico Migration Tool does not transfer code files to the target project. You must manually move all code files generated for your custom classes (_Info_, _InfoProvider_, etc.).
 - **Custom tables**
-  - Custom tables are not supported in Xperience by Kentico. Data from custom tables is migrated to the target instance as custom modules.
-  - The migration only transfers data from custom tables to the custom module (_CMS_Resource_) database table.
+  - Custom tables are not supported in Xperience by Kentico. Data from custom tables can be migrated to the target instance either as [custom module classes](https://docs.kentico.com/x/AKDWCQ) (default behavior) or as [reusable content items](https://docs.kentico.com/x/barWCQ) in Content hub.
   - Any user interface, listings, filters, and other functionality related to migrated custom tables needs to be implemented in the target instance.
 - **Setting values**
 
