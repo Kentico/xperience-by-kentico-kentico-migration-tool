@@ -49,6 +49,10 @@ public static class ClassMappingSample
             .WithFieldPatch(f => f.Caption = "Country RM")
             .SetFrom(sourceClassName, "CoffeeCountry", true);
 
+
+
+        
+
         m
             .BuildField("CoffeeVarietyRM")
             .SetFrom(sourceClassName, "CoffeeVariety", true)
