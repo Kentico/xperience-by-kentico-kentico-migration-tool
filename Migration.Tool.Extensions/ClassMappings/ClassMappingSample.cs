@@ -18,6 +18,7 @@ public static class ClassMappingSample
     {
         const string targetClassName = "DancingGoatCore.CoffeeRemodeled";
         // declare target class
+        
         var m = new MultiClassMapping(targetClassName, target =>
         {
             target.ClassName = targetClassName;
