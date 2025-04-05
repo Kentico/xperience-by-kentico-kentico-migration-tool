@@ -73,13 +73,16 @@ After implementing the migration, you need to [register the migration](#register
 
 ## Migrate pages to widgets
 
-This migration allows you to migrate pages from the source instance as [widgets](https://docs.kentico.com/x/7gWiCQ) in the target instance. For example, you have a page that serves as a listing and displays content from child pages, you can convert the child pages into widgets, convert the child to pages to content items in the content hub, and link them from the widgets.
+This migration allows you to migrate pages from the source instance as [widgets](https://docs.kentico.com/x/7gWiCQ) in the target instance. This migration can be used in the following ways:
 
-> :warning: The target page (with an editable area) and any [Page Builder components](https://docs.kentico.com/x/6QWiCQ) used in the migration need to be present in the system before you migrate content.
+- If you have a page with content stored in page fields, you can migrate the values of the fields into widget properties and display the content as a widget.
+- If you have a page that serves as a listing and displays content from child pages, you can convert the child pages into widgets and as content items in the content hub, then link them from the widgets.
+
+> :warning: The target page (with an [Page Builder editable area](https://docs.kentico.com/x/7AWiCQ)) and any [Page Builder components](https://docs.kentico.com/x/6QWiCQ) used in the migration need to be present in the system before you migrate content.
 
 In `Migration.Tool.Extensions/CommunityMigrations`, create a new file with a class that inherits from the `ContentItemDirectorBase` class and override the `Direct(source, options)` method:
 
-1. Ensure that the target page has a [page template](https://docs.kentico.com/x/iInWCQ) if the source page uses a page template.
+1. Ensure that the target page has a [page template](https://docs.kentico.com/x/iInWCQ).
 
     ```csharp
     // Store page uses a template and is the parent listing page
@@ -126,18 +129,9 @@ In `Migration.Tool.Extensions/CommunityMigrations`, create a new file with a cla
     }
     ```
 
-3. Drop all other pages from this migration:
-
-    ```csharp
-    else
-    {
-        options.Drop();
-    }
-    ```
-
 You can see a sample: [SamplePageToWidgetDirector.cs](./CommunityMigrations/SamplePageToWidgetDirector.cs)
 
-After implementing the migration, you need to [register the migration](#register-migrations) in the system.
+After implementing the content item director, you need to [register the director](#register-migrations) in the system.
 
 ## Register migrations
 
@@ -146,6 +140,7 @@ Register the migration in `Migration.Tool.Extensions/ServiceCollectionExtension
 - Field migrations - `services.AddTransient<IFieldMigration, MyFieldMigration>();`
 - Widget migrations - `services.AddTransient<IWidgetMigration, MyWidgetMigration>();`
 - Widget property migrations - `services.AddTransient<IWidgetPropertyMigration, MyWidgetPropertyMigration>();`
+- Page to widget migrations - `services.AddTransient<ContentItemDirectorBase, MyPageToWidgetDirector>();`
 
 ## Custom class mappings
 
