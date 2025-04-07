@@ -441,7 +441,7 @@ public class ContentItemMapper(
                     var childNodes = modelFacade.Select<ICmsTree>("NodeParentID = @nodeID", "NodeOrder", new SqlParameter("nodeID", cmsTree.NodeID));
                     var childItemGUIDs = childNodes.Select(x => ContentItemInfo.Provider.Get(x.NodeGUID)?.ContentItemGUID).Where(x => x is not null).Select(x => x!.Value).ToList();   // don't presume that ContentItem matching the Node exists. Director might have dropped it
 
-                    var widgetProperties = widgetDirective.ItemToWidgetPropertiesMapping?.Invoke(commonDataModel.CustomProperties.Concat(dataModel.CustomProperties).ToDictionary(), storeContentItem ? contentItemModel.ContentItemGUID : null, childItemGUIDs) ?? new JObject();
+                    var widgetProperties = widgetDirective.ItemToWidgetPropertiesMapping?.Invoke(commonDataModel.CustomProperties.Concat(dataModel.CustomProperties).ToDictionary(), storeContentItem ? contentItemModel.ContentItemGUID : null, childItemGUIDs) ?? [];
 
                     // attach widget object
                     if (widgetDirective.EditableAreaIdentifier is null)
