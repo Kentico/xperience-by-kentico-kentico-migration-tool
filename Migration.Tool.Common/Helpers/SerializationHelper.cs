@@ -20,7 +20,7 @@ public class SerializationHelper
         protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
             var property = base.CreateProperty(member, memberSerialization);
-            property.ShouldSerialize = o => (!property.PropertyType.IsClass && !property.PropertyType.IsArray && !typeof(IEnumerable).IsAssignableFrom(property.PropertyType)) || property.PropertyType == typeof(string);
+            property.ShouldSerialize = o => (!property.PropertyType!.IsClass && !property.PropertyType.IsArray && !typeof(IEnumerable).IsAssignableFrom(property.PropertyType)) || property.PropertyType == typeof(string);
             return property;
         }
     }

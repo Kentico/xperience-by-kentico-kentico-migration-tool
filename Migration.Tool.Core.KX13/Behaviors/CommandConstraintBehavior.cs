@@ -13,8 +13,7 @@ namespace Migration.Tool.Core.KX13.Behaviors;
 public class CommandConstraintBehavior<TRequest, TResponse>(
     ILogger<CommandConstraintBehavior<TRequest, TResponse>> logger,
     IMigrationProtocol protocol,
-    IDbContextFactory<KX13Context> kx13ContextFactory,
-    ToolConfiguration toolConfiguration)
+    IDbContextFactory<KX13Context> kx13ContextFactory)
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
     where TResponse : CommandResult

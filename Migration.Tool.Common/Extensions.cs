@@ -27,7 +27,9 @@ public static class Extensions
             }
         }
 
+#pragma warning disable CS8603 // Possible null reference return.
         return default;
+#pragma warning restore CS8603 // Possible null reference return.
     }
 
     public static bool IsIn<T>(this T value, params T[] values) => values.Contains(value);
@@ -182,7 +184,7 @@ public static class Extensions
 
     #endregion
 
-    public static T Unbox<T>(this DbDataReader reader, string propertyName)
+    public static T? Unbox<T>(this DbDataReader reader, string propertyName)
     {
         if (reader.GetOrdinal(propertyName) < 0)
         {
@@ -197,7 +199,7 @@ public static class Extensions
         };
     }
 
-    public static T Value<T>(this XElement element) => element?.Value == default
+    public static T? Value<T>(this XElement element) => element?.Value == default
         ? default
         : ValidationHelper.GetValue<T>(element.Value);
 

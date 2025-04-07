@@ -108,4 +108,4 @@ public class XbyKSystemClasses
             CMS_MacroRuleCategory, CMS_MacroRuleMacroRuleCategory, cms_contentrelationship, cms_contentrelationshipitem
         }, StringComparer.InvariantCultureIgnoreCase);
 }
-#pragma warning enable IDE1006
+#pragma warning restore IDE1006

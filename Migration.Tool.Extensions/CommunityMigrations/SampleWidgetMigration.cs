@@ -7,7 +7,7 @@ public class SampleWidgetMigration : IWidgetMigration
 {
     public int Rank => 1;
 
-    public async Task<WidgetMigrationResult> MigrateWidget(WidgetIdentifier identifier, JToken? value, WidgetMigrationContext context)
+    public Task<WidgetMigrationResult> MigrateWidget(WidgetIdentifier identifier, JToken? value, WidgetMigrationContext context)
     {
         value!["type"] = "DancingGoat.HeroWidget"; //Migrate to different type of widget
 
@@ -27,7 +27,7 @@ public class SampleWidgetMigration : IWidgetMigration
             //["text"] ... this is an unchanged property from the original widget => default widget property migrations will handle it
         };
 
-        return new WidgetMigrationResult(value, propertyMigrations);
+        return Task.FromResult(new WidgetMigrationResult(value, propertyMigrations));
     }
 
     public bool ShallMigrate(WidgetMigrationContext context, WidgetIdentifier identifier) => string.Equals("DancingGoat.HomePage.BannerWidget", identifier.TypeIdentifier, StringComparison.InvariantCultureIgnoreCase);

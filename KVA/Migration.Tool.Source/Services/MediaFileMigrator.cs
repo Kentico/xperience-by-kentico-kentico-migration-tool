@@ -28,7 +28,7 @@ public class MediaFileMigrator(
     IProtocol protocol
     ) : IMediaFileMigrator
 {
-    public async Task<CommandResult> Handle(MigrateMediaLibrariesCommand request, CancellationToken cancellationToken)
+    public Task<CommandResult> Handle(MigrateMediaLibrariesCommand request, CancellationToken cancellationToken)
     {
         var ksMediaLibraries = modelFacade.SelectAll<IMediaLibrary>(" ORDER BY LibraryID");
 
@@ -105,7 +105,7 @@ public class MediaFileMigrator(
 
         RequireMigratedMediaFiles(migratedMediaLibraries, cancellationToken);
 
-        return new GenericCommandResult();
+        return Task.FromResult((CommandResult)new GenericCommandResult());
     }
 
     private LoadMediaFileResult LoadMediaFileBinary(string? sourceMediaLibraryPath, string relativeFilePath, string contentType)

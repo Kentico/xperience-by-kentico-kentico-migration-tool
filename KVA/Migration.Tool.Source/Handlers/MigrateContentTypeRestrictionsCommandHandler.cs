@@ -10,26 +10,16 @@ using Microsoft.Extensions.Logging;
 
 using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
-using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.KXP.Api;
-using Migration.Tool.Source.Contexts;
 using Migration.Tool.Source.Model;
-using Migration.Tool.Source.Providers;
-using Migration.Tool.Source.Services;
 
 namespace Migration.Tool.Source.Handlers;
 
 public class MigrateContentTypeRestrictionsCommandHandler(
     ILogger<MigratePageTypesCommandHandler> logger,
-    IEntityMapper<ICmsClass, DataClassInfo> dataClassMapper,
-    PrimaryKeyMappingContext primaryKeyMappingContext,
     KxpClassFacade kxpClassFacade,
-    IProtocol protocol,
     ToolConfiguration toolConfiguration,
     ModelFacade modelFacade,
-    PageTemplateMigrator pageTemplateMigrator,
-    ReusableSchemaService reusableSchemaService,
-    ClassMappingProvider classMappingProvider,
     IImporter importer
     )
     : IRequestHandler<MigrateContentTypeRestrictionsCommand, CommandResult>
@@ -158,7 +148,7 @@ public class MigrateContentTypeRestrictionsCommandHandler(
                     .Columns(nameof(WebPageItemInfo.WebPageItemGUID)).FirstOrDefault()?.WebPageItemGUID;
                 if (kxWebPageItemGuid is null)
                 {
-                    logger.LogError("Cannot migrate scope GUID='{ScopeGUID}'. No WebPageItem of tree path '{ScopePath}' in website channel {WebsiteChannelGUID}", ksScope.ScopeGUID, ksScope.ScopePath, kxWebsiteChannel.WebsiteChannelGUID);
+                    logger.LogWarning("Cannot migrate scope GUID='{ScopeGUID}'. No WebPageItem of tree path '{ScopePath}' in website channel {WebsiteChannelGUID}", ksScope.ScopeGUID, ksScope.ScopePath, kxWebsiteChannel.WebsiteChannelGUID);
                     continue;
                 }
             }

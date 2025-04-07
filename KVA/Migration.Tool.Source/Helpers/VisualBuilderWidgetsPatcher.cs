@@ -6,10 +6,10 @@ namespace Migration.Tool.Source.Helpers;
 
 public static class VisualBuilderWidgetsPatcher
 {
-    public static EditableAreasConfiguration DeferredPatchConfiguration(EditableAreasConfiguration configuration, TreePathConvertor convertor, out bool anythingChanged)
+    public static EditableAreasConfiguration? DeferredPatchConfiguration(EditableAreasConfiguration? configuration, TreePathConvertor convertor, out bool anythingChanged)
     {
         anythingChanged = false;
-        foreach (var configurationEditableArea in configuration.EditableAreas ?? [])
+        foreach (var configurationEditableArea in configuration?.EditableAreas ?? [])
         {
             foreach (var sectionConfiguration in configurationEditableArea.Sections ?? [])
             {

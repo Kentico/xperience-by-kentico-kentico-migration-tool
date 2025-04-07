@@ -44,7 +44,7 @@ public class CountryMigrator(
             var mapped = countryMapper.Map(k11CmsCountry, null);
             protocol.MappedTarget(mapped);
 
-            if (mapped is (var countryInfo, var newInstance) { Success: true })
+            if (mapped is (var countryInfo, var newInstance) { Success: true, Item: not null })
             {
                 try
                 {
@@ -53,7 +53,7 @@ public class CountryMigrator(
                     protocol.Success(k11CmsCountry, countryInfo, mapped);
                     logger.LogEntitySetAction(newInstance, countryInfo);
 
-                    primaryKeyMappingContext.SetMapping<CmsCountry>(r => r.CountryId, k11CmsCountry.CountryId, countryInfo.CountryID);
+                    primaryKeyMappingContext.SetMapping<CmsCountry>(r => r.CountryId, k11CmsCountry.CountryId, countryInfo!.CountryID);
                 }
                 catch (Exception exception)
                 {
@@ -80,7 +80,7 @@ public class CountryMigrator(
             var mapped = stateMapper.Map(k11CmsState, null);
             protocol.MappedTarget(mapped);
 
-            if (mapped is (var stateInfo, var newInstance) { Success: true })
+            if (mapped is (var stateInfo, var newInstance) { Success: true, Item: not null })
             {
                 try
                 {
@@ -89,7 +89,7 @@ public class CountryMigrator(
                     protocol.Success(k11CmsState, stateInfo, mapped);
                     logger.LogEntitySetAction(newInstance, stateInfo);
 
-                    primaryKeyMappingContext.SetMapping<CmsState>(r => r.StateId, k11CmsState.StateId, stateInfo.StateID);
+                    primaryKeyMappingContext.SetMapping<CmsState>(r => r.StateId, k11CmsState.StateId, stateInfo!.StateID);
                 }
                 catch (Exception exception)
                 {

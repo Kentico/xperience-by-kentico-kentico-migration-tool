@@ -147,11 +147,11 @@ public class VisualBuilderPatcher(
                 needsDeferredPatch = ndp || needsDeferredPatch;
 
                 widget.Variants.Clear();
-                using var migratedValueReader = migratedValue.CreateReader();
+                using var migratedValueReader = migratedValue!.CreateReader();
                 JsonSerializer.CreateDefault().Populate(migratedValueReader, widget);
             }
 
-            foreach (var variant in widget.Variants)
+            foreach (var variant in widget.Variants.Where(x => x is not null).Select(x => x!))
             {
                 logger.LogTrace("Migrating widget variant {Name}|{Identifier}", variant.Name, variant.Identifier);
 

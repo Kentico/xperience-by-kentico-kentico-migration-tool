@@ -16,7 +16,6 @@ using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.Builders;
 using Migration.Tool.Common.Helpers;
-using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.Common.Model;
 using Migration.Tool.Common.Services;
 using Migration.Tool.KXP.Api.Auxiliary;
@@ -57,7 +56,6 @@ public record CustomTableMapperSource(
 
 public class ContentItemMapper(
     ILogger<ContentItemMapper> logger,
-    IProtocol protocol,
     CoupledDataService coupledDataService,
     IAttachmentMigrator attachmentMigrator,
     CmsRelationshipService relationshipService,
@@ -89,10 +87,16 @@ public class ContentItemMapper(
         var mapping = classMappingProvider.GetMapping(sourceNodeClass.ClassName);
         var targetClassGuid = sourceNodeClass.ClassGUID;
         var targetClassInfo = DataClassInfoProvider.ProviderObject.Get(sourceNodeClass.ClassName);
-        if (mapping != null)
+        if (mapping is not null)
         {
             targetClassInfo = DataClassInfoProvider.ProviderObject.Get(mapping.TargetClassName) ?? throw new InvalidOperationException($"Unable to find target class '{mapping.TargetClassName}'");
             targetClassGuid = targetClassInfo.ClassGUID;
+        }
+
+        if (targetClassInfo is null)
+        {
+            logger.LogError("Could not map content item. Target class DataClassInfo ClassGUID={ClassGUID} not found.", targetClassGuid);
+            yield break;
         }
 
         var formerUrlPaths = GetFormerUrlPaths(cmsTree);
@@ -184,7 +188,7 @@ public class ContentItemMapper(
                 List<IUmtModel>? migratedDraft = null;
                 try
                 {
-                    migratedDraft = MigrateDraft(draftVersion, cmsTree, sourceFormDefinition, targetFormDefinition, contentItemGuid, languageGuid, sourceNodeClass, websiteChannelInfo, sourceSite, mapping).ToList();
+                    migratedDraft = MigrateDraft(draftVersion, cmsTree, sourceFormDefinition, targetFormDefinition!, contentItemGuid, languageGuid, sourceNodeClass, websiteChannelInfo, sourceSite, mapping).ToList();
                     draftMigrated = true;
                 }
                 catch
@@ -321,14 +325,17 @@ public class ContentItemMapper(
                         throw new Exception("Error, unable to find coupled data primary key");
                     }
 
-                    var commonFields = UnpackReusableFieldSchemas(fi.GetFields<FormSchemaInfo>()).ToArray();
-                    var targetColumns = commonFields
+                    FormFieldInfo[] commonFields = UnpackReusableFieldSchemas(fi.GetFields<FormSchemaInfo>()).ToArray();
+                    List<string> targetColumns = commonFields
                         .Select(cf => ReusableSchemaService.RemoveClassPrefix(sourceNodeClass.ClassName, cf.Name))
                         .Union(fi.GetColumnNames(false))
-                        .Except(CmsClassMapper.GetLegacyMetadataFields(modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false)).Select(x => CmsClassMapper.GetMappedLegacyField(fi, targetClassInfo?.ClassName, x.LegacyFieldName)))
+                        .Except(CmsClassMapper.GetLegacyMetadataFields(modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false))
+                        .Select(x => CmsClassMapper.GetMappedLegacyField(fi, targetClassInfo!.ClassName, x.LegacyFieldName)))
+                        .Where(x => x is not null)
+                        .Select(x => x!)
                         .ToList();
 
-                    var coupledDataRow = coupledDataService.GetSourceCoupledDataRow(sourceNodeClass.ClassTableName, primaryKeyName, cmsDocument.DocumentForeignKeyValue);
+                    var coupledDataRow = coupledDataService.GetSourceCoupledDataRow(sourceNodeClass.ClassTableName!, primaryKeyName, cmsDocument.DocumentForeignKeyValue);
                     var sourceObjectContext = new DocumentSourceObjectContext(cmsTree, sourceNodeClass, sourceSite, sfi, fi, cmsDocument.DocumentID);
                     var convertorContext = new ConvertorTreeNodeContext(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsDocument.DocumentID, false);
                     // TODO tomas.krch: 2024-09-05 propagate async to root
@@ -342,7 +349,7 @@ public class ContentItemMapper(
                         mapping,
                         sourceObjectContext,
                         convertorContext,
-                        targetClassInfo.ClassName
+                        targetClassInfo!.ClassName
                     ).GetAwaiter().GetResult();
 
                     var refFields = fi.GetFields<FormFieldInfo>().Concat(commonFields).Where(x => x.DataType == "contentitemreference");
@@ -391,7 +398,7 @@ public class ContentItemMapper(
                 string targetClassName = mapping?.TargetClassName ?? sourceNodeClass.ClassName;
                 foreach (var legacyField in CmsClassMapper.GetLegacyMetadataFields(modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false)))
                 {
-                    if (CmsClassMapper.GetMappedLegacyField(fi, targetClassInfo.ClassName, legacyField.LegacyFieldName) is { } legacyDocumentNameFieldName)
+                    if (CmsClassMapper.GetMappedLegacyField(fi, targetClassInfo!.ClassName, legacyField.LegacyFieldName) is { } legacyDocumentNameFieldName)
                     {
                         if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(targetClassName))
                         {
@@ -434,9 +441,14 @@ public class ContentItemMapper(
                     var childNodes = modelFacade.Select<ICmsTree>("NodeParentID = @nodeID", "NodeOrder", new SqlParameter("nodeID", cmsTree.NodeID));
                     var childItemGUIDs = childNodes.Select(x => ContentItemInfo.Provider.Get(x.NodeGUID)?.ContentItemGUID).Where(x => x is not null).Select(x => x!.Value).ToList();   // don't presume that ContentItem matching the Node exists. Director might have dropped it
 
-                    var widgetProperties = widgetDirective.ItemToWidgetPropertiesMapping(commonDataModel.CustomProperties.Concat(dataModel.CustomProperties).ToDictionary(), storeContentItem ? contentItemModel.ContentItemGUID : null, childItemGUIDs);
+                    var widgetProperties = widgetDirective.ItemToWidgetPropertiesMapping?.Invoke(commonDataModel.CustomProperties.Concat(dataModel.CustomProperties).ToDictionary(), storeContentItem ? contentItemModel.ContentItemGUID : null, childItemGUIDs) ?? [];
 
                     // attach widget object
+                    if (widgetDirective.EditableAreaIdentifier is null)
+                    {
+                        logger.LogError("Could not convert document to widget. Editable area identifier not specified for widgetized CMS Document {DocumentGUID}", cmsDocument.DocumentGUID);
+                        throw new Exception($"Could not convert document to widget. Editable area identifier not specified for widgetized CMS Document {cmsDocument.DocumentGUID}");
+                    }
                     var editableArea = editableAreas.EditableAreas.FirstOrDefault(x => x.Identifier == widgetDirective.EditableAreaIdentifier);
                     if (editableArea is null)
                     {
@@ -447,6 +459,11 @@ public class ContentItemMapper(
                     var section = editableArea.Sections.FirstOrDefault(x => x.Identifier.Equals(widgetDirective.SectionGuid));
                     if (section is null)
                     {
+                        if (widgetDirective.SectionType is null)
+                        {
+                            logger.LogError("Could not convert document to widget. Section type required and not specified for widgetized CMS Document {DocumentGUID}", cmsDocument.DocumentGUID);
+                            throw new Exception($"Could not convert document to widget. Section type required and not specified for widgetized CMS Document {cmsDocument.DocumentGUID}");
+                        }
                         section = new SectionConfiguration
                         {
                             TypeIdentifier = widgetDirective.SectionType,
@@ -582,7 +599,7 @@ public class ContentItemMapper(
     }
 
     private IEnumerable<IUmtModel> MigrateDraft(ICmsVersionHistory checkoutVersion, ICmsTree cmsTree, string sourceFormClassDefinition, string targetFormDefinition, Guid contentItemGuid,
-        Guid contentLanguageGuid, ICmsClass sourceNodeClass, WebsiteChannelInfo websiteChannelInfo, ICmsSite sourceSite, IClassMapping mapping)
+        Guid contentLanguageGuid, ICmsClass sourceNodeClass, WebsiteChannelInfo websiteChannelInfo, ICmsSite sourceSite, IClassMapping? mapping)
     {
         var adapter = new NodeXmlAdapter(checkoutVersion.NodeXML);
 
@@ -669,6 +686,8 @@ public class ContentItemMapper(
                     .Select(cf => ReusableSchemaService.RemoveClassPrefix(sourceNodeClass.ClassName, cf.Name))
                     .Union(fi.GetColumnNames(false))
                     .Except(CmsClassMapper.GetLegacyMetadataFields(modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false)).Select(x => CmsClassMapper.GetMappedLegacyField(fi, targetClassName, x.LegacyFieldName)))
+                    .Where(x => x is not null)
+                    .Select(x => x!)
                     .ToList();
 
                 var sourceObjectContext = new DocumentSourceObjectContext(cmsTree, sourceNodeClass, sourceSite, sfi, fi, adapter.DocumentID);
@@ -739,7 +758,7 @@ public class ContentItemMapper(
       FormInfo newFormInfo,
       bool migratingFromVersionHistory,
       ICmsClass sourceNodeClass,
-      IClassMapping mapping,
+      IClassMapping? mapping,
       ISourceObjectContext sourceObjectContext,
       IConvertorContext convertorContext,
       string targetClassName
@@ -827,7 +846,7 @@ public class ContentItemMapper(
                     {
                         // relation to other document
                         var convertedRelation = relationshipService.GetNodeRelationships(documentSourceObjectContext.CmsTree.NodeID, sourceNodeClass.ClassName, field.Guid)
-                            .Select(r => new WebPageRelatedItem { WebPageGuid = spoiledGuidContext.EnsureNodeGuid(r.RightNode.NodeGUID, r.RightNode.NodeSiteID, r.RightNode.NodeID) });
+                            .Select(r => new WebPageRelatedItem { WebPageGuid = spoiledGuidContext.EnsureNodeGuid(r.RightNode!.NodeGUID, r.RightNode.NodeSiteID, r.RightNode.NodeID) });
 
                         target.SetValueAsJson(targetFieldName, valueConvertor.Invoke(convertedRelation, convertorContext));
                     }
@@ -1060,7 +1079,10 @@ public class ContentItemMapper(
             var targetColumns = commonFields
                 .Select(cf => ReusableSchemaService.RemoveClassPrefix(sourceClass.ClassName, cf.Name))
                 .Union(fi.GetColumnNames(false))
-                .Except(CmsClassMapper.GetLegacyMetadataFields(modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false)).Select(x => CmsClassMapper.GetMappedLegacyField(fi, targetClassInfo.ClassName, x.LegacyFieldName)))
+                .Except(CmsClassMapper.GetLegacyMetadataFields(modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false))
+                .Select(x => CmsClassMapper.GetMappedLegacyField(fi, targetClassInfo!.ClassName, x.LegacyFieldName)))
+                .Where(x => x is not null)
+                .Select(x => x!)
                 .ToList();
 
             var sourceObjectContext = new CustomTableSourceObjectContext();
@@ -1077,7 +1099,7 @@ public class ContentItemMapper(
                 mapping,
                 sourceObjectContext,
                 convertorContext,
-                targetClassInfo.ClassName
+                targetClassInfo!.ClassName
             ).GetAwaiter().GetResult();
 
             foreach (var legacyField in CmsClassMapper.GetLegacyMetadataFields(modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false)))

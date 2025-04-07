@@ -114,6 +114,11 @@ public class MigratePagesCommandHandler(
                 if (pathToXbykPage.TryGetValue($"{SiteGuid}|{NormalizeUrlPath(RedirectUrl)}", out var targetPage))
                 {
                     var targetContentItem = ContentItemInfo.Provider.Get(targetPage.ContentItemGuid);
+                    if (targetContentItem is null)
+                    {
+                        logger.LogWarning("Redirect URL could not be migrated. Page does not exist in target instance. Site GUID='{SiteGUID}', Redirect URL='{RedirectURL}', Document GUID='{DocumentGUID}", SiteGuid, RedirectUrl, DocumentGuid);
+                        continue;
+                    }
                     var targetWebPageItem = WebPageItemInfo.Provider.Get().WhereEquals(nameof(WebPageItemInfo.WebPageItemContentItemID), targetContentItem.ContentItemID).FirstOrDefault();
                     if (targetWebPageItem is null)
                     {
@@ -412,7 +417,10 @@ public class MigratePagesCommandHandler(
                                     }
                                 }
 
-                                MigrateFormerUrls(ksNode, webPageItemInfo, contentItemDirective.FormerUrlPaths);
+                                if (contentItemDirective.FormerUrlPaths is not null)
+                                {
+                                    MigrateFormerUrls(ksNode, webPageItemInfo, contentItemDirective.FormerUrlPaths);
+                                }
 
                                 var urls = WebPageUrlPathInfo.Provider.Get()
                                     .WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID), webPageItemInfo.WebPageItemID);

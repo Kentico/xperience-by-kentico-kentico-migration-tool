@@ -7,14 +7,14 @@ internal class ConvertToWidgetDirective(string widgetType, Guid? widgetGuid, Gui
     internal Guid? WidgetGuid { get; } = widgetGuid;
     internal Guid? WidgetVariantGuid { get; } = widgetVariantGuid;
 
-    internal string EditableAreaIdentifier { get; set; }
+    internal string? EditableAreaIdentifier { get; set; }
     public IWidgetInEditableAreaOptions InEditableArea(string areaIdentifier)
     {
         EditableAreaIdentifier = areaIdentifier;
         return this;
     }
 
-    internal string SectionType { get; private set; }
+    internal string? SectionType { get; private set; }
     internal Guid? SectionGuid { get; private set; }
     public IWidgetInSectionOptions InSection(string sectionType, Guid? sectionGuid = null)
     {
@@ -25,7 +25,7 @@ internal class ConvertToWidgetDirective(string widgetType, Guid? widgetGuid, Gui
 
     internal bool ZoneFirst { get; private set; }
     internal Guid ZoneGuid { get; private set; }
-    internal string ZoneName { get; private set; }
+    internal string? ZoneName { get; private set; }
 
     public IWidgetLocationOptions Location => this;
 
@@ -43,7 +43,7 @@ internal class ConvertToWidgetDirective(string widgetType, Guid? widgetGuid, Gui
     }
 
     internal bool WrapInReusableItem { get; private set; }
-    internal MapWidgetPropertiesDelegate ItemToWidgetPropertiesMapping { get; private set; }
+    internal MapWidgetPropertiesDelegate? ItemToWidgetPropertiesMapping { get; private set; }
     public void Fill(bool wrapInReusableItem, MapWidgetPropertiesDelegate itemToWidgetPropertiesMapping)
     {
         WrapInReusableItem = wrapInReusableItem;

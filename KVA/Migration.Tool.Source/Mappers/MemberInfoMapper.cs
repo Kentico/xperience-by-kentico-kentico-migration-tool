@@ -134,7 +134,7 @@ public class MemberInfoMapper(
 
         if (usDci != null)
         {
-            var userSettingsCustomizedFields = kxpClassFacade.GetCustomizedFieldInfos(new FormInfo(usDci?.ClassFormDefinition)).ToList();
+            var userSettingsCustomizedFields = kxpClassFacade.GetCustomizedFieldInfos(new FormInfo(usDci!.ClassFormDefinition)).ToList();
             if (userSettingsCustomizedFields.Count > 0)
             {
                 try

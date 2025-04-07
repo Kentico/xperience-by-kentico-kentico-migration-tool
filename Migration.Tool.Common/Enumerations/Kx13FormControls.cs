@@ -265,4 +265,4 @@ public class Kx13FormComponents
     public const string Kentico_PathSelector = "Kentico.PathSelector";
     public const string Kentico_UrlSelector = "Kentico.UrlSelector";
 }
-#pragma warning enable IDE1006
+#pragma warning restore IDE1006

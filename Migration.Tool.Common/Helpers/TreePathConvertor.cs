@@ -61,5 +61,5 @@ public class TreePathConvertor(int webSiteChannel)
         return result;
     }
 
-    public record TreePathConversionResult(bool AnythingChanged, string Result);
+    public record TreePathConversionResult(bool AnythingChanged, string? Result);
 }

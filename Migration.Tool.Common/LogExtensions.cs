@@ -9,7 +9,7 @@ namespace Migration.Tool.Common;
 
 public static class LogExtensions
 {
-    public static IPrintService PrintService = default;
+    public static IPrintService? PrintService = default;
 
     public static IModelMappingResult<TResult> Log<TResult>(this IModelMappingResult<TResult> mappingResult, ILogger logger, IMigrationProtocol protocol)
     {
@@ -35,7 +35,7 @@ public static class LogExtensions
             }
             case { Success: true } result:
             {
-                logger.LogTrace("Success - {model}", PrintService.PrintKxpModelInfo(result.Item));
+                logger.LogTrace("Success - {model}", PrintService!.PrintKxpModelInfo(result.Item));
                 break;
             }
             default:
@@ -49,28 +49,28 @@ public static class LogExtensions
 
     public static ILogger<T> LogEntitySetAction<T, TEntity>(this ILogger<T> logger, bool newInstance, TEntity entity)
     {
-        string entityIdentityPrint = PrintService.GetEntityIdentityPrint(entity);
+        string entityIdentityPrint = PrintService!.GetEntityIdentityPrint(entity);
         logger.LogDebug("Command {Command}: {Action} {EntityIdentityPrint}", ReflectionHelper<T>.CurrentType.Name, newInstance ? "inserted" : "updated", entityIdentityPrint);
         return logger;
     }
 
     public static ILogger<T> LogEntitySetError<T, TEntity>(this ILogger<T> logger, Exception exception, bool newInstance, TEntity entity)
     {
-        string entityIdentityPrint = PrintService.GetEntityIdentityPrint(entity);
+        string entityIdentityPrint = PrintService!.GetEntityIdentityPrint(entity);
         logger.LogError(exception, "Command {Command}: failed during {Action}, {EntityIdentityPrint}", ReflectionHelper<T>.CurrentType.Name, newInstance ? "insert" : "update", entityIdentityPrint);
         return logger;
     }
 
     public static ILogger<T> LogEntitiesSetError<T, TEntity>(this ILogger<T> logger, Exception exception, bool newInstance, IEnumerable<TEntity> entities)
     {
-        string entityIdentityPrint = PrintService.GetEntityIdentityPrints(entities);
+        string entityIdentityPrint = PrintService!.GetEntityIdentityPrints(entities);
         logger.LogError(exception, "Command {Command}: failed during {Action}, {EntityIdentityPrint}", ReflectionHelper<T>.CurrentType.Name, newInstance ? "insert" : "update", entityIdentityPrint);
         return logger;
     }
 
     public static ILogger<T> LogErrorMissingDependency<T, TEntity>(this ILogger<T> logger, TEntity entity, string dependencyName, object dependencyValue, Type dependencyType)
     {
-        string entityIdentityPrint = PrintService.GetEntityIdentityPrint(entity);
+        string entityIdentityPrint = PrintService!.GetEntityIdentityPrint(entity);
         logger.LogError("Command {Command}: {EntityIdentityPrint} is missing dependency {FieldName}={Value} of type {DependencyType}", ReflectionHelper<T>.CurrentType.Name, entityIdentityPrint, dependencyName, dependencyValue, dependencyType.Name);
         return logger;
     }

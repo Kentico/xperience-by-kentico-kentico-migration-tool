@@ -35,9 +35,7 @@ public class MigrateCustomTablesHandler(
     IUmtMapper<CustomTableMapperSource> mapper,
     IEntityMapper<ICmsClass, DataClassInfo> dataClassMapper,
     PrimaryKeyMappingContext primaryKeyMappingContext,
-    ClassMappingProvider classMappingProvider,
-    ToolConfiguration configuration
-// ReusableSchemaService reusableSchemaService
+    ClassMappingProvider classMappingProvider
 )
     : IRequestHandler<MigrateCustomTablesCommand, CommandResult>
 {
@@ -60,7 +58,9 @@ public class MigrateCustomTablesHandler(
 
         const string resourceName = "customtables";
         var resourceGuid = GuidV5.NewNameBased(resourceGuidNamespace, resourceName);
+#pragma warning disable CS0618 // Type or member is obsolete
         var resourceInfo = await ResourceInfoProvider.ProviderObject.GetAsync(resourceGuid);
+#pragma warning restore CS0618 // Type or member is obsolete
         if (resourceInfo == null)
         {
             resourceInfo = new ResourceInfo
@@ -72,7 +72,9 @@ public class MigrateCustomTablesHandler(
                 ResourceLastModified = default,
                 ResourceIsInDevelopment = false
             };
+#pragma warning disable CS0618 // Type or member is obsolete
             ResourceInfoProvider.ProviderObject.Set(resourceInfo);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         customTableResource = resourceInfo;
