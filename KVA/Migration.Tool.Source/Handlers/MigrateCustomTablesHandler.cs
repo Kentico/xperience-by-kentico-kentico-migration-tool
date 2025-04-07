@@ -35,9 +35,7 @@ public class MigrateCustomTablesHandler(
     IUmtMapper<CustomTableMapperSource> mapper,
     IEntityMapper<ICmsClass, DataClassInfo> dataClassMapper,
     PrimaryKeyMappingContext primaryKeyMappingContext,
-    ClassMappingProvider classMappingProvider,
-    ToolConfiguration configuration
-// ReusableSchemaService reusableSchemaService
+    ClassMappingProvider classMappingProvider
 )
     : IRequestHandler<MigrateCustomTablesCommand, CommandResult>
 {

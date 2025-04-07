@@ -16,7 +16,6 @@ using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.Builders;
 using Migration.Tool.Common.Helpers;
-using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.Common.Model;
 using Migration.Tool.Common.Services;
 using Migration.Tool.KXP.Api.Auxiliary;
