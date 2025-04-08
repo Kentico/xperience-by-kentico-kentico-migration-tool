@@ -78,11 +78,11 @@ This migration allows you to migrate pages from the source instance as [widgets]
 - If you have a page with content stored in page fields, you can migrate the values of the fields into widget properties and display the content as a widget.
 - If you have a page that serves as a listing and displays content from child pages, you can convert the child pages into widgets and as content items in the content hub, then link them from the widgets.
 
-> :warning: The target page (with an [Page Builder editable area](https://docs.kentico.com/x/7AWiCQ)) and any [Page Builder components](https://docs.kentico.com/x/6QWiCQ) used in the migration need to be present in the system before you migrate content.
+> :warning: The target page (with a [Page Builder editable area](https://docs.kentico.com/x/7AWiCQ)) and any [Page Builder components](https://docs.kentico.com/x/6QWiCQ) used in the migration need to be present in the system before you migrate content. The target page must be either the page itself or any ancestor of the page from which the content is migrated.
 
 In `Migration.Tool.Extensions/CommunityMigrations`, create a new file with a class that inherits from the `ContentItemDirectorBase` class and override the `Direct(source, options)` method:
 
-1. Ensure that the target page has a [page template](https://docs.kentico.com/x/iInWCQ).
+1. If the target page uses a [page template](https://docs.kentico.com/x/iInWCQ), ensure that the correct page template is applied.
 
     ```csharp
     // Store page uses a template and is the parent listing page
@@ -104,6 +104,7 @@ In `Migration.Tool.Extensions/CommunityMigrations`, create a new file with a cla
             // Determines where to place the widget
             options.Location
                 // Negative indexing is used - '-1' signifies direct parent node
+                // Use the value of '0' if you want to target the page itself
                 .OnAncestorPage(-1)
                 .InEditableArea("main-area")
                 .InSection("SingleColumnSection")
