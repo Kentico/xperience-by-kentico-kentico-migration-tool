@@ -333,6 +333,7 @@ public class AssetFacade(
         Enabled = true,
         Guid = new Guid("83650744-916B-4E19-A31F-B0250166D47D"),
         Properties = new FormFieldProperties { FieldCaption = "Title", },
+        Settings = new FormFieldSettings { ControlName = "Kentico.Administration.TextInput" }
     };
 
     internal static readonly FormField LegacyMediaFileDescriptionField = new()
@@ -342,8 +343,10 @@ public class AssetFacade(
         AllowEmpty = true,
         Visible = true,
         Enabled = true,
+        ColumnSize = FieldConstants.MaxColumnSize,
         Guid = new Guid("98F43915-B540-478D-80A4-E294E631C431"),
         Properties = new FormFieldProperties { FieldCaption = "Description", },
+        Settings = new FormFieldSettings { ControlName = "Kentico.Administration.TextArea" }
     };
 
     public static readonly DataClassModel LegacyMediaFileContentType = new()
