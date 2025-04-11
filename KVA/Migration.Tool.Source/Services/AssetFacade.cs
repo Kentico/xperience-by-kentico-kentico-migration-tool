@@ -339,11 +339,11 @@ public class AssetFacade(
     internal static readonly FormField LegacyMediaFileDescriptionField = new()
     {
         Column = "LegacyMediaFileDescription",
-        ColumnType = "text",
+        ColumnType = "longtext",
         AllowEmpty = true,
         Visible = true,
         Enabled = true,
-        ColumnSize = FieldConstants.MaxColumnSize,
+        ColumnSize = FieldConstants.LongTextMaxColumnSize,
         Guid = new Guid("98F43915-B540-478D-80A4-E294E631C431"),
         Properties = new FormFieldProperties { FieldCaption = "Description", },
         Settings = new FormFieldSettings { ControlName = "Kentico.Administration.TextArea" }
