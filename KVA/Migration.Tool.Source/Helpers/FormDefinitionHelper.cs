@@ -42,7 +42,7 @@ public static class FormDefinitionHelper
 
     public static void MapFormDefinitionFields(ILogger logger, IFieldMigrationService fieldMigrationService,
         string sourceClassDefinition, bool? classIsForm, bool classIsDocumentType,
-        DataClassInfo target, bool isCustomizableSystemClass, bool classIsCustom)
+        DataClassInfo target, bool isCustomizableSystemClass, bool classIsCustom, IEnumerable<string> excludedFields)
     {
         if (!string.IsNullOrWhiteSpace(sourceClassDefinition))
         {
@@ -56,7 +56,7 @@ public static class FormDefinitionHelper
                 classIsCustom
             );
 
-            patcher.PatchFields();
+            patcher.PatchFields(excludedFields);
             patcher.RemoveCategories(); // TODO tk: 2022-10-11 remove when supported
 
             string? result = patcher.GetPatched();
