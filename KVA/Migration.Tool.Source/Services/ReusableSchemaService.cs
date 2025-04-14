@@ -84,7 +84,7 @@ public class ReusableSchemaService(ILogger<ReusableSchemaService> logger, ToolCo
         dataClassInfo.ClassFormDefinition = formInfo.GetXmlDefinition();
     }
 
-    public void AddReusableSchemaToDataClass(DataClassInfo dataClassInfo, string reusableFieldSchemaName)
+    public Guid AddReusableSchemaToDataClass(DataClassInfo dataClassInfo, string reusableFieldSchemaName)
     {
         var formInfo = new FormInfo(dataClassInfo.ClassFormDefinition);
         var schema = reusableFieldSchemaManager.Get(reusableFieldSchemaName);
@@ -93,6 +93,7 @@ public class ReusableSchemaService(ILogger<ReusableSchemaService> logger, ToolCo
             formInfo.AddFormItem(new FormSchemaInfo { Name = dataClassInfo.ClassName, Guid = schema.Guid });
             dataClassInfo.ClassFormDefinition = formInfo.GetXmlDefinition();
         }
+        return schema.Guid;
     }
 
     public IEnumerable<FormFieldInfo> GetFieldsFromReusableSchema(DataClassInfo dataClassInfo)

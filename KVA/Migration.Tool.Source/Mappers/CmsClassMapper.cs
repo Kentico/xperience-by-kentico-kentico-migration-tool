@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Xml;
 using CMS.ContentEngine;
+using CMS.ContentEngine.Internal;
 using CMS.Core;
 using CMS.DataEngine;
 using CMS.FormEngine;
@@ -141,7 +142,7 @@ public class CmsClassMapper(
                 target.ClassType = ClassType.OTHER;
                 target.ClassContentTypeType = null;
 
-                target = PatchDataClassInfo(target, existingFieldGUIDs, modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false), out string? oldPrimaryKeyName, out string? documentNameField);
+                target = PatchDataClassInfo(target, existingFieldGUIDs, modelFacade.SelectVersion(), [], configuration.IncludeExtendedMetadata.GetValueOrDefault(false), out string? oldPrimaryKeyName, out string? documentNameField);
 
                 break;
             }
@@ -175,7 +176,7 @@ public class CmsClassMapper(
                 target.ClassType = ClassType.CONTENT_TYPE;
                 target.ClassContentTypeType = ClassContentTypeType.REUSABLE;
 
-                target = PatchDataClassInfo(target, existingFieldGUIDs, modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false), out string? oldPrimaryKeyName, out string? documentNameField);
+                target = PatchDataClassInfo(target, existingFieldGUIDs, modelFacade.SelectVersion(), [], configuration.IncludeExtendedMetadata.GetValueOrDefault(false), out string? oldPrimaryKeyName, out string? documentNameField);
                 break;
             }
 
@@ -193,7 +194,7 @@ public class CmsClassMapper(
                     ? ClassContentTypeType.REUSABLE
                     : ClassContentTypeType.WEBSITE;
 
-                target = PatchDataClassInfo(target, existingFieldGUIDs, modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false), out string? oldPrimaryKeyName, out string? documentNameField);
+                target = PatchDataClassInfo(target, existingFieldGUIDs, modelFacade.SelectVersion(), [], configuration.IncludeExtendedMetadata.GetValueOrDefault(false), out string? oldPrimaryKeyName, out string? documentNameField);
                 break;
             }
 
@@ -229,7 +230,7 @@ public class CmsClassMapper(
         return target;
     }
 
-    public static DataClassInfo PatchDataClassInfo(DataClassInfo dataClass, Dictionary<string, Guid> existingFieldGUIDs, SemanticVersion version, bool includeExtendedMetadata, out string? oldPrimaryKeyName, out string? mappedLegacyField)
+    public static DataClassInfo PatchDataClassInfo(DataClassInfo dataClass, Dictionary<string, Guid> existingFieldGUIDs, SemanticVersion version, Dictionary<Guid, string> reusableSchemaNames, bool includeExtendedMetadata, out string? oldPrimaryKeyName, out string? mappedLegacyField)
     {
         oldPrimaryKeyName = null;
         mappedLegacyField = null;
@@ -239,7 +240,10 @@ public class CmsClassMapper(
             string tableName = dataClass.ClassTableName;
             var contentTypeManager = Service.Resolve<IContentTypeManager>();
 
-            contentTypeManager.Initialize(dataClass);
+            if (!fi.ItemsList.OfType<FormFieldInfo>().Any(x => x.Name == nameof(ContentItemDataInfo.ContentItemDataGUID)))
+            {
+                contentTypeManager.Initialize(dataClass);
+            }
 
             if (!string.IsNullOrWhiteSpace(tableName))
             {
@@ -257,42 +261,45 @@ public class CmsClassMapper(
 
             foreach (var dataDefinitionItem in fi.GetFormElements(true, true) ?? [])
             {
-                if (dataDefinitionItem is FormFieldInfo ffi)
+                if (!nfi.ItemsList.Any(x => IsSameFormElement(reusableSchemaNames, dataDefinitionItem, x)))
                 {
-                    if (ffi is { PrimaryKey: true })
+                    if (dataDefinitionItem is FormFieldInfo ffi)
                     {
-                        oldPrimaryKeyName = ffi.Name;
-                        continue;
-                    }
-
-                    if (ffi.DataType.Equals("contentitems", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        ffi.DataType = "contentitemreference";
-                        if (!ffi.AllowEmpty)
+                        if (ffi is { PrimaryKey: true })
                         {
-                            ffi.ValidationRuleConfigurationsXmlData = AppendRequiredValidationRule(ffi.ValidationRuleConfigurationsXmlData);
+                            oldPrimaryKeyName = ffi.Name;
+                            continue;
+                        }
+
+                        if (ffi.DataType.Equals("contentitems", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            ffi.DataType = "contentitemreference";
+                            if (!ffi.AllowEmpty)
+                            {
+                                ffi.ValidationRuleConfigurationsXmlData = AppendRequiredValidationRule(ffi.ValidationRuleConfigurationsXmlData);
+                            }
+                        }
+
+                        if (ffi.DataType.Equals("pages", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            ffi.DataType = "webpages";
+                        }
+
+                        if (string.IsNullOrWhiteSpace(ffi.Settings["controlname"] as string))
+                        {
+                            ffi.Visible = false;
                         }
                     }
 
-                    if (ffi.DataType.Equals("pages", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        ffi.DataType = "webpages";
-                    }
-
-                    if (string.IsNullOrWhiteSpace(ffi.Settings["controlname"] as string))
-                    {
-                        ffi.Visible = false;
-                    }
+                    nfi.AddFormItem(dataDefinitionItem);
                 }
-
-                nfi.AddFormItem(dataDefinitionItem);
             }
 
             Debug.WriteLineIf(oldPrimaryKeyName == null, $"WARN: old PK is null for class '{dataClass.ClassName}'");
 
             foreach (var field in GetLegacyMetadataFields(version, includeExtendedMetadata))
             {
-                AppendLegacyMetadataField(nfi, dataClass.ClassName, field, out mappedLegacyField);
+                AppendLegacyMetadataField(nfi, dataClass.ClassName, field, reusableSchemaNames, out mappedLegacyField);
             }
             dataClass.ClassFormDefinition = nfi.GetXmlDefinition();
 
@@ -325,7 +332,7 @@ public class CmsClassMapper(
         return null;
     }
 
-    private static void AppendLegacyMetadataField(FormInfo nfi, string newClassName, LegacyDocumentMetadataFieldMapping mapping, out string targetFieldName)
+    private static void AppendLegacyMetadataField(FormInfo nfi, string newClassName, LegacyDocumentMetadataFieldMapping mapping, Dictionary<Guid, string> reusableSchemaNames, out string targetFieldName)
     {
         if (GetMappedLegacyField(nfi, newClassName, mapping.LegacyFieldName) is { } fieldName)
         {
@@ -340,7 +347,7 @@ public class CmsClassMapper(
             targetFieldName = $"{mapping.LegacyFieldName}{++i}";
         }
 
-        nfi.AddFormItem(new FormFieldInfo
+        var formFieldInfo = new FormFieldInfo
         {
             Caption = mapping.TargetCaption,
             Name = targetFieldName,
@@ -352,8 +359,32 @@ public class CmsClassMapper(
             Guid = GuidHelper.CreateFieldGuid($"{mapping.LegacyFieldName.ToLower()}|{newClassName}"),
             System = false,
             Settings = { { "controlname", "Kentico.Administration.TextInput" } }
-        });
+        };
+
+        if (!nfi.ItemsList.Any(x => IsSameFormElement(reusableSchemaNames, formFieldInfo, x)))
+        {
+            nfi.AddFormItem(formFieldInfo);
+        }
     }
+
+    private static bool IsSameFormElement(Dictionary<Guid, string> reusableSchemaNames, IDataDefinitionItem element1, IDataDefinitionItem element2)
+    {
+        if (element1 is FormFieldInfo ffi1 && element2 is FormFieldInfo ffi2)
+        {
+            return ffi1.Name.Equals(ffi2.Name, StringComparison.InvariantCultureIgnoreCase);
+        }
+        else if (element1 is FormSchemaInfo fsi1 && element2 is FormSchemaInfo fsi2)
+        {
+            return reusableSchemaNames.TryGetValue(fsi1.Guid, out string? schemaName1) &&
+                reusableSchemaNames.TryGetValue(fsi2.Guid, out string? schemaName2) &&
+                schemaName1.Equals(schemaName2, StringComparison.InvariantCultureIgnoreCase);
+        }
+        else
+        {
+            return false;
+        }
+    }
+
 
     private static string AppendRequiredValidationRule(string rulesXml)
     {

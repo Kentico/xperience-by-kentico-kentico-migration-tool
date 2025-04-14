@@ -106,16 +106,17 @@ public class ClassMappingProvider(
 
             newDt.ClassFormDefinition = nfi.GetXmlDefinition();
 
+            var reusableSchemas = new Dictionary<Guid, string>();
             foreach (string schemaName in classMapping.ReusableSchemaNames)
             {
-                reusableSchemaService.AddReusableSchemaToDataClass(newDt, schemaName);
+                Guid schemaGuid = reusableSchemaService.AddReusableSchemaToDataClass(newDt, schemaName);
+                reusableSchemas[schemaGuid] = schemaName;
             }
 
             nfi = new FormInfo(newDt.ClassFormDefinition);
 
             var fieldInReusableSchemas = reusableSchemaService.GetFieldsFromReusableSchema(newDt).ToDictionary(x => x.Name, x => x);
 
-            bool hasFieldsAlready = true;
             foreach (var cmml in classMapping.Mappings.Where(m => m.IsTemplate).ToLookup(x => x.SourceFieldName))
             {
                 foreach (var cmm in cmml)
@@ -138,17 +139,12 @@ public class ClassMappingProvider(
                         var src = fi.GetFormField(cmm.SourceFieldName);
                         src.Name = cmm.TargetFieldName;
                         nfi.AddFormItem(src);
-                        hasFieldsAlready = false;
                     }
                 }
-                //var cmm = cmml.FirstOrDefault() ?? throw new InvalidOperationException();
             }
 
-            if (!hasFieldsAlready)
-            {
-                FormDefinitionHelper.MapFormDefinitionFields(logger, fieldMigrationService, nfi.GetXmlDefinition(), false, true, newDt, false, false);
-                CmsClassMapper.PatchDataClassInfo(newDt, [], modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false), out _, out _);
-            }
+            FormDefinitionHelper.MapFormDefinitionFields(logger, fieldMigrationService, nfi.GetXmlDefinition(), false, true, newDt, false, false, new FormInfo(newDt.ClassFormDefinition).GetFormElements(true, true).Select(x => GetFormElementName(x)));
+            CmsClassMapper.PatchDataClassInfo(newDt, [], modelFacade.SelectVersion(), reusableSchemas, configuration.IncludeExtendedMetadata.GetValueOrDefault(false), out _, out _);
 
             if (classMapping.TargetFieldPatchers.Count > 0)
             {
@@ -198,6 +194,22 @@ public class ClassMappingProvider(
         }
 
         return manualMappings;
+    }
+
+    private string GetFormElementName(IDataDefinitionItem item)
+    {
+        if (item is FormFieldInfo ffi)
+        {
+            return ffi.Name;
+        }
+        else if (item is FormSchemaInfo fsi)
+        {
+            return fsi.Name;
+        }
+        else
+        {
+            throw new NotImplementedException("Internal error 06bd8437-b1e5-4016-853f-8a577288e06e. Report this issue.");
+        }
     }
 
     private void ExecReusableSchemaBuilders()
