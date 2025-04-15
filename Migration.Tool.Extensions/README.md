@@ -6,6 +6,7 @@ To create custom migrations:
     - [Field migrations](#customize-field-migrations)
     - [Widget migrations](#customize-widget-migrations)
     - [Widget property migrations](#customize-widget-property-migrations)
+    - [Page to widget migrations](#migrate-pages-to-widgets)
     - [Custom class mappings](#custom-class-mappings)
 2. [Register the migration](#register-migrations)
 
@@ -70,6 +71,69 @@ You can see samples:
 
 After implementing the migration, you need to [register the migration](#register-migrations) in the system.
 
+## Migrate pages to widgets
+
+This migration allows you to migrate pages from the source instance as [widgets](https://docs.kentico.com/x/7gWiCQ) in the target instance. This migration can be used in the following ways:
+
+- If you have a page with content stored in page fields, you can migrate the values of the fields into widget properties and display the content as a widget.
+- If you have a page that serves as a listing and displays content from child pages, you can convert the child pages into widgets and as content items in the content hub, then link them from the widgets.
+
+> :warning: The target page (with a [Page Builder editable area](https://docs.kentico.com/x/7AWiCQ)) and any [Page Builder components](https://docs.kentico.com/x/6QWiCQ) used in the migration need to be present in the system before you migrate content. The target page must be either the page itself or any ancestor of the page from which the content is migrated.
+
+In `Migration.Tool.Extensions/CommunityMigrations`, create a new file with a class that inherits from the `ContentItemDirectorBase` class and override the `Direct(source, options)` method:
+
+1. If the target page uses a [page template](https://docs.kentico.com/x/iInWCQ), ensure that the correct page template is applied.
+
+    ```csharp
+    // Store page uses a template and is the parent listing page
+    if (source.SourceNode.SourceClassName == "Acme.Store")
+    {
+      // Ensures the page template is present in the system
+      options.OverridePageTemplate("StorePageTemplate");
+    }
+    ```
+
+2. Identify pages you want to migrate to widgets and use the `options.AsWidget()` action.
+
+    ```csharp
+    // Identifies pages by their content type
+    else if (source.SourceNode.SourceClassName == "Acme.Coffee")
+    {
+        options.AsWidget("Acme.CoffeeSampleWidget", null, null, options =>
+        {
+            // Determines where to place the widget
+            options.Location
+                // Negative indexing is used - '-1' signifies direct parent node
+                // Use the value of '0' if you want to target the page itself
+                .OnAncestorPage(-1)
+                .InEditableArea("main-area")
+                .InSection("SingleColumnSection")
+                .InFirstZone();
+
+            // Specifies the widget's properties
+            options.Properties.Fill(true, (itemProps, reusableItemGuid, childGuids) =>
+            {
+                // Simple way to achieve basic conversion of all properties, properties can be refined in the following steps
+                var widgetProps = JObject.FromObject(itemProps);
+
+                // The converted page is linked as a reusable content item into a single property of the widget.
+                // NOTE: List the page class name app settings in ConvertClassesToContentHub to make it reusable!
+                widgetProps["LinkedContent"] = LinkedItemPropertyValue(reusableItemGuid!.Value);
+
+                // Link reusable content items created from page's original subnodes
+                // NOTE: List the page class names in app settings in ConvertClassesToContentHub to make it reusable!
+                widgetProps["LinkedChildren"] = LinkedItemsPropertyValue(childGuids);
+
+                return widgetProps;
+            });
+        });
+    }
+    ```
+
+You can see a sample: [SamplePageToWidgetDirector.cs](./CommunityMigrations/SamplePageToWidgetDirector.cs)
+
+After implementing the content item director, you need to [register the director](#register-migrations) in the system.
+
 ## Register migrations
 
 Register the migration in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as a `Transient` dependency into the service collection:
@@ -77,6 +141,7 @@ Register the migration in `Migration.Tool.Extensions/ServiceCollectionExtension
 - Field migrations - `services.AddTransient<IFieldMigration, MyFieldMigration>();`
 - Widget migrations - `services.AddTransient<IWidgetMigration, MyWidgetMigration>();`
 - Widget property migrations - `services.AddTransient<IWidgetPropertyMigration, MyWidgetPropertyMigration>();`
+- Page to widget migrations - `services.AddTransient<ContentItemDirectorBase, MyPageToWidgetDirector>();`
 
 ## Custom class mappings
 
