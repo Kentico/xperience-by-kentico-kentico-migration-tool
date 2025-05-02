@@ -134,7 +134,7 @@ public class FormDefinitionPatcher
         }
     }
 
-    public void PatchFields()
+    public void PatchFields(IEnumerable<string>? excludedFields = null)
     {
         if (xDoc.Root?.Elements() is { } elements)
         {
@@ -143,7 +143,10 @@ public class FormDefinitionPatcher
             {
                 if (fieldOrCategory.Name == FieldElem)
                 {
-                    PatchField(fieldOrCategory);
+                    if (!(excludedFields ?? []).Any(ef => ef.Equals(fieldOrCategory.Attribute("column")?.Value, StringComparison.InvariantCultureIgnoreCase)))
+                    {
+                        PatchField(fieldOrCategory);
+                    }
                 }
                 else if (fieldOrCategory.Name == CategoryElem)
                 {
