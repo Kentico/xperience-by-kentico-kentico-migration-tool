@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Migration.Tool.Source.Model;
+using Newtonsoft.Json.Linq;
 
 namespace Migration.Tool.Source.Mappers.ContentItemMapperDirectives;
 public interface IContentItemActionProvider
@@ -18,6 +19,15 @@ public interface IContentItemActionProvider
     /// </summary>
     void RegenerateUrlPath();
     void OverrideFormerUrlPaths(IEnumerable<FormerPageUrlPath> formerPaths);
+
+    /// <summary>
+    /// Add references to child content items to a field. If the field doesn't exist, it will be created. 
+    /// Child content item's content types will be added to the field's allowed content types as necessary.
+    /// If the field exists and is not of content item reference type, the migration will fail.
+    /// </summary>
+    /// <param name="fieldName">Name of the field to add the child content item references to</param>
+    /// <param name="children">One or more child objects passed by <see cref="ContentItemSource.ChildNodes"/></param>
+    void LinkChildren(string fieldName, IEnumerable<ICmsTree> children);
 }
 
 public record FormerPageUrlPath(string LanguageName, string Path, DateTime? LastModified = null);

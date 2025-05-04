@@ -15,6 +15,7 @@ public static class GuidHelper
     public static readonly Guid GuidNsContentItem = new("EEBBD8D5-BA56-492F-969E-58E77EE90055");
     public static readonly Guid GuidNsContentItemCommonData = new("31BA319C-843F-482A-9841-87BC62062DC2");
     public static readonly Guid GuidNsContentItemLanguageMetadata = new("AAC0C3A9-3DE7-436E-AFAB-49C1E29D5DE2");
+    public static readonly Guid GuidNsContentItemReference = new("9FEDEA1C-C677-4026-B5E8-1A83EC501D06");
 
     public static Guid CreateWebPageUrlPathGuid(string hash) => GuidV5.NewNameBased(GuidNsWebPageUrlPathInfo, hash);
     public static Guid CreateWebPageFormerUrlPathGuid(string hash) => GuidV5.NewNameBased(GuidNsWebPageFormerUrlPathInfo, hash);
@@ -27,6 +28,7 @@ public static class GuidHelper
     public static Guid CreateFolderGuid(string path) => GuidV5.NewNameBased(GuidNsFolder, path);
     public static Guid CreateDataClassGuid(string key) => GuidV5.NewNameBased(GuidNsDataClass, key);
     public static Guid CreateContentItemGuid(string key) => GuidV5.NewNameBased(GuidNsContentItem, key);
+    public static Guid CreateContentItemReferenceGuid(string key) => GuidV5.NewNameBased(GuidNsContentItemReference, key);
     public static Guid CreateContentItemCommonDataGuid(string key) => GuidV5.NewNameBased(GuidNsContentItemCommonData, key);
     public static Guid CreateContentItemLanguageMetadataGuid(string key) => GuidV5.NewNameBased(GuidNsContentItemLanguageMetadata, key);
 

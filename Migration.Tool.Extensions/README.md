@@ -8,6 +8,7 @@ To create custom migrations:
     - [Widget property migrations](#customize-widget-property-migrations)
     - [Page to widget migrations](#migrate-pages-to-widgets)
     - [Custom class mappings](#custom-class-mappings)
+    - [Custom child links](#custom-child-links)
 2. [Register the migration](#register-migrations)
 
 ## Customize field migrations
@@ -237,5 +238,16 @@ You can find sample class mappings in the [ClassMappingSample.cs](/Migration.Too
 - `AddSimpleRemodelingSample` showcases how to change the mapping of a single page type
 - `AddClassMergeSample` showcases how to merge two page types into a single content type
 - `AddReusableRemodelingSample` showcases how to migrate a page type as reusable content
+
+
+## Custom child links
+
+This feature allows you to link child pages as referenced content items of a page converted to reusable content item.
+
+This feature is available by means of content item director.
+
+You can apply a simple general rule to link child pages e.g. in `Children` field or you can apply more elaborate rules. You can see samples of both approaches in [SampleChildLinkDirector.cs](./CommunityMigrations/SampleChildLinkDirector.cs)
+
+After implementing the content item director, you need to [register the director](#register-migrations) in the system.
 
 

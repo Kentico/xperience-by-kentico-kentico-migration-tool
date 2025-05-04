@@ -1,4 +1,6 @@
-﻿using Kentico.Xperience.UMT.Model;
+﻿using CMS.DataEngine;
+using Kentico.Xperience.UMT.Model;
+using Migration.Tool.Source.Model;
 using Newtonsoft.Json.Linq;
 
 namespace Migration.Tool.Source.Mappers.ContentItemMapperDirectives;
@@ -9,6 +11,13 @@ internal abstract class ContentItemDirectiveBase : IUmtModel
     public ContentFolderOptions? ContentFolderOptions { get; set; }
     public bool RegenerateUrlPath { get; set; } = false;
     public IEnumerable<FormerPageUrlPath>? FormerUrlPaths { get; set; }
+    public List<(string fieldName, ICmsTree)> ChildLinks { get; set; } = [];
+
+    #region Mapping results, used for postprocessing
+    public Guid ContentItemGuid { get; set; }
+    public DataClassInfo? TargetClassInfo { get; set; }
+    public ICmsTree? Node { get; set; }
+    #endregion
 
     #region IUmtModel
     // This interface is implemented only as means to allow yielding the directive out of content item mapper.
