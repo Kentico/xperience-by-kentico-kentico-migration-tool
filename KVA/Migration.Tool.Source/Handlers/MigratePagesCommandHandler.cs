@@ -5,7 +5,9 @@ using CMS.ContentEngine.Internal;
 using CMS.Core;
 using CMS.Core.Internal;
 using CMS.DataEngine;
+using CMS.DataEngine.Internal;
 using CMS.DataEngine.Query;
+using CMS.FormEngine;
 using CMS.Websites;
 using CMS.Websites.Internal;
 using CMS.Websites.Routing.Internal;
@@ -20,6 +22,8 @@ using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.Helpers;
 using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.Common.Model;
+using Migration.Tool.KXP.Api.Auxiliary;
+using Migration.Tool.KXP.Api.Services.CmsClass;
 using Migration.Tool.Source.Contexts;
 using Migration.Tool.Source.Helpers;
 using Migration.Tool.Source.Mappers;
@@ -29,6 +33,7 @@ using Migration.Tool.Source.Providers;
 using Migration.Tool.Source.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Org.BouncyCastle.Asn1.X509;
 
 namespace Migration.Tool.Source.Handlers;
 // ReSharper disable once UnusedType.Global
@@ -206,6 +211,10 @@ public class MigratePagesCommandHandler(
                 new SqlParameter("siteId", ksSite.SiteID)
             );
 
+            // Map from original node GUID to mapped result. Using original node GUID is possible only within context of one site
+            // as only then is the GUID guaranteed by legacy versions to be unique
+            Dictionary<Guid, NodeMapResult> mappedSiteNodes = [];
+
             for (int pass = 0; pass < 2; pass++)
             {
                 deferredTreeNodesService.Clear();
@@ -353,6 +362,7 @@ public class MigratePagesCommandHandler(
                             if (umtModel is ContentItemDirectiveBase yieldedDirective)
                             {
                                 contentItemDirective = yieldedDirective;
+                                mappedSiteNodes[contentItemDirective!.Node!.NodeGUID] = new(contentItemDirective!.Node!, contentItemDirective.ContentItemGuid, [], contentItemDirective.TargetClassInfo!, contentItemDirective.ChildLinks);
                             }
                             else
                             {
@@ -385,6 +395,11 @@ public class MigratePagesCommandHandler(
                                     case { Success: true, Imported: ContentItemInfo cii }:
                                     {
                                         contentItemInfo = cii;
+                                        break;
+                                    }
+                                    case { Success: true, Imported: ContentItemDataInfo cidi }:
+                                    {
+                                        mappedSiteNodes[ksNode.NodeGUID].ContentItemDataGuids.Add(cidi.ContentItemDataGUID);
                                         break;
                                     }
 
@@ -448,6 +463,128 @@ public class MigratePagesCommandHandler(
                     }
                 }
                 ksTrees = deferredTreeNodesService.GetNodes();
+            }
+
+            await LinkChildren(mappedSiteNodes);
+        }
+    }
+
+    private async Task LinkChildren(Dictionary<Guid, NodeMapResult> mappedSiteNodes)
+    {
+        var reusableItems = mappedSiteNodes.Values.Where(x => x.TargetClassInfo.IsReusableContentType());
+        var nonReusableItemsWithChildLinks = mappedSiteNodes.Values.Where(x => !x.TargetClassInfo.IsReusableContentType() && x.ChildLinks.Count != 0);
+        foreach (var item in nonReusableItemsWithChildLinks)
+        {
+            logger.LogError("Content item {ContentItemGuid} (original node {OriginalNodeGuid}) is not reusable, but specifies linked children. Add the content type to appsettings ConvertClassesToContentHub collection", item.ContentItemGuid, item.Node.NodeGUID);
+        }
+
+        // [content type name] -> { [field name] -> allowed referenced types }
+        Dictionary<string, Dictionary<string, (Guid? fieldGuid, HashSet<Guid> allowedTypes)>> referenceFields = [];
+
+        // Gather necessary reference fields and/or allowed referenced types
+        foreach (var parentItem in reusableItems)
+        {
+            if (!referenceFields.ContainsKey(parentItem.TargetClassInfo.ClassName))
+            {
+                referenceFields[parentItem.TargetClassInfo.ClassName] = [];
+            }
+            var childCollections = parentItem.ChildLinks.GroupBy(x => x.fieldName);
+            foreach (var collection in childCollections)
+            {
+                if (!referenceFields[parentItem.TargetClassInfo.ClassName].ContainsKey(collection.Key))
+                {
+                    referenceFields[parentItem.TargetClassInfo.ClassName][collection.Key] = (null, []);
+                }
+                foreach (var (fieldName, node) in collection)
+                {
+                    var childTargetType = mappedSiteNodes[node.NodeGUID].TargetClassInfo.ClassGUID;
+                    referenceFields[parentItem.TargetClassInfo.ClassName][collection.Key].allowedTypes.Add(childTargetType);
+                }
+            }
+        }
+
+        // Merge required allowed referenced types with already existing ones
+        foreach (var classInfo in reusableItems.Select(x => x.TargetClassInfo).GroupBy(x => x.ClassName).Select(x => x.First()))
+        {
+            if (referenceFields.ContainsKey(classInfo.ClassName))
+            {
+                foreach (var field in new FormInfo(classInfo.ClassFormDefinition).GetFields<FormFieldInfo>().Where(x => x.DataType == "contentitemreference"))
+                {
+                    if (referenceFields[classInfo.ClassName].ContainsKey(field.Name))
+                    {
+                        string existingSerialized = (string?)field.Settings[FormDefinitionPatcher.AllowedContentItemTypeIdentifiers] ?? "[]";
+                        var existingAllowedTypes = JsonConvert.DeserializeObject<Guid[]>(existingSerialized)!.ToHashSet();
+                        foreach (var existingAllowedType in existingAllowedTypes)
+                        {
+                            referenceFields[classInfo.ClassName][field.Name].allowedTypes.Add(existingAllowedType);
+                        }
+                    }
+                }
+            }
+        }
+
+        foreach (var classRefFields in referenceFields)
+        {
+            var classInfo = DataClassInfoProvider.ProviderObject.Get(classRefFields.Key);
+            var fi = new FormInfo(classInfo.ClassFormDefinition);
+            foreach (var field in classRefFields.Value)
+            {
+                var ffi = fi.GetFormField(field.Key);
+                if (ffi is null)
+                {
+                    ffi = new FormFieldInfo
+                    {
+                        Guid = GuidHelper.CreateFieldGuid($"{field.Key.ToLower()}|{classInfo.ClassName}"),
+                        AllowEmpty = true,
+                        Caption = field.Key,
+                        DataType = "contentitemreference",
+                        Name = field.Key,
+                        Enabled = true,
+                        Visible = true,
+                        System = false,
+                        DefaultValue = null,
+                        Settings = {
+                            { FormDefinitionPatcher.SettingsElemControlname, FormComponents.AdminContentItemSelectorComponent },
+                        }
+                    };
+                    fi.AddFormItem(ffi);
+                }
+                classRefFields.Value[field.Key] = (ffi.Guid, field.Value.allowedTypes);
+                ffi.Settings[FormDefinitionPatcher.AllowedContentItemTypeIdentifiers] = JsonConvert.SerializeObject(field.Value.allowedTypes.ToArray());
+            }
+            classInfo.ClassFormDefinition = fi.GetXmlDefinition();
+            DataClassInfoProvider.ProviderObject.Set(classInfo);
+        }
+
+        foreach (var parentItem in reusableItems)
+        {
+            var parentMappedNode = mappedSiteNodes[parentItem.Node.NodeGUID];
+            foreach (var contentItemDataGuid in parentItem.ContentItemDataGuids)
+            {
+                var dataModel = new ContentItemDataModel
+                {
+                    ContentItemDataGUID = contentItemDataGuid,
+                    ContentItemDataCommonDataGuid = contentItemDataGuid,
+                    ContentItemContentTypeName = parentMappedNode.TargetClassInfo.ClassName,
+                    CustomProperties = []
+                };
+
+                foreach (var childCollection in parentItem.ChildLinks.GroupBy(x => x.fieldName))
+                {
+                    var guidArray = childCollection.Select(x => new { Identifier = mappedSiteNodes[x.node.NodeGUID].ContentItemGuid }).ToArray();
+                    string serializedValue = JsonConvert.SerializeObject(guidArray);
+                    dataModel.CustomProperties[childCollection.Key] = serializedValue;
+                }
+
+                var importResult = await importer.ImportAsync(dataModel);
+                if (importResult is { Success: true })
+                {
+                    logger.LogInformation("Imported linked children of content item {ContentItemGuid}", parentItem.ContentItemGuid);
+                }
+                else
+                {
+                    logger.LogError("Failed to import linked children of content item {ContentItemGuid}: {Exception}", parentItem.ContentItemGuid, importResult.Exception);
+                }
             }
         }
     }
