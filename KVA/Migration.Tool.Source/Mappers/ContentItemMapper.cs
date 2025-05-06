@@ -80,8 +80,9 @@ public class ContentItemMapper(
     protected override IEnumerable<IUmtModel> MapInternal(CmsTreeMapperSource source)
     {
         (var cmsTree, string safeNodeName, var siteGuid, var nodeParentGuid, var cultureToLanguageGuid, string? targetFormDefinition, string sourceFormDefinition, var migratedDocuments, var sourceSite, bool deferred) = source;
-
         logger.LogTrace("Mapping {Value}", new { cmsTree.NodeAliasPath, cmsTree.NodeName, cmsTree.NodeGUID, cmsTree.NodeSiteID });
+
+        var childNodes = modelFacade.Select<ICmsTree>("NodeParentID = @nodeID", "NodeOrder", new SqlParameter("nodeID", cmsTree.NodeID))!.ToArray();
 
         var sourceNodeClass = modelFacade.SelectById<ICmsClass>(cmsTree.NodeClassID) ?? throw new InvalidOperationException($"Fatal: node class is missing, class id '{cmsTree.NodeClassID}'");
         var mapping = classMappingProvider.GetMapping(sourceNodeClass.ClassName);
@@ -99,9 +100,14 @@ public class ContentItemMapper(
             yield break;
         }
 
+        var contentItemGuid = spoiledGuidContext.EnsureNodeGuid(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsTree.NodeID);
+
         var formerUrlPaths = GetFormerUrlPaths(cmsTree);
 
-        var directive = GetDirective(new ContentItemSource(cmsTree, sourceNodeClass.ClassName, mapping?.TargetClassName ?? sourceNodeClass.ClassName, sourceSite, formerUrlPaths));
+        var directive = GetDirective(new ContentItemSource(cmsTree, sourceNodeClass.ClassName, mapping?.TargetClassName ?? sourceNodeClass.ClassName, sourceSite, formerUrlPaths, childNodes));
+        directive.ContentItemGuid = contentItemGuid;
+        directive.TargetClassInfo = targetClassInfo;
+        directive.Node = cmsTree;
         yield return directive;
 
         if (directive is DropDirective)
@@ -117,7 +123,6 @@ public class ContentItemMapper(
 
         bool migratedAsContentFolder = sourceNodeClass.ClassName.Equals("cms.folder", StringComparison.InvariantCultureIgnoreCase) && !configuration.UseDeprecatedFolderPageType.GetValueOrDefault(false);
 
-        var contentItemGuid = spoiledGuidContext.EnsureNodeGuid(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsTree.NodeID);
         bool isMappedTypeReusable = targetClassInfo?.ClassContentTypeType is ClassContentTypeType.REUSABLE || configuration.ClassNamesConvertToContentHub.Contains(sourceNodeClass.ClassName);
         if (isMappedTypeReusable)
         {
@@ -438,7 +443,6 @@ public class ContentItemMapper(
                         : JsonConvert.DeserializeObject<EditableAreasConfiguration>(hostPageCommonDataInfo.ContentItemCommonDataVisualBuilderWidgets)!;
 
                     // fill widget properties
-                    var childNodes = modelFacade.Select<ICmsTree>("NodeParentID = @nodeID", "NodeOrder", new SqlParameter("nodeID", cmsTree.NodeID));
                     var childItemGUIDs = childNodes.Select(x => ContentItemInfo.Provider.Get(x.NodeGUID)?.ContentItemGUID).Where(x => x is not null).Select(x => x!.Value).ToList();   // don't presume that ContentItem matching the Node exists. Director might have dropped it
 
                     var widgetProperties = widgetDirective.ItemToWidgetPropertiesMapping?.Invoke(commonDataModel.CustomProperties.Concat(dataModel.CustomProperties).ToDictionary(), storeContentItem ? contentItemModel.ContentItemGUID : null, childItemGUIDs) ?? [];

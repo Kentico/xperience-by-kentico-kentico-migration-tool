@@ -653,6 +653,7 @@ The migration then converts the specified page types or custom tables to content
 
 For advanced scenarios, you can use the extensibility feature to implement [customizations](../Migration.Tool.Extensions/README.md#custom-class-mappings) that map specific page types, custom tables or their individual fields to reusable content types. For example, this allows you to migrate multiple page types to a single content type.
 
+To preserve relationship between page converted to reusable content item and its children, you can use [Custom child links](../Migration.Tool.Extensions/README.md#custom-child-links). This feature allows you to map children of the original page to a content item/page selector field of the target reusable content item.
 ## Convert page types to reusable field schemas
 
 It is not possible to migrate any page types that inherit fields from other page types. However, to make the manual

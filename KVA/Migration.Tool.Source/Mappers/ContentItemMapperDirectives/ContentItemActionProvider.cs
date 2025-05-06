@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Migration.Tool.Source.Model;
+using Newtonsoft.Json.Linq;
 
 namespace Migration.Tool.Source.Mappers.ContentItemMapperDirectives;
 internal partial class ContentItemActionProvider : IContentItemActionProvider
@@ -20,4 +21,11 @@ internal partial class ContentItemActionProvider : IContentItemActionProvider
     public void OverrideContentFolder(string displayNamePath) => Directive.ContentFolderOptions = new ContentFolderOptions(DisplayNamePath: displayNamePath);
     public void RegenerateUrlPath() => Directive.RegenerateUrlPath = true;
     public void OverrideFormerUrlPaths(IEnumerable<FormerPageUrlPath> formerPaths) => Directive.FormerUrlPaths = formerPaths;
+    public void LinkChildren(string fieldName, IEnumerable<ICmsTree> children)
+    {
+        foreach (var child in children)
+        {
+            Directive.ChildLinks.Add((fieldName, child));
+        }
+    }
 }
