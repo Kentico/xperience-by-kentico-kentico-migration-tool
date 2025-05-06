@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CMS.DataEngine;
+﻿using CMS.DataEngine;
 using Migration.Tool.Source.Model;
 
 namespace Migration.Tool.Source.Mappers;
