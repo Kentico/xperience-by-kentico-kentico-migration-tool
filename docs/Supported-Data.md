@@ -21,7 +21,7 @@ Currently, the Kentico Migration Tool supports the following types of data:
       - However, you can create [reusable field schemas](../Migration.Tool.CLI/README.md#convert-page-types-to-reusable-field-schemas) for page types from which other page types inherit.
   - All migrated Content types have the **Include in routing** option enabled (the migration never creates pages without URL and routing).
 - **Pages**
-  - Pages can be migrated to either to [website channel pages](https://docs.kentico.com/x/JwKQC) (default behavior) or [reusable content items](https://docs.kentico.com/x/barWCQ) in Content hub.
+  - Pages can be migrated either to [website channel pages](https://docs.kentico.com/x/JwKQC) (default behavior) or [reusable content items](https://docs.kentico.com/x/barWCQ) in Content hub.
   - The migration includes the following versions of pages:
     - _Published_
     - _Latest draft version_ - for published pages, the version is migrated to the _Draft (New version)_ [status](https://docs.kentico.com/x/JwKQC); for pages that do not have a published version, the version is migrated to the _Draft (Initial)_ status.
@@ -67,6 +67,7 @@ Currently, the Kentico Migration Tool supports the following types of data:
     - Custom settings under modules, which are currently not supported in Xperience by Kentico
     - Module permissions (permissions work differently in Xperience by Kentico - see [Role management](https://docs.kentico.com/x/7IVwCg) and [UI page permission checks](https://docs.kentico.com/x/8IKyCg))
     - As with all object types, the Kentico Migration Tool does not transfer code files to the target project. You must manually move all code files generated for your custom classes (_Info_, _InfoProvider_, etc.).
+  - Module classes and the stored data can optionally be migrated as [reusable content items](https://docs.kentico.com/x/content_items_xp) in Content hub.
 - **Custom tables**
   - Custom tables are not supported in Xperience by Kentico. Data from custom tables can be migrated to the target instance either as [custom module classes](https://docs.kentico.com/x/AKDWCQ) (default behavior) or as [reusable content items](https://docs.kentico.com/x/content_items_xp) in Content hub.
   - Any user interface, listings, filters, and other functionality related to migrated custom tables needs to be implemented in the target instance.

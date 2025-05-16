@@ -26,6 +26,7 @@ public class FormDefinitionPatcher
     public const string FieldElemSettings = "settings";
     public const string AllowedContentItemTypeIdentifiers = "AllowedContentItemTypeIdentifiers";
     public const string PropertiesElemDefaultvalue = "defaultvalue";
+    public const string PropertiesElemFieldcaption = "fieldcaption";
     public const string SettingsElemControlname = "controlname";
     public const string SettingsMaximumassets = "MaximumAssets";
     public const string SettingsMaximumassetsFallback = "99";
@@ -57,6 +58,7 @@ public class FormDefinitionPatcher
     ], StringComparer.InvariantCultureIgnoreCase);
 
     private readonly bool altForm;
+    private readonly bool allowNullSourceFormControl;
     private readonly bool classIsCustom;
     private readonly bool classIsDocumentType;
     private readonly bool classIsForm;
@@ -74,7 +76,8 @@ public class FormDefinitionPatcher
         bool classIsDocumentType,
         bool discardSysFields,
         bool classIsCustom,
-        bool altForm = false)
+        bool altForm = false,
+        bool allowNullSourceFormControl = false)
     {
         this.logger = logger;
         this.formDefinitionXml = formDefinitionXml;
@@ -84,6 +87,7 @@ public class FormDefinitionPatcher
         this.discardSysFields = discardSysFields;
         this.classIsCustom = classIsCustom;
         this.altForm = altForm;
+        this.allowNullSourceFormControl = allowNullSourceFormControl;
         xDoc = XDocument.Parse(this.formDefinitionXml);
     }
 
@@ -216,7 +220,7 @@ public class FormDefinitionPatcher
         string? controlName = controlNameElem?.Value;
 
         var fieldMigrationContext = new FieldMigrationContext(columnType, controlName, columnAttr?.Value, new EmptySourceObjectContext());
-        switch (fieldMigrationService.GetFieldMigration(fieldMigrationContext))
+        switch (fieldMigrationService.GetFieldMigration(fieldMigrationContext, allowNullSourceFormControl))
         {
             case FieldMigration(_, var targetDataType, _, var targetFormComponent, var actions, _):
             {
@@ -242,6 +246,14 @@ public class FormDefinitionPatcher
                     {
                         logger.LogDebug("Field {FieldDescriptor} ControlName: Tca:NONE => from control '{ControlName}' => {TargetFormComponent}", fieldDescriptor, controlName, targetFormComponent);
                         controlNameElem?.SetValue(targetFormComponent!);
+                        if (allowNullSourceFormControl)
+                        {
+                            var settingsElement = field.EnsureElement("settings", s =>
+                                s.EnsureElement(SettingsElemControlname, cn => cn.Value = targetFormComponent!)
+                            );
+                            // set settings child node with controlname
+                            field.SetAttributeValue(SettingsElemControlname, targetFormComponent);
+                        }
                         PerformActionsOnField(field, fieldDescriptor, actions);
                         break;
                     }
@@ -369,7 +381,7 @@ public class FormDefinitionPatcher
     private void PatchProperties(XElement properties)
     {
         var elementsToRemove = properties.Elements()
-            .Where(element => element.Name != PropertiesElemDefaultvalue)
+            .Where(element => !new string[] { PropertiesElemDefaultvalue, PropertiesElemFieldcaption }.Any(x => element.Name == x))
             .ToList();
 
         foreach (var element in elementsToRemove)

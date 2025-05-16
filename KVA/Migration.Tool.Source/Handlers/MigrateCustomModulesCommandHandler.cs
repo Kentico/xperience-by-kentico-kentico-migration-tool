@@ -1,11 +1,12 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Xml.Linq;
-
+using CMS.ContentEngine;
+using CMS.Core;
 using CMS.DataEngine;
 using CMS.FormEngine;
 using CMS.Modules;
-
+using Kentico.Xperience.UMT.Services;
 using MediatR;
 
 using Microsoft.Data.SqlClient;
@@ -23,6 +24,8 @@ using Migration.Tool.Source.Contexts;
 using Migration.Tool.Source.Helpers;
 using Migration.Tool.Source.Mappers;
 using Migration.Tool.Source.Model;
+using Migration.Tool.Source.Providers;
+using Newtonsoft.Json;
 
 namespace Migration.Tool.Source.Handlers;
 
@@ -37,7 +40,10 @@ public class MigrateCustomModulesCommandHandler(
     IProtocol protocol,
     BulkDataCopyService bulkDataCopyService,
     FieldMigrationService fieldMigrationService,
-    ModelFacade modelFacade
+    ModelFacade modelFacade,
+    ClassMappingProvider classMappingProvider,
+    IUmtMapper<CustomModuleItemMapperSource> contentItemMapper,
+    IImporter importer
 )
     : IRequestHandler<MigrateCustomModulesCommand, CommandResult>
 {
@@ -54,6 +60,8 @@ public class MigrateCustomModulesCommandHandler(
 
     private async Task MigrateClasses(EntityConfiguration entityConfiguration, CancellationToken cancellationToken)
     {
+        var manualMappings = classMappingProvider.ExecuteMappings();
+
         using var cmsClasses = EnumerableHelper.CreateDeferrableItemWrapper(
             modelFacade.SelectWhere<ICmsClass>("(ClassIsForm=0 OR ClassIsForm IS NULL) AND (ClassIsDocumentType=0 OR ClassIsDocumentType IS NULL)")
                 .OrderBy(x => x.ClassID)
@@ -62,6 +70,21 @@ public class MigrateCustomModulesCommandHandler(
         while (cmsClasses.GetNext(out var di))
         {
             var (_, cmsClass) = di;
+
+            DataClassInfo? remappedClass = null;
+            var remapped = () => remappedClass is not null;
+
+            if (manualMappings.TryGetValue(cmsClass.ClassName, out var mappedToClass))
+            {
+                if (toolConfiguration.ClassNamesConvertToContentHub.Contains(cmsClass.ClassName, StringComparer.InvariantCultureIgnoreCase))
+                {
+                    remappedClass = mappedToClass.target;
+                }
+                else
+                {
+                    logger.LogError("Class {ClassName} has custom mapping, but is not listed as to be converted to reusable item by appsettings ConvertClassesToContentHub", cmsClass.ClassName);
+                }
+            }
 
             var resource = modelFacade.SelectById<ICmsResource>(cmsClass.ClassResourceID);
             if (resource?.ResourceName.StartsWith("CMS.") == true)
@@ -74,23 +97,26 @@ public class MigrateCustomModulesCommandHandler(
                 continue;
             }
 
-            if (cmsClass.ClassInheritsFromClassID is { } classInheritsFromClassId && !primaryKeyMappingContext.HasMapping<ICmsClass>(c => c.ClassID, classInheritsFromClassId))
+            if (!remapped())
             {
-                // defer migration to later stage
-                if (cmsClasses.TryDeferItem(di))
+                if (cmsClass.ClassInheritsFromClassID is { } classInheritsFromClassId && !primaryKeyMappingContext.HasMapping<ICmsClass>(c => c.ClassID, classInheritsFromClassId))
                 {
-                    logger.LogTrace("Class {Class} inheritance parent not found, deferring migration to end. Attempt {Attempt}", Printer.GetEntityIdentityPrint(cmsClass), di.Recurrence);
-                }
-                else
-                {
-                    logger.LogErrorMissingDependency(cmsClass, nameof(cmsClass.ClassInheritsFromClassID), cmsClass.ClassInheritsFromClassID, typeof(DataClassInfo));
-                    protocol.Append(HandbookReferences
-                        .MissingRequiredDependency<ICmsClass>(nameof(ICmsClass.ClassID), classInheritsFromClassId)
-                        .NeedsManualAction()
-                    );
-                }
+                    // defer migration to later stage
+                    if (cmsClasses.TryDeferItem(di))
+                    {
+                        logger.LogTrace("Class {Class} inheritance parent not found, deferring migration to end. Attempt {Attempt}", Printer.GetEntityIdentityPrint(cmsClass), di.Recurrence);
+                    }
+                    else
+                    {
+                        logger.LogErrorMissingDependency(cmsClass, nameof(cmsClass.ClassInheritsFromClassID), cmsClass.ClassInheritsFromClassID, typeof(DataClassInfo));
+                        protocol.Append(HandbookReferences
+                            .MissingRequiredDependency<ICmsClass>(nameof(ICmsClass.ClassID), classInheritsFromClassId)
+                            .NeedsManualAction()
+                        );
+                    }
 
-                continue;
+                    continue;
+                }
             }
 
             protocol.FetchedSource(cmsClass);
@@ -119,61 +145,128 @@ public class MigrateCustomModulesCommandHandler(
 
             protocol.FetchedTarget(xbkDataClass);
 
-            if (SaveClassUsingKxoApi(cmsClass, xbkDataClass) is { } savedDataClass)
+            DataClassInfo? savedDataClass = remapped() ? remappedClass : SaveClassUsingKxoApi(cmsClass, xbkDataClass);
+
+            if (savedDataClass is not null)
             {
                 Debug.Assert(savedDataClass.ClassID != 0, "xbkDataClass.ClassID != 0");
                 xbkDataClass = DataClassInfoProvider.ProviderObject.Get(savedDataClass.ClassID);
                 await MigrateAlternativeForms(cmsClass, savedDataClass, cancellationToken);
 
-                #region Migrate coupled data class data
-
-                if (cmsClass.ClassShowAsSystemTable is false)
+                var codeNameProvider = Service.Resolve<IContentItemCodeNameProvider>();
+                if (toolConfiguration.ClassNamesConvertToContentHub.Any(x => cmsClass.ClassName.Equals(x, StringComparison.InvariantCultureIgnoreCase)))
                 {
-                    Debug.Assert(xbkDataClass.ClassTableName != null, "k12Class.ClassTableName != null");
+                    var fi = new FormInfo(cmsClass.ClassFormDefinition);
 
-                    XNamespace nsSchema = "http://www.w3.org/2001/XMLSchema";
-                    XNamespace msSchema = "urn:schemas-microsoft-com:xml-msdata";
-                    if (string.IsNullOrEmpty(xbkDataClass.ClassXmlSchema))
+                    string? guidColumn = fi.GetFields(true, true).FirstOrDefault(x => x.Caption == "GUID" && x.DataType == KsFieldDataType.Guid)?.Name;
+                    if (guidColumn is null)
                     {
-                        logger.LogError("CmsClass: {ClassName} has no XML schema. Migration incomplete", cmsClass.ClassName);
+                        logger.LogError($"Guid column not found for class {cmsClass.ClassName}");
                         continue;
                     }
-                    var xDoc = XDocument.Parse(xbkDataClass.ClassXmlSchema);
-                    var autoIncrementColumns = xDoc.Descendants(nsSchema + "element")
-                        .Where(x => x.Attribute(msSchema + "AutoIncrement")?.Value == "true")
-                        .Select(x => x.Attribute("name")?.Value).ToImmutableHashSet();
 
-                    Debug.Assert(autoIncrementColumns.Count == 1, "autoIncrementColumns.Count == 1");
-
-                    var r = (xbkDataClass.ClassTableName, xbkDataClass.ClassGUID, autoIncrementColumns);
-                    logger.LogTrace("Class '{ClassGuild}' Resolved as: {Result}", cmsClass.ClassGUID, r);
-
-                    try
+                    string? lastModifiedColumn = fi.GetFields(true, true).FirstOrDefault(x => x.Caption == "Last modified" && x.DataType == KsFieldDataType.DateTime)?.Name;
+                    if (lastModifiedColumn is null)
                     {
-                        // check if data is present in target tables
-                        if (bulkDataCopyService.CheckIfDataExistsInTargetTable(xbkDataClass.ClassTableName))
+                        logger.LogWarning($"Last modified column not found for class {cmsClass.ClassName}. Current date will be used.");
+                    }
+
+                    DateTime now = DateTime.Now;
+                    int counter = 1;
+                    var items = modelFacade.SelectAllAsDictionary(cmsClass.ClassTableName!);
+                    foreach (var item in items)
+                    {
+                        if (item is null)
                         {
-                            logger.LogWarning("Data exists in target coupled data table '{TableName}' - cannot migrate, skipping form data migration", r.ClassTableName);
-                            protocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable(xbkDataClass.ClassTableName));
                             continue;
                         }
 
-                        var bulkCopyRequest = new BulkCopyRequest(
-                            xbkDataClass.ClassTableName,
-                            s => true, // s => !autoIncrementColumns.Contains(s),
-                            _ => true,
-                            20000
-                        );
+                        Guid sourceGuid = (Guid)item[guidColumn!]!;
+                        DateTime lastModifiedDate = lastModifiedColumn is not null ? (DateTime)item[lastModifiedColumn]! : now;
 
-                        logger.LogTrace("Bulk data copy request: {Request}", bulkCopyRequest);
-                        bulkDataCopyService.CopyTableToTable(bulkCopyRequest);
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogError(ex, "Error while copying data to table");
+                        string name = await codeNameProvider.Get($"{xbkDataClass.ClassName}-{counter++}");
+
+                        string displayName = string.Empty;
+                        if (toolConfiguration.CustomModuleClassDisplayNamePatterns is { } displayNamePatterns
+                            && displayNamePatterns.TryGetValue(cmsClass.ClassName, out string? pattern)
+                            && pattern is not null)
+                        {
+                            displayName = pattern;
+                            foreach (var kv in item)
+                            {
+                                displayName = displayName.Replace($"{{{kv.Key}}}", kv.Value?.ToString() ?? string.Empty);
+                            }
+                        }
+                        displayName = string.IsNullOrEmpty(displayName) ? name : displayName;
+
+                        CustomModuleItemMapperSource src = new(name, displayName, sourceGuid, lastModifiedDate, cmsClass, xbkDataClass, item!);
+                        var models = contentItemMapper.Map(src);
+                        foreach (var umtModel in models)
+                        {
+                            switch (await importer.ImportAsync(umtModel))
+                            {
+                                case { Success: false } result:
+                                {
+                                    logger.LogError("Failed to import: {Exception}, {ValidationResults}", result.Exception, JsonConvert.SerializeObject(result.ModelValidationResults));
+                                    break;
+                                }
+                                default:
+                                    break;
+                            }
+                        }
                     }
                 }
+                else
+                {
+                    #region Migrate coupled data class data
 
+                    if (cmsClass.ClassShowAsSystemTable is false)
+                    {
+                        Debug.Assert(xbkDataClass.ClassTableName != null, "k12Class.ClassTableName != null");
+
+                        XNamespace nsSchema = "http://www.w3.org/2001/XMLSchema";
+                        XNamespace msSchema = "urn:schemas-microsoft-com:xml-msdata";
+                        if (string.IsNullOrEmpty(xbkDataClass.ClassXmlSchema))
+                        {
+                            logger.LogError("CmsClass: {ClassName} has no XML schema. Migration incomplete", cmsClass.ClassName);
+                            continue;
+                        }
+                        var xDoc = XDocument.Parse(xbkDataClass.ClassXmlSchema);
+                        var autoIncrementColumns = xDoc.Descendants(nsSchema + "element")
+                            .Where(x => x.Attribute(msSchema + "AutoIncrement")?.Value == "true")
+                            .Select(x => x.Attribute("name")?.Value).ToImmutableHashSet();
+
+                        Debug.Assert(autoIncrementColumns.Count == 1, "autoIncrementColumns.Count == 1");
+
+                        var r = (xbkDataClass.ClassTableName, xbkDataClass.ClassGUID, autoIncrementColumns);
+                        logger.LogTrace("Class '{ClassGuild}' Resolved as: {Result}", cmsClass.ClassGUID, r);
+
+                        try
+                        {
+                            // check if data is present in target tables
+                            if (bulkDataCopyService.CheckIfDataExistsInTargetTable(xbkDataClass.ClassTableName))
+                            {
+                                logger.LogWarning("Data exists in target coupled data table '{TableName}' - cannot migrate, skipping form data migration", r.ClassTableName);
+                                protocol.Append(HandbookReferences.DataMustNotExistInTargetInstanceTable(xbkDataClass.ClassTableName));
+                                continue;
+                            }
+
+                            var bulkCopyRequest = new BulkCopyRequest(
+                                xbkDataClass.ClassTableName,
+                                s => true, // s => !autoIncrementColumns.Contains(s),
+                                _ => true,
+                                20000
+                            );
+
+                            logger.LogTrace("Bulk data copy request: {Request}", bulkCopyRequest);
+                            bulkDataCopyService.CopyTableToTable(bulkCopyRequest);
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.LogError(ex, "Error while copying data to table");
+                        }
+                    }
+                }
                 #endregion
             }
         }

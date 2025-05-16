@@ -31,7 +31,7 @@ public class FieldMigrationService // shall be singleton to cache necessary data
         userDefinedMigrations = allUserDefinedMigrations;
     }
 
-    public IFieldMigration? GetFieldMigration(FieldMigrationContext fieldMigrationContext)
+    public IFieldMigration? GetFieldMigration(FieldMigrationContext fieldMigrationContext, bool allowNullSourceFormControl = false)
     {
         foreach (var fieldMigrator in fieldMigrations)
         {
@@ -42,7 +42,7 @@ public class FieldMigrationService // shall be singleton to cache necessary data
         }
 
         (string? sourceDataType, string? sourceFormControl, string? fieldName, _) = fieldMigrationContext;
-        if (sourceFormControl == null)
+        if (!allowNullSourceFormControl && sourceFormControl == null)
         {
             logger.LogDebug("Source field has no control defined '{SourceDataType}', field '{FieldName}'", sourceDataType, fieldName);
             return null;
@@ -55,7 +55,7 @@ public class FieldMigrationService // shall be singleton to cache necessary data
             return userDefined;
         }
 
-        var preDefined = GetFieldMigrationInternal(FieldMappingInstance.BuiltInFieldMigrations, sourceDataType, sourceFormControl, fieldName);
+        var preDefined = GetFieldMigrationInternal(FieldMappingInstance.BuiltInFieldMigrations, sourceDataType, sourceFormControl, fieldName, allowNullSourceFormControl);
         if (preDefined is not null)
         {
             logger.LogDebug("Field migration matched: '{MatchType}', {Migration}", "BuiltIn", preDefined);
@@ -65,7 +65,7 @@ public class FieldMigrationService // shall be singleton to cache necessary data
         throw new InvalidOperationException($"No migration found for combination of '{sourceDataType}' datatype and '{sourceFormControl}'");
     }
 
-    private static FieldMigration? GetFieldMigrationInternal(FieldMigration[] migrations, string sourceDataType, string? sourceFormControl, string? fieldName)
+    private static FieldMigration? GetFieldMigrationInternal(FieldMigration[] migrations, string sourceDataType, string? sourceFormControl, string? fieldName, bool allowNullSourceFormControl = false)
     {
         var matchedByDtFc = migrations.Where(x =>
             string.Equals(x.SourceDataType, sourceDataType, StringComparison.InvariantCultureIgnoreCase) &&
@@ -92,6 +92,17 @@ public class FieldMigrationService // shall be singleton to cache necessary data
         if (generalMatch is not null)
         {
             return generalMatch;
+        }
+
+        if (allowNullSourceFormControl)
+        {
+            var typeOnlyMatch = migrations.LastOrDefault(x =>
+                string.Equals(x.SourceDataType, sourceDataType, StringComparison.InvariantCultureIgnoreCase)
+            );
+            if (typeOnlyMatch is not null)
+            {
+                return typeOnlyMatch;
+            }
         }
 
         return null;

@@ -40,6 +40,8 @@ public class ConfigurationNames
 
     public const string IncludeExtendedMetadata = "IncludeExtendedMetadata";
 
+    public const string CustomModuleClassDisplayNamePatterns = "CustomModuleClassDisplayNamePatterns";
+
     public const string TodoPlaceholder = "[TODO]";
 
     #region "Section names"

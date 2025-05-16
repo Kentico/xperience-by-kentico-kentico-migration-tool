@@ -7,9 +7,9 @@ using Migration.Tool.Common;
 using Migration.Tool.Common.Builders;
 using Migration.Tool.KXP.Api.Services.CmsClass;
 using Migration.Tool.Source.Helpers;
-using Migration.Tool.Source.Mappers;
 using Migration.Tool.Source.Model;
 using Migration.Tool.Source.Services;
+using static Migration.Tool.Source.Mappers.CmsClassMapper;
 
 namespace Migration.Tool.Source.Providers;
 
@@ -143,8 +143,9 @@ public class ClassMappingProvider(
                 }
             }
 
+            var includedMetadata = cmsClasses.Any(x => x.ClassResourceID.HasValue) ? IncludedMetadata.None : (configuration.IncludeExtendedMetadata.GetValueOrDefault(false) ? IncludedMetadata.Extended : IncludedMetadata.Basic);
             FormDefinitionHelper.MapFormDefinitionFields(logger, fieldMigrationService, nfi.GetXmlDefinition(), false, true, newDt, false, false, new FormInfo(newDt.ClassFormDefinition).GetFormElements(true, true).Select(x => GetFormElementName(x)));
-            CmsClassMapper.PatchDataClassInfo(newDt, [], modelFacade.SelectVersion(), reusableSchemas, configuration.IncludeExtendedMetadata.GetValueOrDefault(false), out _, out _);
+            PatchDataClassInfo(newDt, [], modelFacade.SelectVersion(), reusableSchemas, includedMetadata, out _, out _);
 
             if (classMapping.TargetFieldPatchers.Count > 0)
             {

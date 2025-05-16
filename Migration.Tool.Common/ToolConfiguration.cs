@@ -61,6 +61,9 @@ public class ToolConfiguration
     [ConfigurationKeyName(ConfigurationNames.ConvertClassesToContentHub)]
     public string? ConvertClassesToContentHub { get; set; }
 
+    [ConfigurationKeyName(ConfigurationNames.CustomModuleClassDisplayNamePatterns)]
+    public Dictionary<string, string>? CustomModuleClassDisplayNamePatterns { get; set; }
+
     public IReadOnlySet<string> ClassNamesCreateReusableSchema => classNamesCreateReusableSchema ??= new HashSet<string>(
         (CreateReusableFieldSchemaForClasses?.Split(new[] { ',', ';', '|' }, StringSplitOptions.RemoveEmptyEntries) ?? []).Select(x => x.Trim()),
         StringComparer.InvariantCultureIgnoreCase
