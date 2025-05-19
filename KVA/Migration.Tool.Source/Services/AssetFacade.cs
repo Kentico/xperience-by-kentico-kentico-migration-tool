@@ -4,6 +4,7 @@ using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
 using CMS.Core;
 using CMS.DataEngine;
+using CMS.Helpers;
 using Kentico.Xperience.UMT.Model;
 using Kentico.Xperience.UMT.Services;
 using Microsoft.Extensions.Logging;
@@ -66,6 +67,8 @@ public class AssetFacade(
         IProtocol protocol
         ) : IAssetFacade
 {
+    private const int ColumnSize_ContentItemLanguageMetadataDisplayName = 100;
+
     public string DefaultContentLanguage
     {
         get
@@ -113,7 +116,7 @@ public class AssetFacade(
         languageData.AddRange(contentLanguageNames.Select(contentLanguageName => new ContentItemLanguageData
         {
             LanguageName = contentLanguageName,
-            DisplayName = mediaFile.FileName,
+            DisplayName = mediaFile.FileName.Truncate(ColumnSize_ContentItemLanguageMetadataDisplayName),
             UserGuid = createdByUser?.UserGUID,
             VersionStatus = VersionStatus.Published,
             ContentItemData = new Dictionary<string, object?>
@@ -169,7 +172,7 @@ public class AssetFacade(
             var contentLanguageData = new ContentItemLanguageData
             {
                 LanguageName = contentLanguageName,
-                DisplayName = attachment.AttachmentName,
+                DisplayName = attachment.AttachmentName.Truncate(ColumnSize_ContentItemLanguageMetadataDisplayName),
                 UserGuid = null,
                 VersionStatus = VersionStatus.Published,
                 ContentItemData = new Dictionary<string, object?>
