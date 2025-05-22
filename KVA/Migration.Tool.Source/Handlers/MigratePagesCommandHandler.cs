@@ -738,10 +738,17 @@ public class MigratePagesCommandHandler(
                             hash = null;    // Let UMT compute new hash
                         }
 
+                        Guid? existingGuid = WebPageUrlPathInfo.Provider.Get()
+                            .WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathWebsiteChannelID), WebsiteChannelInfo.Provider.Get(webSiteChannelGuid).WebsiteChannelID)
+                            .And().WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathContentLanguageID), ContentLanguageInfo.Provider.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageGUID), languageGuid).First().ContentLanguageID)
+                            .And().WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathIsDraft), contentItemCommonDataInfo.ContentItemCommonDataVersionStatus == VersionStatus.Draft)
+                            .FirstOrDefault()?.WebPageUrlPathGUID;
+                        if (contentItemCommonDataInfo.ContentItemCommonDataVersionStatus == VersionStatus.Draft)
+                            System.Diagnostics.Debugger.Break();
                         var webPageUrlPath = new WebPageUrlPathModel
                         {
                             WebPageUrlPathGUID = contentItemCommonDataInfo.ContentItemCommonDataVersionStatus == VersionStatus.Draft
-                                ? Guid.NewGuid()
+                                ? existingGuid ?? Guid.NewGuid()
                                 : ksPath.PageUrlPathGUID,
                             WebPageUrlPath = path,
                             WebPageUrlPathHash = hash,
