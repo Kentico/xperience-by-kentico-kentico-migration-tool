@@ -65,7 +65,6 @@ public class CmsClassMapper(
             target.ClassTableName = source.ClassTableName;
         }
 
-        target.ClassShowTemplateSelection = source.ClassShowTemplateSelection.UseKenticoDefault();
         target.ClassLastModified = source.ClassLastModified;
         target.ClassGUID = source.ClassGUID;
 
