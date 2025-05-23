@@ -248,6 +248,8 @@ Module and class migration does NOT include:
   see [Role management](https://docs.xperience.io/x/7IVwCg)
   and [UI page permission checks](https://docs.xperience.io/x/8IKyCg))
 
+Custom module classes and the stored data records are either migrated as module classes in Xperience by Kentico (default behavior) or [reusable content items](https://docs.kentico.com/x/content_items_xp) in Content hub. See [Convert module classes to Content hub](#convert-module-classes-to-content-hub) for detailed information.
+
 As with all object types, the Kentico Migration Tool does not transfer code files to the target project. You need to
 manually move all code files generated for your custom classes (_Info_, _InfoProvider_, etc.).
 
@@ -416,7 +418,8 @@ Add the options under the `Settings` section in the configuration file.
 | XbyKDirPath                                                       | The absolute file system path of the root of the target Xperience by Kentico project. Required to migrate media library and page attachment files.                                                                                                                                                                                                                                                                                                                                                                                        |
 | XbyKApiSettings                                                   | Configuration options set for the API when creating migrated objects in the target application.<br /><br />The `ConnectionStrings.CMSConnectionString`option is required - set the connection string to the target Xperience by Kentico database (the same value as obsolete `XbKConnectionString`).                                                                                                                                                                                                                                      |
 | MigrationProtocolPath                                             | The absolute file system path of the location where the [migration protocol file](./MIGRATION_PROTOCOL_REFERENCE.md) is generated.<br /><br />For example: `"C:\\Logs\\Migration.Tool.Protocol.log"`                                                                                                                                                                                                                                                                                                                                      |
-| ConvertClassesToContentHub                                         | Specifies which page types or custom tables are migrated to [reusable content items](https://docs.kentico.com/x/content_items_xp) (instead of website channel pages or custom module classes for custom tables). Enter page type code names, separated with either `;` or `,`. See [Convert pages or custom tables to Content hub](#convert-pages-or-custom-tables-to-content-hub) for detailed information.                                                                                                                                                                                                                                                                                                                                      |
+| ConvertClassesToContentHub                                         | Specifies which page types, custom tables or custom module classes are migrated to [reusable content items](https://docs.kentico.com/x/content_items_xp) (instead of website channel pages or custom module classes for custom tables and classes). Enter page type code names, separated with either `;` or `,`. See [Convert pages or custom tables to Content hub](#convert-pages-or-custom-tables-to-content-hub) or [Convert module classes to Content hub](#convert-module-classes-to-content-hub) for detailed information.                                                                                                                                                                                                                                                                                                                                      |
+| CustomModuleClassDisplayNamePatterns                              | Specifies the format of content item names for items migrated from custom module classes. Add a dictionary with the class name as the key and the name pattern as the value. The name pattern can use placeholders that are replaced by values from a specific column in the source class. <br /><br />Example: `CustomModuleItem-{CustomClassGuid}` |
 | MigrateOnlyMediaFileInfo                                          | If set to `true`, only the database representations of media files are migrated, without the files in the media folder in the project's file system. For example, enable this option if your media library files are mapped to a shared directory or Cloud storage.<br /><br />If `false`, media files are migrated based on the `KxCmsDirPath` location.                                                                                                                                                                                 |
 | MigrateMediaToMediaLibrary                                        | Determines whether media library files and attachments from the source instance are migrated to the target instance as media libraries or as [content item assets](https://docs.kentico.com/x/content_item_assets_xp) in the content hub. The default value is `false` – media files and attachments are migrated as content item assets. <br /><br /> See [Convert attachments and media library files to media libraries instead of content item assets](#convert-attachments-and-media-library-files-to-media-libraries-instead-of-content-item-assets) |
 | LegacyFlatAssetTree                                               | Use legacy behavior of versions up to 2.3.0. Content folders for asset content items will be created in a flat structure (all under root folder)                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -460,7 +463,10 @@ Add the options under the `Settings` section in the configuration file.
     },
     "MigrationProtocolPath": "C:\\_Development\\xperience-migration-toolkit-master\\Migration.Tool.Protocol.log",
     "MemberIncludeUserSystemFields": "FirstName|MiddleName|LastName|FullName|UserPrivilegeLevel|UserIsExternal|LastLogon|UserLastModified|UserGender|UserDateOfBirth",
-    "ConvertClassesToContentHub": "Acme.Article,Acme.Product",
+    "ConvertClassesToContentHub": "Acme.Article,Acme.Product,Acme.CustomClass",
+    "CustomModuleClassDisplayNamePatterns": {
+      "Acme.CustomClass": "Item-{CustomClassGuid}"
+    },
     "MigrateOnlyMediaFileInfo": false,
     "MigrateMediaToMediaLibrary": false,
     "UseOmActivityNodeRelationAutofix": "AttemptFix",
@@ -653,7 +659,28 @@ The migration then converts the specified page types or custom tables to content
 
 For advanced scenarios, you can use the extensibility feature to implement [customizations](../Migration.Tool.Extensions/README.md#custom-class-mappings) that map specific page types, custom tables or their individual fields to reusable content types. For example, this allows you to migrate multiple page types to a single content type.
 
-To preserve relationship between page converted to reusable content item and its children, you can use [Custom child links](../Migration.Tool.Extensions/README.md#custom-child-links). This feature allows you to map children of the original page to a content item/page selector field of the target reusable content item.
+To preserve relationships between pages converted to reusable content items and its children, you can use [Custom child links](../Migration.Tool.Extensions/README.md#custom-child-links). This feature allows you to map children of the original page to a content item/page selector field of the target reusable content item.
+
+## Convert module classes to Content hub
+
+**Note**: This feature is only tested only when using Kentico Xperience 13 as the migration source.
+
+You can migrate custom module classes and their data records to [Content hub items](https://docs.kentico.com/x/content_items_xp) instead of modules classes.
+
+Specify a list of module class code names (separated with either `;` or `,`) in the `Settings.ConvertClassesToContentHub` [configuration option](#configuration). Optionally, you can specify the name pattern for the migrated content items using the `Settings.CustomModuleClassDisplayNamePatterns` option.
+
+```json
+"Settings":{
+  ...
+
+  "ConvertClassesToContentHub": "Acme.Article,Acme.Product,Acme.CustomClass",
+  "CustomModuleClassDisplayNamePatterns": {
+      "Acme.CustomClass": "Item-{CustomClassGuid}"
+  },
+```
+
+For advanced scenarios, you can use the extensibility feature to implement [customizations](../Migration.Tool.Extensions/README.md#custom-class-mappings) that map specific module classes or their individual fields to reusable content types. For example, this allows you to migrate multiple classes to a single content type.
+
 ## Convert page types to reusable field schemas
 
 It is not possible to migrate any page types that inherit fields from other page types. However, to make the manual
@@ -802,5 +829,4 @@ Additionally, any attachments placed into the content of migrated pages **will n
 This includes images and file download links that use **/getattachment** and **/getimage** URLs.
 
 If you wish to continue using these legacy attachment URLs from earlier product versions, you need to add a custom
-handler to your Xperience by Kentico project.
-See [`Migration.Tool.KXP.Extensions/README.MD`](/Migration.Tool.KXP.Extensions/README.MD) for instructions.
+handler to your Xperience by Kentico project. See [`Migration.Tool.KXP.Extensions/README.MD`](/Migration.Tool.KXP.Extensions/README.MD) for instructions.

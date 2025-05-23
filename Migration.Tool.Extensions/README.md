@@ -229,7 +229,7 @@ You can customize class mappings to adjust the content model between the source 
 
 8. Ensure that your class mapping extension methods run during the startup of the migration tool. Call the methods from `UseCustomizations` in the [ServiceCollectionExtensions](/Migration.Tool.Extensions/ServiceCollectionExtensions.cs) class.
 
-**Note**: Your mappings now replace the default migration functionality for all data classes (page types or custom tables) that you use as a source. Any class where you set at least one source field is affected. If you map only some fields from a source class, the remaining fields are not migrated at all.
+**Note**: Your mappings now replace the default migration functionality for all data classes (page types, custom tables or custom module classes) that you use as a source. Any class where you set at least one source field is affected. If you map only some fields from a source class, the remaining fields are not migrated at all.
 
 ### Examples
 
