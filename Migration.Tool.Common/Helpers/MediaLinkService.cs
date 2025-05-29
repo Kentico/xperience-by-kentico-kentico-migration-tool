@@ -24,7 +24,7 @@ public class MediaLinkService(
     Dictionary<int, HashSet<string>> siteLibraryNames
     )
 {
-    public MatchMediaLinkResult MatchMediaLink(string? linkStr, int currentSiteId)
+    public MatchMediaLinkResult MatchMediaLink(string? linkStr, int? currentSiteId)
     {
         if (string.IsNullOrEmpty(linkStr))
         {
@@ -121,7 +121,7 @@ public class MediaLinkService(
         }
 
         bool siteMediaFolder = "True".Equals(cmsUseMediaLibrariesSiteFolder.OrderBy(x => x.siteId ?? -1).FirstOrDefault(x => x.siteId == linkSiteId || x.siteId == null).value, StringComparison.InvariantCultureIgnoreCase);
-        if (siteMediaFolder)
+        if (siteMediaFolder && currentSiteId is not null)
         {
             if (sites.FirstOrDefault(x => x.siteId == linkSiteId) is var (_, siteName, _))
             {
@@ -135,7 +135,7 @@ public class MediaLinkService(
             }
         }
 
-        if ("media".Equals(spl[inspectionIndex], StringComparison.InvariantCultureIgnoreCase))
+        if (spl.Length != 0 && "media".Equals(spl[inspectionIndex], StringComparison.InvariantCultureIgnoreCase))
         {
             mediaKind = MediaKind.MediaFile;
             mediaLinkKind = MediaLinkKind.DirectMediaPath;

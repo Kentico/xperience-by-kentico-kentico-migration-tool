@@ -136,7 +136,7 @@ public record MigrateCustomModulesCommand : IRequest<CommandResult>, ICommand
 
 public record MigrateCustomTablesCommand : IRequest<CommandResult>, ICommand
 {
-    public static readonly int Rank = 1 + MigrateSitesCommand.Rank + MigrateCustomModulesCommand.Rank;
+    public static readonly int Rank = 1 + MigrateSitesCommand.Rank + MigrateCustomModulesCommand.Rank + MigrateMediaLibrariesCommand.Rank;
 
     public static string Moniker => "custom-tables";
     public static string MonikerFriendly => "Custom tables";
