@@ -141,7 +141,7 @@ You can create [reusable field schemas](https://docs.kentico.com/x/D4_OD) from p
 inherit, by setting
 the `Settings.CreateReusableFieldSchemaForClasses` configuration option. See [Convert page types to reusable field schemas](#convert-page-types-to-reusable-field-schemas) for detailed information.
 
-Additionally, you can use the extensibility feature to implement [customizations](../Migration.Tool.Extensions/README.md) that allow you to inject reusable field schemas into content types.
+Additionally, you can use the extensibility feature to implement [customizations](../Migration.Tool.Extensions/README.md) that allow you to inject reusable field schemas into content types or [extract fields from multiple page types into a shared schema](https://docs.kentico.com/x/remodel_page_types_as_reusable_field_schemas_guides).
 
 #### Content items
 
@@ -698,11 +698,13 @@ The following example specifies two page types from which reusable schemas are c
 },
 ```
 
+For advanced scenarios, you can use the extensibility feature to implement [customizations](../Migration.Tool.Extensions/README.md#custom-class-mappings) that allow you to specify the mapping of page types to reusable field schemas. For example, this allows you to [extract fields from multiple page types into a reusable field schema](https://docs.kentico.com/x/remodel_page_types_as_reusable_field_schemas_guides).
+
 ### :warning: Notes
 
 - Conversion of page types to reusable field schemas works best when all field names of page types are unique (i.e., prefixed with the page type name). If multiple page types converted to reusable field schemas have fields with the same code name, the code name is prefixed with the content type name in the converted reusable field schemas.
 
-- Page types specified by this configuration option are also migrated as content types into to the target instance.
+- Page types specified by the `CreateReusableFieldSchemaForClasses` configuration option are also migrated as content types into to the target instance.
 
 ## Convert text fields with media links
 
