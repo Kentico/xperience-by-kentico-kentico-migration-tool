@@ -698,7 +698,7 @@ The following example specifies two page types from which reusable schemas are c
 },
 ```
 
-For advanced scenarios, you can use the extensibility feature to implement [customizations](../Migration.Tool.Extensions/README.md#custom-class-mappings) that allow you to specify the mapping of page types to reusable field schemas. For example, this allows you to [extract fields from multiple page types into a reusable field schema](https://docs.kentico.com/x/remodel_page_types_as_reusable_field_schemas_guides)
+For advanced scenarios, you can use the extensibility feature to implement [customizations](../Migration.Tool.Extensions/README.md#custom-class-mappings) that allow you to specify the mapping of page types to reusable field schemas. For example, this allows you to [extract fields from multiple page types into a reusable field schema](https://docs.kentico.com/x/remodel_page_types_as_reusable_field_schemas_guides).
 
 ### :warning: Notes
 
