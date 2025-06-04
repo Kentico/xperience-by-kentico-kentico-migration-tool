@@ -51,7 +51,7 @@ public class AssetMigration(
 
         if (!invokedCommands.Commands.Any(x => x is MigrateMediaLibrariesCommand))
         {
-            logger.LogError($"Trying to migrate asset field value {{FieldName}}, but commands {MigrateMediaLibrariesCommand.Moniker} and {MigrateAttachmentsCommand.Moniker} were not invoked", fieldName);
+            logger.LogError($"Trying to migrate asset field value {{FieldName}}, but command {MigrateMediaLibrariesCommand.Moniker} was not invoked", fieldName);
             return new(false, null);
         }
 
