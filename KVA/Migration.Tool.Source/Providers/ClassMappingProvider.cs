@@ -5,7 +5,9 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Migration.Tool.Common;
 using Migration.Tool.Common.Builders;
+using Migration.Tool.Common.Enumerations;
 using Migration.Tool.KXP.Api.Services.CmsClass;
+using Migration.Tool.Source.Contexts;
 using Migration.Tool.Source.Helpers;
 using Migration.Tool.Source.Model;
 using Migration.Tool.Source.Services;
@@ -297,7 +299,23 @@ public class ClassMappingProvider(
                         }
                         else
                         {
-                            m.BuildField(formFieldInfo.Name).SetFrom(mappedClass.ClassName, formFieldInfo.Name, true);
+                            if (formFieldInfo.Settings["controlname"] is string controlName
+                                && string.Equals(controlName, Kx13FormControls.UserControlForText.MediaSelectionControl, StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                var fieldMigration = fieldMigrationService.GetFieldMigration(new(string.Empty, controlName, null, new CustomTableSourceObjectContext()));
+                                if (fieldMigration is not null)
+                                {
+                                    m.BuildField(formFieldInfo.Name).ConvertFrom(mappedClass.ClassName, formFieldInfo.Name, true, (x, _) => x);
+                                }
+                                else
+                                {
+                                    throw new Exception($"No field migration found for {Kx13FormControls.UserControlForText.MediaSelectionControl} field {formFieldInfo.Name}");
+                                }
+                            }
+                            else
+                            {
+                                m.BuildField(formFieldInfo.Name).SetFrom(mappedClass.ClassName, formFieldInfo.Name, true);
+                            }
                         }
                     }
 

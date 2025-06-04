@@ -163,6 +163,9 @@ services.AddSingleton(settings);
 services.AddSingleton<ICommandParser, CommandParser>();
 services.UseToolCommon();
 
+var invokedCommands = new InvokedCommands();
+services.AddSingleton(invokedCommands);
+
 await using var serviceProvider = services.BuildServiceProvider();
 KsCoreDiExtensions.InitServiceProvider(serviceProvider);
 using var scope = serviceProvider.CreateScope();
@@ -179,6 +182,8 @@ var commands = commandParser.Parse(argsQ, ref bypassDependencyCheck);
 
 // sort commands
 commands = commands.OrderBy(x => x.Rank).ToList();
+
+invokedCommands.Commands.AddRange(commands);
 
 var satisfiedDependencies = new HashSet<Type>();
 bool dependenciesSatisfied = true;
