@@ -97,7 +97,7 @@ public class MigrateCustomModulesCommandHandler(
             {
                 continue;
             }
-            
+
             if (dataClassEntityConfiguration.ExcludeCodeNames.Contains(cmsClass.ClassName,
                     StringComparer.InvariantCultureIgnoreCase))
             {

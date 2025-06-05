@@ -59,7 +59,7 @@ public class MigratePageTypesCommandHandler(
                                 "used. Use one option or the other. Terminating migration of page types.");
             return new CommandFailureResult();
         }
-        
+
         while (ksClasses.GetNext(out var di))
         {
             var (_, ksClass) = di;

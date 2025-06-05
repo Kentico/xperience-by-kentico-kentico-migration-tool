@@ -85,7 +85,7 @@ public class MigrateCustomTablesHandler(
     private async Task MigrateCustomTables()
     {
         var dataClassEntityConfiguration = toolConfiguration.EntityConfigurations.GetEntityConfiguration<DataClassInfo>();
-        
+
         using var srcClassesDe = EnumerableHelper.CreateDeferrableItemWrapper(
             modelFacade.Select<ICmsClass>("ClassIsCustomTable=1", "ClassID ASC")
         );
@@ -107,7 +107,7 @@ public class MigrateCustomTablesHandler(
             {
                 continue;
             }
-            
+
             if (dataClassEntityConfiguration.ExcludeCodeNames.Contains(ksClass.ClassName,
                     StringComparer.InvariantCultureIgnoreCase))
             {
