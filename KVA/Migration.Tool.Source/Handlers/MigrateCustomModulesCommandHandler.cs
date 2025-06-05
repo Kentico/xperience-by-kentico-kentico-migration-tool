@@ -60,6 +60,7 @@ public class MigrateCustomModulesCommandHandler(
 
     private async Task MigrateClasses(EntityConfiguration entityConfiguration, CancellationToken cancellationToken)
     {
+        var dataClassEntityConfiguration = toolConfiguration.EntityConfigurations.GetEntityConfiguration<DataClassInfo>();
         var manualMappings = classMappingProvider.ExecuteMappings();
 
         using var cmsClasses = EnumerableHelper.CreateDeferrableItemWrapper(
@@ -93,6 +94,12 @@ public class MigrateCustomModulesCommandHandler(
             }
 
             if (cmsClass.ClassIsCustomTable)
+            {
+                continue;
+            }
+            
+            if (dataClassEntityConfiguration.ExcludeCodeNames.Contains(cmsClass.ClassName,
+                    StringComparer.InvariantCultureIgnoreCase))
             {
                 continue;
             }

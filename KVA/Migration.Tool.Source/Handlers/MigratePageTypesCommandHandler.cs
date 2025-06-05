@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 
 using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
+using Migration.Tool.Common.Builders;
 using Migration.Tool.Common.Helpers;
 using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.KXP.Api;
@@ -31,7 +32,8 @@ public class MigratePageTypesCommandHandler(
     PageTemplateMigrator pageTemplateMigrator,
     ReusableSchemaService reusableSchemaService,
     ClassMappingProvider classMappingProvider,
-    IImporter importer
+    IImporter importer,
+    IEnumerable<IReusableSchemaBuilder> reusableSchemaBuilders
     )
     : IRequestHandler<MigratePageTypesCommand, CommandResult>
 {
@@ -60,6 +62,12 @@ public class MigratePageTypesCommandHandler(
             }
 
             if (manualMappings.ContainsKey(ksClass.ClassName))
+            {
+                continue;
+            }
+
+            if (entityConfiguration.ExcludeCodeNames.Contains(ksClass.ClassName,
+                    StringComparer.InvariantCultureIgnoreCase))
             {
                 continue;
             }
