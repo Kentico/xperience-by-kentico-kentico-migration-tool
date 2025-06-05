@@ -52,6 +52,14 @@ public class MigratePageTypesCommandHandler(
         var manuallyMappedSourceClassIDs = new HashSet<int>();
         var manuallyMappedSourceClassNames = manualMappings.Values.SelectMany(x => x.mappping.SourceClassNames).ToHashSet();
 
+        if (reusableSchemaBuilders.Any() && !string.IsNullOrWhiteSpace(toolConfiguration.CreateReusableFieldSchemaForClasses))
+        {
+            logger.LogError("Conversion to reusable field schema using appsettings configuration " +
+                                "is not allowed when custom class mapping reusable schema builders are " +
+                                "used. Use one option or the other. Terminating migration of page types.");
+            return new CommandFailureResult();
+        }
+        
         while (ksClasses.GetNext(out var di))
         {
             var (_, ksClass) = di;
