@@ -235,6 +235,8 @@ You can customize class mappings to adjust the content model between the source 
 
 For an end-to-end example of how to extract common fields from two page types from Kentico Xperience 13 and move them to a [reusable field schema](https://docs.kentico.com/x/D4_OD) shared by both web page content types in Xperience by Kentico follow this [migration guide](https://docs.kentico.com/x/remodel_page_types_as_reusable_field_schemas_guides) in the documentation.
 
+Note that any usage of `ReusableSchemaBuilder` in custom class mappings cannot be combined together with the `Settings.CreateReusableFieldSchemaForClasses` configuration option.
+
 ### Sample class mappings
 
 You can find sample class mappings in the [ClassMappingSample.cs](/Migration.Tool.Extensions/ClassMappings/ClassMappingSample.cs) file.
