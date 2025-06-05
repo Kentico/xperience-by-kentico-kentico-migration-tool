@@ -245,20 +245,28 @@ public class ContentItemMapper(
             bool ndp = false;
             if (!migratedAsContentFolder)
             {
-                if (cmsDocument.DocumentPublishFrom is { } publishFrom)
+                if (cmsDocument is { DocumentPublishFrom: { } publishFrom1, DocumentPublishTo: null })
                 {
                     if (versionStatus == VersionStatus.Published)
                     {
                         versionStatus = VersionStatus.InitialDraft;
                     }
-                    scheduledPublishWhen = publishFrom;
+                    scheduledPublishWhen = publishFrom1;
                 }
-
-                if (cmsDocument.DocumentPublishTo is { } publishTo)
+                else if (cmsDocument is { DocumentPublishFrom: null, DocumentPublishTo: { } publishTo1 })
                 {
                     if (versionStatus == VersionStatus.Published)
                     {
-                        scheduleUnpublishWhen = publishTo;
+                        scheduleUnpublishWhen = publishTo1;
+                    }
+                }
+                else if (cmsDocument is { DocumentPublishFrom: { } publishFrom2, DocumentPublishTo: { } publishTo2 })
+                {
+                    if (versionStatus == VersionStatus.Published)
+                    {
+                        versionStatus = VersionStatus.InitialDraft;
+                        scheduledPublishWhen = publishFrom2;
+                        scheduleUnpublishWhen = publishTo2;
                     }
                 }
 
