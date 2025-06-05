@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 
 using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
+using Migration.Tool.Common.Builders;
 using Migration.Tool.Common.Helpers;
 using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.KXP.Api;
@@ -31,7 +32,8 @@ public class MigratePageTypesCommandHandler(
     PageTemplateMigrator pageTemplateMigrator,
     ReusableSchemaService reusableSchemaService,
     ClassMappingProvider classMappingProvider,
-    IImporter importer
+    IImporter importer,
+    IEnumerable<IReusableSchemaBuilder> reusableSchemaBuilders
     )
     : IRequestHandler<MigratePageTypesCommand, CommandResult>
 {
@@ -50,6 +52,14 @@ public class MigratePageTypesCommandHandler(
         var manuallyMappedSourceClassIDs = new HashSet<int>();
         var manuallyMappedSourceClassNames = manualMappings.Values.SelectMany(x => x.mappping.SourceClassNames).ToHashSet();
 
+        if (reusableSchemaBuilders.Any() && !string.IsNullOrWhiteSpace(toolConfiguration.CreateReusableFieldSchemaForClasses))
+        {
+            logger.LogError("Conversion to reusable field schema using appsettings configuration " +
+                                "is not allowed when custom class mapping reusable schema builders are " +
+                                "used. Use one option or the other. Terminating migration of page types.");
+            return new CommandFailureResult();
+        }
+
         while (ksClasses.GetNext(out var di))
         {
             var (_, ksClass) = di;
@@ -60,6 +70,12 @@ public class MigratePageTypesCommandHandler(
             }
 
             if (manualMappings.ContainsKey(ksClass.ClassName))
+            {
+                continue;
+            }
+
+            if (entityConfiguration.ExcludeCodeNames.Contains(ksClass.ClassName,
+                    StringComparer.InvariantCultureIgnoreCase))
             {
                 continue;
             }
