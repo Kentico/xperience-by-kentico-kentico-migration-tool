@@ -106,7 +106,9 @@ public class ContentItemMapper(
             targetClassGuid = targetClassInfo.ClassGUID;
         }
 
-        if (targetClassInfo is null)
+        bool migratedAsContentFolder = sourceNodeClass.ClassName.Equals("cms.folder", StringComparison.InvariantCultureIgnoreCase) && !configuration.UseDeprecatedFolderPageType.GetValueOrDefault(false);
+        
+        if (targetClassInfo is null && !migratedAsContentFolder)
         {
             logger.LogError("Could not map content item. Target class DataClassInfo ClassGUID={ClassGUID} not found.", targetClassGuid);
             yield break;
@@ -133,7 +135,6 @@ public class ContentItemMapper(
             yield break;
         }
 
-        bool migratedAsContentFolder = sourceNodeClass.ClassName.Equals("cms.folder", StringComparison.InvariantCultureIgnoreCase) && !configuration.UseDeprecatedFolderPageType.GetValueOrDefault(false);
 
         bool isMappedTypeReusable = targetClassInfo?.ClassContentTypeType is ClassContentTypeType.REUSABLE || configuration.ClassNamesConvertToContentHub.Contains(sourceNodeClass.ClassName);
         if (isMappedTypeReusable)
