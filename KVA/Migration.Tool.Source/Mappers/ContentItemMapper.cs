@@ -107,7 +107,7 @@ public class ContentItemMapper(
         }
 
         bool migratedAsContentFolder = sourceNodeClass.ClassName.Equals("cms.folder", StringComparison.InvariantCultureIgnoreCase) && !configuration.UseDeprecatedFolderPageType.GetValueOrDefault(false);
-        
+
         if (targetClassInfo is null && !migratedAsContentFolder)
         {
             logger.LogError("Could not map content item. Target class DataClassInfo ClassGUID={ClassGUID} not found.", targetClassGuid);
@@ -543,7 +543,7 @@ public class ContentItemMapper(
             //  cmsTree, cmsDocument.DocumentID,
             targetColumns, sfi, fi,
             false, sourceClass,
-            // sourceSite, 
+            // sourceSite,
             mapping,
             sourceObjectContext,
             convertorContext,
@@ -728,7 +728,7 @@ public class ContentItemMapper(
                     s => adapter.HasValueSet(s),
                     // cmsTree, adapter.DocumentID,
                     sourceColumns, sfi, fi, true, sourceNodeClass,
-                    // sourceSite, 
+                    // sourceSite,
                     mapping,
                     sourceObjectContext,
                     convertorContext,
@@ -1031,7 +1031,7 @@ public class ContentItemMapper(
             targetClassInfo = DataClassInfoProvider.ProviderObject.Get(mapping.TargetClassName) ?? throw new InvalidOperationException($"Unable to find target class '{mapping.TargetClassName}'");
             targetClassGuid = targetClassInfo.ClassGUID;
         }
-        
+
         var directive = GetDirective(new ContentItemSource(null, sourceClass.ClassName, mapping?.TargetClassName ?? sourceClass.ClassName, null, null, null));
 
         var mappingHandler = typeof(DefaultCustomTableClassMappingHandler);
@@ -1055,7 +1055,7 @@ public class ContentItemMapper(
         }
 
         Guid? contentFolderGuid = GetContentFolderGuid(directive.ContentFolderOptions, isMappedTypeReusable);
-        
+
         var contentItemModel = new ContentItemModel { ContentItemGUID = contentItemGuid, ContentItemIsReusable = isMappedTypeReusable, ContentItemDataClassGuid = targetClassGuid, ContentItemContentFolderGUID = contentFolderGuid };
 
         handler.EnsureContentItem(contentItemModel, ctms);
@@ -1129,7 +1129,7 @@ public class ContentItemMapper(
                 // cmsTree, cmsDocument.DocumentID,
                 targetColumns, sfi, fi,
                 false, sourceClass,
-                //sourceSite, 
+                //sourceSite,
                 mapping,
                 sourceObjectContext,
                 convertorContext,
@@ -1216,10 +1216,10 @@ public class ContentItemMapper(
     public IEnumerable<IUmtModel> Map(CustomModuleItemMapperSource source)
     {
         var mapping = classMappingProvider.GetMapping(source.SourceClass.ClassName);
-        
+
         var directive = GetDirective(new ContentItemSource(null, source.SourceClass.ClassName, mapping?.TargetClassName ?? source.SourceClass.ClassName, null, null, null));
         var contentFolderGuid = GetContentFolderGuid(directive.ContentFolderOptions, true);
-        
+
         var contentItemModel = new ContentItemModel
         {
             ContentItemGUID = GuidHelper.CreateContentItemGuid($"CustomModuleItem|{source.SourceItemGuid}"),
@@ -1272,7 +1272,7 @@ public class ContentItemMapper(
         yield return languageMetadataInfo;
     }
 
-    private Guid? GetContentFolderGuid(ContentFolderOptions? options, bool isReusableItem) => 
+    private Guid? GetContentFolderGuid(ContentFolderOptions? options, bool isReusableItem) =>
         isReusableItem
             ? options switch
             {
