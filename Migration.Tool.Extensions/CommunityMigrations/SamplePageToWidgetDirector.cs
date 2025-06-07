@@ -6,7 +6,7 @@ public class SamplePageToWidgetDirector : ContentItemDirectorBase
 {
     public override void Direct(ContentItemSource source, IContentItemActionProvider options)
     {
-        if (source.SourceNode.NodeAliasPath.StartsWith("/Store"))
+        if (source.SourceNode!.NodeAliasPath.StartsWith("/Store"))
         {
             // 1. Widget host page tree node: Ensure the template exists and is available in XbyK target project
             if (source.SourceNode.NodeAliasPath == "/Store")

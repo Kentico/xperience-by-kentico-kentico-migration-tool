@@ -144,15 +144,7 @@ public class ContentItemMapper(
 
         bool storeContentItem = !(directive is ConvertToWidgetDirective ctw && !ctw.WrapInReusableItem);
 
-        Guid? contentFolderGuid = isMappedTypeReusable
-            ? directive.ContentFolderOptions switch
-            {
-                null => null,
-                { Guid: { } guid } => guid,
-                { DisplayNamePath: { } displayNamePath } => contentFolderService.EnsureStandardFolderStructure(siteGuid.ToString(), displayNamePath).GetAwaiter().GetResult(),
-                _ => throw new InvalidOperationException($"{nameof(ContentFolderOptions)} has neither {nameof(ContentFolderOptions.Guid)} nor {nameof(ContentFolderOptions.DisplayNamePath)} specified")
-            }
-            : null;
+        Guid? contentFolderGuid = GetContentFolderGuid(directive.ContentFolderOptions, isMappedTypeReusable);
 
         var contentItemModel = new ContentItemModel
         {
@@ -1039,6 +1031,8 @@ public class ContentItemMapper(
             targetClassInfo = DataClassInfoProvider.ProviderObject.Get(mapping.TargetClassName) ?? throw new InvalidOperationException($"Unable to find target class '{mapping.TargetClassName}'");
             targetClassGuid = targetClassInfo.ClassGUID;
         }
+        
+        var directive = GetDirective(new ContentItemSource(null, sourceClass.ClassName, mapping?.TargetClassName ?? sourceClass.ClassName, null, null, null));
 
         var mappingHandler = typeof(DefaultCustomTableClassMappingHandler);
         if (classMapping.MappingHandler is not null)
@@ -1060,7 +1054,9 @@ public class ContentItemMapper(
             throw new InvalidOperationException("Mapping of custom table items to web site channel is currently not supported");
         }
 
-        var contentItemModel = new ContentItemModel { ContentItemGUID = contentItemGuid, ContentItemIsReusable = isMappedTypeReusable, ContentItemDataClassGuid = targetClassGuid, };
+        Guid? contentFolderGuid = GetContentFolderGuid(directive.ContentFolderOptions, isMappedTypeReusable);
+        
+        var contentItemModel = new ContentItemModel { ContentItemGUID = contentItemGuid, ContentItemIsReusable = isMappedTypeReusable, ContentItemDataClassGuid = targetClassGuid, ContentItemContentFolderGUID = contentFolderGuid };
 
         handler.EnsureContentItem(contentItemModel, ctms);
 
@@ -1219,6 +1215,11 @@ public class ContentItemMapper(
 
     public IEnumerable<IUmtModel> Map(CustomModuleItemMapperSource source)
     {
+        var mapping = classMappingProvider.GetMapping(source.SourceClass.ClassName);
+        
+        var directive = GetDirective(new ContentItemSource(null, source.SourceClass.ClassName, mapping?.TargetClassName ?? source.SourceClass.ClassName, null, null, null));
+        var contentFolderGuid = GetContentFolderGuid(directive.ContentFolderOptions, true);
+        
         var contentItemModel = new ContentItemModel
         {
             ContentItemGUID = GuidHelper.CreateContentItemGuid($"CustomModuleItem|{source.SourceItemGuid}"),
@@ -1227,7 +1228,7 @@ public class ContentItemMapper(
             ContentItemIsSecured = false,
             ContentItemDataClassGuid = source.TargetClass.ClassGUID,
             ContentItemChannelGuid = null,
-            ContentItemContentFolderGUID = null,
+            ContentItemContentFolderGUID = contentFolderGuid,
             ContentItemWorkspaceGUID = null,
         };
         yield return contentItemModel;
@@ -1245,7 +1246,6 @@ public class ContentItemMapper(
         };
         yield return commonDataModel;
 
-        var mapping = classMappingProvider.GetMapping(source.SourceClass.ClassName);
         var dataModel = new ContentItemDataModel { ContentItemDataGUID = commonDataModel.ContentItemCommonDataGUID, ContentItemDataCommonDataGuid = commonDataModel.ContentItemCommonDataGUID, ContentItemContentTypeName = mapping?.TargetClassName ?? source.TargetClass.ClassName };
         foreach (var model in MapProperties(contentItemModel, commonDataModel, dataModel, new FormInfo(source.SourceClass.ClassFormDefinition), new FormInfo(source.TargetClass.ClassFormDefinition),
             mapping, source.SourceClass, source.TargetClass, source.CustomProperties, new CustomTableSourceObjectContext(), new ConvertorCustomTableContext(), IncludedMetadata.None))
@@ -1271,4 +1271,15 @@ public class ContentItemMapper(
         };
         yield return languageMetadataInfo;
     }
+
+    private Guid? GetContentFolderGuid(ContentFolderOptions? options, bool isReusableItem) => 
+        isReusableItem
+            ? options switch
+            {
+                null => null,
+                { Guid: { } guid } => guid,
+                { DisplayNamePath: { } displayNamePath } => contentFolderService.EnsureStandardFolderStructure("customtables", displayNamePath).GetAwaiter().GetResult(),
+                _ => throw new InvalidOperationException($"{nameof(ContentFolderOptions)} has neither {nameof(ContentFolderOptions.Guid)} nor {nameof(ContentFolderOptions.DisplayNamePath)} specified")
+            }
+            : null;
 }
