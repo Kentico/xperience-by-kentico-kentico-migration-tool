@@ -106,7 +106,9 @@ public class ContentItemMapper(
             targetClassGuid = targetClassInfo.ClassGUID;
         }
 
-        if (targetClassInfo is null)
+        bool migratedAsContentFolder = sourceNodeClass.ClassName.Equals("cms.folder", StringComparison.InvariantCultureIgnoreCase) && !configuration.UseDeprecatedFolderPageType.GetValueOrDefault(false);
+
+        if (targetClassInfo is null && !migratedAsContentFolder)
         {
             logger.LogError("Could not map content item. Target class DataClassInfo ClassGUID={ClassGUID} not found.", targetClassGuid);
             yield break;
@@ -133,7 +135,6 @@ public class ContentItemMapper(
             yield break;
         }
 
-        bool migratedAsContentFolder = sourceNodeClass.ClassName.Equals("cms.folder", StringComparison.InvariantCultureIgnoreCase) && !configuration.UseDeprecatedFolderPageType.GetValueOrDefault(false);
 
         bool isMappedTypeReusable = targetClassInfo?.ClassContentTypeType is ClassContentTypeType.REUSABLE || configuration.ClassNamesConvertToContentHub.Contains(sourceNodeClass.ClassName);
         if (isMappedTypeReusable)
@@ -143,15 +144,7 @@ public class ContentItemMapper(
 
         bool storeContentItem = !(directive is ConvertToWidgetDirective ctw && !ctw.WrapInReusableItem);
 
-        Guid? contentFolderGuid = isMappedTypeReusable
-            ? directive.ContentFolderOptions switch
-            {
-                null => null,
-                { Guid: { } guid } => guid,
-                { DisplayNamePath: { } displayNamePath } => contentFolderService.EnsureStandardFolderStructure(siteGuid.ToString(), displayNamePath).GetAwaiter().GetResult(),
-                _ => throw new InvalidOperationException($"{nameof(ContentFolderOptions)} has neither {nameof(ContentFolderOptions.Guid)} nor {nameof(ContentFolderOptions.DisplayNamePath)} specified")
-            }
-            : null;
+        Guid? contentFolderGuid = GetContentFolderGuid(directive.ContentFolderOptions, isMappedTypeReusable);
 
         var contentItemModel = new ContentItemModel
         {
@@ -245,20 +238,28 @@ public class ContentItemMapper(
             bool ndp = false;
             if (!migratedAsContentFolder)
             {
-                if (cmsDocument.DocumentPublishFrom is { } publishFrom)
+                if (cmsDocument is { DocumentPublishFrom: { } publishFrom1, DocumentPublishTo: null })
                 {
                     if (versionStatus == VersionStatus.Published)
                     {
                         versionStatus = VersionStatus.InitialDraft;
                     }
-                    scheduledPublishWhen = publishFrom;
+                    scheduledPublishWhen = publishFrom1;
                 }
-
-                if (cmsDocument.DocumentPublishTo is { } publishTo)
+                else if (cmsDocument is { DocumentPublishFrom: null, DocumentPublishTo: { } publishTo1 })
                 {
                     if (versionStatus == VersionStatus.Published)
                     {
-                        scheduleUnpublishWhen = publishTo;
+                        scheduleUnpublishWhen = publishTo1;
+                    }
+                }
+                else if (cmsDocument is { DocumentPublishFrom: { } publishFrom2, DocumentPublishTo: { } publishTo2 })
+                {
+                    if (versionStatus == VersionStatus.Published)
+                    {
+                        versionStatus = VersionStatus.InitialDraft;
+                        scheduledPublishWhen = publishFrom2;
+                        scheduleUnpublishWhen = publishTo2;
                     }
                 }
 
@@ -542,7 +543,7 @@ public class ContentItemMapper(
             //  cmsTree, cmsDocument.DocumentID,
             targetColumns, sfi, fi,
             false, sourceClass,
-            // sourceSite, 
+            // sourceSite,
             mapping,
             sourceObjectContext,
             convertorContext,
@@ -727,7 +728,7 @@ public class ContentItemMapper(
                     s => adapter.HasValueSet(s),
                     // cmsTree, adapter.DocumentID,
                     sourceColumns, sfi, fi, true, sourceNodeClass,
-                    // sourceSite, 
+                    // sourceSite,
                     mapping,
                     sourceObjectContext,
                     convertorContext,
@@ -1031,6 +1032,8 @@ public class ContentItemMapper(
             targetClassGuid = targetClassInfo.ClassGUID;
         }
 
+        var directive = GetDirective(new ContentItemSource(null, sourceClass.ClassName, mapping?.TargetClassName ?? sourceClass.ClassName, null, null, null));
+
         var mappingHandler = typeof(DefaultCustomTableClassMappingHandler);
         if (classMapping.MappingHandler is not null)
         {
@@ -1051,7 +1054,9 @@ public class ContentItemMapper(
             throw new InvalidOperationException("Mapping of custom table items to web site channel is currently not supported");
         }
 
-        var contentItemModel = new ContentItemModel { ContentItemGUID = contentItemGuid, ContentItemIsReusable = isMappedTypeReusable, ContentItemDataClassGuid = targetClassGuid, };
+        Guid? contentFolderGuid = GetContentFolderGuid(directive.ContentFolderOptions, isMappedTypeReusable);
+
+        var contentItemModel = new ContentItemModel { ContentItemGUID = contentItemGuid, ContentItemIsReusable = isMappedTypeReusable, ContentItemDataClassGuid = targetClassGuid, ContentItemContentFolderGUID = contentFolderGuid };
 
         handler.EnsureContentItem(contentItemModel, ctms);
 
@@ -1124,7 +1129,7 @@ public class ContentItemMapper(
                 // cmsTree, cmsDocument.DocumentID,
                 targetColumns, sfi, fi,
                 false, sourceClass,
-                //sourceSite, 
+                //sourceSite,
                 mapping,
                 sourceObjectContext,
                 convertorContext,
@@ -1210,6 +1215,11 @@ public class ContentItemMapper(
 
     public IEnumerable<IUmtModel> Map(CustomModuleItemMapperSource source)
     {
+        var mapping = classMappingProvider.GetMapping(source.SourceClass.ClassName);
+
+        var directive = GetDirective(new ContentItemSource(null, source.SourceClass.ClassName, mapping?.TargetClassName ?? source.SourceClass.ClassName, null, null, null));
+        var contentFolderGuid = GetContentFolderGuid(directive.ContentFolderOptions, true);
+
         var contentItemModel = new ContentItemModel
         {
             ContentItemGUID = GuidHelper.CreateContentItemGuid($"CustomModuleItem|{source.SourceItemGuid}"),
@@ -1218,7 +1228,7 @@ public class ContentItemMapper(
             ContentItemIsSecured = false,
             ContentItemDataClassGuid = source.TargetClass.ClassGUID,
             ContentItemChannelGuid = null,
-            ContentItemContentFolderGUID = null,
+            ContentItemContentFolderGUID = contentFolderGuid,
             ContentItemWorkspaceGUID = null,
         };
         yield return contentItemModel;
@@ -1236,7 +1246,6 @@ public class ContentItemMapper(
         };
         yield return commonDataModel;
 
-        var mapping = classMappingProvider.GetMapping(source.SourceClass.ClassName);
         var dataModel = new ContentItemDataModel { ContentItemDataGUID = commonDataModel.ContentItemCommonDataGUID, ContentItemDataCommonDataGuid = commonDataModel.ContentItemCommonDataGUID, ContentItemContentTypeName = mapping?.TargetClassName ?? source.TargetClass.ClassName };
         foreach (var model in MapProperties(contentItemModel, commonDataModel, dataModel, new FormInfo(source.SourceClass.ClassFormDefinition), new FormInfo(source.TargetClass.ClassFormDefinition),
             mapping, source.SourceClass, source.TargetClass, source.CustomProperties, new CustomTableSourceObjectContext(), new ConvertorCustomTableContext(), IncludedMetadata.None))
@@ -1262,4 +1271,15 @@ public class ContentItemMapper(
         };
         yield return languageMetadataInfo;
     }
+
+    private Guid? GetContentFolderGuid(ContentFolderOptions? options, bool isReusableItem) =>
+        isReusableItem
+            ? options switch
+            {
+                null => null,
+                { Guid: { } guid } => guid,
+                { DisplayNamePath: { } displayNamePath } => contentFolderService.EnsureStandardFolderStructure("customtables", displayNamePath).GetAwaiter().GetResult(),
+                _ => throw new InvalidOperationException($"{nameof(ContentFolderOptions)} has neither {nameof(ContentFolderOptions.Guid)} nor {nameof(ContentFolderOptions.DisplayNamePath)} specified")
+            }
+            : null;
 }

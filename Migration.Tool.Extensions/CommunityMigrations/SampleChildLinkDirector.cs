@@ -14,17 +14,17 @@ public class SampleChildLinkDirector : ContentItemDirectorBase
         // If the field doesn't allow any of the linked child's content type, the type will be added to allowed types automatically.
 
         // You can link any subset of child pages in one or more content item reference field, based on any filtering criteria
-        if (source.SourceNode.NodeName == "Accessories")
+        if (source.SourceNode?.NodeName == "Accessories")
         {
             int filterPackClassID = 5550;
             int tablewareClassID = 5531;
-            options.LinkChildren("Filters", source.ChildNodes.Where(x => x.NodeClassID == filterPackClassID));
-            options.LinkChildren("Tableware", source.ChildNodes.Where(x => x.NodeClassID == tablewareClassID));
+            options.LinkChildren("Filters", source.ChildNodes!.Where(x => x.NodeClassID == filterPackClassID));
+            options.LinkChildren("Tableware", source.ChildNodes!.Where(x => x.NodeClassID == tablewareClassID));
         }
         else
         {
             // or link all children in general
-            options.LinkChildren("Children", source.ChildNodes);
+            options.LinkChildren("Children", source.ChildNodes!);
         }
     }
 }

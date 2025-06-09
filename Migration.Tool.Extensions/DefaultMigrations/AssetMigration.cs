@@ -29,7 +29,8 @@ public class AssetMigration(
     ToolConfiguration configuration,
     EntityIdentityFacade entityIdentityFacade,
     IAssetFacade assetFacade,
-    MediaLinkServiceFactory mediaLinkServiceFactory
+    MediaLinkServiceFactory mediaLinkServiceFactory,
+    InvokedCommands invokedCommands
 ) : IFieldMigration
 {
     public int Rank => 100_000;
@@ -40,25 +41,46 @@ public class AssetMigration(
             Kx13FormControls.UserControlForText.MediaSelectionControl.Equals(context.SourceFormControl, StringComparison.InvariantCultureIgnoreCase)
         ) &&
         context.SourceObjectContext
-            // this migration can handle only migration of documents to content items
-            is DocumentSourceObjectContext
+            is DocumentSourceObjectContext or CustomTableSourceObjectContext
             // this migration also handles empty object context - for example when migrating data class, empty context is supplied
             or EmptySourceObjectContext;
 
     public async Task<FieldMigrationResult> MigrateValue(object? sourceValue, FieldMigrationContext context)
     {
         (string? _, string? sourceFormControl, string? fieldName, var sourceObjectContext) = context;
-        if (sourceObjectContext is not DocumentSourceObjectContext(_, _, var cmsSite, var oldFormInfo, _, var documentId))
+
+        if (!invokedCommands.Commands.Any(x => x is MigrateMediaLibrariesCommand))
+        {
+            logger.LogError($"Trying to migrate asset field value {{FieldName}}, but command {MigrateMediaLibrariesCommand.Moniker} was not invoked", fieldName);
+            return new(false, null);
+        }
+
+        ICmsSite? cmsSite;
+        CMS.FormEngine.FormInfo? oldFormInfo;
+        int? documentId;
+        if (sourceObjectContext is DocumentSourceObjectContext docContext)
+        {
+            cmsSite = docContext.Site;
+            oldFormInfo = docContext.OldFormInfo;
+            documentId = docContext.DocumentId;
+        }
+        else if (sourceObjectContext is CustomTableSourceObjectContext)
+        {
+            cmsSite = null;
+            oldFormInfo = null;
+            documentId = null;
+        }
+        else
         {
             throw new ArgumentNullException(nameof(sourceObjectContext));
         }
 
-        var field = oldFormInfo.GetFormField(fieldName);
+        var field = oldFormInfo?.GetFormField(fieldName);
 
         List<object> mfis = [];
         bool hasMigratedAsset = false;
         if (sourceValue is string link &&
-            mediaLinkServiceFactory.Create().MatchMediaLink(link, cmsSite.SiteID) is (true, var mediaLinkKind, var mediaKind, var path, var mediaGuid, _, _) result)
+            mediaLinkServiceFactory.Create().MatchMediaLink(link, cmsSite?.SiteID) is (true, var mediaLinkKind, var mediaKind, var path, var mediaGuid, _, _) result)
         {
             if (mediaLinkKind == MediaLinkKind.Path)
             {
@@ -131,7 +153,7 @@ public class AssetMigration(
             {
                 if (mediaKind == MediaKind.Attachment)
                 {
-                    switch (await attachmentMigrator.MigrateAttachment(mg, $"__{fieldName}", cmsSite.SiteID))
+                    switch (await attachmentMigrator.MigrateAttachment(mg, $"__{fieldName}", cmsSite!.SiteID))
                     {
                         case MigrateAttachmentResultMediaFile(true, var x, _):
                         {
@@ -159,8 +181,11 @@ public class AssetMigration(
 
                 if (mediaKind == MediaKind.MediaFile)
                 {
-                    var sourceMediaFile = modelFacade.SelectWhere<IMediaFile>("FileGUID = @mediaFileGuid AND FileSiteID = @fileSiteID", new SqlParameter("mediaFileGuid", mg), new SqlParameter("fileSiteID", cmsSite.SiteID))
-                        .FirstOrDefault();
+                    var sourceMediaFile =
+                        (cmsSite is not null
+                            ? modelFacade.SelectWhere<IMediaFile>("FileGUID = @mediaFileGuid AND FileSiteID = @fileSiteID", new SqlParameter("mediaFileGuid", mg), new SqlParameter("fileSiteID", cmsSite.SiteID))
+                            : modelFacade.SelectWhere<IMediaFile>("FileGUID = @mediaFileGuid", new SqlParameter("mediaFileGuid", mg))
+                        ).FirstOrDefault();
                     if (sourceMediaFile != null)
                     {
                         if (configuration.MigrateMediaToMediaLibrary)
@@ -193,7 +218,7 @@ public class AssetMigration(
                 {
                     if (sourceValue is Guid attachmentGuid)
                     {
-                        switch (await attachmentMigrator.MigrateAttachment(attachmentGuid, $"__{fieldName}", cmsSite.SiteID))
+                        switch (await attachmentMigrator.MigrateAttachment(attachmentGuid, $"__{fieldName}", cmsSite!.SiteID))
                         {
                             case MigrateAttachmentResultMediaFile(true, var mfi, _):
                             {
@@ -221,7 +246,7 @@ public class AssetMigration(
                     }
                     else if (sourceValue is string attachmentGuidStr && Guid.TryParse(attachmentGuidStr, out attachmentGuid))
                     {
-                        switch (await attachmentMigrator.MigrateAttachment(attachmentGuid, $"__{fieldName}", cmsSite.SiteID))
+                        switch (await attachmentMigrator.MigrateAttachment(attachmentGuid, $"__{fieldName}", cmsSite!.SiteID))
                         {
                             case MigrateAttachmentResultMediaFile { Success: true, MediaFileInfo: { } x }:
                             {
@@ -260,7 +285,7 @@ public class AssetMigration(
                     if (documentId is { } docId)
                     {
                         var mfisl = new List<object>();
-                        await foreach (var migResult in attachmentMigrator.MigrateGroupedAttachments(docId, field.Guid, field.Name))
+                        await foreach (var migResult in attachmentMigrator.MigrateGroupedAttachments(docId, field!.Guid, field.Name))
                         {
                             switch (migResult)
                             {
