@@ -4,8 +4,10 @@ using CMS.FormEngine;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Migration.Tool.Common;
+using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.Builders;
 using Migration.Tool.Common.Enumerations;
+using Migration.Tool.KXP.Api;
 using Migration.Tool.KXP.Api.Services.CmsClass;
 using Migration.Tool.Source.Contexts;
 using Migration.Tool.Source.Helpers;
@@ -22,7 +24,10 @@ public class ClassMappingProvider(
     ReusableSchemaService reusableSchemaService,
     IFieldMigrationService fieldMigrationService,
     ToolConfiguration configuration,
-    IEnumerable<IReusableSchemaBuilder> reusableSchemaBuilders)
+    IEnumerable<IReusableSchemaBuilder> reusableSchemaBuilders,
+    KxpClassFacade kxpClassFacade,
+    IEntityMapper<ICmsClass, DataClassInfo> dataClassMapper,
+    PrimaryKeyMappingContext primaryKeyMappingContext)
 {
     private readonly List<IClassMapping> configuredClassMappings = [];
     private bool settingsInitialized = false;
@@ -220,53 +225,93 @@ public class ClassMappingProvider(
         foreach (var reusableSchemaBuilder in reusableSchemaBuilders)
         {
             reusableSchemaBuilder.AssertIsValid();
-            var fieldInfos = reusableSchemaBuilder.FieldBuilders.Select(fb =>
+
+            if (reusableSchemaBuilder.SourceClassName is not null)
             {
-                switch (fb)
+                var ksClass = modelFacade.SelectWhere<ICmsClass>("ClassName = @className", new SqlParameter("className", reusableSchemaBuilder.SourceClassName)).FirstOrDefault();
+                if (ksClass is null)
                 {
-                    case { Factory: { } factory }:
+                    logger.LogError("Source class {ClassName} required for reusable field schema {SchemaName} not found",
+                        reusableSchemaBuilder.SourceClassName, reusableSchemaBuilder.SchemaName);
+                    continue;
+                }
+                var kxoDataClass = kxpClassFacade.GetClass(ksClass.ClassGUID);
+
+                var mapped = dataClassMapper.Map(ksClass, kxoDataClass);
+
+                try
+                {
+                    if (mapped is { Success: true })
                     {
-                        return factory();
-                    }
-                    case { SourceFieldIdentifier: { } fieldIdentifier }:
-                    {
-                        var sourceClass = modelFacade.SelectWhere<ICmsClass>("ClassName=@className", new SqlParameter("className", fieldIdentifier.ClassName)).SingleOrDefault()
-                                          ?? throw new InvalidOperationException($"Invalid reusable schema field builder for field '{fieldIdentifier.ClassName}': DataClass not found, class name '{fieldIdentifier.ClassName}'");
-
-                        if (string.IsNullOrWhiteSpace(sourceClass.ClassFormDefinition))
-                        {
-                            throw new InvalidOperationException($"Invalid reusable schema field builder for field '{fieldIdentifier.ClassName}': Class '{fieldIdentifier.ClassName}' is missing field '{fieldIdentifier.FieldName}'");
-                        }
-
-                        // this might be cached as optimization
-                        var patcher = new FormDefinitionPatcher(
-                            logger,
-                            sourceClass.ClassFormDefinition,
-                            fieldMigrationService,
-                            sourceClass.ClassIsForm.GetValueOrDefault(false),
-                            sourceClass.ClassIsDocumentType,
-                            true,
-                            false
-                        );
-
-                        patcher.PatchFields();
-                        patcher.RemoveCategories();
-
-                        var fi = new FormInfo(patcher.GetPatched());
-                        return fi.GetFormField(fieldIdentifier.FieldName) switch
-                        {
-                            { } field => field,
-                            _ => throw new InvalidOperationException($"Invalid reusable schema field builder for field '{fieldIdentifier.ClassName}': Class '{fieldIdentifier.ClassName}' is missing field '{fieldIdentifier.FieldName}'")
-                        };
-                    }
-                    default:
-                    {
-                        throw new InvalidOperationException($"Invalid reusable schema field builder for field '{fb.TargetFieldName}'");
+                        var (dataClassInfo, _) = mapped;
+                        reusableSchemaService.ConvertToReusableSchema(dataClassInfo!, reusableSchemaBuilder.SchemaName,
+                            reusableSchemaBuilder.SchemaDisplayName, reusableSchemaBuilder.SchemaDescription,
+                            reusableSchemaBuilder.FieldNameTransformation);
                     }
                 }
-            });
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error while saving page type {ClassName}", ksClass.ClassName);
+                }
+            }
+            else
+            {
+                var fieldInfos = reusableSchemaBuilder.FieldBuilders.Select(fb =>
+                {
+                    switch (fb)
+                    {
+                        case { Factory: { } factory }:
+                        {
+                            return factory();
+                        }
+                        case { SourceFieldIdentifier: { } fieldIdentifier }:
+                        {
+                            var sourceClass = modelFacade.SelectWhere<ICmsClass>("ClassName=@className",
+                                                      new SqlParameter("className", fieldIdentifier.ClassName))
+                                                  .SingleOrDefault()
+                                              ?? throw new InvalidOperationException(
+                                                  $"Invalid reusable schema field builder for field '{fieldIdentifier.ClassName}': DataClass not found, class name '{fieldIdentifier.ClassName}'");
 
-            reusableSchemaService.EnsureReusableFieldSchema(reusableSchemaBuilder.SchemaName, reusableSchemaBuilder.SchemaDisplayName, reusableSchemaBuilder.SchemaDescription, fieldInfos.ToArray());
+                            if (string.IsNullOrWhiteSpace(sourceClass.ClassFormDefinition))
+                            {
+                                throw new InvalidOperationException(
+                                    $"Invalid reusable schema field builder for field '{fieldIdentifier.ClassName}': Class '{fieldIdentifier.ClassName}' is missing field '{fieldIdentifier.FieldName}'");
+                            }
+
+                            // this might be cached as optimization
+                            var patcher = new FormDefinitionPatcher(
+                                logger,
+                                sourceClass.ClassFormDefinition,
+                                fieldMigrationService,
+                                sourceClass.ClassIsForm.GetValueOrDefault(false),
+                                sourceClass.ClassIsDocumentType,
+                                true,
+                                false
+                            );
+
+                            patcher.PatchFields();
+                            patcher.RemoveCategories();
+
+                            var fi = new FormInfo(patcher.GetPatched());
+                            return fi.GetFormField(fieldIdentifier.FieldName) switch
+                            {
+                                { } field => field,
+                                _ => throw new InvalidOperationException(
+                                    $"Invalid reusable schema field builder for field '{fieldIdentifier.ClassName}': Class '{fieldIdentifier.ClassName}' is missing field '{fieldIdentifier.FieldName}'")
+                            };
+                        }
+                        default:
+                        {
+                            throw new InvalidOperationException(
+                                $"Invalid reusable schema field builder for field '{fb.TargetFieldName}'");
+                        }
+                    }
+                });
+
+                reusableSchemaService.EnsureReusableFieldSchema(reusableSchemaBuilder.SchemaName,
+                    reusableSchemaBuilder.SchemaDisplayName, reusableSchemaBuilder.SchemaDescription,
+                    fieldInfos.ToArray());
+            }
         }
     }
 
