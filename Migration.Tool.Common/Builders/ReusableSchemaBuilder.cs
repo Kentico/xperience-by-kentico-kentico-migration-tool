@@ -9,8 +9,20 @@ public interface IReusableSchemaBuilder
     string SchemaName { get; }
     string SchemaDisplayName { get; }
     string? SchemaDescription { get; }
+    string? SourceClassName { get; }
+    Func<string, string?>? FieldNameTransformation { get; }
+
     IList<IReusableFieldBuilder> FieldBuilders { get; }
     IReusableFieldBuilder BuildField(string targetFieldName);
+
+    /// <summary>
+    /// Automatically creates reusable field schema based on class in source project
+    /// </summary>
+    /// <param name="sourceClassName">ClassName of the source class</param>
+    /// <param name="transformFieldName">If passed, takes in source field name and outputs target field name</param>
+    /// <returns>Instance of the builder</returns>
+    IReusableSchemaBuilder ConvertFrom(string sourceClassName, Func<string, string?>? transformFieldName = null);
+
     void AssertIsValid();
 }
 
@@ -20,6 +32,8 @@ public class ReusableSchemaBuilder(string schemaName, string displayName, string
     public string SchemaDisplayName { get; } = displayName;
     public string? SchemaDescription { get; } = schemaDescription;
     public IList<IReusableFieldBuilder> FieldBuilders { get; set; } = [];
+    public string? SourceClassName { get; private set; }
+    public Func<string, string?>? FieldNameTransformation { get; private set; }
 
     public IReusableFieldBuilder BuildField(string targetFieldName)
     {
@@ -43,6 +57,20 @@ public class ReusableSchemaBuilder(string schemaName, string displayName, string
             reusableFieldBuilder.AssertIsValid();
         }
     }
+
+    /// <summary>
+    /// Automatically creates reusable field schema based on class in source project
+    /// </summary>
+    /// <param name="sourceClassName">ClassName of the source class</param>
+    /// <param name="transformFieldName">If passed, takes in source field name and outputs target field name</param>
+    /// <returns>Instance of the builder</returns>
+    public IReusableSchemaBuilder ConvertFrom(string sourceClassName, Func<string, string?>? transformFieldName = null)
+    {
+        SourceClassName = sourceClassName;
+        FieldNameTransformation = transformFieldName;
+        return this;
+    }
+
 }
 
 public interface IReusableFieldBuilder

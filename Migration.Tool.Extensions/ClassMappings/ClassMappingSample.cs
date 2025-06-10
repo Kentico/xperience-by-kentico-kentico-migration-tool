@@ -501,4 +501,44 @@ public static class ClassMappingSample
 
         return serviceCollection;
     }
+
+    public static IServiceCollection AddReusableSchemaAutoGenerationSample(this IServiceCollection serviceCollection)
+    {
+        var sb = new ReusableSchemaBuilder("DancingGoatCore.ArticleBase", "Article Base Info", "");
+
+        // Automatically generate reusable field schema from a source class.
+        //
+        // transformFieldName allows for overriding the final field names. In the form used here (x => x) it takes the
+        // source names without change. That is different from default, non-overriden behaviour which uses class prefix.
+        // If transformFieldNames is used, user is responsible for preventing name collisions. Note that RFS field names
+        // must be unique compared to all other RFS's and class field names.
+        sb.ConvertFrom("DancingGoatCore.Article", x => x);
+
+        // The original class will be excluded from default migration. To have both the converted-to reusable field schema
+        // and the source class, the source class must be manually mapped, as we do it here.
+        var m = new MultiClassMapping("DancingGoatCore.ArticleRS", target =>
+        {
+            target.ClassName = "DancingGoatCore.ArticleRS";
+            target.ClassTableName = "DancingGoatCore_ArticleRS";
+            target.ClassDisplayName = "Article with reusable schema";
+            target.ClassType = ClassType.CONTENT_TYPE;
+            target.ClassContentTypeType = ClassContentTypeType.WEBSITE;
+        });
+
+        // set primary key
+        m.BuildField("ArticleID").AsPrimaryKey();
+
+        // declare that we intend to use reusable schema and set mappings to new fields from old ones
+        m.UseResusableSchema("DancingGoatCore.ArticleBase");
+        m.BuildField("ArticleTitle").SetFrom("DancingGoatCore.Article", "ArticleTitle", true);
+        m.BuildField("ArticleTeaser").SetFrom("DancingGoatCore.Article", "ArticleTeaser", true);
+
+        // register mapping
+        serviceCollection.AddSingleton<IClassMapping>(m);
+
+        // register reusable schema builder
+        serviceCollection.AddSingleton<IReusableSchemaBuilder>(sb);
+
+        return serviceCollection;
+    }
 }
