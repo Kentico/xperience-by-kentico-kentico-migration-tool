@@ -74,9 +74,19 @@ public class MigratePageTypesCommandHandler(
                 continue;
             }
 
-            if (entityConfiguration.ExcludeCodeNames.Contains(ksClass.ClassName,
-                    StringComparer.InvariantCultureIgnoreCase))
+            if (entityConfiguration.ExcludeCodeNames.Contains(ksClass.ClassName, StringComparer.InvariantCultureIgnoreCase))
             {
+                logger.LogInformation("Class {ClassName} explicitly excluded in appsettings", ksClass.ClassName);
+                continue;
+            }
+
+            var producedReusableSchemas = reusableSchemaBuilders.Where(x =>
+                string.Equals(x.SourceClassName, ksClass.ClassName, StringComparison.InvariantCultureIgnoreCase)).ToArray();
+            if (producedReusableSchemas.Length != 0)  // and no custom mapping is registered for this class, but that is assured by one of the previous guards
+            {
+                logger.LogInformation("Class {ClassName} skipped. The class is converted to the following reusable field schemas: {ReusableFieldSchemas}. " +
+                                      "In such situation only custom class mapping of the class is supported and no mapping was provided.",
+                    ksClass.ClassName, string.Join(", ", producedReusableSchemas.Select(x => x.SchemaName).ToArray()));
                 continue;
             }
 
@@ -100,13 +110,6 @@ public class MigratePageTypesCommandHandler(
             }
 
             protocol.FetchedSource(ksClass);
-
-            if (entityConfiguration.ExcludeCodeNames.Contains(ksClass.ClassName, StringComparer.InvariantCultureIgnoreCase))
-            {
-                protocol.Warning(HandbookReferences.EntityExplicitlyExcludedByCodeName(ksClass.ClassName, "PageType"), ksClass);
-                logger.LogInformation("CmsClass: {ClassName} was skipped => it is explicitly excluded in configuration", ksClass.ClassName);
-                continue;
-            }
 
             if (string.Equals(ksClass.ClassName, CLASS_CMS_ROOT, StringComparison.InvariantCultureIgnoreCase))
             {
@@ -219,7 +222,8 @@ public class MigratePageTypesCommandHandler(
 
                 if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(dataClassInfo.ClassName))
                 {
-                    dataClassInfo = reusableSchemaService.ConvertToReusableSchema(dataClassInfo);
+                    dataClassInfo = reusableSchemaService.ConvertToReusableSchema(dataClassInfo, dataClassInfo.ClassName,
+                        dataClassInfo.ClassDisplayName);
                 }
 
                 kxpClassFacade.SetClass(dataClassInfo);

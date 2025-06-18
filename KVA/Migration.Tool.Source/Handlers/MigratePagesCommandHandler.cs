@@ -19,6 +19,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
+using Migration.Tool.Common.Builders;
 using Migration.Tool.Common.Helpers;
 using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.Common.Model;
@@ -47,7 +48,8 @@ public class MigratePagesCommandHandler(
     DeferredTreeNodesService deferredTreeNodesService,
     SpoiledGuidContext spoiledGuidContext,
     SourceInstanceContext sourceInstanceContext,
-    ClassMappingProvider classMappingProvider
+    ClassMappingProvider classMappingProvider,
+    IEnumerable<IReusableSchemaBuilder> reusableSchemaBuilders
 )
     : IRequestHandler<MigratePagesCommand, CommandResult>
 {
@@ -333,6 +335,17 @@ public class MigratePagesCommandHandler(
 
                     DataClassInfo targetClass = null!;
                     var classMapping = classMappingProvider.GetMapping(ksNodeClass.ClassName);
+
+                    var producedReusableSchemas = reusableSchemaBuilders.Where(x =>
+                        string.Equals(x.SourceClassName, nodeClassClassName, StringComparison.InvariantCultureIgnoreCase)).ToArray();
+                    if (classMapping is null && producedReusableSchemas.Length != 0)
+                    {
+                        logger.LogInformation("Page {NodeAliasPath} of class {ClassName} skipped. The class is converted to the following reusable field schemas: {ReusableFieldSchemas}. " +
+                                              "In such situation only custom class mapping of the class is supported and no mapping was provided",
+                            ksNode.NodeAliasPath, nodeClassClassName, string.Join(", ", producedReusableSchemas.Select(x => x.SchemaName).ToArray()));
+                        continue;
+                    }
+
                     targetClass = classMapping != null
                         ? DataClassInfoProvider.ProviderObject.Get(classMapping.TargetClassName)
                         : DataClassInfoProvider.ProviderObject.Get(ksNodeClass.ClassGUID);
@@ -653,7 +666,7 @@ public class MigratePagesCommandHandler(
             {
                 logger.LogError("Unable to find source site with ID '{SiteID}', fallback url will be used for node {NodeID}", ksTree.NodeSiteID, ksTree.NodeID);
             }
-            // for ability to resolve macros we query source instance where we can resolve marcos in url pattern for particular page 
+            // for ability to resolve macros we query source instance where we can resolve marcos in url pattern for particular page
             else if (!sourceInstanceContext.HasInfo)
             {
                 logger.LogWarning("Cannot migrate url for document '{DocumentID}' / node '{NodeID}', source instance context is not available or set-up correctly - default fallback will be used.", ksDocument?.DocumentID, ksTree.NodeID);
