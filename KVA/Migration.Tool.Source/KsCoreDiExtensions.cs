@@ -52,6 +52,7 @@ public static class KsCoreDiExtensions
         services.AddSingleton<IdentityLocator>();
         services.AddSingleton<IAssetFacade, AssetFacade>();
         services.AddSingleton<ContentFolderService>();
+        services.AddSingleton<WorkspaceService>();
         services.AddSingleton<MediaLinkServiceFactory>();
         services.AddSingleton<ClassMappingProvider>();
         services.AddTransient<VisualBuilderPatcher>();

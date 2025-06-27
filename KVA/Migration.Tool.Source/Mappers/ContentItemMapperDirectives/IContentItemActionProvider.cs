@@ -13,6 +13,8 @@ public interface IContentItemActionProvider
     void OverridePageTemplate(string templateIdentifier, JObject? templateProperties = null);
     void OverrideContentFolder(Guid contentFolderGuid);
     void OverrideContentFolder(string displayNamePath);
+    void OverrideWorkspace(string name, string displayName);
+    void OverrideWorkspace(Guid guid);
 
     /// <summary>
     /// Let the system generate URL path for all cultures and skip migrating URL path from source instance

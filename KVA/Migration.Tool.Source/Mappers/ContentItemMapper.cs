@@ -84,7 +84,8 @@ public class ContentItemMapper(
     VisualBuilderPatcher visualBuilderPatcher,
     IServiceProvider serviceProvider,
     IEnumerable<ContentItemDirectorBase> directors,
-    ContentFolderService contentFolderService
+    ContentFolderService contentFolderService,
+    WorkspaceService workspaceService
     ) : UmtMapperBase<CmsTreeMapperSource>, IUmtMapper<CustomModuleItemMapperSource>, IUmtMapper<CustomTableMapperSource>
 {
     private const string CLASS_FIELD_CONTROL_NAME = "controlname";
@@ -145,6 +146,7 @@ public class ContentItemMapper(
         bool storeContentItem = !(directive is ConvertToWidgetDirective ctw && !ctw.WrapInReusableItem);
 
         Guid? contentFolderGuid = GetContentFolderGuid(directive.ContentFolderOptions, isMappedTypeReusable);
+        Guid? workspaceGuid = GetWorkspaceGuid(directive.WorkspaceOptions);
 
         var contentItemModel = new ContentItemModel
         {
@@ -155,6 +157,7 @@ public class ContentItemMapper(
             ContentItemDataClassGuid = migratedAsContentFolder ? null : targetClassGuid,
             ContentItemChannelGuid = isMappedTypeReusable ? null : siteGuid,
             ContentItemContentFolderGUID = contentFolderGuid,
+            ContentItemWorkspaceGUID = workspaceGuid
         };
         if (storeContentItem)
         {
@@ -540,10 +543,10 @@ public class ContentItemMapper(
         MapCoupledDataFieldValues(dataModel.CustomProperties,
             columnName => coupledDataRow?[columnName],
             columnName => coupledDataRow?.ContainsKey(columnName) ?? false,
-            //  cmsTree, cmsDocument.DocumentID,
-            targetColumns, sfi, fi,
+            targetColumns,
+            sfi,
+            fi,
             false, sourceClass,
-            // sourceSite,
             mapping,
             sourceObjectContext,
             convertorContext,
@@ -726,9 +729,11 @@ public class ContentItemMapper(
                 MapCoupledDataFieldValues(dataModel.CustomProperties,
                     s => adapter.GetValue(s),
                     s => adapter.HasValueSet(s),
-                    // cmsTree, adapter.DocumentID,
-                    sourceColumns, sfi, fi, true, sourceNodeClass,
-                    // sourceSite,
+                    sourceColumns,
+                    sfi,
+                    fi,
+                    true,
+                    sourceNodeClass,
                     mapping,
                     sourceObjectContext,
                     convertorContext,
@@ -1126,10 +1131,11 @@ public class ContentItemMapper(
             MapCoupledDataFieldValues(dataModel.CustomProperties,
                 columnName => languageSensitiveValues[columnName],
                 columnName => languageSensitiveValues.ContainsKey(columnName),
-                // cmsTree, cmsDocument.DocumentID,
-                targetColumns, sfi, fi,
-                false, sourceClass,
-                //sourceSite,
+                targetColumns,
+                sfi,
+                fi,
+                false,
+                sourceClass,
                 mapping,
                 sourceObjectContext,
                 convertorContext,
@@ -1282,4 +1288,12 @@ public class ContentItemMapper(
                 _ => throw new InvalidOperationException($"{nameof(ContentFolderOptions)} has neither {nameof(ContentFolderOptions.Guid)} nor {nameof(ContentFolderOptions.DisplayNamePath)} specified")
             }
             : null;
+
+    private Guid? GetWorkspaceGuid(WorkspaceOptions? options) => options switch
+    {
+        null => null,
+        { Guid: { } guid } => guid,
+        { Name: { } name, DisplayName: { } displayName } => workspaceService.EnsureWorkspace(name, displayName).GetAwaiter().GetResult(),
+        _ => throw new InvalidOperationException($"{nameof(WorkspaceOptions)} has neither {nameof(WorkspaceOptions.Guid)} nor [{nameof(WorkspaceOptions.Name)} and {nameof(WorkspaceOptions.DisplayName)}] specified")
+    };
 }
