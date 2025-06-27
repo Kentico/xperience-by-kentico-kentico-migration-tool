@@ -13,7 +13,7 @@ public class WorkspaceService(IImporter importer, ILogger<ContentFolderService> 
         .FirstOrDefault()?.WorkspaceGUID ?? throw new Exception("No workspace found in target instance. At least Default workspace is expected");
 
     /// <summary>
-    /// Workspace display name as key
+    /// Workspace name as key
     /// </summary>
     private readonly Dictionary<string, Guid> workspaceGuidCache = [];
 
@@ -48,6 +48,7 @@ public class WorkspaceService(IImporter importer, ILogger<ContentFolderService> 
             {
                 case { Success: true }:
                 {
+                    workspaceGuidCache[name] = model.WorkspaceGUID.Value;
                     return model.WorkspaceGUID;
                 }
                 case { Success: false, Exception: { } exception }:
@@ -69,6 +70,8 @@ public class WorkspaceService(IImporter importer, ILogger<ContentFolderService> 
                 }
             }
         }
+
+        workspaceGuidCache[name] = existingWorkspaceInfo.WorkspaceGUID;
 
         return existingWorkspaceInfo.WorkspaceGUID;
     }
