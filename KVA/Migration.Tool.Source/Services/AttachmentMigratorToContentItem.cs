@@ -4,6 +4,7 @@ using Kentico.Xperience.UMT.Services;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Migration.Tool.Common.MigrationProtocol;
+using Migration.Tool.Common.Services;
 using Migration.Tool.Source.Auxiliary;
 using Migration.Tool.Source.Model;
 
@@ -15,7 +16,8 @@ public class AttachmentMigratorToContentItem(
     ModelFacade modelFacade,
     EntityIdentityFacade entityIdentityFacade,
     IAssetFacade assetFacade,
-    IImporter importer
+    IImporter importer,
+    UserService userService
 ) : IAttachmentMigrator
 {
     public async Task<IMigrateAttachmentResult> TryMigrateAttachmentByPath(string documentPath, string additionalPath)
@@ -141,6 +143,14 @@ public class AttachmentMigratorToContentItem(
         var defaultContentLanguage = await contentLanguageRetriever.GetDefaultContentLanguage();
 
         var asset = await assetFacade.FromAttachment(ksAttachment, site, ksNode, [ksAttachmentDocument?.DocumentCulture ?? defaultContentLanguage.ContentLanguageName]);
+
+        foreach (var item in asset.LanguageData)
+        {
+            item.UserGuid = (item.UserGuid.HasValue && userService.UserExists(item.UserGuid.Value))
+                ? item.UserGuid
+                : userService.DefaultAdminUserGuid;
+        }
+
         switch (await importer.ImportAsync(asset))
         {
             case { Success: true }:

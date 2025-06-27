@@ -53,6 +53,7 @@ public static class KsCoreDiExtensions
         services.AddSingleton<IAssetFacade, AssetFacade>();
         services.AddSingleton<ContentFolderService>();
         services.AddSingleton<MediaLinkServiceFactory>();
+        services.AddSingleton<UserService>();
         services.AddSingleton<ClassMappingProvider>();
         services.AddTransient<VisualBuilderPatcher>();
 

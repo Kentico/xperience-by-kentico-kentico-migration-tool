@@ -5,6 +5,7 @@ using Kentico.Xperience.UMT.Services;
 using Microsoft.Extensions.Logging;
 using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
+using Migration.Tool.Common.Services;
 using Migration.Tool.Source.Handlers;
 using Migration.Tool.Source.Model;
 
@@ -14,7 +15,8 @@ public class MediaFileMigratorToContentItem(
     ILogger<MigrateMediaLibrariesCommandHandler> logger,
     ModelFacade modelFacade,
     IAssetFacade assetFacade,
-    IImporter importer
+    IImporter importer,
+    UserService userService
     ) : IMediaFileMigrator
 {
     public async Task<CommandResult> Handle(MigrateMediaLibrariesCommand request, CancellationToken cancellationToken)
@@ -47,6 +49,13 @@ public class MediaFileMigratorToContentItem(
             }
 
             var umtContentItem = await assetFacade.FromMediaFile(ksMediaFile, ksMediaLibrary, ksSite, [defaultContentLanguage.ContentLanguageName]);
+
+            foreach (var item in umtContentItem.LanguageData)
+            {
+                item.UserGuid = (item.UserGuid.HasValue && userService.UserExists(item.UserGuid.Value))
+                    ? item.UserGuid
+                    : userService.DefaultAdminUserGuid;
+            }
 
             switch (await importer.ImportAsync(umtContentItem))
             {
