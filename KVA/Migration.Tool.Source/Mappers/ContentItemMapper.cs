@@ -729,9 +729,11 @@ public class ContentItemMapper(
                 MapCoupledDataFieldValues(dataModel.CustomProperties,
                     s => adapter.GetValue(s),
                     s => adapter.HasValueSet(s),
-                    // cmsTree, adapter.DocumentID,
-                    sourceColumns, sfi, fi, true, sourceNodeClass,
-                    // sourceSite,
+                    sourceColumns,
+                    sfi,
+                    fi,
+                    true,
+                    sourceNodeClass,
                     mapping,
                     sourceObjectContext,
                     convertorContext,
@@ -1129,10 +1131,11 @@ public class ContentItemMapper(
             MapCoupledDataFieldValues(dataModel.CustomProperties,
                 columnName => languageSensitiveValues[columnName],
                 columnName => languageSensitiveValues.ContainsKey(columnName),
-                // cmsTree, cmsDocument.DocumentID,
-                targetColumns, sfi, fi,
-                false, sourceClass,
-                //sourceSite,
+                targetColumns,
+                sfi,
+                fi,
+                false,
+                sourceClass,
                 mapping,
                 sourceObjectContext,
                 convertorContext,
@@ -1285,12 +1288,12 @@ public class ContentItemMapper(
                 _ => throw new InvalidOperationException($"{nameof(ContentFolderOptions)} has neither {nameof(ContentFolderOptions.Guid)} nor {nameof(ContentFolderOptions.DisplayNamePath)} specified")
             }
             : null;
-    
+
     private Guid? GetWorkspaceGuid(WorkspaceOptions? options) => options switch
-            {
-                null => null,
-                { Guid: { } guid } => guid,
-                { Name: { } name, DisplayName: { } displayName } => workspaceService.EnsureWorkspace(name, displayName).GetAwaiter().GetResult(),
-                _ => throw new InvalidOperationException($"{nameof(WorkspaceOptions)} has neither {nameof(WorkspaceOptions.Guid)} nor [{nameof(WorkspaceOptions.Name)} and {nameof(WorkspaceOptions.DisplayName)}] specified")
-            };
+    {
+        null => null,
+        { Guid: { } guid } => guid,
+        { Name: { } name, DisplayName: { } displayName } => workspaceService.EnsureWorkspace(name, displayName).GetAwaiter().GetResult(),
+        _ => throw new InvalidOperationException($"{nameof(WorkspaceOptions)} has neither {nameof(WorkspaceOptions.Guid)} nor [{nameof(WorkspaceOptions.Name)} and {nameof(WorkspaceOptions.DisplayName)}] specified")
+    };
 }
