@@ -11,6 +11,7 @@ public static class GuidHelper
     public static readonly Guid GuidNsField = new("8935FCE5-1BDC-4677-A4CA-6DFD32F65A0F");
     public static readonly Guid GuidNsAsset = new("9CC6DE90-8993-42D8-B4C1-1429B2F780A2");
     public static readonly Guid GuidNsFolder = new("E21255AC-70F3-4A95-881A-E4AD908AF27C");
+    public static readonly Guid GuidNsWorkspace = new("F198C350-EB93-45CF-90E0-FA336DA2846C");
     public static readonly Guid GuidNsDataClass = new("E21255AC-70F3-4A95-881A-E4AD908AF27C");
     public static readonly Guid GuidNsContentItem = new("EEBBD8D5-BA56-492F-969E-58E77EE90055");
     public static readonly Guid GuidNsContentItemCommonData = new("31BA319C-843F-482A-9841-87BC62062DC2");
@@ -26,6 +27,7 @@ public static class GuidHelper
     public static Guid CreateFieldGuid(string name) => GuidV5.NewNameBased(GuidNsField, name);
     public static Guid CreateAssetGuid(Guid newMediaFileGuid, string contentLanguageCode) => GuidV5.NewNameBased(GuidNsAsset, $"{newMediaFileGuid}|{contentLanguageCode}");
     public static Guid CreateFolderGuid(string path) => GuidV5.NewNameBased(GuidNsFolder, path);
+    public static Guid CreateWorkspaceGuid(string name) => GuidV5.NewNameBased(GuidNsWorkspace, name);
     public static Guid CreateDataClassGuid(string key) => GuidV5.NewNameBased(GuidNsDataClass, key);
     public static Guid CreateContentItemGuid(string key) => GuidV5.NewNameBased(GuidNsContentItem, key);
     public static Guid CreateContentItemReferenceGuid(string key) => GuidV5.NewNameBased(GuidNsContentItemReference, key);

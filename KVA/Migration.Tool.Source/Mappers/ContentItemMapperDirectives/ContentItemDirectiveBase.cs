@@ -9,6 +9,7 @@ internal abstract class ContentItemDirectiveBase : IUmtModel
     public string? PageTemplateIdentifier { get; set; }
     public JObject? PageTemplateProperties { get; set; }
     public ContentFolderOptions? ContentFolderOptions { get; set; }
+    public WorkspaceOptions? WorkspaceOptions { get; set; }
     public bool RegenerateUrlPath { get; set; } = false;
     public IEnumerable<FormerPageUrlPath>? FormerUrlPaths { get; set; }
     public List<(string fieldName, ICmsTree)> ChildLinks { get; set; } = [];

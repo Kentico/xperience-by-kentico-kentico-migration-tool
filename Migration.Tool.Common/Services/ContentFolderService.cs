@@ -7,22 +7,12 @@ using Microsoft.Extensions.Logging;
 using Migration.Tool.Common.Helpers;
 
 namespace Migration.Tool.Common.Services;
-public class ContentFolderService
+public class ContentFolderService(IImporter importer, ILogger<ContentFolderService> logger, WorkspaceService workspaceService)
 {
-    public ContentFolderService(IImporter importer, ILogger<ContentFolderService> logger)
-    {
-        this.importer = importer;
-        this.logger = logger;
-        defaultWorkspaceGuid = WorkspaceInfo.Provider.Get().FirstOrDefault()?.WorkspaceGUID ?? throw new Exception("No workspace found in target instance. At least Default workspace is expected");
-    }
-
     /// <summary>
     /// Folder tree path as key
     /// </summary>
     private readonly Dictionary<string, Guid> folderGuidCache = [];
-    private readonly Guid defaultWorkspaceGuid;
-    private readonly IImporter importer;
-    private readonly ILogger<ContentFolderService> logger;
 
     /// <summary>
     /// Iterates over the folder path. If a folder doesn't exist, it gets created
@@ -58,7 +48,7 @@ public class ContentFolderService
                         ContentFolderDisplayName = folderTemplate.DisplayName,
                         ContentFolderTreePath = currentPath,
                         ContentFolderParentFolderGUID = parentGuid,
-                        ContentFolderWorkspaceGUID = defaultWorkspaceGuid
+                        ContentFolderWorkspaceGUID = workspaceService.DefaultWorkspaceGuid
                     };
 
                     switch (await importer.ImportAsync(newFolderModel))
@@ -70,20 +60,20 @@ public class ContentFolderService
                         }
                         case { Success: false, Exception: { } exception }:
                         {
-                            logger.LogError("Failed to import asset migration folder: {Error} {Prerequisite}", exception.ToString(), newFolderModel.PrintMe());
+                            logger.LogError("Failed to import folder: {Error} {Prerequisite}", exception.ToString(), newFolderModel.PrintMe());
                             return null;
                         }
                         case { Success: false, ModelValidationResults: { } validation }:
                         {
                             foreach (var validationResult in validation)
                             {
-                                logger.LogError("Failed to import asset migration folder {Members}: {Error} - {Prerequisite}", string.Join(",", validationResult.MemberNames), validationResult.ErrorMessage, newFolderModel.PrintMe());
+                                logger.LogError("Failed to import folder {Members}: {Error} - {Prerequisite}", string.Join(",", validationResult.MemberNames), validationResult.ErrorMessage, newFolderModel.PrintMe());
                             }
                             return null;
                         }
                         default:
                         {
-                            throw new InvalidOperationException($"Asset migration cannot continue, cannot prepare prerequisite - unknown result");
+                            throw new InvalidOperationException($"Migration cannot continue, cannot prepare prerequisite - unknown result");
                         }
                     }
                 }
