@@ -19,6 +19,12 @@ internal partial class ContentItemActionProvider : IContentItemActionProvider
     }
     public void OverrideContentFolder(Guid contentFolderGuid) => Directive.ContentFolderOptions = new ContentFolderOptions(Guid: contentFolderGuid);
     public void OverrideContentFolder(string displayNamePath) => Directive.ContentFolderOptions = new ContentFolderOptions(DisplayNamePath: displayNamePath);
+
+    public void OverrideWorkspace(string name, string displayName) =>
+        Directive.WorkspaceOptions = new WorkspaceOptions(Name: name, DisplayName: name);
+    public void OverrideWorkspace(Guid guid) =>
+        Directive.WorkspaceOptions = new WorkspaceOptions(Guid: guid);
+
     public void RegenerateUrlPath() => Directive.RegenerateUrlPath = true;
     public void OverrideFormerUrlPaths(IEnumerable<FormerPageUrlPath> formerPaths) => Directive.FormerUrlPaths = formerPaths;
     public void LinkChildren(string fieldName, IEnumerable<ICmsTree> children)
