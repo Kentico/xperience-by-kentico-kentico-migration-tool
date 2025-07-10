@@ -88,17 +88,20 @@ public class AssetFacade(
         Debug.Assert(mediaFile.FileLibraryID == mediaLibrary.LibraryID, "mediaFile.FileLibraryID == mediaLibrary.LibraryID");
         Debug.Assert(mediaLibrary.LibrarySiteID == site.SiteID, "mediaLibrary.LibrarySiteID == site.SiteID");
 
-        string? mediaLibraryAbsolutePath = GetMediaLibraryAbsolutePath(toolConfiguration, site, mediaLibrary, modelFacade);
-        if (toolConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(false))
+        string? mediaFilePath = null;
+        if (!toolConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(false))
         {
-            throw new InvalidOperationException($"Configuration 'Settings.MigrateOnlyMediaFileInfo' is set to to 'true', for migration of media files to content items this setting is required to be 'false'");
-        }
-        if (string.IsNullOrWhiteSpace(mediaLibraryAbsolutePath))
-        {
-            throw new InvalidOperationException($"Invalid media file path generated for {mediaFile} and {mediaLibrary} on {site}");
-        }
+            string? mediaLibraryAbsolutePath =
+                GetMediaLibraryAbsolutePath(toolConfiguration, site, mediaLibrary, modelFacade);
 
-        string mediaFilePath = Path.Combine(mediaLibraryAbsolutePath, mediaFile.FilePath);
+            if (string.IsNullOrWhiteSpace(mediaLibraryAbsolutePath))
+            {
+                throw new InvalidOperationException(
+                    $"Invalid media file path generated for {mediaFile} and {mediaLibrary} on {site}");
+            }
+
+            mediaFilePath = Path.Combine(mediaLibraryAbsolutePath, mediaFile.FilePath);
+        }
 
         int? createdByUserId = AdminUserHelper.MapTargetAdminUser(
                 mediaFile.FileCreatedByUserID,
@@ -113,27 +116,36 @@ public class AssetFacade(
         var (_, translatedMediaGuid) = entityIdentityFacade.Translate(mediaFile);
 
         List<ContentItemLanguageData> languageData = [];
-        languageData.AddRange(contentLanguageNames.Select(contentLanguageName => new ContentItemLanguageData
+        languageData.AddRange(contentLanguageNames.Select(contentLanguageName =>
         {
-            LanguageName = contentLanguageName,
-            DisplayName = mediaFile.FileName.Truncate(ColumnSize_ContentItemLanguageMetadataDisplayName),
-            UserGuid = createdByUser?.UserGUID,
-            VersionStatus = VersionStatus.Published,
-            ContentItemData = new Dictionary<string, object?>
+            var contentItemData = new Dictionary<string, object?>
             {
-                [LegacyMediaFileAssetField.Column!] = new AssetFileSource
+                [LegacyMediaFileTitleField.Column!] = mediaFile.FileTitle,
+                [LegacyMediaFileDescriptionField.Column!] = mediaFile.FileDescription,
+            };
+            if (!toolConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(false))
+            {
+                contentItemData[LegacyMediaFileAssetField.Column!] = new AssetFileSource
                 {
                     ContentItemGuid = translatedMediaGuid,
                     Identifier = GuidHelper.CreateAssetGuid(translatedMediaGuid, contentLanguageName),
-                    Name = Path.GetFileNameWithoutExtension(mediaFile.FileName) + mediaFile.FileExtension,
+                    Name =
+                        Path.GetFileNameWithoutExtension(mediaFile.FileName) + mediaFile.FileExtension,
                     Extension = mediaFile.FileExtension,
                     Size = null,
                     LastModified = null,
                     FilePath = mediaFilePath
-                },
-                [LegacyMediaFileTitleField.Column!] = mediaFile.FileTitle,
-                [LegacyMediaFileDescriptionField.Column!] = mediaFile.FileDescription,
+                };
             }
+
+            return new ContentItemLanguageData
+            {
+                LanguageName = contentLanguageName,
+                DisplayName = mediaFile.FileName.Truncate(ColumnSize_ContentItemLanguageMetadataDisplayName),
+                UserGuid = createdByUser?.UserGUID,
+                VersionStatus = VersionStatus.Published,
+                ContentItemData = contentItemData
+            };
         }));
 
         string mediaFolder = Path.Combine(mediaLibrary.LibraryFolder, Path.GetDirectoryName(mediaFile.FilePath)!);
