@@ -76,6 +76,8 @@ public class ClassMappingProvider(
         ExecReusableSchemaBuilders();
 
         var manualMappings = new Dictionary<string, (DataClassInfo target, IClassMapping mappping)>();
+        var metadataFields = GetLegacyMetadataFields(modelFacade.SelectVersion(), IncludedMetadata.Extended).ToArray();
+
         foreach (var classMapping in MappingsByClassName.Values)
         {
             var newDt = DataClassInfoProvider.GetDataClassInfo(classMapping.TargetClassName) ?? DataClassInfo.New();
@@ -142,8 +144,21 @@ public class ClassMappingProvider(
                     }
                     else
                     {
-                        var src = fi.GetFormField(cmm.SourceFieldName);
-                        src.Name = cmm.TargetFieldName;
+                        FormFieldInfo src;
+                        if (fi.GetFormField(cmm.SourceFieldName) is { } ffi)
+                        {
+                            src = ffi;
+                            src.Name = cmm.TargetFieldName;
+                        }
+                        else
+                        {
+                            var legacyMetadataFieldMapping =
+                                metadataFields.FirstOrDefault(x => x.LegacyFieldName == cmm.SourceFieldName) ?? throw new Exception(
+                                    $"Invalid mapping for target class {classMapping.TargetClassName}. Field {cmm.SourceFieldName} not found in source class {cmm.SourceClassName}");
+                            src = GetLegacyMetadataFormFieldInfo(legacyMetadataFieldMapping,
+                                    cmm.TargetFieldName, classMapping.TargetClassName);
+                        }
+
                         nfi.AddFormItem(src);
                     }
                 }
