@@ -331,6 +331,8 @@ public class ContentItemMapper(
                 var fi = new FormInfo(targetFormDefinition);
 
                 var includedMetadata = configuration.IncludeExtendedMetadata.GetValueOrDefault(false) ? IncludedMetadata.Extended : IncludedMetadata.Basic;
+                FormFieldInfo[] commonFields = UnpackReusableFieldSchemas(fi.GetFields<FormSchemaInfo>()).ToArray();
+                var convertorContext = new ConvertorTreeNodeContext(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsDocument.DocumentID, false);
 
                 if (sourceNodeClass.ClassIsCoupledClass)
                 {
@@ -350,27 +352,51 @@ public class ContentItemMapper(
                     }
                     var coupledDataRow = coupledDataService.GetSourceCoupledDataRow(sourceNodeClass.ClassTableName!, primaryKeyName, cmsDocument.DocumentForeignKeyValue);
                     var sourceObjectContext = new DocumentSourceObjectContext(cmsTree, sourceNodeClass, sourceSite, sfi, fi, cmsDocument.DocumentID);
-                    var convertorContext = new ConvertorTreeNodeContext(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsDocument.DocumentID, false);
 
-                    foreach (var model in MapProperties(contentItemModel, commonDataModel, dataModel, sfi, fi, mapping, sourceNodeClass, targetClassInfo!, coupledDataRow, sourceObjectContext, convertorContext, includedMetadata))
+                    foreach (var model in MapProperties(contentItemModel, commonDataModel, dataModel, sfi, fi, mapping, sourceNodeClass, targetClassInfo!, coupledDataRow, sourceObjectContext, convertorContext, includedMetadata, commonFields))
                     {
                         yield return model;
                     }
                 }
 
                 string targetClassName = mapping?.TargetClassName ?? sourceNodeClass.ClassName;
-                foreach (var legacyField in GetLegacyMetadataFields(modelFacade.SelectVersion(), includedMetadata))
+
+                // Map legacy metadata fields
+                // Fields from custom class mapping
+                if (mapping is not null)
                 {
-                    if (GetMappedLegacyField(fi, targetClassInfo!.ClassName, legacyField.LegacyFieldName) is { } legacyDocumentNameFieldName)
+                    foreach (var fieldMapping in mapping.Mappings)
+                    {
+                        var sourceField =
+                            legacyMetadataFields.Value.FirstOrDefault(x => x.LegacyFieldName == fieldMapping.SourceFieldName);
+                        if (sourceField is not null)
+                        {
+                            GetFieldMappingValueConvertor(fieldMapping, out var valueConvertor);
+                            var value = valueConvertor(sourceField.GetValue(cmsDocument), convertorContext);
+                            if (commonFields.Any(x => x.Name == fieldMapping.TargetFieldName))
+                            {
+                                commonDataModel.CustomProperties[fieldMapping.TargetFieldName] = value;
+                            }
+                            else
+                            {
+                                dataModel.CustomProperties[fieldMapping.TargetFieldName] = value;
+                            }
+                        }
+                    }
+                }
+                // Fields added globally
+                foreach (var legacyField in GetLegacyMetadataFields(modelFacade.SelectVersion()))
+                {
+                    if (GetMappedLegacyField(fi, targetClassInfo!.ClassName, legacyField.LegacyFieldName) is { } legacyMetadataFieldName)
                     {
                         if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(targetClassName))
                         {
-                            string fieldName = ReusableSchemaService.GetUniqueFieldName(targetClassName, legacyDocumentNameFieldName);
-                            commonDataModel.CustomProperties.Add(fieldName, legacyField.GetValue(cmsDocument));
+                            string fieldName = ReusableSchemaService.GetUniqueFieldName(targetClassName, legacyMetadataFieldName);
+                            commonDataModel.CustomProperties[fieldName] = legacyField.GetValue(cmsDocument);
                         }
                         else
                         {
-                            dataModel.CustomProperties.Add(legacyDocumentNameFieldName, legacyField.GetValue(cmsDocument));
+                            dataModel.CustomProperties[legacyMetadataFieldName] = legacyField.GetValue(cmsDocument);
                         }
                     }
                 }
@@ -527,14 +553,17 @@ public class ContentItemMapper(
 
     private IEnumerable<IUmtModel> MapProperties(ContentItemModel contentItemModel, ContentItemCommonDataModel commonDataModel, ContentItemDataModel dataModel,
         FormInfo sfi, FormInfo fi, IClassMapping? mapping, ICmsClass sourceClass, DataClassInfo targetClassInfo,
-        Dictionary<string, object>? coupledDataRow, ISourceObjectContext sourceObjectContext, IConvertorContext convertorContext, IncludedMetadata includedMetadata)
+        Dictionary<string, object>? coupledDataRow, ISourceObjectContext sourceObjectContext, IConvertorContext convertorContext, IncludedMetadata includedMetadata,
+        FormFieldInfo[] commonFields)
     {
-        FormFieldInfo[] commonFields = UnpackReusableFieldSchemas(fi.GetFields<FormSchemaInfo>()).ToArray();
+        var legacyMetadataFieldNames = legacyMetadataFields.Value.Select(y => y.LegacyFieldName).ToHashSet();
+
         List<string> targetColumns = commonFields
             .Select(cf => ReusableSchemaService.RemoveClassPrefix(sourceClass.ClassName, cf.Name))
             .Union(fi.GetColumnNames(false))
             .Except(GetLegacyMetadataFields(modelFacade.SelectVersion(), includedMetadata)
             .Select(x => GetMappedLegacyField(fi, targetClassInfo!.ClassName, x.LegacyFieldName)))
+            .Except(mapping?.Mappings.Where(x => legacyMetadataFieldNames.Contains(x.SourceFieldName)).Select(x => x.TargetFieldName) ?? [])
             .Where(x => x is not null)
             .Select(x => x!)
             .ToList();
@@ -640,7 +669,6 @@ public class ContentItemMapper(
         ContentItemDataModel? dataModel = null;
 
         string targetClassName = mapping?.TargetClassName ?? sourceNodeClass.ClassName;
-
         try
         {
             string? pageTemplateConfiguration = adapter.DocumentPageTemplateConfiguration;
@@ -696,10 +724,12 @@ public class ContentItemMapper(
                 ContentItemContentTypeName = mapping?.TargetClassName ?? sourceNodeClass.ClassName
             };
 
+            var fi = new FormInfo(targetFormDefinition);
+            var commonFields = UnpackReusableFieldSchemas(fi.GetFields<FormSchemaInfo>()).ToArray();
+            var sfi = new FormInfo(sourceFormClassDefinition);
+            var convertorContext = new ConvertorTreeNodeContext(cmsTree.NodeGUID, cmsTree.NodeSiteID, adapter.DocumentID, false);
             if (sourceNodeClass.ClassIsCoupledClass)
             {
-                var fi = new FormInfo(targetFormDefinition);
-                var sfi = new FormInfo(sourceFormClassDefinition);
                 string primaryKeyName = "";
                 foreach (var sourceFieldInfo in sfi.GetFields(true, true))
                 {
@@ -714,7 +744,6 @@ public class ContentItemMapper(
                     throw new Exception("Error, unable to find coupled data primary key");
                 }
 
-                var commonFields = UnpackReusableFieldSchemas(fi.GetFields<FormSchemaInfo>()).ToArray();
                 var sourceColumns = commonFields
                     .Select(cf => ReusableSchemaService.RemoveClassPrefix(sourceNodeClass.ClassName, cf.Name))
                     .Union(fi.GetColumnNames(false))
@@ -724,7 +753,6 @@ public class ContentItemMapper(
                     .ToList();
 
                 var sourceObjectContext = new DocumentSourceObjectContext(cmsTree, sourceNodeClass, sourceSite, sfi, fi, adapter.DocumentID);
-                var convertorContext = new ConvertorTreeNodeContext(cmsTree.NodeGUID, cmsTree.NodeSiteID, adapter.DocumentID, false);
                 // TODO tomas.krch: 2024-09-05 propagate async to root
                 MapCoupledDataFieldValues(dataModel.CustomProperties,
                     s => adapter.GetValue(s),
@@ -757,7 +785,30 @@ public class ContentItemMapper(
                 }
             }
 
-            // supply legacy document metadata fields
+            // Map legacy metadata fields
+            // Fields from custom class mapping
+            if (mapping is not null)
+            {
+                foreach (var fieldMapping in mapping.Mappings)
+                {
+                    var sourceField =
+                        legacyMetadataFields.Value.FirstOrDefault(x => x.LegacyFieldName == fieldMapping.SourceFieldName);
+                    if (sourceField is not null)
+                    {
+                        GetFieldMappingValueConvertor(fieldMapping, out var valueConvertor);
+                        var value = valueConvertor(adapter.GetValue(fieldMapping.SourceFieldName), convertorContext);
+                        if (commonFields.Any(x => x.Name == fieldMapping.TargetFieldName))
+                        {
+                            commonDataModel.CustomProperties[fieldMapping.TargetFieldName] = value;
+                        }
+                        else
+                        {
+                            dataModel.CustomProperties[fieldMapping.TargetFieldName] = value;
+                        }
+                    }
+                }
+            }
+            // Fields added globally
             foreach (var legacyField in GetLegacyMetadataFields(modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false) ? IncludedMetadata.Extended : IncludedMetadata.Basic))
             {
                 if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(sourceNodeClass.ClassName))
@@ -784,6 +835,22 @@ public class ContentItemMapper(
         }
     }
 
+    private void GetFieldMappingValueConvertor(IFieldMapping? fieldMapping, out Func<object?, IConvertorContext, object?> valueProvider)
+    {
+        switch (fieldMapping)
+        {
+            case FieldMappingWithConversion fieldMappingWithConversion:
+            {
+                valueProvider = fieldMappingWithConversion.Converter;
+                break;
+            }
+            default:
+            {
+                valueProvider = (sourceValue, _) => sourceValue;
+                break;
+            }
+        }
+    }
     private async Task MapCoupledDataFieldValues(
       Dictionary<string, object?> target,
       Func<string, object?> getSourceValue,
@@ -803,32 +870,9 @@ public class ContentItemMapper(
 
         foreach (string targetColumnName in newColumnNames)
         {
-            string targetFieldName = null!;
-            Func<object?, IConvertorContext, object?> valueConvertor = (sourceValue, _) => sourceValue;
-            switch (mapping?.GetMapping(targetColumnName, sourceNodeClass.ClassName))
-            {
-                case FieldMappingWithConversion fieldMappingWithConversion:
-                {
-                    targetFieldName = fieldMappingWithConversion.TargetFieldName;
-                    valueConvertor = fieldMappingWithConversion.Converter;
-                    break;
-                }
-                case FieldMapping fieldMapping:
-                {
-                    targetFieldName = fieldMapping.TargetFieldName;
-                    valueConvertor = (sourceValue, _) => sourceValue;
-                    break;
-                }
-                case null:
-                {
-                    targetFieldName = targetColumnName;
-                    valueConvertor = (sourceValue, _) => sourceValue;
-                    break;
-                }
-
-                default:
-                    break;
-            }
+            var fieldMapping = mapping?.GetMapping(targetColumnName, sourceNodeClass.ClassName);
+            string targetFieldName = fieldMapping is not null ? fieldMapping.TargetFieldName : targetColumnName;
+            GetFieldMappingValueConvertor(fieldMapping, out var valueConvertor);
 
             if (
                 targetFieldName.Equals("ContentItemDataID", StringComparison.InvariantCultureIgnoreCase) ||
@@ -1022,6 +1066,9 @@ public class ContentItemMapper(
         }
     }
 
+    private readonly Lazy<LegacyDocumentMetadataFieldMapping[]> legacyMetadataFields =
+        new(() =>
+            GetLegacyMetadataFields(modelFacade.SelectVersion(), IncludedMetadata.Extended).ToArray());
 
     public IEnumerable<IUmtModel> Map(CustomTableMapperSource source)
     {
@@ -1254,7 +1301,7 @@ public class ContentItemMapper(
 
         var dataModel = new ContentItemDataModel { ContentItemDataGUID = commonDataModel.ContentItemCommonDataGUID, ContentItemDataCommonDataGuid = commonDataModel.ContentItemCommonDataGUID, ContentItemContentTypeName = mapping?.TargetClassName ?? source.TargetClass.ClassName };
         foreach (var model in MapProperties(contentItemModel, commonDataModel, dataModel, new FormInfo(source.SourceClass.ClassFormDefinition), new FormInfo(source.TargetClass.ClassFormDefinition),
-            mapping, source.SourceClass, source.TargetClass, source.CustomProperties, new CustomTableSourceObjectContext(), new ConvertorCustomTableContext(), IncludedMetadata.None))
+            mapping, source.SourceClass, source.TargetClass, source.CustomProperties, new CustomTableSourceObjectContext(), new ConvertorCustomTableContext(), IncludedMetadata.None, []))
         {
             yield return model;
         }
