@@ -1171,7 +1171,7 @@ public class ContentItemMapper(
                 .Select(x => x!)
                 .ToList();
 
-            var sourceObjectContext = new CustomTableSourceObjectContext();
+            var sourceObjectContext = new CustomTableSourceObjectContext(contentItemGuid.ToString());
             var convertorContext = new ConvertorCustomTableContext();
 
             // TODO tomas.krch: 2024-09-05 propagate async to root
@@ -1301,7 +1301,7 @@ public class ContentItemMapper(
 
         var dataModel = new ContentItemDataModel { ContentItemDataGUID = commonDataModel.ContentItemCommonDataGUID, ContentItemDataCommonDataGuid = commonDataModel.ContentItemCommonDataGUID, ContentItemContentTypeName = mapping?.TargetClassName ?? source.TargetClass.ClassName };
         foreach (var model in MapProperties(contentItemModel, commonDataModel, dataModel, new FormInfo(source.SourceClass.ClassFormDefinition), new FormInfo(source.TargetClass.ClassFormDefinition),
-            mapping, source.SourceClass, source.TargetClass, source.CustomProperties, new CustomTableSourceObjectContext(), new ConvertorCustomTableContext(), IncludedMetadata.None, []))
+            mapping, source.SourceClass, source.TargetClass, source.CustomProperties, new CustomTableSourceObjectContext($"{source.SourceClass.ClassGUID}|{source.SafeItemName}"), new ConvertorCustomTableContext(), IncludedMetadata.None, []))
         {
             yield return model;
         }

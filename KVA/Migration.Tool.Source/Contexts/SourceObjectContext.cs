@@ -6,4 +6,5 @@ namespace Migration.Tool.Source.Contexts;
 
 public record DocumentSourceObjectContext(ICmsTree CmsTree, ICmsClass NodeClass, ICmsSite Site, FormInfo OldFormInfo, FormInfo NewFormInfo, int? DocumentId) : ISourceObjectContext;
 
-public record CustomTableSourceObjectContext : ISourceObjectContext;
+/// <param name="UniqueKey">String key unique per combination [custom table, table row]. Not applied when the context-dependent operation doesn't work with individual rows</param>
+public record CustomTableSourceObjectContext(string UniqueKey) : ISourceObjectContext;
