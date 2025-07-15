@@ -361,7 +361,7 @@ public class ClassMappingProvider(
                             if (formFieldInfo.Settings["controlname"] is string controlName
                                 && string.Equals(controlName, Kx13FormControls.UserControlForText.MediaSelectionControl, StringComparison.InvariantCultureIgnoreCase))
                             {
-                                var fieldMigration = fieldMigrationService.GetFieldMigration(new(string.Empty, controlName, null, new CustomTableSourceObjectContext()));
+                                var fieldMigration = fieldMigrationService.GetFieldMigration(new(string.Empty, controlName, null, new CustomTableSourceObjectContext(string.Empty)));
                                 if (fieldMigration is not null)
                                 {
                                     m.BuildField(formFieldInfo.Name).ConvertFrom(mappedClass.ClassName, formFieldInfo.Name, true, (x, _) => x);
