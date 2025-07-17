@@ -53,8 +53,6 @@ public class AssetMigration(
     private readonly Lazy<IEnumerable<string>> languageNames = new(() => Service.Resolve<IInfoProvider<ContentLanguageInfo>>().Get().Select(x => x.ContentLanguageName));
     public async Task<FieldMigrationResult> MigrateValue(object? sourceValue, FieldMigrationContext context)
     {
-        var contentItemCodeNameProvider = Service.Resolve<IContentItemCodeNameProvider>();
-
         (string? _, string? sourceFormControl, string? fieldName, var sourceObjectContext) = context;
 
         if (!invokedCommands.Commands.Any(x => x is MigrateMediaLibrariesCommand))
@@ -226,35 +224,13 @@ public class AssetMigration(
             if (!configuration.MigrateMediaToMediaLibrary)
             {
                 // If we're migrating assets to content hub, unmatched URL can be stored as legacy media link
-                string folderPath = "/Legacy Media Links";
-                var folderGuid = GuidHelper.CreateFolderGuid(folderPath);
-                await contentFolderService.EnsureFolderStructure([new(folderGuid, folderGuid.ToString(), "Legacy Media Links", folderPath)]);
-                const int nameLength = 60;    // number of characters to take from the end of source url as representative name
-                string displayName = sourceUrl.Length >= nameLength ? sourceUrl[^nameLength..] : sourceUrl;
-                string name = await contentItemCodeNameProvider.Get(displayName);
-                var contentItemModel = new ContentItemSimplifiedModel
-                {
-                    CustomProperties = [],
-                    ContentItemGUID = GuidHelper.CreateContentItemGuid($"MediaSelectorLink|{valueKey}|{fieldName}"),
-                    ContentItemContentFolderGUID = folderGuid,
-                    IsSecured = null,
-                    ContentTypeName = AssetFacade.LegacyMediaLinkContentType.ClassName,
-                    Name = name,
-                    IsReusable = true,
-                    LanguageData = languageNames.Value.Select(lang =>
-                        new ContentItemLanguageData
-                        {
-                            LanguageName = lang,
-                            DisplayName = displayName,
-                            UserGuid = null,
-                            VersionStatus = VersionStatus.Published,
-                            ContentItemData = new Dictionary<string, object?>()
-                            {
-                                [AssetFacade.LegacyMediaLinkUrlField.Column!] = sourceUrl
-                            }
-                        }).ToList()
-                };
-                var importResult = await importer.ImportAsync(contentItemModel);
+
+                // Create reusable content item from the URL and import it
+                var itemGuid = GuidHelper.CreateContentItemGuid($"MediaSelectorLink|{valueKey}|{fieldName}");
+                var item = await CreateLegacyMediaLinkUmtModel(sourceUrl, itemGuid);
+
+                var importResult = await importer.ImportAsync(item);
+
                 if (importResult is { Success: true })
                 {
                     logger.LogInformation($"Imported '{{Url}}' to content hub as {AssetFacade.LegacyMediaLinkContentType.ClassName}", sourceUrl);
@@ -263,10 +239,9 @@ public class AssetMigration(
                 {
                     logger.LogError($"Failed to import '{{Url}}' to content hub as {AssetFacade.LegacyMediaLinkContentType.ClassName}: {{Exception}}", sourceUrl, importResult.Exception);
                 }
-                mfis =
-                [
-                    new ContentItemReference { Identifier = contentItemModel.ContentItemGUID.Value }
-                ];
+
+                // Prepare to return reference to the created content item
+                mfis = [new ContentItemReference { Identifier = itemGuid }];
                 hasMigratedAsset = true;
             }
             else
@@ -411,6 +386,47 @@ public class AssetMigration(
             logger.LogTrace("No assets migrated for '{FieldName}', value: '{Value}'", fieldName, sourceValue);
             return new FieldMigrationResult(false, null);
         }
+    }
+
+    private async Task<IUmtModel> CreateLegacyMediaLinkUmtModel(string sourceUrl, Guid itemGuid)
+    {
+        var contentItemCodeNameProvider = Service.Resolve<IContentItemCodeNameProvider>();
+
+        const int nameLength = 60;    // number of characters to take from the end of source url as representative name
+        string displayName = sourceUrl.Length >= nameLength ? sourceUrl[^nameLength..] : sourceUrl;
+        string name = await contentItemCodeNameProvider.Get(displayName);
+
+        return new ContentItemSimplifiedModel
+        {
+            CustomProperties = [],
+            ContentItemGUID = itemGuid,
+            ContentItemContentFolderGUID = await CreateLegacyMediaLinksContentFolder(),
+            IsSecured = null,
+            ContentTypeName = AssetFacade.LegacyMediaLinkContentType.ClassName,
+            Name = name,
+            IsReusable = true,
+            LanguageData = languageNames.Value.Select(lang =>
+                new ContentItemLanguageData
+                {
+                    LanguageName = lang,
+                    DisplayName = displayName,
+                    UserGuid = null,
+                    VersionStatus = VersionStatus.Published,
+                    ContentItemData = new Dictionary<string, object?>()
+                    {
+                        [AssetFacade.LegacyMediaLinkUrlField.Column!] = sourceUrl
+                    }
+                }).ToList()
+        };
+    }
+
+    private const string LegacyMediaLinksFolderDisplayName = "Legacy Media Links";
+    private async Task<Guid> CreateLegacyMediaLinksContentFolder()
+    {
+        string folderPath = $"/{LegacyMediaLinksFolderDisplayName}";
+        var folderGuid = GuidHelper.CreateFolderGuid(folderPath);
+        await contentFolderService.EnsureFolderStructure([new(folderGuid, folderGuid.ToString(), LegacyMediaLinksFolderDisplayName, folderPath)]);
+        return folderGuid;
     }
 
     public void MigrateFieldDefinition(FormDefinitionPatcher formDefinitionPatcher, XElement field, XAttribute? columnTypeAttr, string fieldDescriptor)

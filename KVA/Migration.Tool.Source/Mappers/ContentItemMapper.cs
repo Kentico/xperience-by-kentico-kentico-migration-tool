@@ -786,29 +786,30 @@ public class ContentItemMapper(
             }
 
             // Map legacy metadata fields
+
             // Fields from custom class mapping
             if (mapping is not null)
             {
-                foreach (var fieldMapping in mapping.Mappings)
+                var legacyMetadataFieldMappings =
+                    mapping.Mappings.Where(x => LegacyMetadataFieldNames.Contains(x.SourceFieldName));
+
+                foreach (var fieldMapping in legacyMetadataFieldMappings)
                 {
-                    var sourceField =
-                        legacyMetadataFields.Value.FirstOrDefault(x => x.LegacyFieldName == fieldMapping.SourceFieldName);
-                    if (sourceField is not null)
+                    GetFieldMappingValueConvertor(fieldMapping, out var valueConvertor);
+                    var value = valueConvertor(adapter.GetValue(fieldMapping.SourceFieldName), convertorContext);
+
+                    if (commonFields.Any(x => x.Name == fieldMapping.TargetFieldName))
                     {
-                        GetFieldMappingValueConvertor(fieldMapping, out var valueConvertor);
-                        var value = valueConvertor(adapter.GetValue(fieldMapping.SourceFieldName), convertorContext);
-                        if (commonFields.Any(x => x.Name == fieldMapping.TargetFieldName))
-                        {
-                            commonDataModel.CustomProperties[fieldMapping.TargetFieldName] = value;
-                        }
-                        else
-                        {
-                            dataModel.CustomProperties[fieldMapping.TargetFieldName] = value;
-                        }
+                        commonDataModel.CustomProperties[fieldMapping.TargetFieldName] = value;
+                    }
+                    else
+                    {
+                        dataModel.CustomProperties[fieldMapping.TargetFieldName] = value;
                     }
                 }
             }
-            // Fields added globally
+
+            // Fields migrated globally
             foreach (var legacyField in GetLegacyMetadataFields(modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false) ? IncludedMetadata.Extended : IncludedMetadata.Basic))
             {
                 if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(sourceNodeClass.ClassName))
@@ -1069,6 +1070,8 @@ public class ContentItemMapper(
     private readonly Lazy<LegacyDocumentMetadataFieldMapping[]> legacyMetadataFields =
         new(() =>
             GetLegacyMetadataFields(modelFacade.SelectVersion(), IncludedMetadata.Extended).ToArray());
+
+    private HashSet<string> LegacyMetadataFieldNames => legacyMetadataFields.Value.Select(x => x.LegacyFieldName).ToHashSet(StringComparer.InvariantCultureIgnoreCase);
 
     public IEnumerable<IUmtModel> Map(CustomTableMapperSource source)
     {
