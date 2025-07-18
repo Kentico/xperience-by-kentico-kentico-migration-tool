@@ -5,7 +5,7 @@ using CMS.ContentEngine.Internal;
 using CMS.Core;
 using CMS.DataEngine;
 using CMS.FormEngine;
-
+using Kentico.Xperience.Admin.Base.Forms;
 using Microsoft.Extensions.Logging;
 
 using Migration.Tool.Common;
@@ -405,13 +405,13 @@ public class CmsClassMapper(
         Caption = mapping.TargetCaption,
         Name = targetFieldName,
         AllowEmpty = mapping.AllowEmpty,
-        DataType = mapping.TargetSize switch { -1 => "longtext", _ => "text" },
+        DataType = mapping.TargetSize switch { -1 => FieldDataType.LongText, _ => FieldDataType.Text },
         Size = mapping.TargetSize switch { -1 => 0, _ => mapping.TargetSize },
         Precision = 0,
         DefaultValue = null,
         Guid = GuidHelper.CreateFieldGuid($"{mapping.LegacyFieldName.ToLower()}|{targetClassName}"),
         System = false,
-        Settings = { { "controlname", "Kentico.Administration.TextInput" } }
+        Settings = { { "controlname", TextInputComponent.IDENTIFIER } }
     };
 
 

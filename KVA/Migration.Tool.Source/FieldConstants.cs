@@ -8,7 +8,7 @@ public static class FieldConstants
     public const int LongTextMaxColumnSize = 0;
 
     /// <summary>
-    /// Maximum number of characters in a column that contains URL. The value is recommended as highest practical limit
+    /// Maximum number of characters in a column that contains URL. The value is recommended as highest practical limit.
     /// </summary>
     public const int TextUrlColumnSize = 2083;
 
