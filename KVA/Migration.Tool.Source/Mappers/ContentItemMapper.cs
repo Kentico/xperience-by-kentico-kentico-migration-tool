@@ -145,8 +145,8 @@ public class ContentItemMapper(
 
         bool storeContentItem = !(directive is ConvertToWidgetDirective ctw && !ctw.WrapInReusableItem);
 
-        Guid? contentFolderGuid = GetContentFolderGuid(directive.ContentFolderOptions, isMappedTypeReusable);
         Guid? workspaceGuid = GetWorkspaceGuid(directive.WorkspaceOptions);
+        Guid? contentFolderGuid = GetContentFolderGuid(directive.ContentFolderOptions, isMappedTypeReusable, workspaceGuid);
 
         var contentItemModel = new ContentItemModel
         {
@@ -1328,13 +1328,13 @@ public class ContentItemMapper(
         yield return languageMetadataInfo;
     }
 
-    private Guid? GetContentFolderGuid(ContentFolderOptions? options, bool isReusableItem) =>
+    private Guid? GetContentFolderGuid(ContentFolderOptions? options, bool isReusableItem, Guid? workspaceGuid = null) =>
         isReusableItem
             ? options switch
             {
                 null => null,
                 { Guid: { } guid } => guid,
-                { DisplayNamePath: { } displayNamePath } => contentFolderService.EnsureStandardFolderStructure("customtables", displayNamePath).GetAwaiter().GetResult(),
+                { DisplayNamePath: { } displayNamePath } => contentFolderService.EnsureStandardFolderStructure("customtables", displayNamePath, workspaceGuid).GetAwaiter().GetResult(),
                 _ => throw new InvalidOperationException($"{nameof(ContentFolderOptions)} has neither {nameof(ContentFolderOptions.Guid)} nor {nameof(ContentFolderOptions.DisplayNamePath)} specified")
             }
             : null;
