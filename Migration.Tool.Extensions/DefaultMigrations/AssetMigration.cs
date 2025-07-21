@@ -1,12 +1,16 @@
 using System.Xml.Linq;
 using CMS.ContentEngine;
+using CMS.Core;
 using CMS.DataEngine;
 using CMS.MediaLibrary;
+using Kentico.Xperience.UMT.Model;
+using Kentico.Xperience.UMT.Services;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Migration.Tool.Common;
 using Migration.Tool.Common.Enumerations;
 using Migration.Tool.Common.Helpers;
+using Migration.Tool.Common.Services;
 using Migration.Tool.KXP.Api;
 using Migration.Tool.KXP.Api.Auxiliary;
 using Migration.Tool.KXP.Api.Services.CmsClass;
@@ -30,8 +34,9 @@ public class AssetMigration(
     EntityIdentityFacade entityIdentityFacade,
     IAssetFacade assetFacade,
     MediaLinkServiceFactory mediaLinkServiceFactory,
-    InvokedCommands invokedCommands
-) : IFieldMigration
+    InvokedCommands invokedCommands,
+    IImporter importer,
+    ContentFolderService contentFolderService) : IFieldMigration
 {
     public int Rank => 100_000;
 
@@ -45,6 +50,7 @@ public class AssetMigration(
             // this migration also handles empty object context - for example when migrating data class, empty context is supplied
             or EmptySourceObjectContext;
 
+    private readonly Lazy<IEnumerable<string>> languageNames = new(() => Service.Resolve<IInfoProvider<ContentLanguageInfo>>().Get().Select(x => x.ContentLanguageName));
     public async Task<FieldMigrationResult> MigrateValue(object? sourceValue, FieldMigrationContext context)
     {
         (string? _, string? sourceFormControl, string? fieldName, var sourceObjectContext) = context;
@@ -58,17 +64,20 @@ public class AssetMigration(
         ICmsSite? cmsSite;
         CMS.FormEngine.FormInfo? oldFormInfo;
         int? documentId;
+        string valueKey;
         if (sourceObjectContext is DocumentSourceObjectContext docContext)
         {
             cmsSite = docContext.Site;
             oldFormInfo = docContext.OldFormInfo;
             documentId = docContext.DocumentId;
+            valueKey = $"Document|{cmsSite.SiteGUID}|{documentId}";
         }
-        else if (sourceObjectContext is CustomTableSourceObjectContext)
+        else if (sourceObjectContext is CustomTableSourceObjectContext customTableContext)
         {
             cmsSite = null;
             oldFormInfo = null;
             documentId = null;
+            valueKey = $"CustomTable|{customTableContext.UniqueKey}";
         }
         else
         {
@@ -210,6 +219,39 @@ public class AssetMigration(
                 }
             }
         }
+        else if (Kx13FormControls.UserControlForText.MediaSelectionControl.Equals(sourceFormControl, StringComparison.InvariantCultureIgnoreCase) && sourceValue is string sourceUrl)
+        {
+            if (!configuration.MigrateMediaToMediaLibrary)
+            {
+                // If we're migrating assets to content hub, unmatched URL can be stored as legacy media link
+
+                // Create reusable content item from the URL and import it
+                var itemGuid = GuidHelper.CreateContentItemGuid($"MediaSelectorLink|{valueKey}|{fieldName}");
+                var item = await CreateLegacyMediaLinkUmtModel(sourceUrl, itemGuid);
+
+                var importResult = await importer.ImportAsync(item);
+
+                if (importResult is { Success: true })
+                {
+                    logger.LogInformation($"Imported '{{Url}}' to content hub as {AssetFacade.LegacyMediaLinkContentType.ClassName}", sourceUrl);
+                }
+                else
+                {
+                    logger.LogError($"Failed to import '{{Url}}' to content hub as {AssetFacade.LegacyMediaLinkContentType.ClassName}: {{Exception}}", sourceUrl, importResult.Exception);
+                }
+
+                // Prepare to return reference to the created content item
+                mfis = [new ContentItemReference { Identifier = itemGuid }];
+                hasMigratedAsset = true;
+            }
+            else
+            {
+                logger.LogWarning("Asset value '{Value}' of {FieldName} wasn't migrated. No matching asset in source instance could be identified. " +
+                                  $"Migration as URL is not supported when {nameof(configuration.MigrateMediaToMediaLibrary)} = false. " +
+                                  $"When {nameof(configuration.MigrateMediaToMediaLibrary)} = true, matched assets will be migrated as content items " +
+                                  "and unmatched assets as original links.", sourceValue, fieldName);
+            }
+        }
         else if (classService.GetFormControlDefinition(sourceFormControl!) is { } formControl)
         {
             switch (formControl)
@@ -321,7 +363,6 @@ public class AssetMigration(
 
                     break;
                 }
-
                 default:
                     break;
             }
@@ -347,6 +388,47 @@ public class AssetMigration(
         }
     }
 
+    private async Task<IUmtModel> CreateLegacyMediaLinkUmtModel(string sourceUrl, Guid itemGuid)
+    {
+        var contentItemCodeNameProvider = Service.Resolve<IContentItemCodeNameProvider>();
+
+        const int nameLength = 60;    // number of characters to take from the end of source url as representative name
+        string displayName = sourceUrl.Length >= nameLength ? sourceUrl[^nameLength..] : sourceUrl;
+        string name = await contentItemCodeNameProvider.Get(displayName);
+
+        return new ContentItemSimplifiedModel
+        {
+            CustomProperties = [],
+            ContentItemGUID = itemGuid,
+            ContentItemContentFolderGUID = await CreateLegacyMediaLinksContentFolder(),
+            IsSecured = null,
+            ContentTypeName = AssetFacade.LegacyMediaLinkContentType.ClassName,
+            Name = name,
+            IsReusable = true,
+            LanguageData = languageNames.Value.Select(lang =>
+                new ContentItemLanguageData
+                {
+                    LanguageName = lang,
+                    DisplayName = displayName,
+                    UserGuid = null,
+                    VersionStatus = VersionStatus.Published,
+                    ContentItemData = new Dictionary<string, object?>()
+                    {
+                        [AssetFacade.LegacyMediaLinkUrlField.Column!] = sourceUrl
+                    }
+                }).ToList()
+        };
+    }
+
+    private const string LegacyMediaLinksFolderDisplayName = "Legacy Media Links";
+    private async Task<Guid> CreateLegacyMediaLinksContentFolder()
+    {
+        string folderPath = $"/{LegacyMediaLinksFolderDisplayName}";
+        var folderGuid = GuidHelper.CreateFolderGuid(folderPath);
+        await contentFolderService.EnsureFolderStructure([new(folderGuid, folderGuid.ToString(), LegacyMediaLinksFolderDisplayName, folderPath)]);
+        return folderGuid;
+    }
+
     public void MigrateFieldDefinition(FormDefinitionPatcher formDefinitionPatcher, XElement field, XAttribute? columnTypeAttr, string fieldDescriptor)
     {
         columnTypeAttr?.SetValue(configuration.MigrateMediaToMediaLibrary ? FieldDataType.Assets : FieldDataType.ContentItemReference);
@@ -360,7 +442,7 @@ public class AssetMigration(
         else
         {
             settings.EnsureElement(FormDefinitionPatcher.SettingsElemControlname, e => e.Value = FormComponents.AdminContentItemSelectorComponent);
-            Guid[] allowedContentTypes = [AssetFacade.LegacyMediaFileContentType.ClassGUID!.Value, AssetFacade.LegacyAttachmentContentType.ClassGUID!.Value];
+            Guid[] allowedContentTypes = [AssetFacade.LegacyMediaFileContentType.ClassGUID!.Value, AssetFacade.LegacyMediaLinkContentType.ClassGUID!.Value, AssetFacade.LegacyAttachmentContentType.ClassGUID!.Value];
             settings.EnsureElement(FormDefinitionPatcher.AllowedContentItemTypeIdentifiers, e => e.Value = JsonConvert.SerializeObject(allowedContentTypes.Select(x => x.ToString()).ToArray()));
         }
     }

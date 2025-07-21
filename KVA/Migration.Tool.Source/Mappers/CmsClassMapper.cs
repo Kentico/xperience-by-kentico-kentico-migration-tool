@@ -5,7 +5,7 @@ using CMS.ContentEngine.Internal;
 using CMS.Core;
 using CMS.DataEngine;
 using CMS.FormEngine;
-
+using Kentico.Xperience.Admin.Base.Forms;
 using Microsoft.Extensions.Logging;
 
 using Migration.Tool.Common;
@@ -347,7 +347,7 @@ public class CmsClassMapper(
         return dataClass;
     }
 
-    public static IEnumerable<LegacyDocumentMetadataFieldMapping> GetLegacyMetadataFields(SemanticVersion version, IncludedMetadata includedMetadata)
+    public static IEnumerable<LegacyDocumentMetadataFieldMapping> GetLegacyMetadataFields(SemanticVersion version, IncludedMetadata includedMetadata = IncludedMetadata.Extended)
     {
         if (includedMetadata == IncludedMetadata.None)
         {
@@ -392,25 +392,28 @@ public class CmsClassMapper(
             targetFieldName = $"{mapping.LegacyFieldName}{++i}";
         }
 
-        var formFieldInfo = new FormFieldInfo
-        {
-            Caption = mapping.TargetCaption,
-            Name = targetFieldName,
-            AllowEmpty = mapping.AllowEmpty,
-            DataType = mapping.TargetSize switch { -1 => "longtext", _ => "text" },
-            Size = mapping.TargetSize switch { -1 => 0, _ => mapping.TargetSize },
-            Precision = 0,
-            DefaultValue = null,
-            Guid = GuidHelper.CreateFieldGuid($"{mapping.LegacyFieldName.ToLower()}|{newClassName}"),
-            System = false,
-            Settings = { { "controlname", "Kentico.Administration.TextInput" } }
-        };
+        var formFieldInfo = GetLegacyMetadataFormFieldInfo(mapping, targetFieldName, newClassName);
 
         if (!nfi.ItemsList.Any(x => IsSameFormElement(reusableSchemaNames, formFieldInfo, x)))
         {
             nfi.AddFormItem(formFieldInfo);
         }
     }
+
+    public static FormFieldInfo GetLegacyMetadataFormFieldInfo(LegacyDocumentMetadataFieldMapping mapping, string targetFieldName, string targetClassName) => new()
+    {
+        Caption = mapping.TargetCaption,
+        Name = targetFieldName,
+        AllowEmpty = mapping.AllowEmpty,
+        DataType = mapping.TargetSize switch { -1 => FieldDataType.LongText, _ => FieldDataType.Text },
+        Size = mapping.TargetSize switch { -1 => 0, _ => mapping.TargetSize },
+        Precision = 0,
+        DefaultValue = null,
+        Guid = GuidHelper.CreateFieldGuid($"{mapping.LegacyFieldName.ToLower()}|{targetClassName}"),
+        System = false,
+        Settings = { { "controlname", TextInputComponent.IDENTIFIER } }
+    };
+
 
     private static bool IsSameFormElement(Dictionary<Guid, string> reusableSchemaNames, IDataDefinitionItem element1, IDataDefinitionItem element2)
     {
