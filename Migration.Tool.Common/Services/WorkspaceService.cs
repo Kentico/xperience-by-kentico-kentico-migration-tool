@@ -73,4 +73,8 @@ public class WorkspaceService(IImporter importer, ILogger<ContentFolderService> 
 
         return existingWorkspaceInfo.WorkspaceGUID;
     }
+
+    public WorkspaceInfo? GetWorkspace(Guid workspaceGuid) => WorkspaceInfo.Provider.Get()
+        .WhereEquals(nameof(WorkspaceInfo.WorkspaceGUID), workspaceGuid)
+        .FirstOrDefault();
 }
