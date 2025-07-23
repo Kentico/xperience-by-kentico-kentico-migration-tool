@@ -406,7 +406,8 @@ public class MigratePagesCommandHandler(
                                     }
                                     case { Success: true, Imported: ContentItemInfo cii }:
                                     {
-                                        contentItemInfo = cii;
+                                        contentItemInfo ??= cii;    // The first item yielded from mapper is the item of the converted page. Subsequent ones are items referred to by the page.
+                                                                    // We want to catch the page's item, thus the ??= operator.
                                         break;
                                     }
                                     case { Success: true, Imported: ContentItemDataInfo cidi }:
