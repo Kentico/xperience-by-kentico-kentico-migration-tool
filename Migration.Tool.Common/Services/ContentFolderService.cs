@@ -16,11 +16,12 @@ public class ContentFolderService(IImporter importer, ILogger<ContentFolderServi
     /// <summary>
     /// Iterates over the folder path. If a folder doesn't exist, it gets created
     /// </summary>
-    /// <param name="folderPathTemplate"></param>
+    /// <param name="folderPathTemplate">/FolderDisplayName1/FolderDisplayName2/...</param>
+    /// <param name="workspaceGuid">Workspace in which to create the folder</param>
     /// <exception cref="InvalidOperationException"></exception>
-    public async Task<Guid?> EnsureFolderStructure(IEnumerable<(Guid Guid, string Name, string DisplayName, string PathSegmentName)> folderPathTemplate)
+    public async Task<Guid?> EnsureFolderStructure(IEnumerable<(Guid Guid, string Name, string DisplayName, string PathSegmentName)> folderPathTemplate, Guid? workspaceGuid = null)
     {
-        Guid? parentGuid = null;
+        Guid? parentGuid = workspaceGuid.HasValue ? GetWorkspaceRootFolder(workspaceGuid.Value) : null;
 
         var currentPath = string.Empty;
         foreach (var folderTemplate in folderPathTemplate)
@@ -47,7 +48,7 @@ public class ContentFolderService(IImporter importer, ILogger<ContentFolderServi
                         ContentFolderDisplayName = folderTemplate.DisplayName,
                         ContentFolderTreePath = currentPath,
                         ContentFolderParentFolderGUID = parentGuid,
-                        ContentFolderWorkspaceGUID = workspaceService.DefaultWorkspaceGuid
+                        ContentFolderWorkspaceGUID = workspaceGuid ?? workspaceService.DefaultWorkspaceGuid
                     };
 
                     switch (await importer.ImportAsync(newFolderModel))
@@ -86,6 +87,27 @@ public class ContentFolderService(IImporter importer, ILogger<ContentFolderServi
         }
 
         return parentGuid;
+    }
+
+    private readonly Dictionary<Guid, Guid> workspaceRootFolderCache = [];
+    private Guid GetWorkspaceRootFolder(Guid workspaceGuid)
+    {
+        if (workspaceRootFolderCache.TryGetValue(workspaceGuid, out var folderGuid))
+        {
+            return folderGuid;
+        }
+
+        var workspace = workspaceService.GetWorkspace(workspaceGuid) ?? throw new Exception($"Required workspace(GUID={workspaceGuid}) not found");
+
+        folderGuid = ContentFolderInfo.Provider.Get()
+            .WhereEquals(nameof(ContentFolderInfo.ContentFolderWorkspaceID), workspace.WorkspaceID)
+            .And().WhereEquals(nameof(ContentFolderInfo.ContentFolderParentFolderID), null)
+            .FirstOrDefault()?.ContentFolderGUID
+                     ?? throw new Exception($"Root folder for workspace(GUID={workspaceGuid}) not found");
+
+        workspaceRootFolderCache[workspaceGuid] = folderGuid;
+
+        return folderGuid;
     }
 
     private static string DisplayNamePathToTreePath(string displayNamePath) => string.Join("/", displayNamePath.Split('/').Select(x => ValidationHelper.GetCodeName(x, 0)));
@@ -129,5 +151,5 @@ public class ContentFolderService(IImporter importer, ILogger<ContentFolderServi
     /// of the folders and the attributes of a folder that is to be created are derived from its display name 
     /// in a defined standard way
     /// </summary>
-    public Task<Guid?> EnsureStandardFolderStructure(string siteHash, string absolutePath) => EnsureFolderStructure(StandardPathTemplate(siteHash, absolutePath));
+    public Task<Guid?> EnsureStandardFolderStructure(string siteHash, string absolutePath, Guid? workspaceGuid = null) => EnsureFolderStructure(StandardPathTemplate(siteHash, absolutePath), workspaceGuid);
 }
