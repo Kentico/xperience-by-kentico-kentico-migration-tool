@@ -5,10 +5,31 @@ using Microsoft.Extensions.Logging;
 using Migration.Tool.Common.Helpers;
 
 namespace Migration.Tool.Common.Services;
-public class WorkspaceService(IImporter importer, ILogger<ContentFolderService> logger)
+public class WorkspaceService(IImporter importer, ILogger<ContentFolderService> logger, ToolConfiguration toolConfiguration)
 {
-    public Guid DefaultWorkspaceGuid { get; } = WorkspaceInfo.Provider.Get().WhereEquals(nameof(WorkspaceInfo.WorkspaceName), "KenticoDefault")
-        .FirstOrDefault()?.WorkspaceGUID ?? throw new Exception("No workspace found in target instance. At least Default workspace is expected");
+    public Lazy<WorkspaceInfo> FallbackWorkspace { get; } = new(() =>
+        {
+            var workspaces = WorkspaceInfo.Provider.Get().ToArray();
+
+            if (!string.IsNullOrEmpty(toolConfiguration.TargetWorkspaceName))
+            {
+                return workspaces.FirstOrDefault(x => string.Equals(x.WorkspaceName,
+                        toolConfiguration.TargetWorkspaceName, StringComparison.InvariantCultureIgnoreCase))
+                    ?? throw new Exception($"Target workspace '{toolConfiguration.TargetWorkspaceName}' is specified by {nameof(toolConfiguration.TargetWorkspaceName)} " +
+                                           "appsettings key, but it was not found in target instance");
+            }
+
+            return workspaces.Length switch
+            {
+                0 => throw new Exception(
+                    "No workspace found in target instance. Option 1: Create exactly one workspace. " +
+                    "Option 2: Create multiple workspaces and specify target workspace by " +
+                    $"{nameof(toolConfiguration.TargetWorkspaceName)} appsettings key"),
+                1 => workspaces[0],
+                _ => throw new Exception("Multiple workspaces found in target instance, but no target workspace " +
+                                         $"is specified in appsettings. Use {nameof(toolConfiguration.TargetWorkspaceName)} appsettings key.")
+            };
+        });
 
     /// <summary>
     /// Workspace name as key
