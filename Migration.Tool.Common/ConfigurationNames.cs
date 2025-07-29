@@ -44,6 +44,8 @@ public class ConfigurationNames
 
     public const string TodoPlaceholder = "[TODO]";
 
+    public const string TargetWorkspaceName = "TargetWorkspaceName";
+
     #region "Section names"
 
     public const string CmsConnectionString = "CMSConnectionString";

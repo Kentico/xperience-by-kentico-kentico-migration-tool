@@ -1285,7 +1285,7 @@ public class ContentItemMapper(
             ContentItemDataClassGuid = source.TargetClass.ClassGUID,
             ContentItemChannelGuid = null,
             ContentItemContentFolderGUID = contentFolderGuid,
-            ContentItemWorkspaceGUID = null,
+            ContentItemWorkspaceGUID = workspaceService.FallbackWorkspace.Value.WorkspaceGUID,
         };
         yield return contentItemModel;
 
@@ -1332,7 +1332,7 @@ public class ContentItemMapper(
         isReusableItem
             ? options switch
             {
-                null => null,
+                null => contentFolderService.GetWorkspaceRootFolder(workspaceService.FallbackWorkspace.Value.WorkspaceGUID),
                 { Guid: { } guid } => guid,
                 { DisplayNamePath: { } displayNamePath } => contentFolderService.EnsureStandardFolderStructure("customtables", displayNamePath, workspaceGuid).GetAwaiter().GetResult(),
                 _ => throw new InvalidOperationException($"{nameof(ContentFolderOptions)} has neither {nameof(ContentFolderOptions.Guid)} nor {nameof(ContentFolderOptions.DisplayNamePath)} specified")
@@ -1341,7 +1341,7 @@ public class ContentItemMapper(
 
     private Guid? GetWorkspaceGuid(WorkspaceOptions? options) => options switch
     {
-        null => null,
+        null => workspaceService.FallbackWorkspace.Value.WorkspaceGUID,
         { Guid: { } guid } => guid,
         { Name: { } name, DisplayName: { } displayName } => workspaceService.EnsureWorkspace(name, displayName).GetAwaiter().GetResult(),
         _ => throw new InvalidOperationException($"{nameof(WorkspaceOptions)} has neither {nameof(WorkspaceOptions.Guid)} nor [{nameof(WorkspaceOptions.Name)} and {nameof(WorkspaceOptions.DisplayName)}] specified")

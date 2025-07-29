@@ -65,7 +65,8 @@ public class AssetFacade(
         ContentFolderService contentFolderService,
         IImporter importer,
         ILogger<AssetFacade> logger,
-        IProtocol protocol
+        IProtocol protocol,
+        WorkspaceService workspaceService
         ) : IAssetFacade
 {
     public string DefaultContentLanguage
@@ -157,6 +158,7 @@ public class AssetFacade(
             CustomProperties = [],
             ContentItemGUID = translatedMediaGuid,
             ContentItemContentFolderGUID = folderGuid,
+            ContentItemWorkspaceGUID = workspaceService.FallbackWorkspace.Value.WorkspaceGUID,
             IsSecured = null,
             ContentTypeName = LegacyMediaFileContentType.ClassName,
             Name = contentItemSafeName,
@@ -216,6 +218,7 @@ public class AssetFacade(
         {
             ContentItemGUID = translatedAttachmentGuid,
             ContentItemContentFolderGUID = rootFolder,
+            ContentItemWorkspaceGUID = workspaceService.FallbackWorkspace.Value.WorkspaceGUID,
             IsSecured = null,
             ContentTypeName = LegacyAttachmentContentType.ClassName,
             Name = contentItemSafeName,
