@@ -45,7 +45,7 @@ public class ContentFolderService
             else
             {
                 var folderInfo = ContentFolderInfo.Provider.Get()
-                    .WhereEquals(nameof(ContentFolderInfo.ContentFolderGUID), parentGuid)
+                    .WhereEquals(nameof(ContentFolderInfo.ContentFolderGUID), folderTemplate.Guid)
                     .And().WhereEquals(nameof(ContentFolderInfo.ContentFolderDisplayName), folderTemplate.DisplayName)
                     .FirstOrDefault();
 
