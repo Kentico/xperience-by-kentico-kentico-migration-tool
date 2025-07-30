@@ -47,7 +47,9 @@ public static class DependencyInjectionExtensions
         services.AddSingleton<KeyLocatorService>();
 
         // mappers
+#pragma warning disable CS0618 // Type or member is obsolete
         services.AddTransient<IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo>, CmsAttachmentMapper>();
+#pragma warning restore CS0618 // Type or member is obsolete
         services.AddTransient<IEntityMapper<KX13M.CmsConsent, ConsentInfo>, CmsConsentMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsConsentAgreement, ConsentAgreementInfo>, CmsConsentAgreementMapper>();
         services.AddTransient<IEntityMapper<KX13M.CmsConsentArchive, ConsentArchiveInfo>, CmsConsentArchiveMapper>();

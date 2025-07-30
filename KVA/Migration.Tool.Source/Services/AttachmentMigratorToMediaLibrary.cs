@@ -20,7 +20,9 @@ namespace Migration.Tool.Source.Services;
 public class AttachmentMigratorToMediaLibrary(
     ILogger<AttachmentMigratorToMediaLibrary> logger,
     KxpMediaFileFacade mediaFileFacade,
+#pragma warning disable CS0618 // Type or member is obsolete
     IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo> attachmentMapper,
+#pragma warning restore CS0618 // Type or member is obsolete
     IProtocol protocol,
     ModelFacade modelFacade,
     EntityIdentityFacade entityIdentityFacade
@@ -146,7 +148,9 @@ public class AttachmentMigratorToMediaLibrary(
         if (uploadedFile == null)
         {
             protocol.Append(HandbookReferences
+#pragma warning disable CS0618 // Type or member is obsolete
                 .FailedToCreateTargetInstance<MediaFileInfo>()
+#pragma warning restore CS0618 // Type or member is obsolete
                 .WithIdentityPrint(ksAttachment)
                 .WithMessage("Failed to create dummy upload file containing data")
             );
@@ -193,12 +197,16 @@ public class AttachmentMigratorToMediaLibrary(
                 protocol.Success(ksAttachmentDocument, mediaFileInfo, mapped);
                 logger.LogEntitySetAction(newInstance, mediaFileInfo);
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 return Task.FromResult((IMigrateAttachmentResult)new MigrateAttachmentResultMediaFile(true, mediaFileInfo, MediaLibraryInfoProvider.ProviderObject.Get(targetMediaLibraryId)));
+#pragma warning restore CS0618 // Type or member is obsolete
             }
             catch (Exception exception)
             {
                 logger.LogEntitySetError(exception, newInstance, mediaFileInfo);
+#pragma warning disable CS0618 // Type or member is obsolete
                 protocol.Append(HandbookReferences.ErrorCreatingTargetInstance<MediaFileInfo>(exception)
+#pragma warning restore CS0618 // Type or member is obsolete
                     .NeedsManualAction()
                     .WithIdentityPrint(mediaFileInfo)
                     .WithData(new { mediaFileInfo.FileGUID, mediaFileInfo.FileName })
@@ -240,7 +248,9 @@ public class AttachmentMigratorToMediaLibrary(
         catch (Exception exception)
         {
             logger.LogError(exception, "creating target media library failed");
+#pragma warning disable CS0618 // Type or member is obsolete
             protocol.Append(HandbookReferences.ErrorCreatingTargetInstance<MediaLibraryInfo>(exception)
+#pragma warning restore CS0618 // Type or member is obsolete
                 .NeedsManualAction()
                 .WithData(new { TargetLibraryCodeName = targetLibraryCodeName, targetSiteId })
             );
@@ -255,7 +265,9 @@ public class AttachmentMigratorToMediaLibrary(
         (string libraryName, int siteId) = arg;
 
         // TODO tomas.krch: 2023-11-02 libraries now globalized, where do i put conflicting directories?
+#pragma warning disable CS0618 // Type or member is obsolete
         var tml = MediaLibraryInfo.Provider.Get().WhereEquals(nameof(MediaLibraryInfo.LibraryName), libraryName).SingleOrDefault();
+#pragma warning restore CS0618 // Type or member is obsolete
 
         string libraryDirectory = context.TargetLibraryCodeName;
         if (!libraryPathValidationRegex.IsMatch(libraryDirectory))

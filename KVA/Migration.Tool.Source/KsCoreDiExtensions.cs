@@ -96,15 +96,21 @@ public static class KsCoreDiExtensions
         services.AddTransient<IUmtMapper<TagModelSource>, TagMapper>();
 
         // mappers
+#pragma warning disable CS0618 // Type or member is obsolete
         services.AddTransient<IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo>, CmsAttachmentMapper>();
+#pragma warning restore CS0618 // Type or member is obsolete
         services.AddTransient<IEntityMapper<ICmsClass, DataClassInfo>, CmsClassMapper>();
         services.AddTransient<IEntityMapper<ICmsForm, BizFormInfo>, CmsFormMapper>();
         services.AddTransient<IEntityMapper<ICmsResource, ResourceInfo>, ResourceMapper>();
         services.AddTransient<IEntityMapper<AlternativeFormMapperSource, AlternativeFormInfo>, AlternativeFormMapper>();
         services.AddTransient<IEntityMapper<MemberInfoMapperSource, MemberInfo>, MemberInfoMapper>();
         services.AddTransient<IEntityMapper<ICmsPageTemplateConfiguration, PageTemplateConfigurationInfo>, PageTemplateConfigurationMapper>();
+#pragma warning disable CS0618 // Type or member is obsolete
         services.AddTransient<IEntityMapper<MediaLibraryInfoMapperSource, MediaLibraryInfo>, MediaLibraryInfoMapper>();
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
         services.AddTransient<IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo>, MediaFileInfoMapper>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
         services.AddUniversalMigrationToolkit();
 

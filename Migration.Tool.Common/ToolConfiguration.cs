@@ -74,6 +74,9 @@ public class ToolConfiguration
         StringComparer.InvariantCultureIgnoreCase
     );
 
+    [ConfigurationKeyName(ConfigurationNames.TargetWorkspaceName)]
+    public string? TargetWorkspaceName { get; set; }
+
     #region Opt-in features
 
     [ConfigurationKeyName(ConfigurationNames.OptInFeatures)]

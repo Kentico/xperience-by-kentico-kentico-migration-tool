@@ -100,7 +100,9 @@ public class AssetMigration(
                     {
                         case MigrateAttachmentResultMediaFile(true, var x, _):
                         {
+#pragma warning disable CS0618 // Type or member is obsolete
                             mfis = [new AssetRelatedItem { Identifier = x!.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
+#pragma warning restore CS0618 // Type or member is obsolete
                             hasMigratedAsset = true;
                             logger.LogTrace("'{FieldName}' migrated Match={Value}", fieldName, result);
                             break;
@@ -140,7 +142,9 @@ public class AssetMigration(
                         {
                             if (entityIdentityFacade.Translate(sourceMediaFile) is { } mf && mediaFileFacade.GetMediaFile(mf.Identity) is { } x)
                             {
+#pragma warning disable CS0618 // Type or member is obsolete
                                 mfis = [new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
+#pragma warning restore CS0618 // Type or member is obsolete
                                 hasMigratedAsset = true;
                             }
                         }
@@ -166,7 +170,9 @@ public class AssetMigration(
                     {
                         case MigrateAttachmentResultMediaFile(true, var x, _):
                         {
+#pragma warning disable CS0618 // Type or member is obsolete
                             mfis = [new AssetRelatedItem { Identifier = x!.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
+#pragma warning restore CS0618 // Type or member is obsolete
                             hasMigratedAsset = true;
                             logger.LogTrace("MediaFile migrated from attachment '{Field}': '{Value}'", fieldName, mg);
                             break;
@@ -201,7 +207,9 @@ public class AssetMigration(
                         {
                             if (entityIdentityFacade.Translate(sourceMediaFile) is { } mf && mediaFileFacade.GetMediaFile(mf.Identity) is { } x)
                             {
+#pragma warning disable CS0618 // Type or member is obsolete
                                 mfis = [new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
+#pragma warning restore CS0618 // Type or member is obsolete
                                 hasMigratedAsset = true;
                             }
                         }
@@ -264,7 +272,9 @@ public class AssetMigration(
                         {
                             case MigrateAttachmentResultMediaFile(true, var mfi, _):
                             {
+#pragma warning disable CS0618 // Type or member is obsolete
                                 mfis = [new AssetRelatedItem { Identifier = mfi!.FileGUID, Dimensions = new AssetDimensions { Height = mfi.FileImageHeight, Width = mfi.FileImageWidth }, Name = mfi.FileName, Size = mfi.FileSize }];
+#pragma warning restore CS0618 // Type or member is obsolete
                                 hasMigratedAsset = true;
                                 logger.LogTrace("MediaFile migrated from attachment '{Field}': '{Value}'", fieldName, attachmentGuid);
                                 break;
@@ -292,7 +302,9 @@ public class AssetMigration(
                         {
                             case MigrateAttachmentResultMediaFile { Success: true, MediaFileInfo: { } x }:
                             {
+#pragma warning disable CS0618 // Type or member is obsolete
                                 mfis = [new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize }];
+#pragma warning restore CS0618 // Type or member is obsolete
                                 hasMigratedAsset = true;
                                 logger.LogTrace("MediaFile migrated from attachment '{Field}': '{Value}' (parsed)", fieldName, attachmentGuid);
                                 break;
@@ -333,7 +345,9 @@ public class AssetMigration(
                             {
                                 case MigrateAttachmentResultMediaFile { Success: true, MediaFileInfo: { } x }:
                                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                                     mfisl.Add(new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize });
+#pragma warning restore CS0618 // Type or member is obsolete
                                     hasMigratedAsset = true;
                                     break;
                                 }
@@ -431,7 +445,11 @@ public class AssetMigration(
 
     public void MigrateFieldDefinition(FormDefinitionPatcher formDefinitionPatcher, XElement field, XAttribute? columnTypeAttr, string fieldDescriptor)
     {
-        columnTypeAttr?.SetValue(configuration.MigrateMediaToMediaLibrary ? FieldDataType.Assets : FieldDataType.ContentItemReference);
+        columnTypeAttr?.SetValue(configuration.MigrateMediaToMediaLibrary
+#pragma warning disable CS0618 // Type or member is obsolete
+            ? FieldDataType.Assets
+#pragma warning restore CS0618 // Type or member is obsolete
+            : FieldDataType.ContentItemReference);
 
         var settings = field.EnsureElement(FormDefinitionPatcher.FieldElemSettings);
         if (configuration.MigrateMediaToMediaLibrary)

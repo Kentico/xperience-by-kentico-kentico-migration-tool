@@ -21,7 +21,8 @@ public class ContentFolderService(IImporter importer, ILogger<ContentFolderServi
     /// <exception cref="InvalidOperationException"></exception>
     public async Task<Guid?> EnsureFolderStructure(IEnumerable<(Guid Guid, string Name, string DisplayName, string PathSegmentName)> folderPathTemplate, Guid? workspaceGuid = null)
     {
-        Guid? parentGuid = workspaceGuid.HasValue ? GetWorkspaceRootFolder(workspaceGuid.Value) : null;
+        workspaceGuid ??= workspaceService.FallbackWorkspace.Value.WorkspaceGUID;
+        Guid? parentGuid = GetWorkspaceRootFolder(workspaceGuid.Value);
 
         var currentPath = string.Empty;
         foreach (var folderTemplate in folderPathTemplate)
@@ -48,7 +49,7 @@ public class ContentFolderService(IImporter importer, ILogger<ContentFolderServi
                         ContentFolderDisplayName = folderTemplate.DisplayName,
                         ContentFolderTreePath = currentPath,
                         ContentFolderParentFolderGUID = parentGuid,
-                        ContentFolderWorkspaceGUID = workspaceGuid ?? workspaceService.DefaultWorkspaceGuid
+                        ContentFolderWorkspaceGUID = workspaceGuid
                     };
 
                     switch (await importer.ImportAsync(newFolderModel))
@@ -90,7 +91,7 @@ public class ContentFolderService(IImporter importer, ILogger<ContentFolderServi
     }
 
     private readonly Dictionary<Guid, Guid> workspaceRootFolderCache = [];
-    private Guid GetWorkspaceRootFolder(Guid workspaceGuid)
+    public Guid GetWorkspaceRootFolder(Guid workspaceGuid)
     {
         if (workspaceRootFolderCache.TryGetValue(workspaceGuid, out var folderGuid))
         {

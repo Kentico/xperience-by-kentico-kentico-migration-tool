@@ -133,10 +133,12 @@ public static class FieldMappingInstance
 
         if (configuration.MigrateMediaToMediaLibrary)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             m.AddRange([
                 new FieldMigration(KsFieldDataType.DocAttachments, FieldDataType.Assets, SfcDirective.CatchAnyNonMatching, FormComponents.AdminAssetSelectorComponent, [TcaDirective.ConvertToAsset]),
                 new FieldMigration(KsFieldDataType.File, FieldDataType.Assets, SfcDirective.CatchAnyNonMatching, FormComponents.AdminAssetSelectorComponent, [TcaDirective.ConvertToAsset]),
             ]);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
         else
         {

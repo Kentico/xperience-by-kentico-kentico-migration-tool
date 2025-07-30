@@ -13,13 +13,19 @@ namespace Migration.Tool.Source.Mappers;
 public record MediaLibraryInfoMapperSource(IMediaLibrary MediaLibrary, ICmsSite Site, Guid SafeLibraryGuid, string SafeLibraryName);
 
 public class MediaLibraryInfoMapper(ILogger<MediaLibraryInfoMapper> logger, PrimaryKeyMappingContext primaryKeyMappingContext, IProtocol protocol)
+#pragma warning disable CS0618 // Type or member is obsolete
     : EntityMapperBase<MediaLibraryInfoMapperSource, MediaLibraryInfo>(logger, primaryKeyMappingContext, protocol)
+#pragma warning restore CS0618 // Type or member is obsolete
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     protected override MediaLibraryInfo? CreateNewInstance(MediaLibraryInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) =>
         MediaLibraryInfo.New();
+#pragma warning restore CS0618 // Type or member is obsolete
 
     private static readonly Regex allowedCharactersForLibraryName = new(@"[^a-zA-Z0-9_]", RegexOptions.Compiled | RegexOptions.Singleline);
+#pragma warning disable CS0618 // Type or member is obsolete
     protected override MediaLibraryInfo MapInternal(MediaLibraryInfoMapperSource s, MediaLibraryInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         var (ksLibrary, ksSite, safeLibraryGuid, safeLibraryName) = s;
         string ksSiteNameSafe = allowedCharactersForLibraryName.Replace(ksSite.SiteName, "_");

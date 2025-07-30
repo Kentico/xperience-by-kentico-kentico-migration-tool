@@ -32,7 +32,10 @@ public class LegacyAttachmentHandler : CMS.DataEngine.Module
     private static void RegisterMediaFileHandler(string routeTemplate, int order, Type customHandlerType = null)
     {
         var registerMethod = HttpHandlerRouteTable.Default.GetType().GetMethod("Register", BindingFlags.NonPublic | BindingFlags.Instance);
-        var handlerType = customHandlerType ?? typeof(MediaFileInfo).Assembly.GetType("CMS.MediaLibrary.GetMediaService");
+        var handlerType = customHandlerType
+#pragma warning disable CS0618 // Type or member is obsolete
+            ?? typeof(MediaFileInfo).Assembly.GetType("CMS.MediaLibrary.GetMediaService");
+#pragma warning restore CS0618 // Type or member is obsolete
 
         registerMethod.Invoke(HttpHandlerRouteTable.Default, new object[] { new RegisterHttpHandlerAttribute(routeTemplate, handlerType) { Order = order } });
     }
@@ -53,6 +56,7 @@ public class AttachmentsService : ActionResultServiceBase
             string dir = System.IO.Path.GetDirectoryName(pathAndFileName)?.Replace("\\", "/");
             string fileName = System.IO.Path.GetFileNameWithoutExtension(pathAndFileName);
 
+#pragma warning disable CS0618 // Type or member is obsolete
             var mediaFiles = MediaFileInfoProvider.ProviderObject.Get()
                 .Columns(
                     nameof(MediaFileInfo.FileID), nameof(MediaFileInfo.FilePath), nameof(MediaFileInfo.FileCustomData),
@@ -61,8 +65,11 @@ public class AttachmentsService : ActionResultServiceBase
                 .WhereEquals(nameof(MediaFileInfo.FileName), fileName)
                 .WhereStartsWith(nameof(MediaFileInfo.FilePath), $"{dir}")
                 .ToArray();
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
             MediaFileInfo mediaFile;
+#pragma warning restore CS0618 // Type or member is obsolete
             if (mediaFiles.Length > 1)
             {
                 var narrowedByOriginalPath = mediaFiles
@@ -79,7 +86,9 @@ public class AttachmentsService : ActionResultServiceBase
                 mediaFile = mediaFiles.FirstOrDefault();
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             string mediaPath = MediaFileInfoProvider.GetMediaFilePath(mediaFile.FilePath, mediaFile.FileLibraryID, SystemContext.WebApplicationPhysicalPath);
+#pragma warning restore CS0618 // Type or member is obsolete
             var result = new CMSPhysicalFileResult(mediaPath) { ContentType = mediaFile.FileMimeType, ContentDisposition = HTTPHelper.GetFileDisposition(mediaPath, System.IO.Path.GetExtension(mediaPath)) };
             return result;
         }
