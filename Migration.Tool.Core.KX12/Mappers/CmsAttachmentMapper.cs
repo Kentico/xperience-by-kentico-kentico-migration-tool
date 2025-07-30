@@ -17,7 +17,9 @@ public record CmsAttachmentMapperSource(
     string LibrarySubFolder,
     KX12M.CmsDocument? AttachmentDocument);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 public class CmsAttachmentMapper : EntityMapperBase<CmsAttachmentMapperSource, MediaFileInfo>
+#pragma warning restore CS0618 // Type or member is obsolete
 {
     private const string LEGACY_ORIGINAL_PATH = "__LegacyOriginalPath";
 
@@ -25,11 +27,15 @@ public class CmsAttachmentMapper : EntityMapperBase<CmsAttachmentMapperSource, M
     {
     }
 
+#pragma warning disable CS0618 // Type or member is obsolete
     protected override MediaFileInfo? CreateNewInstance(CmsAttachmentMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) =>
         // library name is generated with site name in it
         new(source.File, source.TargetLibraryId, source.LibrarySubFolder, 0, 0, 0);
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
     protected override MediaFileInfo MapInternal(CmsAttachmentMapperSource args, MediaFileInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         (var cmsAttachment, int targetLibraryId, _, _, var attachmentDocument) = args;
 

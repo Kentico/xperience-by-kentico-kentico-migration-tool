@@ -1253,7 +1253,9 @@ public class ContentItemMapper(
     }
     internal static JToken LoadMediaInfo(Guid mediaFileGuid)
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         var info = MediaFileInfo.Provider.Get(mediaFileGuid);
+#pragma warning restore CS0618 // Type or member is obsolete
         return new JArray(new JObject
         {
             { "identifier", mediaFileGuid },
