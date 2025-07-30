@@ -20,8 +20,10 @@ public class MediaFileMigrator(
     ILogger<MigrateMediaLibrariesCommandHandler> logger,
     ModelFacade modelFacade,
     KxpMediaFileFacade mediaFileFacade,
+#pragma warning disable CS0618 // Type or member is obsolete
     IEntityMapper<MediaFileInfoMapperSource, MediaFileInfo> mediaFileInfoMapper,
     IEntityMapper<MediaLibraryInfoMapperSource, MediaLibraryInfo> mediaLibraryInfoMapper,
+#pragma warning restore CS0618 // Type or member is obsolete
     ToolConfiguration toolConfiguration,
     PrimaryKeyMappingContext primaryKeyMappingContext,
     EntityIdentityFacade entityIdentityFacade,
@@ -37,7 +39,9 @@ public class MediaFileMigrator(
                                                        """, (reader, version) => reader.Unbox<string>("LibraryName"))
             .ToImmutableHashSet(StringComparer.InvariantCultureIgnoreCase);
 
+#pragma warning disable CS0618 // Type or member is obsolete
         var migratedMediaLibraries = new List<(IMediaLibrary sourceLibrary, ICmsSite sourceSite, MediaLibraryInfo targetLibrary)>();
+#pragma warning restore CS0618 // Type or member is obsolete
         foreach (var ksMediaLibrary in ksMediaLibraries)
         {
             (bool isFixed, var libraryGuid) = entityIdentityFacade.Translate(ksMediaLibrary);
@@ -55,8 +59,10 @@ public class MediaFileMigrator(
             if (modelFacade.SelectById<ICmsSite>(ksMediaLibrary.LibrarySiteID) is not { } ksSite)
             {
                 protocol.Append(HandbookReferences
+#pragma warning disable CS0618 // Type or member is obsolete
                     .InvalidSourceData<MediaLibraryInfo>()
                     .WithId(nameof(MediaLibraryInfo.LibraryID), ksMediaLibrary.LibraryID)
+#pragma warning restore CS0618 // Type or member is obsolete
                     .WithMessage("Media library has missing site assigned")
                 );
                 logger.LogError("Missing site, SiteID=={SiteId}", ksMediaLibrary.LibrarySiteID);
@@ -85,7 +91,9 @@ public class MediaFileMigrator(
                 catch (Exception ex)
                 {
                     protocol.Append(HandbookReferences
+#pragma warning disable CS0618 // Type or member is obsolete
                         .ErrorCreatingTargetInstance<MediaLibraryInfo>(ex)
+#pragma warning restore CS0618 // Type or member is obsolete
                         .NeedsManualAction()
                         .WithIdentityPrint(mfi)
                     );
@@ -93,7 +101,9 @@ public class MediaFileMigrator(
                     continue;
                 }
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 primaryKeyMappingContext.SetMapping<MediaLibraryInfo>(
+#pragma warning restore CS0618 // Type or member is obsolete
                     r => r.LibraryID,
                     ksMediaLibrary.LibraryID,
                     mfi.LibraryID
@@ -126,7 +136,9 @@ public class MediaFileMigrator(
         return new LoadMediaFileResult(false, null, filePath);
     }
 
+#pragma warning disable CS0618 // Type or member is obsolete
     private void RequireMigratedMediaFiles(List<(IMediaLibrary sourceLibrary, ICmsSite sourceSite, MediaLibraryInfo targetLibrary)> migratedMediaLibraries, CancellationToken cancellationToken)
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         foreach (var (ksMediaLibrary, ksSite, targetMediaLibrary) in migratedMediaLibraries)
         {
@@ -187,7 +199,9 @@ public class MediaFileMigrator(
                     catch (Exception ex)
                     {
                         protocol.Append(HandbookReferences
+#pragma warning disable CS0618 // Type or member is obsolete
                             .ErrorCreatingTargetInstance<MediaLibraryInfo>(ex)
+#pragma warning restore CS0618 // Type or member is obsolete
                             .NeedsManualAction()
                             .WithIdentityPrint(mf)
                         );
@@ -195,7 +209,9 @@ public class MediaFileMigrator(
                         continue;
                     }
 
+#pragma warning disable CS0618 // Type or member is obsolete
                     primaryKeyMappingContext.SetMapping<MediaFileInfo>(
+#pragma warning restore CS0618 // Type or member is obsolete
                         r => r.FileID,
                         ksMediaFile.FileID,
                         mf.FileID

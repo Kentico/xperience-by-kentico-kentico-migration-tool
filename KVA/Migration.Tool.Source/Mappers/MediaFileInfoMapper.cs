@@ -33,21 +33,31 @@ public class MediaFileInfoMapper(
     IProtocol protocol,
     ToolConfiguration toolConfiguration
 )
+#pragma warning disable CS0618 // Type or member is obsolete
     : EntityMapperBase<MediaFileInfoMapperSource, MediaFileInfo>(logger, primaryKeyMappingContext, protocol)
+#pragma warning restore CS0618 // Type or member is obsolete
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     protected override MediaFileInfo? CreateNewInstance(MediaFileInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure)
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         if (source.File != null)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var mf = new MediaFileInfo(source.File, source.TargetLibraryId, source.LibrarySubFolder ?? "", 0, 0, 0);
+#pragma warning restore CS0618 // Type or member is obsolete
             mf.SaveFileToDisk(true);
             return mf;
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         return new MediaFileInfo();
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
+#pragma warning disable CS0618 // Type or member is obsolete
     protected override MediaFileInfo MapInternal(MediaFileInfoMapperSource source, MediaFileInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         (string? fullMediaFilePath, var mediaFile, int targetLibraryId, var file, _, bool migrateOnlyMediaFileInfo, var safeMediaFileGuid) = source;
 
@@ -74,7 +84,9 @@ public class MediaFileInfoMapper(
             () => addFailure(HandbookReferences
                 .MissingRequiredDependency<ICmsUser>(nameof(mediaFile.FileCreatedByUserID), mediaFile.FileCreatedByUserID)
                 .NeedsManualAction()
+#pragma warning disable CS0618 // Type or member is obsolete
                 .AsFailure<MediaFileInfo>()
+#pragma warning restore CS0618 // Type or member is obsolete
             )
         );
         target.SetValue(nameof(target.FileCreatedByUserID), createdByUserId);
@@ -85,7 +97,9 @@ public class MediaFileInfoMapper(
             () => addFailure(HandbookReferences
                 .MissingRequiredDependency<ICmsUser>(nameof(mediaFile.FileModifiedByUserID), mediaFile.FileModifiedByUserID)
                 .NeedsManualAction()
+#pragma warning disable CS0618 // Type or member is obsolete
                 .AsFailure<MediaFileInfo>()
+#pragma warning restore CS0618 // Type or member is obsolete
             )
         );
         target.SetValue(nameof(target.FileModifiedByUserID), modifiedByUserId);
@@ -101,16 +115,22 @@ public class MediaFileInfoMapper(
                 .WithId(nameof(mediaFile.FileID), mediaFile.FileID)
                 .WithData(new { mediaFile.FilePath, mediaFile.FileGUID, mediaFile.FileLibraryID, mediaFile.FileSiteID, SearchedPath = fullMediaFilePath })
                 .WithSuggestion($"If you have a backup, copy it to the filesystem on path {source.FullMediaFilePath}. Otherwise, delete the media file from the source instance using admin web interface.")
+#pragma warning disable CS0618 // Type or member is obsolete
                 .AsFailure<MediaFileInfo>()
+#pragma warning restore CS0618 // Type or member is obsolete
             );
         }
 
         return target;
     }
 
+#pragma warning disable CS0618 // Type or member is obsolete
     private void MigrateCustomizedFields(MediaFileInfo target, IMediaFile sourceMediaFile)
+#pragma warning restore CS0618 // Type or member is obsolete
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         var customizedFields = classFacade.GetCustomizedFieldInfos(MediaFileInfo.TYPEINFO.ObjectClassName).ToList();
+#pragma warning restore CS0618 // Type or member is obsolete
         if (customizedFields.Count <= 0)
         {
             return;
@@ -118,8 +138,10 @@ public class MediaFileInfoMapper(
 
         try
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             string query =
                 $"SELECT {string.Join(", ", customizedFields.Select(x => x.FieldName))} FROM {MediaFileInfo.TYPEINFO.ClassStructureInfo.TableName} WHERE {MediaFileInfo.TYPEINFO.ClassStructureInfo.IDColumn} = @id";
+#pragma warning restore CS0618 // Type or member is obsolete
 
             using var conn = new SqlConnection(toolConfiguration.KxConnectionString);
             using var cmd = conn.CreateCommand();

@@ -14,15 +14,21 @@ namespace Migration.Tool.Source.Mappers;
 public record CmsAttachmentMapperSource(ICmsAttachment Attachment, Guid NewAttachmentGuid, int TargetLibraryId, IUploadedFile File, string LibrarySubFolder, ICmsTree? AttachmentNode);
 
 public class CmsAttachmentMapper(ILogger<CmsAttachmentMapper> logger, PrimaryKeyMappingContext pkContext, IProtocol protocol)
+#pragma warning disable CS0618 // Type or member is obsolete
     : EntityMapperBase<CmsAttachmentMapperSource, MediaFileInfo>(logger, pkContext, protocol)
+#pragma warning restore CS0618 // Type or member is obsolete
 {
     private const string LEGACY_ORIGINAL_PATH = "__LegacyOriginalPath";
 
+#pragma warning disable CS0618 // Type or member is obsolete
     protected override MediaFileInfo? CreateNewInstance(CmsAttachmentMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) =>
+#pragma warning restore CS0618 // Type or member is obsolete
         // library name is generated with site name in it
         new(source.File, source.TargetLibraryId, source.LibrarySubFolder, 0, 0, 0);
 
+#pragma warning disable CS0618 // Type or member is obsolete
     protected override MediaFileInfo MapInternal(CmsAttachmentMapperSource args, MediaFileInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         (var cmsAttachment, var newAttachmentGuid, int targetLibraryId, _, _, var attachmentNode) = args;
 

@@ -66,7 +66,9 @@ public class FormComponents
     public static string MvcFcRichTextComponent => Kentico.Components.Web.Mvc.FormComponents.RichTextComponent.IDENTIFIER;
 
     ///<summary>Form component value type: System.Collections.Generic.IEnumerable`1[[Kentico.Components.Web.Mvc.FormComponents.MediaFilesSelectorItem, Kentico.Content.Web.Mvc, Version=29.3.3.0, Culture=neutral, PublicKeyToken=834b12a258f213f9]]</summary>
+#pragma warning disable CS0618 // Type or member is obsolete
     public static string MvcFcMediaFilesSelector => Kentico.Components.Web.Mvc.FormComponents.MediaFilesSelector.IDENTIFIER;
+#pragma warning restore CS0618 // Type or member is obsolete
 
     ///<summary>Form component value type: Kentico.Components.Web.Mvc.FormComponents.GeneralSelectorItem</summary>
     public static string MvcFcGeneralSelector => Kentico.Components.Web.Mvc.FormComponents.GeneralSelector.IDENTIFIER;
@@ -84,7 +86,9 @@ public class FormComponents
     public static string MvcFcUrlSelector => Kentico.Components.Web.Mvc.FormComponents.UrlSelector.IDENTIFIER;
 
     ///<summary>Form component value type: System.Collections.Generic.IEnumerable`1[[CMS.MediaLibrary.AssetRelatedItem, CMS.MediaLibrary, Version=29.3.3.0, Culture=neutral, PublicKeyToken=834b12a258f213f9]]</summary>
+#pragma warning disable CS0618 // Type or member is obsolete
     public static string AdminAssetSelectorComponent => Kentico.Xperience.Admin.Base.Forms.AssetSelectorComponent.IDENTIFIER;
+#pragma warning restore CS0618 // Type or member is obsolete
 
     ///<summary>Form component value type: System.Boolean</summary>
     public static string AdminCheckBoxComponent => Kentico.Xperience.Admin.Base.Forms.CheckBoxComponent.IDENTIFIER;

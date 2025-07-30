@@ -48,7 +48,9 @@ public static class K11CoreDiExtensions
         services.AddSingleton<KeyLocatorService>();
 
         // mappers
+#pragma warning disable CS0618 // Type or member is obsolete
         services.AddTransient<IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo>, CmsAttachmentMapper>();
+#pragma warning restore CS0618 // Type or member is obsolete
         services.AddTransient<IEntityMapper<CmsConsent, ConsentInfo>, CmsConsentMapper>();
         services.AddTransient<IEntityMapper<CmsConsentAgreement, ConsentAgreementInfo>, CmsConsentAgreementMapper>();
         services.AddTransient<IEntityMapper<CmsConsentArchive, ConsentArchiveInfo>, CmsConsentArchiveMapper>();

@@ -18,8 +18,10 @@ public interface IMigrateAttachmentResult
 
 public record MigrateAttachmentResultMediaFile(
     bool Success,
+#pragma warning disable CS0618 // Type or member is obsolete
     MediaFileInfo? MediaFileInfo = null,
     MediaLibraryInfo? MediaLibraryInfo = null
+#pragma warning restore CS0618 // Type or member is obsolete
 ) : IMigrateAttachmentResult;
 
 public record MigrateAttachmentResultContentItem(bool Success, Guid? ContentItemGuid) : IMigrateAttachmentResult;

@@ -36,7 +36,9 @@ public class WidgetFileMigration(ILogger<WidgetFileMigration> logger, EntityIden
                 {
                     if (entityIdentityFacade.Translate<IMediaFile>(mediaSelectorItem.FileGuid, siteId) is var (_, identity) && mediaFileFacade.GetMediaFile(identity) is not null)
                     {
+#pragma warning disable CS0618 // Type or member is obsolete
                         refsToMedia.Add(new Kentico.Components.Web.Mvc.FormComponents.MediaFilesSelectorItem { FileGuid = identity });
+#pragma warning restore CS0618 // Type or member is obsolete
                     }
                     else
                     {

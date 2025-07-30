@@ -225,7 +225,9 @@ public class VisualBuilderPatcher(
                                         {
                                             case MigrateAttachmentResultMediaFile { Success: true, MediaFileInfo: { } x }:
                                             {
+#pragma warning disable CS0618 // Type or member is obsolete
                                                 nv.Add(new AssetRelatedItem { Identifier = x.FileGUID, Dimensions = new AssetDimensions { Height = x.FileImageHeight, Width = x.FileImageWidth }, Name = x.FileName, Size = x.FileSize });
+#pragma warning restore CS0618 // Type or member is obsolete
                                                 break;
                                             }
                                             case MigrateAttachmentResultContentItem { Success: true, ContentItemGuid: { } contentItemGuid }:
