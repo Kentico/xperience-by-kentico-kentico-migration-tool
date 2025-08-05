@@ -8,3 +8,7 @@ appsettings.local.json
 .vs/
 *.sln.DotSettings.user
 Migration.Tool.CLI/appsettings.local.json_
+
+# MCP server definitions
+claude_desktop_config.json
+mcp_config.json
