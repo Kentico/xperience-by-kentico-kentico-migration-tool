@@ -51,6 +51,8 @@ public class UserInfoMapper(
         target.UserIsPendingRegistration = false;
         target.UserRegistrationLinkExpiration = DateTime.Now.AddDays(365);
 
+        target.UserPreferredLanguage = string.IsNullOrEmpty(source.PreferredUicultureCode) ? null : source.PreferredUicultureCode;
+
         var customizedFields = kxpClassFacade.GetCustomizedFieldInfos(UserInfo.TYPEINFO.ObjectClassName).ToList();
         if (customizedFields.Count > 0)
         {
