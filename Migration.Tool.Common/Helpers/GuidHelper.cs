@@ -1,3 +1,6 @@
+using System.Security.Cryptography;
+using System.Text;
+
 namespace Migration.Tool.Common.Helpers;
 
 public static class GuidHelper
@@ -38,4 +41,21 @@ public static class GuidHelper
 
     public static readonly Guid GuidNsLibraryFallback = new("8935FCE5-1BDC-4677-A4CA-6DFD32F65A0F");
     public static Guid CreateGuidFromLibraryAndSiteID(string libraryName, int siteId) => GuidV5.NewNameBased(GuidNsLibraryFallback, $"{libraryName}|{siteId}");
+    public static Guid? CreateWebPageItemGuid(Guid contentItemGuid) => Derive(contentItemGuid, "CMS_WebPageItemInfo");
+
+    /// Deterministically derive a GUID from (baseGuid, salt)
+    /// by MD5(baseGuid.ToByteArray() || UTF-16LE(salt)).
+    public static Guid Derive(Guid baseGuid, string salt)
+    {
+        byte[] g = baseGuid.ToByteArray();              // 16 bytes in SQL's internal order
+        byte[] s = Encoding.Unicode.GetBytes(salt);     // UTF-16LE matches NVARCHAR in SQL Server
+
+        byte[] buf = new byte[g.Length + s.Length];
+        Buffer.BlockCopy(g, 0, buf, 0, g.Length);
+        Buffer.BlockCopy(s, 0, buf, g.Length, s.Length);
+
+        using var md5 = MD5.Create();
+        byte[] digest = md5.ComputeHash(buf);           // 16 bytes
+        return new Guid(digest);
+    }
 }
