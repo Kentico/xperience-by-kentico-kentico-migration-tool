@@ -47,7 +47,7 @@ public class UserInfoMapper(
         target.UserLastModified = source.UserLastModified;
         target.UserSecurityStamp = source.UserSecurityStamp;
 
-        target.UserAdministrationAccess = source.UserPrivilegeLevel == 3;
+        target.UserAdministrationAccess = source.UserIsHidden != true;
         target.UserIsPendingRegistration = false;
         target.UserRegistrationLinkExpiration = DateTime.Now.AddDays(365);
 
