@@ -1,5 +1,6 @@
 ﻿using CMS.DataEngine;
 using Kentico.Xperience.UMT.Model;
+using Migration.Tool.Common.ContentItemOptions;
 using Migration.Tool.Source.Model;
 using Newtonsoft.Json.Linq;
 
