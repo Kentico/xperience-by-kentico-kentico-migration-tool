@@ -2,7 +2,7 @@
 using Newtonsoft.Json.Linq;
 
 namespace Migration.Tool.Source.Mappers.ContentItemMapperDirectives;
-public interface IContentItemActionProvider
+public interface IContentItemActionProvider : IBaseContentItemActionProvider
 {
     /// <param name="widgetType">Identifier as passed to RegisterWidget attribute in target instance</param>
     /// <param name="widgetGuid">Leave null to generate</param>
@@ -11,10 +11,6 @@ public interface IContentItemActionProvider
     void AsWidget(string widgetType, Guid? widgetGuid, Guid? widgetVariantGuid, Action<IConvertToWidgetOptions> options);
     void Drop();
     void OverridePageTemplate(string templateIdentifier, JObject? templateProperties = null);
-    void OverrideContentFolder(Guid contentFolderGuid);
-    void OverrideContentFolder(string displayNamePath);
-    void OverrideWorkspace(string name, string displayName);
-    void OverrideWorkspace(Guid guid);
 
     /// <summary>
     /// Let the system generate URL path for all cultures and skip migrating URL path from source instance

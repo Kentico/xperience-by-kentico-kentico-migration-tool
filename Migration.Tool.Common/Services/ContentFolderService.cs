@@ -3,6 +3,7 @@ using CMS.Helpers;
 using Kentico.Xperience.UMT.Model;
 using Kentico.Xperience.UMT.Services;
 using Microsoft.Extensions.Logging;
+using Migration.Tool.Common.ContentItemOptions;
 using Migration.Tool.Common.Helpers;
 
 namespace Migration.Tool.Common.Services;
@@ -153,4 +154,15 @@ public class ContentFolderService(IImporter importer, ILogger<ContentFolderServi
     /// in a defined standard way
     /// </summary>
     public Task<Guid?> EnsureStandardFolderStructure(string siteHash, string absolutePath, Guid? workspaceGuid = null) => EnsureFolderStructure(StandardPathTemplate(siteHash, absolutePath), workspaceGuid);
+
+    public Guid? EnsureFolder(ContentFolderOptions? options, bool isReusableItem, Guid? workspaceGuid = null) =>
+        isReusableItem
+            ? options switch
+            {
+                null => GetWorkspaceRootFolder(workspaceService.FallbackWorkspace.Value.WorkspaceGUID),
+                { Guid: { } guid } => guid,
+                { DisplayNamePath: { } displayNamePath } => EnsureStandardFolderStructure("customtables", displayNamePath, workspaceGuid).GetAwaiter().GetResult(),
+                _ => throw new InvalidOperationException($"{nameof(ContentFolderOptions)} has neither {nameof(ContentFolderOptions.Guid)} nor {nameof(ContentFolderOptions.DisplayNamePath)} specified")
+            }
+            : null;
 }
