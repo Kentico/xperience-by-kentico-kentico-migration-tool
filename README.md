@@ -12,7 +12,11 @@ The Kentico Migration Tool transfers content and other data from **Kentico Xperi
 
 This tool supports migrating a project to Xperience by Kentico over multiple migration runs with built-in and custom data transformations.
 
-Our documentation includes guides covering [the migration process from Kentico Xperience 13 to Xperience by Kentico](https://docs.kentico.com/x/migrate_from_kx13_guides).
+Our documentation (Learn portal) includes guides covering [the whole upgrade process from Kentico Xperience 13 to Xperience by Kentico](https://docs.kentico.com/x/migrate_from_kx13_guides), using the Kentico Migration Tool for data migration.
+
+
+> [!TIP]
+> Refer to our [FAQ page](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq) for frequently asked questions about the upgrade process, migration tool, and deployment of an upgraded project.
 
 ## Library Version Matrix
 
@@ -83,6 +87,8 @@ This repository contains several README documents containing information necessa
 - [Supported Data](./docs/Supported-Data.md) - lists all available data for migration
 - [Migration Protocol](./Migration.Tool.CLI/MIGRATION_PROTOCOL_REFERENCE.md) - provides information about the results of the migration and required manual steps, etc.
 
+When planning an upgrade, note the special considerations for [deploying an upgraded project into production for the first time](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#are-there-special-considerations-when-deploying-an-upgraded-project-to-production-for-the-first-time) and [deploying an upgraded project to SaaS](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#are-there-special-considerations-when-performing-an-upgrade-using-xperience-by-kentico-saas).
+
 ## Contributing
 
 If you are [creating an issue](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/issues/new) please provide all available information about the problem or error. If possible, include the command line output log file and migration protocol generated for your `Migration.Tool.CLI.exe migrate` command.
@@ -103,6 +109,10 @@ This project has **Full support by 7-day bug-fix policy**.
 
 See [`SUPPORT.md`](https://github.com/Kentico/.github/blob/main/SUPPORT.md#full-support) for more information.
 
+
+> [!IMPORTANT]
+> Before submitting a support ticket, please read about the [best practices on reporting Kentio Migration Tool and upgrade issues](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#what-is-the-difference-between-the-documentation-in-the-github-repo-and-on-the-docs.kentico.com-site).
+
 ## Security
 
-For any security issues see [Kentico's `SECURITY.md`](https://github.com/Kentico/.github/blob/main/SECURITY.md).
+For any security issues, see [Kentico's `SECURITY.md`](https://github.com/Kentico/.github/blob/main/SECURITY.md).
