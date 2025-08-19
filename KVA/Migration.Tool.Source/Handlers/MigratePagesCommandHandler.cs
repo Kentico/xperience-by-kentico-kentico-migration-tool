@@ -12,6 +12,7 @@ using CMS.Websites;
 using CMS.Websites.Internal;
 using CMS.Websites.Routing.Internal;
 using HotChocolate.Types;
+using Kentico.Xperience.Admin.Base;
 using Kentico.Xperience.UMT.Model;
 using Kentico.Xperience.UMT.Services;
 using MediatR;
@@ -442,6 +443,8 @@ public class MigratePagesCommandHandler(
                                             ksNode,
                                             migratedDocument.DocumentCulture,
                                             wasLinkedNode, webPageItemInfo);
+
+                                        await MigrateAlternativeUrls(ksSite, languageGuid, commonDataInfos, migratedDocument, webPageItemInfo);
                                     }
                                 }
 
@@ -831,6 +834,51 @@ public class MigratePagesCommandHandler(
 
                     LogImportResult(importResult);
                 }
+            }
+        }
+    }
+
+    private async Task MigrateAlternativeUrls(ICmsSite ksSite, Guid languageGuid, List<ContentItemCommonDataInfo> contentItemCommonDataInfos,
+        ICmsDocument ksDocument, WebPageItemInfo webPageItemInfo)
+    {
+        if (!modelFacade.IsAvailable<ICmsAlternativeUrl>())
+        {
+            return;
+        }
+
+        var languageInfo = ContentLanguageInfoProvider.ProviderObject.Get(languageGuid);
+        var webSiteChannel = WebsiteChannelInfoProvider.ProviderObject.Get(ksSite.SiteGUID);
+
+        var ksUrls = modelFacade.SelectWhere<ICmsAlternativeUrl>("AlternativeUrlDocumentID = @documentId AND AlternativeUrlSiteID = @siteId",
+            new SqlParameter("documentId", ksDocument.DocumentID), new SqlParameter("siteId", ksSite.SiteID)).ToArray();
+
+        foreach (var url in ksUrls)
+        {
+            foreach (var contentItemCommonDataInfo in contentItemCommonDataInfos.Where(x => x.ContentItemCommonDataContentLanguageID == languageInfo.ContentLanguageID))
+            {
+                var webPageUrlPath = new WebPageUrlPathModel
+                {
+                    WebPageUrlPathGUID = GuidHelper.CreateWebPageUrlPathGuid($"VanityURL|{url.AlternativeUrlGUID}"),
+                    WebPageUrlPath = url.AlternativeUrlUrl,
+                    WebPageUrlPathWebPageItemGuid = webPageItemInfo.WebPageItemGUID,
+                    WebPageUrlPathWebsiteChannelGuid = ksSite.SiteGUID,
+                    WebPageUrlPathContentLanguageGuid = languageGuid,
+                    WebPageUrlPathIsLatest = contentItemCommonDataInfo.ContentItemCommonDataIsLatest,
+                    WebPageUrlPathIsDraft = contentItemCommonDataInfo.ContentItemCommonDataVersionStatus switch
+                    {
+                        VersionStatus.InitialDraft => false,
+                        VersionStatus.Draft => true,
+                        VersionStatus.Published => false,
+                        VersionStatus.Unpublished => false,
+                        _ => throw new ArgumentOutOfRangeException()
+                    },
+                    WebPageUrlPathIsCanonical = false,
+                    WebPageUrlPathType = 1
+                };
+
+                var importResult = await importer.ImportAsync(webPageUrlPath);
+
+                LogImportResult(importResult);
             }
         }
     }
