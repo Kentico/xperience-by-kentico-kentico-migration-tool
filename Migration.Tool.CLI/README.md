@@ -9,6 +9,8 @@ The migration is performed by running a command for the .NET CLI.
 
 The source instance must **not** use a [separated contact management database](https://docs.kentico.com/x/4giRBg), it is recommended that you [rejoin the contact management database](https://docs.kentico.com/x/5giRBg) before proceeding with the migration.
 
+If you are migrating from Kentico Xperience 13, remember to [update your source instance to Refresh 5 or higher](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#do-i-have-to-update-my-kx13-site-before-migration).
+
 ## Set up the target instance
 
 The target of the migration must be an Xperience by Kentico instance that fulfills the following requirements:
@@ -78,6 +80,9 @@ Migration.Tool.CLI.exe migrate --sites --custom-modules --users --members --form
 - `Migration.Tool.CLI.exe migrate --pages --bypass-dependency-check`
   - Repeated migration only for pages, if you know that page types, sites, and users were already migrated
     successfully.
+
+> [!TIP]
+> Refer to our [FAQ page](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#can-i-run-the-kentico-migration-tool-against-my-project-multiple-times) for best practices of performing repeated (iterative) data migration.
 
 ### Migration details for specific object types
 
