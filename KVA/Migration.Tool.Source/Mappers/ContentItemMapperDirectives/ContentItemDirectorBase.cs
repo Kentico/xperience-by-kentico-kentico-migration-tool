@@ -5,10 +5,10 @@ public abstract class ContentItemDirectorBase
 {
     internal Func<Guid, JToken> MediaInfoLoader = null!;
 
-    /// <summary>
-    /// Used to inject client's logic to determine how to handle an entity that is to be migrated as content item
-    /// </summary>
     public abstract void Direct(ContentItemSource source, IContentItemActionProvider options);
+
+    // Modifier 'virtual' chosen over 'abstract' to maintain backwards compatibility with custom user code that already implements a director
+    public virtual void Direct(MediaContentItemSource source, IBaseContentItemActionProvider options) { }
 
     /// <summary>
     /// Used to inject client's logic to determine how to handle a source linked page

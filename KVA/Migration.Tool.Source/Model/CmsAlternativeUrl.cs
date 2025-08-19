@@ -6,7 +6,12 @@ using Migration.Tool.Common;
 namespace Migration.Tool.Source.Model;
 public partial interface ICmsAlternativeUrl : ISourceModel<ICmsAlternativeUrl>
 {
-
+    public int AlternativeUrlID { get; }
+    public Guid AlternativeUrlGUID { get; }
+    public int AlternativeUrlDocumentID { get; }
+    public int AlternativeUrlSiteID { get; }
+    public string AlternativeUrlUrl { get; }
+    public DateTime AlternativeUrlLastModified { get; }
 
     static string ISourceModel<ICmsAlternativeUrl>.GetPrimaryKeyName(SemanticVersion version) => version switch
     {
@@ -38,6 +43,19 @@ public partial record CmsAlternativeUrlK11() : ICmsAlternativeUrl, ISourceModel<
     public static string GetPrimaryKeyName(SemanticVersion version) => "";
     public static string TableName => "CMS_AlternativeUrl";
     public static string GuidColumnName => "";
+
+    public int AlternativeUrlID => throw new NotImplementedException();
+
+    public Guid AlternativeUrlGUID => throw new NotImplementedException();
+
+    public int AlternativeUrlDocumentID => throw new NotImplementedException();
+
+    public int AlternativeUrlSiteID => throw new NotImplementedException();
+
+    public string AlternativeUrlUrl => throw new NotImplementedException();
+
+    public DateTime AlternativeUrlLastModified => throw new NotImplementedException();
+
     static CmsAlternativeUrlK11 ISourceModel<CmsAlternativeUrlK11>.FromReader(IDataReader reader, SemanticVersion version) => new(
 
         );

@@ -145,8 +145,8 @@ public class ContentItemMapper(
 
         bool storeContentItem = !(directive is ConvertToWidgetDirective ctw && !ctw.WrapInReusableItem);
 
-        Guid? workspaceGuid = GetWorkspaceGuid(directive.WorkspaceOptions);
-        Guid? contentFolderGuid = GetContentFolderGuid(directive.ContentFolderOptions, isMappedTypeReusable, workspaceGuid);
+        Guid? workspaceGuid = workspaceService.EnsureWorkspace(directive.WorkspaceOptions);
+        Guid? contentFolderGuid = contentFolderService.EnsureFolder(directive.ContentFolderOptions, isMappedTypeReusable, workspaceGuid);
 
         var contentItemModel = new ContentItemModel
         {
@@ -1105,9 +1105,17 @@ public class ContentItemMapper(
             throw new InvalidOperationException("Mapping of custom table items to web site channel is currently not supported");
         }
 
-        Guid? contentFolderGuid = GetContentFolderGuid(directive.ContentFolderOptions, isMappedTypeReusable);
+        Guid? workspaceGuid = workspaceService.EnsureWorkspace(directive.WorkspaceOptions);
+        Guid? contentFolderGuid = contentFolderService.EnsureFolder(directive.ContentFolderOptions, isMappedTypeReusable, workspaceGuid);
 
-        var contentItemModel = new ContentItemModel { ContentItemGUID = contentItemGuid, ContentItemIsReusable = isMappedTypeReusable, ContentItemDataClassGuid = targetClassGuid, ContentItemContentFolderGUID = contentFolderGuid };
+        var contentItemModel = new ContentItemModel
+        {
+            ContentItemGUID = contentItemGuid,
+            ContentItemIsReusable = isMappedTypeReusable,
+            ContentItemDataClassGuid = targetClassGuid,
+            ContentItemWorkspaceGUID = workspaceGuid,
+            ContentItemContentFolderGUID = contentFolderGuid
+        };
 
         handler.EnsureContentItem(contentItemModel, ctms);
 
@@ -1272,7 +1280,7 @@ public class ContentItemMapper(
         var mapping = classMappingProvider.GetMapping(source.SourceClass.ClassName);
 
         var directive = GetDirective(new ContentItemSource(null, source.SourceClass.ClassName, mapping?.TargetClassName ?? source.SourceClass.ClassName, null, null, null));
-        var contentFolderGuid = GetContentFolderGuid(directive.ContentFolderOptions, true);
+        var contentFolderGuid = contentFolderService.EnsureFolder(directive.ContentFolderOptions, true);
 
         var contentItemModel = new ContentItemModel
         {
@@ -1325,23 +1333,4 @@ public class ContentItemMapper(
         };
         yield return languageMetadataInfo;
     }
-
-    private Guid? GetContentFolderGuid(ContentFolderOptions? options, bool isReusableItem, Guid? workspaceGuid = null) =>
-        isReusableItem
-            ? options switch
-            {
-                null => contentFolderService.GetWorkspaceRootFolder(workspaceService.FallbackWorkspace.Value.WorkspaceGUID),
-                { Guid: { } guid } => guid,
-                { DisplayNamePath: { } displayNamePath } => contentFolderService.EnsureStandardFolderStructure("customtables", displayNamePath, workspaceGuid).GetAwaiter().GetResult(),
-                _ => throw new InvalidOperationException($"{nameof(ContentFolderOptions)} has neither {nameof(ContentFolderOptions.Guid)} nor {nameof(ContentFolderOptions.DisplayNamePath)} specified")
-            }
-            : null;
-
-    private Guid? GetWorkspaceGuid(WorkspaceOptions? options) => options switch
-    {
-        null => workspaceService.FallbackWorkspace.Value.WorkspaceGUID,
-        { Guid: { } guid } => guid,
-        { Name: { } name, DisplayName: { } displayName } => workspaceService.EnsureWorkspace(name, displayName).GetAwaiter().GetResult(),
-        _ => throw new InvalidOperationException($"{nameof(WorkspaceOptions)} has neither {nameof(WorkspaceOptions.Guid)} nor [{nameof(WorkspaceOptions.Name)} and {nameof(WorkspaceOptions.DisplayName)}] specified")
-    };
 }
