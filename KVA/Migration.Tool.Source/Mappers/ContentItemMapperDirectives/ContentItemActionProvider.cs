@@ -1,4 +1,5 @@
-﻿using Migration.Tool.Source.Model;
+﻿using Migration.Tool.Common.ContentItemOptions;
+using Migration.Tool.Source.Model;
 using Newtonsoft.Json.Linq;
 
 namespace Migration.Tool.Source.Mappers.ContentItemMapperDirectives;
@@ -21,7 +22,7 @@ internal partial class ContentItemActionProvider : IContentItemActionProvider
     public void OverrideContentFolder(string displayNamePath) => Directive.ContentFolderOptions = new ContentFolderOptions(DisplayNamePath: displayNamePath);
 
     public void OverrideWorkspace(string name, string displayName) =>
-        Directive.WorkspaceOptions = new WorkspaceOptions(Name: name, DisplayName: name);
+        Directive.WorkspaceOptions = new WorkspaceOptions(Name: name, DisplayName: displayName);
     public void OverrideWorkspace(Guid guid) =>
         Directive.WorkspaceOptions = new WorkspaceOptions(Guid: guid);
 

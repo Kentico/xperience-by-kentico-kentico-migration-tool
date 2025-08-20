@@ -33,6 +33,110 @@ You can see samples:
 
 After implementing the migration, you need to [register the migration](#register-migrations) in the system.
 
+## Customize linked page handling
+
+When migrating from Kentico versions that support linked pages (pages that reference content from other pages in the content tree), you need to decide how to handle these linked relationships since Xperience by Kentico doesn't support linked pages in the same way.
+
+The linked pages director feature provides a flexible solution to customize how linked pages are handled during migration. You can choose to materialize linked content, drop it entirely, or store references in ancestor pages.
+
+### Understanding Linked Pages
+
+In older Kentico versions, linked pages allowed you to create pages that displayed content from other pages without duplicating the actual content. This was useful for:
+- Sharing content across multiple sections of a website
+- Creating content references without data duplication  
+- Building complex content hierarchies
+
+### Migration Strategies
+
+The linked pages director offers three main strategies for handling linked pages:
+
+#### 1. Materialize (Default)
+Creates a full copy of the linked content as an independent page.
+- **Use when**: You want to preserve the content structure but can accept content duplication
+- **Result**: Each linked page becomes a separate content item with its own copy of the data
+
+#### 2. Drop
+Completely skips migration of the linked page.
+- **Use when**: The linked content is no longer needed or should be handled manually
+- **Result**: The linked page will not be migrated to the target instance
+
+#### 3. Store as Reference
+Creates a content item reference field in an ancestor page that points to the original linked content.
+- **Use when**: You want to preserve the relationship without duplicating content
+- **Result**: The linked content is referenced through a content item selector field
+
+### Implementation
+
+In `Migration.Tool.Extensions/CommunityMigrations`, create a new file with a class that inherits from the `ContentItemDirectorBase` class and override the `DirectLinkedNode(source, options)` method.
+
+The `LinkedPageSource` provides access to:
+- `source.SourceSite` - The site where the linked page exists
+- `source.SourceNode` - The node that contains the link  
+- `source.LinkedNode` - The target node being linked to
+
+Implement your decision logic based on available node properties (`NodeClassID`, `NodeAliasPath`, `NodeName`, etc.) and call the appropriate action method.
+
+### Available Actions
+
+#### `options.Drop()`
+Skips migration of the linked page entirely. Use for temporary content, archived pages, or content that should be handled manually.
+
+#### `options.Materialize()`
+Creates an independent copy of the linked content (default behavior). This preserves the content structure but results in content duplication.
+
+#### `options.StoreReferenceInAncestor(parentLevel, fieldName)`
+Creates a content item reference field in an ancestor page that points to the original linked content.
+
+**Parameters:**
+- `parentLevel`: Relative level of the ancestor page (-1 = direct parent, -2 = grandparent, etc.)
+- `fieldName`: Name of the content item reference field (created automatically if it doesn't exist)
+
+### Common Strategies
+
+**Content Type-Based**: Use `NodeClassID` to look up the content type and apply different strategies based on page type.
+
+**Path-Based**: Filter by `NodeAliasPath` to handle different sections of your site (e.g., archive pages, temporary content).
+
+**Site-Specific**: Use `source.SourceSite.SiteName` to apply different rules for different sites in multi-site scenarios.
+
+**Contextual**: Combine node properties with ancestor analysis to make intelligent decisions about reference placement.
+
+### Important Considerations
+
+1. **Field Creation**: When using `StoreReferenceInAncestor`, the content item reference field is created automatically if it doesn't exist.
+
+2. **Allowed Types**: If the reference field exists but doesn't allow the linked content's type, the type is automatically added to the allowed types.
+
+3. **Content Hub**: For the reference strategy to work properly, ensure that the linked content types are configured as reusable content in your `appsettings.json` under `ConvertClassesToContentHub`.
+
+4. **Processing Order**: Linked pages are processed using topological sorting to ensure that referenced content is migrated before the pages that reference it.
+
+5. **Cross-Site Links**: Links between different sites are not supported and will be skipped with a warning.
+
+### Sample Implementation
+
+You can see a comprehensive sample implementation in [SampleLinkedPageDirector.cs](./CommunityMigrations/SampleLinkedPageDirector.cs) that demonstrates various strategies for handling linked pages based on content type, path, and site context.
+
+### Registration
+
+After implementing your linked page director, register it in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs`:
+
+```csharp
+services.AddTransient<ContentItemDirectorBase, CustomLinkedPageDirector>();
+```
+
+### Troubleshooting
+
+**Common Issues:**
+- **"Ancestor not found" error**: Check that the `parentLevel` value is correct (negative values for ancestors)
+- **References not working**: Ensure the content type is in `ConvertClassesToContentHub` configuration  
+- **Deferred processing**: Some linked pages may be processed in a second pass if their dependencies aren't ready
+
+**Debugging Tips:**
+- Use logging to track which strategy is applied to each linked page
+- Check the migration protocol output for warnings about cross-site links
+- Verify that ancestor pages exist and have the expected structure
+
 ## Customize widget migrations
 
 You can customize widget migration to change the widget to which source widgets are migrated in the target instance. In the `Migration.Tool.Extensions/CommunityMigrations` folder, create a new file with a class that implements the `IWidgetMigration` interface. Implement the following properties and methods required by the interface:

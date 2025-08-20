@@ -2,10 +2,11 @@
 using Kentico.Xperience.UMT.Model;
 using Kentico.Xperience.UMT.Services;
 using Microsoft.Extensions.Logging;
+using Migration.Tool.Common.ContentItemOptions;
 using Migration.Tool.Common.Helpers;
 
 namespace Migration.Tool.Common.Services;
-public class WorkspaceService(IImporter importer, ILogger<ContentFolderService> logger, ToolConfiguration toolConfiguration)
+public class WorkspaceService(IImporter importer, ILogger<WorkspaceService> logger, ToolConfiguration toolConfiguration)
 {
     public Lazy<WorkspaceInfo> FallbackWorkspace { get; } = new(() =>
         {
@@ -98,4 +99,12 @@ public class WorkspaceService(IImporter importer, ILogger<ContentFolderService> 
     public WorkspaceInfo? GetWorkspace(Guid workspaceGuid) => WorkspaceInfo.Provider.Get()
         .WhereEquals(nameof(WorkspaceInfo.WorkspaceGUID), workspaceGuid)
         .FirstOrDefault();
+
+    public Guid? EnsureWorkspace(WorkspaceOptions? options) => options switch
+    {
+        null => FallbackWorkspace.Value.WorkspaceGUID,
+        { Guid: { } guid } => guid,
+        { Name: { } name, DisplayName: { } displayName } => EnsureWorkspace(name, displayName).GetAwaiter().GetResult(),
+        _ => throw new InvalidOperationException($"{nameof(WorkspaceOptions)} has neither {nameof(WorkspaceOptions.Guid)} nor [{nameof(WorkspaceOptions.Name)} and {nameof(WorkspaceOptions.DisplayName)}] specified")
+    };
 }

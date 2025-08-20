@@ -3,27 +3,18 @@
 namespace Migration.Tool.Common.Services;
 public class UserService
 {
+    private const string DefaultAdminName = "administrator";
+
     private HashSet<Guid>? existingUsers;
 
-    private Guid? defaultAdminUserGuid;
-    public Guid? DefaultAdminUserGuid
-    {
-        get
-        {
-            if (defaultAdminUserGuid.HasValue)
-            {
-                return defaultAdminUserGuid.Value;
-            }
+    private readonly Lazy<UserInfo> defaultAdminUser = new(() =>
+        UserInfo.Provider.Get()
+            .WhereEquals(nameof(UserInfo.UserAdministrationAccess), true)
+            .And().WhereEquals(nameof(UserInfo.UserName), DefaultAdminName)
+            .FirstOrDefault() ?? throw new Exception($"Default administrator not found ({nameof(UserInfo.UserName)} {DefaultAdminName}, {nameof(UserInfo.UserAdministrationAccess)} true")
+    );
 
-            var admins = UserInfo.Provider.Get().WhereEquals(nameof(UserInfo.UserAdministrationAccess), true)
-                .Columns(nameof(UserInfo.UserGUID), nameof(UserInfo.UserName));
-            defaultAdminUserGuid = (admins.FirstOrDefault(x => x.UserName == DefaultAdminName) ?? admins.FirstOrDefault())
-                ?.UserGUID;
-            return defaultAdminUserGuid;
-        }
-    }
-
-    private const string DefaultAdminName = "administrator";
+    public UserInfo DefaultAdminUser => defaultAdminUser.Value;
 
     public bool UserExists(Guid userGuid)
     {

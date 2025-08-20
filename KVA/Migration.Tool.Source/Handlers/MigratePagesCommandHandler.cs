@@ -12,6 +12,7 @@ using CMS.Websites;
 using CMS.Websites.Internal;
 using CMS.Websites.Routing.Internal;
 using HotChocolate.Types;
+using Kentico.Xperience.Admin.Base;
 using Kentico.Xperience.UMT.Model;
 using Kentico.Xperience.UMT.Services;
 using MediatR;
@@ -49,8 +50,9 @@ public class MigratePagesCommandHandler(
     SpoiledGuidContext spoiledGuidContext,
     SourceInstanceContext sourceInstanceContext,
     ClassMappingProvider classMappingProvider,
-    IEnumerable<IReusableSchemaBuilder> reusableSchemaBuilders
-)
+    IEnumerable<IReusableSchemaBuilder> reusableSchemaBuilders,
+    IEnumerable<ContentItemDirectorBase> directors
+    )
     : IRequestHandler<MigratePagesCommand, CommandResult>
 {
     private const string ClassCmsRoot = "CMS.Root";
@@ -219,8 +221,11 @@ public class MigratePagesCommandHandler(
             for (int pass = 0; pass < 2; pass++)
             {
                 deferredTreeNodesService.Clear();
-                foreach (var ksTreeOriginal in ksTrees)
+
+                var linkTopoSortedNodes = new DeferrableItemEnumerableWrapper<ICmsTree>(ksTrees);   // needed to ensure link nodes are processed only after their linked-to targets
+                while (linkTopoSortedNodes.GetNext(out var ksTreeDefItem))
                 {
+                    var ksTreeOriginal = ksTreeDefItem.Item;
                     logger.LogDebug("Page '{NodeAliasPath}' migration", ksTreeOriginal.NodeAliasPath);
 
                     protocol.FetchedSource(ksTreeOriginal);
@@ -242,7 +247,13 @@ public class MigratePagesCommandHandler(
                             continue;
                         }
 
-                        // materialize linked node & write to protocol
+                        if (ContentItemFromNode(nodeLinkedNode) is null)
+                        {
+                            linkTopoSortedNodes.TryDeferItem(ksTreeDefItem);
+                            logger.LogInformation("Node linked by the page ({LinkedNodeGuid}) is not yet processed. Deferring to process later", nodeLinkedNode.NodeGUID);
+                            continue;
+                        }
+
                         var linkedNode = modelFacade.SelectWhere<ICmsTree>("NodeSiteID = @nodeSiteID AND NodeGUID = @nodeGuid",
                             new SqlParameter("nodeSiteID", ksNode.NodeSiteID),
                             new SqlParameter("nodeGuid", nodeLinkedNode.NodeGUID)
@@ -251,52 +262,43 @@ public class MigratePagesCommandHandler(
                         Debug.Assert(ksNode != null, nameof(ksNode) + " != null");
                         Debug.Assert(linkedNode != null, nameof(linkedNode) + " != null");
 
-                        migratedDocuments.Clear();
+                        logger.LogInformation("Processing node {NodeGuid} linked to {LinkedNodeGuid}", ksNode.NodeGUID, linkedNode.NodeGUID);
+                        bool cancelFurtherProcessing = false;
 
-                        var linkedNodeDocuments = modelFacade
-                            .SelectWhere<ICmsDocument>("DocumentNodeID = @nodeId", new SqlParameter("nodeId", linkedNode.NodeID))
-                            .ToList();
-
-                        for (int i = 0; i < linkedNodeDocuments.Count; i++)
+                        switch (GetLinkedPageDirective(ksSite, ksNode, linkedNode))
                         {
-                            var linkedDocument = linkedNodeDocuments[i];
-                            var fixedDocumentGuid = GuidHelper.CreateDocumentGuid($"{linkedDocument.DocumentID}|{ksNode.NodeID}|{ksNode.NodeSiteID}"); //Guid.NewGuid();
-                            var patchedNodeGuid = spoiledGuidContext.EnsureNodeGuid(ksNode.NodeGUID, ksNode.NodeSiteID, ksNode.NodeID);
-                            if (ContentItemInfo.Provider.Get(patchedNodeGuid)?.ContentItemID is { } contentItemId)
+                            case DropLinkedPageDirective:
+                                cancelFurtherProcessing = true;
+                                break;
+
+                            case StoreLinkedPageAsReferenceDirective storeRefDirective:
                             {
-                                if (cultureCodeToLanguageGuid!.TryGetValue(linkedDocument.DocumentCulture, out var languageGuid) &&
-                                    ContentLanguageInfoProvider.ProviderObject.Get(languageGuid) is { } languageInfo)
-                                {
-                                    if (ContentItemCommonDataInfo.Provider.Get()
-                                            .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataContentItemID), contentItemId)
-                                            .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataContentLanguageID), languageInfo.ContentLanguageID)
-                                            .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataIsLatest), true)
-                                            .FirstOrDefault() is { } contentItemCommonDataInfo)
-                                    {
-                                        fixedDocumentGuid = contentItemCommonDataInfo.ContentItemCommonDataGUID;
-                                        logger.LogTrace("Page '{NodeAliasPath}' is linked => ContentItemCommonDataGUID copy to DocumentGuid", ksNode.NodeAliasPath);
-                                    }
-                                }
+                                logger.LogInformation("Storing the linked node as reference in ancestor at level {ParentLevel} in field {FieldName}", storeRefDirective.ParentLevel, storeRefDirective.FieldName);
+                                StoreLinkedNodeRef(ksNode, nodeLinkedNode, storeRefDirective);
+                                cancelFurtherProcessing = true;
+                                break;
                             }
 
-                            linkedNodeDocuments[i] = linkedDocument switch
+                            case MaterializeLinkedPageDirective:
+                            default:
                             {
-                                CmsDocumentK11 doc => doc with { DocumentGUID = fixedDocumentGuid, DocumentID = 0 },
-                                CmsDocumentK12 doc => doc with { DocumentGUID = fixedDocumentGuid, DocumentID = 0 },
-                                CmsDocumentK13 doc => doc with { DocumentGUID = fixedDocumentGuid, DocumentID = 0 },
-                                _ => linkedNodeDocuments[i]
-                            };
+                                logger.LogInformation("Materializing the linked node");
+                                migratedDocuments = MaterializeLinkedNode(ksNode, linkedNode).ToList();
+                                ksNode = ksNode switch
+                                {
+                                    CmsTreeK11 node => node with { NodeLinkedNodeID = null, NodeLinkedNodeSiteID = null },
+                                    CmsTreeK12 node => node with { NodeLinkedNodeID = null, NodeLinkedNodeSiteID = null },
+                                    CmsTreeK13 node => node with { NodeLinkedNodeID = null, NodeLinkedNodeSiteID = null },
+                                    _ => ksNode
+                                };
+                                break;
+                            }
+                        }
 
-                            migratedDocuments.Add(linkedNodeDocuments[i]);
-                            ksNode = ksNode switch
-                            {
-                                CmsTreeK11 node => node with { NodeLinkedNodeID = null, NodeLinkedNodeSiteID = null },
-                                CmsTreeK12 node => node with { NodeLinkedNodeID = null, NodeLinkedNodeSiteID = null },
-                                CmsTreeK13 node => node with { NodeLinkedNodeID = null, NodeLinkedNodeSiteID = null },
-                                _ => ksNode
-                            };
-
-                            logger.LogWarning("Linked node with NodeGuid {NodeGuid} was materialized (Xperience by Kentico doesn't support links), it no longer serves as link to original document. This affect also routing, this document will have own link generated from node alias path", ksNode.NodeGUID);
+                        if (cancelFurtherProcessing)
+                        {
+                            // Not migrated as page or content item => no further processing
+                            continue;
                         }
                     }
 
@@ -442,6 +444,8 @@ public class MigratePagesCommandHandler(
                                             ksNode,
                                             migratedDocument.DocumentCulture,
                                             wasLinkedNode, webPageItemInfo);
+
+                                        await MigrateAlternativeUrls(ksSite, languageGuid, commonDataInfos, migratedDocument, webPageItemInfo);
                                     }
                                 }
 
@@ -480,6 +484,112 @@ public class MigratePagesCommandHandler(
 
             await LinkChildren(mappedSiteNodes);
         }
+    }
+
+    private IEnumerable<ICmsDocument> MaterializeLinkedNode(ICmsTree ksNode, ICmsTree linkedNode) =>
+        modelFacade.SelectWhere<ICmsDocument>("DocumentNodeID = @nodeId", new SqlParameter("nodeId", linkedNode.NodeID))
+                   .Select(x => MaterializeLinkedNodeDocument(ksNode, x));
+
+    private void StoreLinkedNodeRef(ICmsTree ksNode, ICmsTree linkedNode, StoreLinkedPageAsReferenceDirective directive)
+    {
+        var ksAncestorNode = modelFacade.LocateAncestor(ksNode, directive.ParentLevel) ?? throw new InvalidOperationException($"Ancestor not found");
+        var hostContentItem = ContentItemFromNode(ksAncestorNode) ?? throw new InvalidOperationException($"Content item or page migrated from source ancestor node NodeGUID={ksAncestorNode.NodeGUID} not found");
+        var hostClass = DataClassInfoProvider.GetDataClassInfo(hostContentItem.ContentItemContentTypeID) ?? throw new InvalidOperationException($"Ancestor node NodeGUID={ksAncestorNode.NodeGUID} is a folder and cannot be used to store the reference");
+
+        var linkedContentItem = ContentItemFromNode(linkedNode);
+        var linkedNodeClass = DataClassInfoProvider.GetDataClassInfo(linkedContentItem.ContentItemContentTypeID);
+
+        EnsureClassReferenceFields(hostClass.ClassName, new Dictionary<string, (Guid? fieldGuid, HashSet<Guid> allowedTypes)>
+        {
+            [directive.FieldName] = (null, [linkedNodeClass.ClassGUID])
+        });
+
+        var hostContentItemLanguageIds = ContentItemCommonDataInfo.Provider.Get()
+            .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataContentItemID), hostContentItem.ContentItemID)
+            .Column(nameof(ContentItemCommonDataInfo.ContentItemCommonDataContentLanguageID))
+            .Select(x => x.ContentItemCommonDataContentLanguageID).Distinct();
+        foreach (var languageId in hostContentItemLanguageIds)
+        {
+            LinkContentItem(hostClass.ClassName, hostContentItem.ContentItemID, languageId, directive.FieldName, linkedContentItem.ContentItemGUID);
+        }
+    }
+
+    private void LinkContentItem(string parentItemClassName, int parentItemId, int languageId, string fieldName, Guid linkedItemGUID)
+    {
+        // There can be multiple common data rows for item in draft
+        var commonData = ContentItemCommonDataInfo.Provider.Get()
+            .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataContentItemID), parentItemId)
+            .And().WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataContentLanguageID), languageId)
+            .ToArray();
+
+        var itemDataInfoProviderAccessor = Service.Resolve<IContentItemDataInfoProviderAccessor>();
+        var itemDataInfoProvider = itemDataInfoProviderAccessor.Get(parentItemClassName);
+        foreach (var commonDataRow in commonData)
+        {
+            var data = itemDataInfoProvider.Get()
+                .WhereEquals(nameof(ContentItemDataInfo.ContentItemDataCommonDataID), commonDataRow.ContentItemCommonDataID)
+                .FirstOrDefault() ?? throw new Exception($"Content item data row coupled with {nameof(commonDataRow.ContentItemCommonDataID)}={commonDataRow.ContentItemCommonDataID} does not exist. " +
+                                                         $"This is usually caused by some earlier error. Find the reason why it wasn't created and fix it.");
+            var fieldValue = (data[fieldName] as string) ?? "[]";
+            var refs = new HashSet<ContentItemReference>(JsonConvert.DeserializeObject<ContentItemReference[]>(fieldValue)!)
+            {
+                new() { Identifier = linkedItemGUID }
+            };
+            data[fieldName] = JsonConvert.SerializeObject(refs);
+            itemDataInfoProvider.Set(data);
+        }
+    }
+
+    private LinkedPageDirectiveBase GetLinkedPageDirective(ICmsSite ksSite, ICmsTree ksNode, ICmsTree linkedNode)
+    {
+        var actionProvider = new LinkedPageActionProvider();
+        foreach (var director in directors)
+        {
+            director.DirectLinkedNode(new LinkedPageSource(ksSite, ksNode, linkedNode), actionProvider);
+            if (actionProvider.Directive is not null)
+            {
+                break;
+            }
+        }
+        return actionProvider.Directive!;
+    }
+
+    private ContentItemInfo ContentItemFromNode(ICmsTree ksNode)
+    {
+        var patchedNodeGuid = spoiledGuidContext.EnsureNodeGuid(ksNode.NodeGUID, ksNode.NodeSiteID, ksNode.NodeID);
+        return ContentItemInfo.Provider.Get(patchedNodeGuid);
+    }
+
+    private ICmsDocument MaterializeLinkedNodeDocument(ICmsTree ksNode, ICmsDocument linkedDocument)
+    {
+        var fixedDocumentGuid = GuidHelper.CreateDocumentGuid($"{linkedDocument.DocumentID}|{ksNode.NodeID}|{ksNode.NodeSiteID}");
+        if (ContentItemFromNode(ksNode)?.ContentItemID is { } contentItemId)
+        {
+            if (cultureCodeToLanguageGuid!.TryGetValue(linkedDocument.DocumentCulture, out var languageGuid) &&
+                ContentLanguageInfoProvider.ProviderObject.Get(languageGuid) is { } languageInfo)
+            {
+                if (ContentItemCommonDataInfo.Provider.Get()
+                        .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataContentItemID), contentItemId)
+                        .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataContentLanguageID), languageInfo.ContentLanguageID)
+                        .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataIsLatest), true)
+                        .FirstOrDefault() is { } contentItemCommonDataInfo)
+                {
+                    fixedDocumentGuid = contentItemCommonDataInfo.ContentItemCommonDataGUID;
+                    logger.LogTrace("Page '{NodeAliasPath}' is linked => ContentItemCommonDataGUID copy to DocumentGuid", ksNode.NodeAliasPath);
+                }
+            }
+        }
+
+        var patchedDocument = linkedDocument switch
+        {
+            CmsDocumentK11 doc => doc with { DocumentGUID = fixedDocumentGuid, DocumentID = 0 },
+            CmsDocumentK12 doc => doc with { DocumentGUID = fixedDocumentGuid, DocumentID = 0 },
+            CmsDocumentK13 doc => doc with { DocumentGUID = fixedDocumentGuid, DocumentID = 0 },
+            _ => linkedDocument
+        };
+
+        logger.LogWarning("Linked node with NodeGuid {NodeGuid} was materialized (Xperience by Kentico doesn't support links), it no longer serves as link to original document. This affect also routing, this document will have own link generated from node alias path", ksNode.NodeGUID);
+        return patchedDocument;
     }
 
     private async Task LinkChildren(Dictionary<Guid, NodeMapResult> mappedSiteNodes)
@@ -538,35 +648,7 @@ public class MigratePagesCommandHandler(
 
         foreach (var classRefFields in referenceFields)
         {
-            var classInfo = DataClassInfoProvider.ProviderObject.Get(classRefFields.Key);
-            var fi = new FormInfo(classInfo.ClassFormDefinition);
-            foreach (var field in classRefFields.Value)
-            {
-                var ffi = fi.GetFormField(field.Key);
-                if (ffi is null)
-                {
-                    ffi = new FormFieldInfo
-                    {
-                        Guid = GuidHelper.CreateFieldGuid($"{field.Key.ToLower()}|{classInfo.ClassName}"),
-                        AllowEmpty = true,
-                        Caption = field.Key,
-                        DataType = "contentitemreference",
-                        Name = field.Key,
-                        Enabled = true,
-                        Visible = true,
-                        System = false,
-                        DefaultValue = null,
-                        Settings = {
-                            { FormDefinitionPatcher.SettingsElemControlname, FormComponents.AdminContentItemSelectorComponent },
-                        }
-                    };
-                    fi.AddFormItem(ffi);
-                }
-                classRefFields.Value[field.Key] = (ffi.Guid, field.Value.allowedTypes);
-                ffi.Settings[FormDefinitionPatcher.AllowedContentItemTypeIdentifiers] = JsonConvert.SerializeObject(field.Value.allowedTypes.ToArray());
-            }
-            classInfo.ClassFormDefinition = fi.GetXmlDefinition();
-            DataClassInfoProvider.ProviderObject.Set(classInfo);
+            EnsureClassReferenceFields(classRefFields.Key, classRefFields.Value);
         }
 
         foreach (var parentItem in reusableItems)
@@ -600,6 +682,45 @@ public class MigratePagesCommandHandler(
                 }
             }
         }
+    }
+
+    private void EnsureClassReferenceFields(string className, Dictionary<string, (Guid? fieldGuid, HashSet<Guid> allowedTypes)> fields)
+    {
+        var classInfo = DataClassInfoProvider.ProviderObject.Get(className);
+        var fi = new FormInfo(classInfo.ClassFormDefinition);
+        foreach (var field in fields)
+        {
+            var ffi = fi.GetFormField(field.Key);
+            if (ffi is null)
+            {
+                ffi = new FormFieldInfo
+                {
+                    Guid = GuidHelper.CreateFieldGuid($"{field.Key.ToLower()}|{classInfo.ClassName}"),
+                    AllowEmpty = true,
+                    Caption = field.Key,
+                    DataType = FieldDataType.ContentItemReference,
+                    Name = field.Key,
+                    Enabled = true,
+                    Visible = true,
+                    System = false,
+                    DefaultValue = null,
+                    Settings = {
+                            { FormDefinitionPatcher.SettingsElemControlname, FormComponents.AdminContentItemSelectorComponent },
+                        }
+                };
+                fi.AddFormItem(ffi);
+            }
+
+            if (ffi.DataType != FieldDataType.ContentItemReference)
+            {
+                throw new InvalidOperationException($"Field {field.Key} is required to be of type {FieldDataType.ContentItemReference}, but is of type {ffi.DataType}");
+            }
+
+            fields[field.Key] = (ffi.Guid, field.Value.allowedTypes);
+            ffi.Settings[FormDefinitionPatcher.AllowedContentItemTypeIdentifiers] = JsonConvert.SerializeObject(field.Value.allowedTypes.ToArray());
+        }
+        classInfo.ClassFormDefinition = fi.GetXmlDefinition();
+        DataClassInfoProvider.ProviderObject.Set(classInfo);
     }
 
     [Conditional("DEBUG")]
@@ -831,6 +952,51 @@ public class MigratePagesCommandHandler(
 
                     LogImportResult(importResult);
                 }
+            }
+        }
+    }
+
+    private async Task MigrateAlternativeUrls(ICmsSite ksSite, Guid languageGuid, List<ContentItemCommonDataInfo> contentItemCommonDataInfos,
+        ICmsDocument ksDocument, WebPageItemInfo webPageItemInfo)
+    {
+        if (!modelFacade.IsAvailable<ICmsAlternativeUrl>())
+        {
+            return;
+        }
+
+        var languageInfo = ContentLanguageInfoProvider.ProviderObject.Get(languageGuid);
+        var webSiteChannel = WebsiteChannelInfoProvider.ProviderObject.Get(ksSite.SiteGUID);
+
+        var ksUrls = modelFacade.SelectWhere<ICmsAlternativeUrl>("AlternativeUrlDocumentID = @documentId AND AlternativeUrlSiteID = @siteId",
+            new SqlParameter("documentId", ksDocument.DocumentID), new SqlParameter("siteId", ksSite.SiteID)).ToArray();
+
+        foreach (var url in ksUrls)
+        {
+            foreach (var contentItemCommonDataInfo in contentItemCommonDataInfos.Where(x => x.ContentItemCommonDataContentLanguageID == languageInfo.ContentLanguageID))
+            {
+                var webPageUrlPath = new WebPageUrlPathModel
+                {
+                    WebPageUrlPathGUID = GuidHelper.CreateWebPageUrlPathGuid($"VanityURL|{url.AlternativeUrlGUID}"),
+                    WebPageUrlPath = url.AlternativeUrlUrl,
+                    WebPageUrlPathWebPageItemGuid = webPageItemInfo.WebPageItemGUID,
+                    WebPageUrlPathWebsiteChannelGuid = ksSite.SiteGUID,
+                    WebPageUrlPathContentLanguageGuid = languageGuid,
+                    WebPageUrlPathIsLatest = contentItemCommonDataInfo.ContentItemCommonDataIsLatest,
+                    WebPageUrlPathIsDraft = contentItemCommonDataInfo.ContentItemCommonDataVersionStatus switch
+                    {
+                        VersionStatus.InitialDraft => false,
+                        VersionStatus.Draft => true,
+                        VersionStatus.Published => false,
+                        VersionStatus.Unpublished => false,
+                        _ => throw new ArgumentOutOfRangeException()
+                    },
+                    WebPageUrlPathIsCanonical = false,
+                    WebPageUrlPathType = 1
+                };
+
+                var importResult = await importer.ImportAsync(webPageUrlPath);
+
+                LogImportResult(importResult);
             }
         }
     }

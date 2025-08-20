@@ -7,6 +7,7 @@ using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.Services;
 using Migration.Tool.Source.Handlers;
+using Migration.Tool.Source.Mappers.ContentItemMapperDirectives;
 using Migration.Tool.Source.Model;
 
 namespace Migration.Tool.Source.Services;
@@ -16,7 +17,10 @@ public class MediaFileMigratorToContentItem(
     ModelFacade modelFacade,
     IAssetFacade assetFacade,
     IImporter importer,
-    UserService userService
+    UserService userService,
+    WorkspaceService workspaceService,
+    ContentFolderService contentFolderService,
+    IEnumerable<ContentItemDirectorBase> directors
     ) : IMediaFileMigrator
 {
     public async Task<CommandResult> Handle(MigrateMediaLibrariesCommand request, CancellationToken cancellationToken)
@@ -48,13 +52,18 @@ public class MediaFileMigratorToContentItem(
                 continue;
             }
 
+            var directive = GetDirective(new(ksSite, ksMediaLibrary, ksMediaFile));
+
             var umtContentItem = await assetFacade.FromMediaFile(ksMediaFile, ksMediaLibrary, ksSite, [defaultContentLanguage.ContentLanguageName]);
+
+            umtContentItem.ContentItemWorkspaceGUID = workspaceService.EnsureWorkspace(directive.WorkspaceOptions);
+            umtContentItem.ContentItemContentFolderGUID = contentFolderService.EnsureFolder(directive.ContentFolderOptions, true, umtContentItem.ContentItemWorkspaceGUID);
 
             foreach (var item in umtContentItem.LanguageData)
             {
                 item.UserGuid = (item.UserGuid.HasValue && userService.UserExists(item.UserGuid.Value))
                     ? item.UserGuid
-                    : userService.DefaultAdminUserGuid;
+                    : userService.DefaultAdminUser?.UserGUID;
             }
 
             switch (await importer.ImportAsync(umtContentItem))
@@ -82,5 +91,19 @@ public class MediaFileMigratorToContentItem(
                     throw new ArgumentOutOfRangeException();
             }
         }
+    }
+
+    private ContentItemDirectiveBase GetDirective(MediaContentItemSource contentItemSource)
+    {
+        var directiveFacade = new ContentItemActionProvider();
+        foreach (var director in directors)
+        {
+            director.Direct(contentItemSource, directiveFacade);
+            if (directiveFacade.Directive is not null)
+            {
+                break;
+            }
+        }
+        return directiveFacade.Directive!;
     }
 }
