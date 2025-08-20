@@ -48,14 +48,14 @@ View all [project releases](https://github.com/Kentico/xperience-by-kentico-kent
 
 Follow the steps below to run the Kentico Migration Tool:
 
-1. Clone or download source code from this repository.
+1. Clone or download the source code from this repository.
 2. Open the `.\Migration.Tool.sln` solution in your IDE.
 3. Configure the options in the `.\Migration.Tool.CLI\appsettings.json` configuration file.
 
    - See [`Migration.Tool.CLI/README.md - Configuration`](./Migration.Tool.CLI/README.md#Configuration) for details.
 
 4. Build the solution.
-5. Open the the repository folder [in a terminal](https://github.com/microsoft/terminal).
+5. Open the repository folder [in a terminal](https://github.com/microsoft/terminal).
 6. Navigate to the output directory of the `Migration.Tool.CLI` project.
 
    - `.\Migration.Tool.CLI\bin\Debug\net8.0`
@@ -78,6 +78,10 @@ Follow the steps below to run the Kentico Migration Tool:
 
 The data is now migrated to the target Xperience by Kentico instance according to your configuration.
 
+> [!TIP]
+> Follow our [step-by-step, code-along walkthrough](https://docs.kentico.com/x/upgrade_walkthrough_guides)
+ to practice upgrading the Dancing Goat sample site from Xperience 13 to Xperience by Kentico. It includes video instructions and sample configs, showing environment setup, migration tool use, iterative data migration, and subsequent code changes to render a page in XbyK the same as in KX13.
+
 ## Full Requirements
 
 This repository contains several README documents containing information necessary for the correct usage of the Kentico Migration Tool.
@@ -91,9 +95,9 @@ When planning an upgrade, note the special considerations for [deploying an upgr
 
 ## Contributing
 
-If you are [creating an issue](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/issues/new) please provide all available information about the problem or error. If possible, include the command line output log file and migration protocol generated for your `Migration.Tool.CLI.exe migrate` command.
+If you are [creating an issue](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/issues/new), please provide all available information about the problem or error. If possible, include the command line output log file and migration protocol generated for your `Migration.Tool.CLI.exe migrate` command.
 
-To see the guidelines for Contributing to Kentico open source software, please see [Kentico's `CONTRIBUTING.md`](https://github.com/Kentico/.github/blob/main/CONTRIBUTING.md) for more information and follow the [Kentico's `CODE_OF_CONDUCT`](https://github.com/Kentico/.github/blob/main/CODE_OF_CONDUCT.md).
+To see the guidelines for contributing to Kentico open source software, please see [Kentico's `CONTRIBUTING.md`](https://github.com/Kentico/.github/blob/main/CONTRIBUTING.md) for more information and follow the [Kentico's `CODE_OF_CONDUCT`](https://github.com/Kentico/.github/blob/main/CODE_OF_CONDUCT.md).
 
 Instructions and technical details for **contributing to this project** can be found in [Contributing Setup](./docs/Contributing-Setup.md).
 
