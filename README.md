@@ -16,7 +16,7 @@ Our documentation (Learn portal) includes guides covering [the whole upgrade pro
 
 
 > [!TIP]
-> Refer to our [FAQ page](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq) for frequently asked questions about the upgrade process, migration tool, and deployment of an upgraded project.
+> Refer to our [FAQ page](https://docs.kentico.com/x/upgrade_from_kx13_faq_guides) for frequently asked questions about the upgrade process, migration tool, and deployment of an upgraded project.
 
 ## Library Version Matrix
 
