@@ -17,7 +17,6 @@ public class SampleLinkedPageDirector : ContentItemDirectorBase
     public override void DirectLinkedNode(LinkedPageSource source, ILinkedPageActionProvider options)
     {
         // Access the context information
-        var sourceSite = source.SourceSite; // The site where the linked page exists
         var sourceNode = source.SourceNode; // The node that contains the link
         var linkedNode = source.LinkedNode; // The target node being linked to
 
@@ -54,9 +53,10 @@ public class SampleLinkedPageDirector : ContentItemDirectorBase
                 // Smaller sites: store references to main content
                 options.StoreReferenceInAncestor(-1, "ReferencedContent");
                 return;
+            default:
+                // Other sites: use default materialization
+                options.Materialize();
+                return;
         }
-
-        // Default strategy: Materialize (this is also the default if no action is called)
-        options.Materialize();
     }
 }
