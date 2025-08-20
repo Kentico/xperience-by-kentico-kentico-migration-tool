@@ -111,7 +111,7 @@ See [`SUPPORT.md`](https://github.com/Kentico/.github/blob/main/SUPPORT.md#full-
 
 
 > [!IMPORTANT]
-> Before submitting a support ticket, please read about the [best practices on reporting Kentio Migration Tool and upgrade issues](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#what-is-the-difference-between-the-documentation-in-the-github-repo-and-on-the-docs.kentico.com-site).
+> Before submitting a support ticket, please read about the [best practices on reporting Kentico Migration Tool and upgrade issues](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#what-is-the-difference-between-the-documentation-in-the-github-repo-and-on-the-docs.kentico.com-site).
 
 ## Security
 
