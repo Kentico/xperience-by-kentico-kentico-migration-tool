@@ -17,9 +17,9 @@ public class SampleLinkedPageDirector : ContentItemDirectorBase
     public override void DirectLinkedNode(LinkedPageSource source, ILinkedPageActionProvider options)
     {
         // Access the context information
-        var sourceSite = source.SourceSite;      // The site where the linked page exists
-        var sourceNode = source.SourceNode;      // The node that contains the link
-        var linkedNode = source.LinkedNode;      // The target node being linked to
+        var sourceSite = source.SourceSite; // The site where the linked page exists
+        var sourceNode = source.SourceNode; // The node that contains the link
+        var linkedNode = source.LinkedNode; // The target node being linked to
 
         // Strategy 1: Path-based decisions
         if (sourceNode.NodeAliasPath.StartsWith("/archive/"))
@@ -29,7 +29,7 @@ public class SampleLinkedPageDirector : ContentItemDirectorBase
             return;
         }
 
-        if (sourceNode.NodeAliasPath.Contains("/temp/") || 
+        if (sourceNode.NodeAliasPath.Contains("/temp/") ||
             linkedNode.NodeName.StartsWith("TEMP_"))
         {
             // Temporary content: skip migration
@@ -40,7 +40,7 @@ public class SampleLinkedPageDirector : ContentItemDirectorBase
         // Strategy 2: Content type-based decisions (requires class lookup)
         // You would need to inject ModelFacade or similar service to look up class by NodeClassID
         // Example: var nodeClass = modelFacade.SelectById<ICmsClass>(linkedNode.NodeClassID);
-        
+
         // Strategy 3: Site-specific handling
         switch (source.SourceSite.SiteName?.ToLowerInvariant())
         {
