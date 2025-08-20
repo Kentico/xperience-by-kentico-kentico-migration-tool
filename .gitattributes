@@ -1,7 +1,7 @@
 # Auto detect text files and perform LF normalization
-*        text=CRLF
+*        text=auto
 
-*.cs     text=CRLF diff=csharp
+*.cs     text eol=crlf diff=csharp
 *.html   text diff=html
 *.sql    text
 *.md     text
