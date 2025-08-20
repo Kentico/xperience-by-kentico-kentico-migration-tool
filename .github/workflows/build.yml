@@ -33,6 +33,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Print .NET SDK version
+        run: dotnet --version
+
       - name: Run dotnet format
         run: dotnet format --exclude ./examples/** --verify-no-changes
 
@@ -57,6 +65,9 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
+
+      - name: Print .NET SDK version
+        run: dotnet --version
 
       - name: Install dependencies
         run: |
