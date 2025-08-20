@@ -1,4 +1,4 @@
-﻿using Migration.Tool.Source.Mappers.ContentItemMapperDirectives;
+using Migration.Tool.Source.Mappers.ContentItemMapperDirectives;
 
 namespace Migration.Tool.Extensions.CommunityMigrations;
 

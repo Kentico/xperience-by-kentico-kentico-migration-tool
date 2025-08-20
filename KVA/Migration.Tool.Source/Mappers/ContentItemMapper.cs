@@ -410,12 +410,8 @@ public class ContentItemMapper(
                 if (directive is ConvertToWidgetDirective widgetDirective)
                 {
                     // locate ancestor host page
-                    var hostNode = cmsTree;
-                    for (int i = 0; i < -widgetDirective.ParentLevel; i++)
-                    {
-                        hostNode = modelFacade.Select<ICmsTree>("NodeID = @nodeID", "NodeOrder", new SqlParameter("nodeID", hostNode.NodeParentID)).First();
-                    }
-                    var hostWebPageItem = WebPageItemInfo.Provider.Get(hostNode.NodeGUID) ?? throw new Exception("During conversion of ContentItem GUID={ContentItemGuid} to widget, host page was resolved to one with GUID={HostPageGuid}, but no such page was found");
+                    var hostNode = modelFacade.LocateAncestor(cmsTree, widgetDirective.ParentLevel) ?? throw new InvalidOperationException("During conversion of ContentItem GUID={ContentItemGuid} to widget the specified ancestor node was not found");
+                    var hostWebPageItem = WebPageItemInfo.Provider.Get(hostNode.NodeGUID) ?? throw new InvalidOperationException($"During conversion of node GUID={cmsTree.NodeGUID} to widget, host page was resolved to WebPageItem with GUID={hostNode.NodeGUID}, but no such page was found");
 
                     // load host page common data
                     var languageInfo = ContentLanguageInfo.Provider.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageGUID), languageGuid).First();

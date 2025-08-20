@@ -63,7 +63,7 @@ public class MediaFileMigratorToContentItem(
             {
                 item.UserGuid = (item.UserGuid.HasValue && userService.UserExists(item.UserGuid.Value))
                     ? item.UserGuid
-                    : userService.DefaultAdminUserGuid;
+                    : userService.DefaultAdminUser?.UserGUID;
             }
 
             switch (await importer.ImportAsync(umtContentItem))

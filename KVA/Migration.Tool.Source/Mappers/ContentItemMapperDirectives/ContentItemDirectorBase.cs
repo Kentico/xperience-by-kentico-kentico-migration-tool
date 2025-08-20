@@ -10,6 +10,11 @@ public abstract class ContentItemDirectorBase
     // Modifier 'virtual' chosen over 'abstract' to maintain backwards compatibility with custom user code that already implements a director
     public virtual void Direct(MediaContentItemSource source, IBaseContentItemActionProvider options) { }
 
+    /// <summary>
+    /// Used to inject client's logic to determine how to handle a source linked page
+    /// </summary>
+    public virtual void DirectLinkedNode(LinkedPageSource source, ILinkedPageActionProvider options) { }
+
     protected JToken IdentifierArrayPropertyValue(IEnumerable<Guid> itemGuids) => new JArray(itemGuids.Select(x => new JObject { { "identifier", x } }));
     protected JToken LinkedItemsPropertyValue(IEnumerable<Guid> itemGuids) => IdentifierArrayPropertyValue(itemGuids);
     protected JToken LinkedItemPropertyValue(Guid itemGuid) => LinkedItemsPropertyValue([itemGuid]);
