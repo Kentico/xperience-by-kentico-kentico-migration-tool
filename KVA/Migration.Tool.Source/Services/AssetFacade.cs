@@ -30,10 +30,19 @@ public interface IAssetFacade
     /// <param name="mediaLibrary">Media library that owns media file</param>
     /// <param name="site">CmsSite that owns media file in source instance</param>
     /// <param name="contentLanguageNames">preferably only default language</param>
+    /// <param name="workspaceGuid">Optional workspace GUID for folder creation. If null, uses fallback workspace logic</param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException">occurs when media path cannot be determined</exception>
-    Task<ContentItemSimplifiedModel> FromMediaFile(IMediaFile mediaFile, IMediaLibrary mediaLibrary, ICmsSite site, string[] contentLanguageNames);
+    Task<ContentItemSimplifiedModel> FromMediaFile(IMediaFile mediaFile, IMediaLibrary mediaLibrary, ICmsSite site, string[] contentLanguageNames, Guid? workspaceGuid = null);
 
+    /// <summary>
+    /// Translates legacy attachment to new preferred storage - content item
+    /// </summary>
+    /// <param name="attachment">Attachment to convert</param>
+    /// <param name="site">CmsSite that owns attachment in source instance</param>
+    /// <param name="referencedNode">Optional referenced node for folder structure</param>
+    /// <param name="contentLanguageNames">Content language names</param>
+    /// <returns></returns>
     Task<ContentItemSimplifiedModel> FromAttachment(ICmsAttachment attachment, ICmsSite site, ICmsTree? referencedNode, string[] contentLanguageNames);
 
     /// <summary>
@@ -83,7 +92,7 @@ public class AssetFacade(
     }
 
     /// <inheritdoc />
-    public async Task<ContentItemSimplifiedModel> FromMediaFile(IMediaFile mediaFile, IMediaLibrary mediaLibrary, ICmsSite site, string[] contentLanguageNames)
+    public async Task<ContentItemSimplifiedModel> FromMediaFile(IMediaFile mediaFile, IMediaLibrary mediaLibrary, ICmsSite site, string[] contentLanguageNames, Guid? workspaceGuid = null)
     {
         Debug.Assert(mediaFile.FileLibraryID == mediaLibrary.LibraryID, "mediaFile.FileLibraryID == mediaLibrary.LibraryID");
         Debug.Assert(mediaLibrary.LibrarySiteID == site.SiteID, "mediaLibrary.LibrarySiteID == site.SiteID");
@@ -150,7 +159,7 @@ public class AssetFacade(
 
         string mediaFolder = Path.Combine(mediaLibrary.LibraryFolder, Path.GetDirectoryName(mediaFile.FilePath)!);
 
-        var folderGuid = await EnsureMediaFolder(mediaFolder, site);
+        var folderGuid = await EnsureMediaFolder(mediaFolder, site, workspaceGuid);
 
         string? contentItemSafeName = await Service.Resolve<IContentItemCodeNameProvider>().Get($"{mediaFile.FileName}_{translatedMediaGuid}");
         var contentItem = new ContentItemSimplifiedModel
@@ -231,7 +240,7 @@ public class AssetFacade(
 
     private ContentLanguageInfo? defaultContentLanguage;
 
-    private async Task<Guid?> EnsureMediaFolder(string sourceFolderFilesystemPath, ICmsSite site)
+    private async Task<Guid?> EnsureMediaFolder(string sourceFolderFilesystemPath, ICmsSite site, Guid? workspaceGuid = null)
     {
         string folderSubPath = sourceFolderFilesystemPath.Replace(Path.DirectorySeparatorChar, '/');
 
@@ -259,7 +268,7 @@ public class AssetFacade(
             pathTemplate.AddRange(ContentFolderService.StandardPathTemplate(site.SiteName, absolutePath));
         }
 
-        return await contentFolderService.EnsureFolderStructure(pathTemplate);
+        return await contentFolderService.EnsureFolderStructure(pathTemplate, workspaceGuid);
     }
 
     /// <inheritdoc />
