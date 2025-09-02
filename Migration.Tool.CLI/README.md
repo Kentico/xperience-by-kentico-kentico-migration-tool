@@ -162,17 +162,16 @@ Pages from older product versions can be migrated to either to [website channel 
     published version, the version is migrated to the _Draft (Initial)_ status.
   - _Archived_
 - Page URLs are included only when migrating to [website channel pages](https://docs.kentico.com/x/JwKQC) (default behavior). URL migration depends on the source instance version:
-  - For Kentico Xperience 13, the migration:
-    - includes the URL paths of pages and Former URLs
-    - does not include Alternative URLs
+  - For Kentico Xperience 13, the migration includes the URL paths of pages and Former URLs.
   - For Kentico 12 and Kentico 11, URL paths are not migrated. Instead, a default URL path is created from
     the `DocumentUrlPath` or `NodeAliasPath`.
-- Linked pages are currently not supported in Xperience by Kentico. The migration creates standard page copies for any
-  linked pages on the source instance.
+  - For Kentico Xperience 13 and Kentico 12, [Alternative URLs](https://docs.kentico.com/13/managing-website-content/working-with-pages/managing-page-urls#alternative-urls) are migrated to [Vanity URLs](https://docs.kentico.com/documentation/business-users/website-content/manage-page-urls#manage-vanity-urls-of-pages).
+- Linked pages are currently not supported in Xperience by Kentico. By default, the migration creates standard page copies for any
+  linked pages on the source instance. This behavior can be changed by implementing [custom handling of linked pages](../Migration.Tool.Extensions/README.md#customize-linked-page-handling).
 - Page permissions (ACLs) are currently not migrated into Xperience by Kentico.
 - Migration of page builder content is only available for Kentico Xperience 13.
 
-Additionally, you can define [custom migrations](../Migration.Tool.Extensions/README.md) to change the default behavior and migrate page content to widgets in Xperience by Kentico.
+Additionally, you can define [custom migrations](../Migration.Tool.Extensions/README.md) to change the default behavior, for exampel to migrate page content to widgets in Xperience by Kentico.
 
 #### Page builder content
 
