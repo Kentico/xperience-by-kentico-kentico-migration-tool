@@ -171,7 +171,7 @@ Pages from older product versions can be migrated to either to [website channel 
 - Page permissions (ACLs) are currently not migrated into Xperience by Kentico.
 - Migration of page builder content is only available for Kentico Xperience 13.
 
-Additionally, you can define [custom migrations](../Migration.Tool.Extensions/README.md) to change the default behavior, for exampel to migrate page content to widgets in Xperience by Kentico.
+Additionally, you can define [custom migrations](../Migration.Tool.Extensions/README.md) to change the default behavior, for example to migrate page content to widgets in Xperience by Kentico.
 
 #### Page builder content
 
