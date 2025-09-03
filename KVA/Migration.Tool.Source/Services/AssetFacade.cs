@@ -10,6 +10,7 @@ using Kentico.Xperience.UMT.Model;
 using Kentico.Xperience.UMT.Services;
 using Microsoft.Extensions.Logging;
 using Migration.Tool.Common;
+using Migration.Tool.Common.ContentItemOptions;
 using Migration.Tool.Common.Helpers;
 using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.Common.Services;
@@ -31,9 +32,10 @@ public interface IAssetFacade
     /// <param name="site">CmsSite that owns media file in source instance</param>
     /// <param name="contentLanguageNames">preferably only default language</param>
     /// <param name="workspaceGuid">Optional workspace GUID for folder creation. If null, uses fallback workspace logic</param>
-    /// <returns></returns>
+    /// <param name="contentFolderOptions">Optional explicit specification of content folder in which to put the content item. If null, source folder structure is reflected</param>
+    /// <returns>UMT model to import</returns>
     /// <exception cref="InvalidOperationException">occurs when media path cannot be determined</exception>
-    Task<ContentItemSimplifiedModel> FromMediaFile(IMediaFile mediaFile, IMediaLibrary mediaLibrary, ICmsSite site, string[] contentLanguageNames, Guid? workspaceGuid = null);
+    Task<ContentItemSimplifiedModel> FromMediaFile(IMediaFile mediaFile, IMediaLibrary mediaLibrary, ICmsSite site, string[] contentLanguageNames, Guid? workspaceGuid = null, ContentFolderOptions? contentFolderOptions = null);
 
     /// <summary>
     /// Translates legacy attachment to new preferred storage - content item
@@ -92,7 +94,7 @@ public class AssetFacade(
     }
 
     /// <inheritdoc />
-    public async Task<ContentItemSimplifiedModel> FromMediaFile(IMediaFile mediaFile, IMediaLibrary mediaLibrary, ICmsSite site, string[] contentLanguageNames, Guid? workspaceGuid = null)
+    public async Task<ContentItemSimplifiedModel> FromMediaFile(IMediaFile mediaFile, IMediaLibrary mediaLibrary, ICmsSite site, string[] contentLanguageNames, Guid? workspaceGuid = null, ContentFolderOptions? contentFolderOptions = null)
     {
         Debug.Assert(mediaFile.FileLibraryID == mediaLibrary.LibraryID, "mediaFile.FileLibraryID == mediaLibrary.LibraryID");
         Debug.Assert(mediaLibrary.LibrarySiteID == site.SiteID, "mediaLibrary.LibrarySiteID == site.SiteID");
@@ -159,7 +161,7 @@ public class AssetFacade(
 
         string mediaFolder = Path.Combine(mediaLibrary.LibraryFolder, Path.GetDirectoryName(mediaFile.FilePath)!);
 
-        var folderGuid = await EnsureMediaFolder(mediaFolder, site, workspaceGuid);
+        var folderGuid = contentFolderOptions is not null ? contentFolderService.EnsureFolder(contentFolderOptions, true, workspaceGuid) : await EnsureMediaFolder(mediaFolder, site, workspaceGuid);
 
         string? contentItemSafeName = await Service.Resolve<IContentItemCodeNameProvider>().Get($"{mediaFile.FileName}_{translatedMediaGuid}");
         var contentItem = new ContentItemSimplifiedModel
@@ -167,7 +169,7 @@ public class AssetFacade(
             CustomProperties = [],
             ContentItemGUID = translatedMediaGuid,
             ContentItemContentFolderGUID = folderGuid,
-            ContentItemWorkspaceGUID = workspaceService.FallbackWorkspace.Value.WorkspaceGUID,
+            ContentItemWorkspaceGUID = workspaceGuid,
             IsSecured = null,
             ContentTypeName = LegacyMediaFileContentType.ClassName,
             Name = contentItemSafeName,
@@ -242,6 +244,7 @@ public class AssetFacade(
 
     private async Task<Guid?> EnsureMediaFolder(string sourceFolderFilesystemPath, ICmsSite site, Guid? workspaceGuid = null)
     {
+        workspaceGuid ??= workspaceService.FallbackWorkspace.Value.WorkspaceGUID;
         string folderSubPath = sourceFolderFilesystemPath.Replace(Path.DirectorySeparatorChar, '/');
 
         var pathTemplate = new List<(Guid Guid, string Name, string DisplayName, string PathSegmentName)>();
@@ -265,7 +268,7 @@ public class AssetFacade(
 
             string absolutePath = $"{rootPath.TrimEnd('/')}/{folderSubPath.TrimStart('/')}";
 
-            pathTemplate.AddRange(ContentFolderService.StandardPathTemplate(site.SiteName, absolutePath));
+            pathTemplate.AddRange(ContentFolderService.StandardPathTemplate(site.SiteName, absolutePath, workspaceGuid!.Value));
         }
 
         return await contentFolderService.EnsureFolderStructure(pathTemplate, workspaceGuid);
