@@ -12,7 +12,11 @@ The Kentico Migration Tool transfers content and other data from **Kentico Xperi
 
 This tool supports migrating a project to Xperience by Kentico over multiple migration runs with built-in and custom data transformations.
 
-Our documentation includes guides covering [the migration process from Kentico Xperience 13 to Xperience by Kentico](https://docs.kentico.com/x/migrate_from_kx13_guides).
+Our documentation (Learn portal) includes guides covering [the whole upgrade process from Kentico Xperience 13 to Xperience by Kentico](https://docs.kentico.com/x/migrate_from_kx13_guides), using the Kentico Migration Tool for data migration.
+
+
+> [!TIP]
+> Refer to our [FAQ page](https://docs.kentico.com/x/upgrade_from_kx13_faq_guides) for frequently asked questions about the upgrade process, migration tool, and deployment of an upgraded project.
 
 ## Library Version Matrix
 
@@ -44,14 +48,14 @@ View all [project releases](https://github.com/Kentico/xperience-by-kentico-kent
 
 Follow the steps below to run the Kentico Migration Tool:
 
-1. Clone or download source code from this repository.
+1. Clone or download the source code from this repository.
 2. Open the `.\Migration.Tool.sln` solution in your IDE.
 3. Configure the options in the `.\Migration.Tool.CLI\appsettings.json` configuration file.
 
    - See [`Migration.Tool.CLI/README.md - Configuration`](./Migration.Tool.CLI/README.md#Configuration) for details.
 
 4. Build the solution.
-5. Open the the repository folder [in a terminal](https://github.com/microsoft/terminal).
+5. Open the repository folder [in a terminal](https://github.com/microsoft/terminal).
 6. Navigate to the output directory of the `Migration.Tool.CLI` project.
 
    - `.\Migration.Tool.CLI\bin\Debug\net8.0`
@@ -74,6 +78,10 @@ Follow the steps below to run the Kentico Migration Tool:
 
 The data is now migrated to the target Xperience by Kentico instance according to your configuration.
 
+> [!TIP]
+> Follow our [step-by-step, code-along walkthrough](https://docs.kentico.com/x/upgrade_walkthrough_guides)
+ to practice upgrading the Dancing Goat sample site from Xperience 13 to Xperience by Kentico. It includes video instructions and sample configs, showing environment setup, migration tool use, iterative data migration, and subsequent code changes to render a page in XbyK the same as in KX13.
+
 ## Full Requirements
 
 This repository contains several README documents containing information necessary for the correct usage of the Kentico Migration Tool.
@@ -83,11 +91,13 @@ This repository contains several README documents containing information necessa
 - [Supported Data](./docs/Supported-Data.md) - lists all available data for migration
 - [Migration Protocol](./Migration.Tool.CLI/MIGRATION_PROTOCOL_REFERENCE.md) - provides information about the results of the migration and required manual steps, etc.
 
+When planning an upgrade, note the special considerations for [deploying an upgraded project into production for the first time](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#are-there-special-considerations-when-deploying-an-upgraded-project-to-production-for-the-first-time) and [deploying an upgraded project to SaaS](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#are-there-special-considerations-when-performing-an-upgrade-using-xperience-by-kentico-saas).
+
 ## Contributing
 
-If you are [creating an issue](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/issues/new) please provide all available information about the problem or error. If possible, include the command line output log file and migration protocol generated for your `Migration.Tool.CLI.exe migrate` command.
+If you are [creating an issue](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/issues/new), please provide all available information about the problem or error. If possible, include the command line output log file and migration protocol generated for your `Migration.Tool.CLI.exe migrate` command.
 
-To see the guidelines for Contributing to Kentico open source software, please see [Kentico's `CONTRIBUTING.md`](https://github.com/Kentico/.github/blob/main/CONTRIBUTING.md) for more information and follow the [Kentico's `CODE_OF_CONDUCT`](https://github.com/Kentico/.github/blob/main/CODE_OF_CONDUCT.md).
+To see the guidelines for contributing to Kentico open source software, please see [Kentico's `CONTRIBUTING.md`](https://github.com/Kentico/.github/blob/main/CONTRIBUTING.md) for more information and follow the [Kentico's `CODE_OF_CONDUCT`](https://github.com/Kentico/.github/blob/main/CODE_OF_CONDUCT.md).
 
 Instructions and technical details for **contributing to this project** can be found in [Contributing Setup](./docs/Contributing-Setup.md).
 
@@ -103,6 +113,10 @@ This project has **Full support by 7-day bug-fix policy**.
 
 See [`SUPPORT.md`](https://github.com/Kentico/.github/blob/main/SUPPORT.md#full-support) for more information.
 
+
+> [!IMPORTANT]
+> Before submitting a support ticket, please read about the [best practices on reporting Kentico Migration Tool and upgrade issues](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#what-is-the-difference-between-the-documentation-in-the-github-repo-and-on-the-docs.kentico.com-site).
+
 ## Security
 
-For any security issues see [Kentico's `SECURITY.md`](https://github.com/Kentico/.github/blob/main/SECURITY.md).
+For any security issues, see [Kentico's `SECURITY.md`](https://github.com/Kentico/.github/blob/main/SECURITY.md).

@@ -9,6 +9,8 @@ The migration is performed by running a command for the .NET CLI.
 
 The source instance must **not** use a [separated contact management database](https://docs.kentico.com/x/4giRBg), it is recommended that you [rejoin the contact management database](https://docs.kentico.com/x/5giRBg) before proceeding with the migration.
 
+If you are migrating from Kentico Xperience 13, remember to [update your source instance to Refresh 5 or higher](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#do-i-have-to-update-my-kx13-site-before-migration).
+
 ## Set up the target instance
 
 The target of the migration must be an Xperience by Kentico instance that fulfills the following requirements:
@@ -78,6 +80,9 @@ Migration.Tool.CLI.exe migrate --sites --custom-modules --users --members --form
 - `Migration.Tool.CLI.exe migrate --pages --bypass-dependency-check`
   - Repeated migration only for pages, if you know that page types, sites, and users were already migrated
     successfully.
+
+> [!TIP]
+> Refer to our [FAQ page](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#can-i-run-the-kentico-migration-tool-against-my-project-multiple-times) for best practices of performing repeated (iterative) data migration.
 
 ### Migration details for specific object types
 
@@ -157,17 +162,16 @@ Pages from older product versions can be migrated to either to [website channel 
     published version, the version is migrated to the _Draft (Initial)_ status.
   - _Archived_
 - Page URLs are included only when migrating to [website channel pages](https://docs.kentico.com/x/JwKQC) (default behavior). URL migration depends on the source instance version:
-  - For Kentico Xperience 13, the migration:
-    - includes the URL paths of pages and Former URLs
-    - does not include Alternative URLs
+  - For Kentico Xperience 13, the migration includes the URL paths of pages and Former URLs.
   - For Kentico 12 and Kentico 11, URL paths are not migrated. Instead, a default URL path is created from
     the `DocumentUrlPath` or `NodeAliasPath`.
-- Linked pages are currently not supported in Xperience by Kentico. The migration creates standard page copies for any
-  linked pages on the source instance.
+  - For Kentico Xperience 13 and Kentico 12, [Alternative URLs](https://docs.kentico.com/13/managing-website-content/working-with-pages/managing-page-urls#alternative-urls) are migrated to [Vanity URLs](https://docs.kentico.com/documentation/business-users/website-content/manage-page-urls#manage-vanity-urls-of-pages).
+- Linked pages are currently not supported in Xperience by Kentico. By default, the migration creates standard page copies for any
+  linked pages on the source instance. This behavior can be changed by implementing [custom handling of linked pages](../Migration.Tool.Extensions/README.md#customize-linked-page-handling).
 - Page permissions (ACLs) are currently not migrated into Xperience by Kentico.
 - Migration of page builder content is only available for Kentico Xperience 13.
 
-Additionally, you can define [custom migrations](../Migration.Tool.Extensions/README.md) to change the default behavior and migrate page content to widgets in Xperience by Kentico.
+Additionally, you can define [custom migrations](../Migration.Tool.Extensions/README.md) to change the default behavior, for example to migrate page content to widgets in Xperience by Kentico.
 
 #### Page builder content
 

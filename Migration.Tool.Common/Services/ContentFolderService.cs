@@ -12,7 +12,7 @@ public class ContentFolderService(IImporter importer, ILogger<ContentFolderServi
     /// <summary>
     /// Folder tree path as key
     /// </summary>
-    private readonly Dictionary<string, Guid> folderGuidCache = [];
+    private readonly Dictionary<string, ContentFolderInfo> folderCache = [];
 
     /// <summary>
     /// Iterates over the folder path. If a folder doesn't exist, it gets created
@@ -22,23 +22,27 @@ public class ContentFolderService(IImporter importer, ILogger<ContentFolderServi
     /// <exception cref="InvalidOperationException"></exception>
     public async Task<Guid?> EnsureFolderStructure(IEnumerable<(Guid Guid, string Name, string DisplayName, string PathSegmentName)> folderPathTemplate, Guid? workspaceGuid = null)
     {
-        workspaceGuid ??= workspaceService.FallbackWorkspace.Value.WorkspaceGUID;
-        Guid? parentGuid = GetWorkspaceRootFolder(workspaceGuid.Value);
+        var workspaceInfo = workspaceGuid is not null
+            ? (workspaceService.GetWorkspace(workspaceGuid!.Value) ?? workspaceService.FallbackWorkspace.Value)
+            : workspaceService.FallbackWorkspace.Value;
 
-        var currentPath = string.Empty;
+        ContentFolderInfo? parentFolderInfo = GetWorkspaceRootFolder(workspaceInfo.WorkspaceGUID);
+
+        string currentPath = string.Empty;
         foreach (var folderTemplate in folderPathTemplate)
         {
-            Guid newParentGuid;
+            ContentFolderInfo newParentFolder;
             currentPath += $"/{folderTemplate.PathSegmentName}";
-            if (folderGuidCache.TryGetValue(currentPath.ToString(), out var folderGuid))
+            var folderCacheKey = $"{workspaceInfo.WorkspaceGUID}|{currentPath}";
+            if (folderCache.TryGetValue(folderCacheKey, out var folderGuid))
             {
-                newParentGuid = folderGuid;
+                newParentFolder = folderGuid;
             }
             else
             {
                 var folderInfo = ContentFolderInfo.Provider.Get()
-                    .WhereEquals(nameof(ContentFolderInfo.ContentFolderGUID), folderTemplate.Guid)
                     .And().WhereEquals(nameof(ContentFolderInfo.ContentFolderDisplayName), folderTemplate.DisplayName)
+                    .And().WhereEquals(nameof(ContentFolderInfo.ContentFolderWorkspaceID), workspaceInfo.WorkspaceID)
                     .FirstOrDefault();
 
                 if (folderInfo is null)
@@ -49,15 +53,15 @@ public class ContentFolderService(IImporter importer, ILogger<ContentFolderServi
                         ContentFolderName = UniqueNameHelper.MakeUnique(folderTemplate.Name, x => !ContentFolderInfo.Provider.Get().WhereEquals(nameof(ContentFolderInfo.ContentFolderName), x).Any()),
                         ContentFolderDisplayName = folderTemplate.DisplayName,
                         ContentFolderTreePath = currentPath,
-                        ContentFolderParentFolderGUID = parentGuid,
-                        ContentFolderWorkspaceGUID = workspaceGuid
+                        ContentFolderParentFolderGUID = parentFolderInfo.ContentFolderGUID,
+                        ContentFolderWorkspaceGUID = workspaceInfo.WorkspaceGUID
                     };
 
                     switch (await importer.ImportAsync(newFolderModel))
                     {
-                        case { Success: true }:
+                        case { Success: true, Imported: ContentFolderInfo importedInfo }:
                         {
-                            newParentGuid = folderGuidCache[currentPath] = folderTemplate.Guid;
+                            newParentFolder = folderCache[folderCacheKey] = importedInfo;
                             break;
                         }
                         case { Success: false, Exception: { } exception }:
@@ -81,35 +85,42 @@ public class ContentFolderService(IImporter importer, ILogger<ContentFolderServi
                 }
                 else
                 {
-                    newParentGuid = folderInfo.ContentFolderGUID;
+                    // The following inconsistency may exist in database due to migrations by previous versions of MT. If so, we patch it.
+                    if (folderInfo.ContentFolderParentFolderID != parentFolderInfo.ContentFolderID)
+                    {
+                        folderInfo.ContentFolderParentFolderID = parentFolderInfo.ContentFolderID;
+                        ContentFolderInfo.Provider.Set(folderInfo);
+                    }
+
+                    newParentFolder = folderInfo;
                 }
             }
 
-            parentGuid = newParentGuid;
+            parentFolderInfo = newParentFolder;
         }
 
-        return parentGuid;
+        return parentFolderInfo.ContentFolderGUID;
     }
 
-    private readonly Dictionary<Guid, Guid> workspaceRootFolderCache = [];
-    public Guid GetWorkspaceRootFolder(Guid workspaceGuid)
+    private readonly Dictionary<Guid, ContentFolderInfo> workspaceRootFolderCache = [];
+    public ContentFolderInfo GetWorkspaceRootFolder(Guid workspaceGuid)
     {
-        if (workspaceRootFolderCache.TryGetValue(workspaceGuid, out var folderGuid))
+        if (workspaceRootFolderCache.TryGetValue(workspaceGuid, out var info))
         {
-            return folderGuid;
+            return info;
         }
 
         var workspace = workspaceService.GetWorkspace(workspaceGuid) ?? throw new Exception($"Required workspace(GUID={workspaceGuid}) not found");
 
-        folderGuid = ContentFolderInfo.Provider.Get()
+        info = ContentFolderInfo.Provider.Get()
             .WhereEquals(nameof(ContentFolderInfo.ContentFolderWorkspaceID), workspace.WorkspaceID)
             .And().WhereEquals(nameof(ContentFolderInfo.ContentFolderParentFolderID), null)
-            .FirstOrDefault()?.ContentFolderGUID
-                     ?? throw new Exception($"Root folder for workspace(GUID={workspaceGuid}) not found");
+            .FirstOrDefault()
+            ?? throw new Exception($"Root folder for workspace(GUID={workspaceGuid}) not found");
 
-        workspaceRootFolderCache[workspaceGuid] = folderGuid;
+        workspaceRootFolderCache[workspaceGuid] = info;
 
-        return folderGuid;
+        return info;
     }
 
     private static string DisplayNamePathToTreePath(string displayNamePath) => string.Join("/", displayNamePath.Split('/').Select(x => ValidationHelper.GetCodeName(x, 0)));
@@ -118,8 +129,8 @@ public class ContentFolderService(IImporter importer, ILogger<ContentFolderServi
     /// <summary>
     /// Returns standard attributes of a new folder derived from its display name
     /// </summary>
-    public static (Guid Guid, string Name, string DisplayName, string PathSegmentName) StandardFolderTemplate(string siteHash, string folderDisplayName, string absoluteDisplayNamePath)
-        => (GuidHelper.CreateFolderGuid($"{siteHash}|{DisplayNamePathToTreePath(absoluteDisplayNamePath)}"), FolderDisplayNameToName(folderDisplayName), folderDisplayName, FolderDisplayNameToName(folderDisplayName));
+    public static (Guid Guid, string Name, string DisplayName, string PathSegmentName) StandardFolderTemplate(string siteHash, string folderDisplayName, string absoluteDisplayNamePath, Guid workspaceGuid)
+        => (GuidHelper.CreateFolderGuid($"{workspaceGuid}|{siteHash}|{DisplayNamePathToTreePath(absoluteDisplayNamePath)}"), FolderDisplayNameToName(folderDisplayName), folderDisplayName, FolderDisplayNameToName(folderDisplayName));
 
     public delegate void FolderPathSegmentCallback(string segmentDisplayName, string path);
 
@@ -141,10 +152,10 @@ public class ContentFolderService(IImporter importer, ILogger<ContentFolderServi
     /// Accepts path where segments represent folder display names and returns path template, 
     /// i.e. sequence of folder templates, composed of standard folder templates derived from the display names
     /// </summary>
-    public static List<(Guid Guid, string Name, string DisplayName, string PathSegmentName)> StandardPathTemplate(string siteHash, string absolutePath)
+    public static List<(Guid Guid, string Name, string DisplayName, string PathSegmentName)> StandardPathTemplate(string siteHash, string absolutePath, Guid workspaceGuid)
     {
         var pathTemplate = new List<(Guid Guid, string Name, string DisplayName, string PathSegmentName)>();
-        WalkFolderPath(absolutePath, (segmentDisplayName, path) => pathTemplate.Add(StandardFolderTemplate(siteHash, segmentDisplayName, path)));
+        WalkFolderPath(absolutePath, (segmentDisplayName, path) => pathTemplate.Add(StandardFolderTemplate(siteHash, segmentDisplayName, path, workspaceGuid)));
         return pathTemplate;
     }
 
@@ -153,13 +164,13 @@ public class ContentFolderService(IImporter importer, ILogger<ContentFolderServi
     /// of the folders and the attributes of a folder that is to be created are derived from its display name 
     /// in a defined standard way
     /// </summary>
-    public Task<Guid?> EnsureStandardFolderStructure(string siteHash, string absolutePath, Guid? workspaceGuid = null) => EnsureFolderStructure(StandardPathTemplate(siteHash, absolutePath), workspaceGuid);
+    public Task<Guid?> EnsureStandardFolderStructure(string siteHash, string absolutePath, Guid? workspaceGuid = null) => EnsureFolderStructure(StandardPathTemplate(siteHash, absolutePath, workspaceGuid!.Value), workspaceGuid);
 
     public Guid? EnsureFolder(ContentFolderOptions? options, bool isReusableItem, Guid? workspaceGuid = null) =>
         isReusableItem
             ? options switch
             {
-                null => GetWorkspaceRootFolder(workspaceService.FallbackWorkspace.Value.WorkspaceGUID),
+                null => GetWorkspaceRootFolder(workspaceService.FallbackWorkspace.Value.WorkspaceGUID).ContentFolderGUID,
                 { Guid: { } guid } => guid,
                 { DisplayNamePath: { } displayNamePath } => EnsureStandardFolderStructure("customtables", displayNamePath, workspaceGuid).GetAwaiter().GetResult(),
                 _ => throw new InvalidOperationException($"{nameof(ContentFolderOptions)} has neither {nameof(ContentFolderOptions.Guid)} nor {nameof(ContentFolderOptions.DisplayNamePath)} specified")
