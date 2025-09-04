@@ -55,10 +55,9 @@ public class MediaFileMigratorToContentItem(
             var directive = GetDirective(new(ksSite, ksMediaLibrary, ksMediaFile));
 
             var workspaceGuid = workspaceService.EnsureWorkspace(directive.WorkspaceOptions);
-            var umtContentItem = await assetFacade.FromMediaFile(ksMediaFile, ksMediaLibrary, ksSite, [defaultContentLanguage.ContentLanguageName], workspaceGuid);
+            var umtContentItem = await assetFacade.FromMediaFile(ksMediaFile, ksMediaLibrary, ksSite, [defaultContentLanguage.ContentLanguageName], workspaceGuid, directive.ContentFolderOptions);
 
             umtContentItem.ContentItemWorkspaceGUID = workspaceGuid;
-            umtContentItem.ContentItemContentFolderGUID = contentFolderService.EnsureFolder(directive.ContentFolderOptions, true, workspaceGuid);
 
             foreach (var item in umtContentItem.LanguageData)
             {
