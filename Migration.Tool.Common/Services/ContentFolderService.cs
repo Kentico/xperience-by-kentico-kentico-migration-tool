@@ -41,7 +41,7 @@ public class ContentFolderService(IImporter importer, ILogger<ContentFolderServi
             else
             {
                 var folderInfo = ContentFolderInfo.Provider.Get()
-                    .And().WhereEquals(nameof(ContentFolderInfo.ContentFolderDisplayName), folderTemplate.DisplayName)
+                    .And().WhereEquals(nameof(ContentFolderInfo.ContentFolderTreePath), folderTemplate.DisplayName)
                     .And().WhereEquals(nameof(ContentFolderInfo.ContentFolderWorkspaceID), workspaceInfo.WorkspaceID)
                     .FirstOrDefault();
 
