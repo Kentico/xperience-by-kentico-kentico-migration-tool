@@ -839,3 +839,13 @@ This includes images and file download links that use **/getattachment** and **/
 
 If you wish to continue using these legacy attachment URLs from earlier product versions, you need to add a custom
 handler to your Xperience by Kentico project. See [`Migration.Tool.KXP.Extensions/README.MD`](/Migration.Tool.KXP.Extensions/README.MD) for instructions.
+
+## Automatic database patching
+
+Migration Tool has a database patching mechanism.
+
+It's applied at each tool run, prior to executing the migration commands. Therefore if you wish to only apply the patches, use `migrate` argument without any additional commands.
+
+Patches are applied in idempotent fashion, i.e. only if they haven't been applied before.
+
+
