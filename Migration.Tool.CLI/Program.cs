@@ -9,6 +9,7 @@ using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.Helpers;
 using Migration.Tool.Common.Services;
+using Migration.Tool.Common.Services.DatabasePatcher;
 using Migration.Tool.Core.K11;
 using Migration.Tool.Core.KX12;
 using Migration.Tool.Core.KX13;
@@ -166,12 +167,17 @@ services.UseToolCommon();
 var invokedCommands = new InvokedCommands();
 services.AddSingleton(invokedCommands);
 
+services.AddTransient<DatabasePatcher>();
+
 await using var serviceProvider = services.BuildServiceProvider();
 KsCoreDiExtensions.InitServiceProvider(serviceProvider);
 using var scope = serviceProvider.CreateScope();
 
 var loader = scope.ServiceProvider.GetRequiredService<IModuleLoader>();
 await loader.LoadAsync();
+
+var dbPatcher = scope.ServiceProvider.GetRequiredService<DatabasePatcher>();
+dbPatcher.Run();
 
 var commandParser = scope.ServiceProvider.GetRequiredService<ICommandParser>();
 var mediatr = scope.ServiceProvider.GetRequiredService<IMediator>();
