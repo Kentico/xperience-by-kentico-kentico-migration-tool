@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Migration.Tool.Extensions.CommunityMigrations;
+using Migration.Tool.Extensions.CustomWidgetMigrations;
 using Migration.Tool.Extensions.DefaultMigrations;
 using Migration.Tool.KXP.Api.Services.CmsClass;
 
@@ -15,6 +16,8 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IWidgetPropertyMigration, WidgetFileMigration>();
         services.AddTransient<IWidgetPropertyMigration, WidgetPathSelectorMigration>();
         services.AddTransient<IWidgetPropertyMigration, WidgetPageSelectorMigration>();
+        services.AddTransient<IWidgetMigration, HeroImageWidgetMigration>();
+        services.AddTransient<IWidgetPropertyMigration, WidgetDataToHeroMigration>();
 
 
         // services.AddClassMergeExample();
