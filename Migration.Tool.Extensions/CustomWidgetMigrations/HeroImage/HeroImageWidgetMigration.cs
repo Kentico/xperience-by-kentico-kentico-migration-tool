@@ -11,7 +11,7 @@ public class HeroImageWidgetMigration(ILogger<HeroImageWidgetMigration> logger) 
 {
     public int Rank => 100;
     public const string SOURCE_WIDGET_IDENTIFIER = "DancingGoat.LandingPage.HeroImage";
-    public const int SOURCE_PAGE_ID = 1; // Dancing goat page ID in the source instance
+    public const int SOURCE_SITE_ID = 1; // Dancing goat site ID in the source instance
     public const string HERO_CONTENT_TYPE_NAME = "DancingGoatCore.Hero";
     public async Task<WidgetMigrationResult> MigrateWidget(WidgetIdentifier identifier, JToken? value, WidgetMigrationContext context)
     {
@@ -41,7 +41,7 @@ public class HeroImageWidgetMigration(ILogger<HeroImageWidgetMigration> logger) 
 
     public bool ShallMigrate(WidgetMigrationContext context, WidgetIdentifier identifier) =>
         string.Equals(SOURCE_WIDGET_IDENTIFIER, identifier.TypeIdentifier, StringComparison.InvariantCultureIgnoreCase)
-    && SOURCE_PAGE_ID == context.SiteId;
+    && SOURCE_SITE_ID == context.SiteId;
 
     private async Task<JToken?> MigrateHeroWidgetProperty(JToken? value)
     {
