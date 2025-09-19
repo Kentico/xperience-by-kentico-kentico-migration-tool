@@ -14,7 +14,6 @@ namespace Migration.Tool.Common.Services.DatabasePatcher;
 /// </summary>
 public class DatabasePatcher(ToolConfiguration toolConfiguration, ILogger<DatabasePatcher> logger)
 {
-    private const string APPLIED_PATCHES_TABLE_SCHEMA = "dbo";
     private const string APPLIED_PATCHES_TABLE_NAME = "MT_Patches";
 
     private readonly IDatabasePatch[] availablePatches =
@@ -55,9 +54,9 @@ public class DatabasePatcher(ToolConfiguration toolConfiguration, ILogger<Databa
     private void EnsurePatchTableExists(SqlConnection connection)
     {
         var sql = $@"
-IF NOT EXISTS (SELECT * FROM sys.tables t JOIN sys.schemas s ON t.schema_id = s.schema_id WHERE t.name = '{APPLIED_PATCHES_TABLE_NAME}' AND s.name = '{APPLIED_PATCHES_TABLE_SCHEMA}')
+IF NOT EXISTS (SELECT * FROM sys.tables t JOIN sys.schemas s ON t.schema_id = s.schema_id WHERE t.name = '{APPLIED_PATCHES_TABLE_NAME}')
 BEGIN
-    CREATE TABLE {APPLIED_PATCHES_TABLE_SCHEMA}.{APPLIED_PATCHES_TABLE_NAME} (
+    CREATE TABLE {APPLIED_PATCHES_TABLE_NAME} (
         Name NVARCHAR(200) NOT NULL PRIMARY KEY,
         AppliedOn DATETIME NOT NULL
     )
@@ -71,7 +70,7 @@ END";
     {
         var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        var sql = $"SELECT Name FROM {APPLIED_PATCHES_TABLE_SCHEMA}.{APPLIED_PATCHES_TABLE_NAME}";
+        var sql = $"SELECT Name FROM {APPLIED_PATCHES_TABLE_NAME}";
         using var cmd = new SqlCommand(sql, connection);
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
@@ -84,7 +83,7 @@ END";
 
     private void MarkPatchAsApplied(string name, SqlConnection connection)
     {
-        var sql = $"INSERT INTO {APPLIED_PATCHES_TABLE_SCHEMA}.{APPLIED_PATCHES_TABLE_NAME} (Name, AppliedOn) VALUES (@name, @appliedOn)";
+        var sql = $"INSERT INTO {APPLIED_PATCHES_TABLE_NAME} (Name, AppliedOn) VALUES (@name, @appliedOn)";
         using var cmd = new SqlCommand(sql, connection);
         cmd.Parameters.AddWithValue("@name", name);
         cmd.Parameters.AddWithValue("@appliedOn", DateTime.UtcNow);
