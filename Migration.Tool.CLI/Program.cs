@@ -176,9 +176,6 @@ using var scope = serviceProvider.CreateScope();
 var loader = scope.ServiceProvider.GetRequiredService<IModuleLoader>();
 await loader.LoadAsync();
 
-var dbPatcher = scope.ServiceProvider.GetRequiredService<DatabasePatcher>();
-dbPatcher.Run();
-
 var commandParser = scope.ServiceProvider.GetRequiredService<ICommandParser>();
 var mediatr = scope.ServiceProvider.GetRequiredService<IMediator>();
 

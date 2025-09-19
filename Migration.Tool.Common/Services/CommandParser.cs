@@ -109,6 +109,7 @@ public class CommandParser : ICommandParser
             if (arg == $"--{MigrateMembersCommand.Moniker}")
             {
                 subcommands.Add(new MigrateMembersCommand());
+                continue;
             }
 
             if (arg == $"--{MigrateCustomModulesCommand.Moniker}")
@@ -120,12 +121,16 @@ public class CommandParser : ICommandParser
             if (arg == $"--{MigrateCustomTablesCommand.Moniker}")
             {
                 subcommands.Add(new MigrateCustomTablesCommand());
+                continue;
             }
 
             if (arg == $"--{MigrateContentTypeRestrictionsCommand.Moniker}")
             {
                 subcommands.Add(new MigrateContentTypeRestrictionsCommand());
+                continue;
             }
+
+            throw new InvalidOperationException($"Unknown command '{arg}'");
         }
 
         return (command, subcommands);
