@@ -1,9 +1,17 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-using Migration.Tool.Common.Services.DatabasePatcher.Patches;
 
 namespace Migration.Tool.Common.Services.DatabasePatcher;
 
+/// <summary>
+/// Manages patches of the target XbyK project database that are to be applied once.
+/// Typical usecase is when one version of Migration Tool introduces a bug in database. 
+/// Then the developer would create a new class implementing <see cref="IDatabasePatch"/> and register it in <see cref="availablePatches"/>.
+/// Next run of MT will execute the patch and register that it's been executed in a metatable in target database.
+/// Users can also run just the patch without actual migration by passing `patch` command instead of `migrate`
+/// 
+/// TODO: Currently there are no real patches registered, so this feature is ommitted from README. Fill it when first real patch is used.
+/// </summary>
 public class DatabasePatcher(ToolConfiguration toolConfiguration, ILogger<DatabasePatcher> logger)
 {
     private const string APPLIED_PATCHES_TABLE_SCHEMA = "dbo";
@@ -11,7 +19,6 @@ public class DatabasePatcher(ToolConfiguration toolConfiguration, ILogger<Databa
 
     private readonly IDatabasePatch[] availablePatches =
     {
-        new DbPatch_001_ContentItemRelatedGuids()
     };
 
     /// <summary>
