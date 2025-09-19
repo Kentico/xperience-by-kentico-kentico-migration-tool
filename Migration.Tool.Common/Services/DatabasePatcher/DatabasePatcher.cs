@@ -10,7 +10,7 @@ namespace Migration.Tool.Common.Services.DatabasePatcher;
 /// Next run of MT will execute the patch and register that it's been executed in a metatable in target database.
 /// Users can also run just the patch without actual migration by passing `patch` command instead of `migrate`
 /// 
-/// TODO: Currently there are no real patches registered, so this feature is ommitted from README. Fill it when first real patch is used.
+/// TODO: Currently there are no real patches registered, so this feature is omitted from README. Fill it when first real patch is used.
 /// </summary>
 public class DatabasePatcher(ToolConfiguration toolConfiguration, ILogger<DatabasePatcher> logger)
 {
