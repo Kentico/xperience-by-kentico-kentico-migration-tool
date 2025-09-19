@@ -6,9 +6,25 @@ namespace Migration.Tool.Common.Services;
 
 public class CommandParser : ICommandParser
 {
-    public List<ICommand> Parse(Queue<string> args, ref bool bypassDependencyCheck, bool firstHaveToBeMigrate = true)
+    public (MasterCommand? masterCommand, List<ICommand> commands) Parse(Queue<string> args, ref bool bypassDependencyCheck)
     {
-        var commands = new List<ICommand>();
+        MasterCommand? command = args.Count >= 1
+            ? args.Dequeue() switch
+            {
+                "migrate" => MasterCommand.Migrate,
+                "patch" => MasterCommand.Patch,
+                _ => null
+            }
+            : null;
+
+        if (command is null)
+        {
+            Console.WriteLine($@"No known command passed");
+            PrintCommandDescriptions();
+            return (null, []);
+        }
+
+        var subcommands = new List<ICommand>();
         while (args.TryDequeue(out string? arg))
         {
             if (arg.IsIn("help", "h"))
@@ -17,10 +33,10 @@ public class CommandParser : ICommandParser
                 break;
             }
 
-            if (arg == "migrate" && firstHaveToBeMigrate)
+            if (command == MasterCommand.Patch)
             {
-                firstHaveToBeMigrate = false;
-                continue;
+                Console.WriteLine($@"Patch command does not support any subcommands, but '{arg}' was issued. Continuing as with no subcommands.");
+                break;
             }
 
             if (arg == "--bypass-dependency-check")
@@ -29,112 +45,101 @@ public class CommandParser : ICommandParser
                 continue;
             }
 
-            if (firstHaveToBeMigrate)
-            {
-                Console.WriteLine($@"First must be command, for example {Green("migrate")}");
-                PrintCommandDescriptions();
-                break;
-            }
-
-            // if (arg == $"--{MigrateContactGroupsCommand.Moniker}")
-            // {
-            //     commands.Add(new MigrateContactGroupsCommand());
-            //     continue;
-            // }
-
             if (arg == $"--{MigrateContactManagementCommand.Moniker}")
             {
-                commands.Add(new MigrateContactManagementCommand());
+                subcommands.Add(new MigrateContactManagementCommand());
                 continue;
             }
 
             if (arg == $"--{MigrateDataProtectionCommand.Moniker}")
             {
                 // RequireNumberParameter("--batchSize", out var batchSize);
-                commands.Add(new MigrateDataProtectionCommand());
+                subcommands.Add(new MigrateDataProtectionCommand());
                 continue;
             }
 
             if (arg == $"--{MigrateFormsCommand.Moniker}")
             {
-                commands.Add(new MigrateFormsCommand());
+                subcommands.Add(new MigrateFormsCommand());
                 continue;
             }
 
             if (arg == $"--{MigrateMediaLibrariesCommand.Moniker}")
             {
-                commands.Add(new MigrateMediaLibrariesCommand());
+                subcommands.Add(new MigrateMediaLibrariesCommand());
                 continue;
             }
 
             if (arg == $"--{MigratePageTypesCommand.Moniker}")
             {
-                commands.Add(new MigratePageTypesCommand());
+                subcommands.Add(new MigratePageTypesCommand());
                 continue;
             }
 
             if (arg == $"--{MigratePagesCommand.Moniker}")
             {
-                commands.Add(new MigratePagesCommand());
+                subcommands.Add(new MigratePagesCommand());
                 continue;
             }
 
             if (arg == $"--{MigrateCategoriesCommand.Moniker}")
             {
-                commands.Add(new MigrateCategoriesCommand());
+                subcommands.Add(new MigrateCategoriesCommand());
                 continue;
             }
 
             if (arg == $"--{MigrateSettingKeysCommand.Moniker}")
             {
-                commands.Add(new MigrateSettingKeysCommand());
+                subcommands.Add(new MigrateSettingKeysCommand());
                 continue;
             }
 
             if (arg == $"--{MigrateSitesCommand.Moniker}")
             {
-                commands.Add(new MigrateSitesCommand());
+                subcommands.Add(new MigrateSitesCommand());
                 continue;
             }
 
             if (arg == $"--{MigrateUsersCommand.Moniker}")
             {
-                commands.Add(new MigrateUsersCommand());
+                subcommands.Add(new MigrateUsersCommand());
                 continue;
             }
 
             if (arg == $"--{MigrateMembersCommand.Moniker}")
             {
-                commands.Add(new MigrateMembersCommand());
+                subcommands.Add(new MigrateMembersCommand());
                 continue;
             }
 
             if (arg == $"--{MigrateCustomModulesCommand.Moniker}")
             {
-                commands.Add(new MigrateCustomModulesCommand());
+                subcommands.Add(new MigrateCustomModulesCommand());
                 continue;
             }
 
             if (arg == $"--{MigrateCustomTablesCommand.Moniker}")
             {
-                commands.Add(new MigrateCustomTablesCommand());
+                subcommands.Add(new MigrateCustomTablesCommand());
                 continue;
             }
 
             if (arg == $"--{MigrateContentTypeRestrictionsCommand.Moniker}")
             {
-                commands.Add(new MigrateContentTypeRestrictionsCommand());
+                subcommands.Add(new MigrateContentTypeRestrictionsCommand());
                 continue;
             }
 
             throw new InvalidOperationException($"Unknown command '{arg}'");
         }
 
-        return commands;
+        return (command, subcommands);
     }
 
     private void PrintCommandDescriptions()
     {
+        Console.WriteLine($"Command {Green("migrate")}: Migrates data from legacy Kentico CMS project to XbyK project");
+        Console.WriteLine("Subcommands:");
         WriteCommandDesc($"starts migration of {Green(MigratePageTypesCommand.MonikerFriendly)}", $"migrate --{MigratePageTypesCommand.Moniker}");
         WriteCommandDesc($"starts migration of {Green(MigratePagesCommand.MonikerFriendly)}", $"migrate --{MigratePagesCommand.Moniker}");
         WriteCommandDesc($"starts migration of {Green(MigrateCategoriesCommand.MonikerFriendly)}", $"migrate --{MigrateCategoriesCommand.Moniker}");
@@ -148,6 +153,9 @@ public class CommandParser : ICommandParser
         WriteCommandDesc($"starts migration of {Green(MigrateMembersCommand.MonikerFriendly)}", $"migrate --{MigrateMembersCommand.Moniker}");
         WriteCommandDesc($"starts migration of {Green(MigrateAttachmentsCommand.MonikerFriendly)}", $"migrate --{MigrateAttachmentsCommand.Moniker}");
         WriteCommandDesc($"starts migration of {Green(MigrateCustomModulesCommand.MonikerFriendly)}", $"migrate --{MigrateCustomModulesCommand.Moniker}");
+        Console.WriteLine();
+        Console.WriteLine($"Command {Green("patch")}: Applies migration patches to XbyK database. Patches are also applied at each run of {Green("migrate")}. Use this command to run patches without migration. " +
+            $"Migration patches fix data problems caused by bugs in previous versions of Migration Tool. This command is idempotent - i.e. tolerant to multiple runs.");
     }
 
     private void WriteCommandDesc(string desc, string commandMoniker) => Console.WriteLine($@"{Yellow(commandMoniker)}: {desc}");
