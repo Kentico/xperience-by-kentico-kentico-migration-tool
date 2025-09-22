@@ -9,6 +9,7 @@ using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.Helpers;
 using Migration.Tool.Common.Services;
+using Migration.Tool.Common.Services.DatabasePatcher;
 using Migration.Tool.Core.K11;
 using Migration.Tool.Core.KX12;
 using Migration.Tool.Core.KX13;
@@ -166,6 +167,8 @@ services.UseToolCommon();
 var invokedCommands = new InvokedCommands();
 services.AddSingleton(invokedCommands);
 
+services.AddTransient<DatabasePatcher>();
+
 await using var serviceProvider = services.BuildServiceProvider();
 KsCoreDiExtensions.InitServiceProvider(serviceProvider);
 using var scope = serviceProvider.CreateScope();
@@ -178,22 +181,29 @@ var mediatr = scope.ServiceProvider.GetRequiredService<IMediator>();
 
 var argsQ = new Queue<string>(args);
 bool bypassDependencyCheck = false;
-var commands = commandParser.Parse(argsQ, ref bypassDependencyCheck);
+var (command, subcommands) = commandParser.Parse(argsQ, ref bypassDependencyCheck);
+if (command is null)
+{
+    return;
+}
+
+var dbPatcher = scope.ServiceProvider.GetRequiredService<DatabasePatcher>();
+dbPatcher.Run();
 
 // sort commands
-commands = commands.OrderBy(x => x.Rank).ToList();
+subcommands = subcommands.OrderBy(x => x.Rank).ToList();
 
-invokedCommands.Commands.AddRange(commands);
+invokedCommands.Commands.AddRange(subcommands);
 
 var satisfiedDependencies = new HashSet<Type>();
 bool dependenciesSatisfied = true;
 if (!bypassDependencyCheck)
 {
-    foreach (var command in commands)
+    foreach (var subcommand in subcommands)
     {
-        var commandType = command.GetType();
+        var commandType = subcommand.GetType();
         satisfiedDependencies.Add(commandType);
-        foreach (var commandDependency in command.Dependencies)
+        foreach (var commandDependency in subcommand.Dependencies)
         {
             if (!satisfiedDependencies.Contains(commandDependency))
             {
@@ -213,9 +223,9 @@ if (!dependenciesSatisfied)
     return;
 }
 
-foreach (var command in commands)
+foreach (var subcommand in subcommands)
 {
-    await mediatr.Send(command);
+    await mediatr.Send(subcommand);
 }
 
 if (!args.Contains("--nowait"))
