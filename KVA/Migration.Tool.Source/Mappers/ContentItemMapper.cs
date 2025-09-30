@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
@@ -633,12 +632,6 @@ public class ContentItemMapper(
             }).ToArray()
             : (IEnumerable<FormerPageUrlPath>)([]);
 
-
-    private readonly ConcurrentDictionary<string, ContentLanguageInfo> languages = new(StringComparer.InvariantCultureIgnoreCase);
-    private ContentLanguageInfo GetLanguageInfo(string culture) => languages.GetOrAdd(
-                culture,
-                s => ContentLanguageInfoProvider.ProviderObject.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageName), s).SingleOrDefault() ?? throw new InvalidOperationException($"Missing content language '{s}'")
-            );
 
     private ContentItemDirectiveBase GetDirective(ContentItemSource contentItemSource)
     {
