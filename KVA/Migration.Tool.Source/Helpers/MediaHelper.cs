@@ -42,19 +42,30 @@ public static class MediaHelper
                     case [var mediaLibrary]:
                     {
                         string filePath = path.Replace($"/{mediaLibrary.LibraryFolder}/", "", StringComparison.InvariantCultureIgnoreCase);
-                        return modelFacade.SelectWhere<IMediaFile>("FileLibraryID = @fileLibraryID AND FilePath = @filePath AND FileSiteID = @fileSiteID",
-                                    new SqlParameter("fileLibraryID", mediaLibrary.LibraryID),
-                                    new SqlParameter("filePath", filePath),
-                                    new SqlParameter("fileSiteID", linkSiteId))
-                                .ToList() switch
+
+                        var mediaFiles = modelFacade.SelectWhere<IMediaFile>("FileLibraryID = @fileLibraryID AND FilePath = @filePath AND FileSiteID = @fileSiteID",
+                            new SqlParameter("fileLibraryID", mediaLibrary.LibraryID),
+                            new SqlParameter("filePath", filePath),
+                            new SqlParameter("fileSiteID", linkSiteId))
+                        .ToList();
+
+                        if (mediaFiles.Count == 1)
                         {
-                            [var mediaFile] => mediaFile,
-                            { Count: > 1 } => throw new InvalidOperationException($"Multiple media file were found for path {path}, site {linkSiteId} and library {libraryDir}"),
-                            { Count: 0 } =>
-                                // this may happen and is valid scenaria
-                                null,
-                            _ => null
-                        };
+                            return mediaFiles[0];
+                        }
+                        else if (mediaFiles.Count > 1)
+                        {
+                            throw new InvalidOperationException($"Multiple media file were found for path {path}, site {linkSiteId} and library {libraryDir}");
+                        }
+                        else if (mediaFiles.Count == 0)
+                        {
+                            // this may happen and is valid scenaria
+                            return null;
+                        }
+                        else
+                        {
+                            return null;
+                        }
                     }
                     case { Count: > 1 }:
                     {
