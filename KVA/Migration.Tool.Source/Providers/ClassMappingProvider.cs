@@ -70,12 +70,18 @@ public class ClassMappingProvider(
         return MappingsByClassName.GetValueOrDefault(className);
     }
 
+    private Dictionary<string, (DataClassInfo target, IClassMapping mappping)>? manualMappings = null;
     public Dictionary<string, (DataClassInfo target, IClassMapping mappping)> ExecuteMappings()
     {
+        if (manualMappings is not null)
+        {
+            return manualMappings;
+        }
+
         EnsureSettings();
         ExecReusableSchemaBuilders();
 
-        var manualMappings = new Dictionary<string, (DataClassInfo target, IClassMapping mappping)>();
+        manualMappings = new Dictionary<string, (DataClassInfo target, IClassMapping mappping)>();
         var metadataFields = GetLegacyMetadataFields(modelFacade.SelectVersion(), IncludedMetadata.Extended).ToArray();
 
         foreach (var classMapping in MappingsByClassName.Values)
