@@ -14,7 +14,6 @@ This tool supports migrating a project to Xperience by Kentico over multiple mig
 
 Our documentation (Learn portal) includes guides covering [the whole upgrade process from Kentico Xperience 13 to Xperience by Kentico](https://docs.kentico.com/x/migrate_from_kx13_guides), using the Kentico Migration Tool for data migration.
 
-
 > [!TIP]
 > Refer to our [FAQ page](https://docs.kentico.com/x/upgrade_from_kx13_faq_guides) for frequently asked questions about the upgrade process, migration tool, and deployment of an upgraded project.
 
@@ -66,7 +65,7 @@ Follow the steps below to run the Kentico Migration Tool:
    - The following example shows the command with all parameters for complete migration:
 
      ```powershell
-     .\Migration.Tool.CLI.exe  migrate --sites --custom-modules --users --settings-keys --page-types --pages --attachments --contact-management --forms --media-libraries --data-protection --countries --custom-tables --members --categories
+     .\Migration.Tool.CLI.exe  migrate --sites --custom-modules --users --settings-keys --page-types --pages --contact-management --forms --media-libraries --data-protection --custom-tables --members --categories
      ```
 
 8. Review the command line output of the tool.
@@ -81,7 +80,7 @@ The data is now migrated to the target Xperience by Kentico instance according t
 
 > [!TIP]
 > Follow our [step-by-step, code-along walkthrough](https://docs.kentico.com/x/upgrade_walkthrough_guides)
- to practice upgrading the Dancing Goat sample site from Xperience 13 to Xperience by Kentico. It includes video instructions and sample configs, showing environment setup, migration tool use, iterative data migration, and subsequent code changes to render a page in XbyK the same as in KX13.
+> to practice upgrading the Dancing Goat sample site from Xperience 13 to Xperience by Kentico. It includes video instructions and sample configs, showing environment setup, migration tool use, iterative data migration, and subsequent code changes to render a page in XbyK the same as in KX13.
 
 ## Full Requirements
 
@@ -113,7 +112,6 @@ Distributed under the MIT License. See [`LICENSE.md`](./LICENSE.md) for more inf
 This project has **Full support by 7-day bug-fix policy**.
 
 See [`SUPPORT.md`](https://github.com/Kentico/.github/blob/main/SUPPORT.md#full-support) for more information.
-
 
 > [!IMPORTANT]
 > Before submitting a support ticket, please read about the [best practices on reporting Kentico Migration Tool and upgrade issues](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#what-is-the-difference-between-the-documentation-in-the-github-repo-and-on-the-docs.kentico.com-site).
