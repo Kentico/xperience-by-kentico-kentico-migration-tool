@@ -18,6 +18,10 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IWidgetPropertyMigration, WidgetPageSelectorMigration>();
         services.AddTransient<IWidgetMigration, HeroImageWidgetMigration>();
 
+        services.AddTransient<IWidgetMigration, HeroBannerWidgetMigration>();
+        services.AddTransient<IWidgetPropertyMigration, WidgetPageSelectorToCombinedSelectorMigration>();
+        services.AddTransient<IWidgetPropertyMigration, WidgetCustomSelectorMigration>();
+
         // services.AddClassMergeExample();
         // services.AddClassMergeExampleAsReusable();
         // services.AddSimpleRemodelingSample();
