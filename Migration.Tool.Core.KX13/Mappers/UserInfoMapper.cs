@@ -35,7 +35,7 @@ public class UserInfoMapper(
         target.UserName = source.UserName;
         target.FirstName = source.FirstName;
         target.LastName = source.LastName;
-        target.Email = source.Email;
+        target.Email = source.Email?.Trim();
         // target.UserPassword = source.UserPassword;
         target.SetValue("UserPassword", source.UserPassword);
         target.UserEnabled = source.UserEnabled;
