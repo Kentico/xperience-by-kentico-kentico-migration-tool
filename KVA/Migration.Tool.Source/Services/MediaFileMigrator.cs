@@ -186,11 +186,7 @@ public class MediaFileMigrator(
 
                     try
                     {
-                        if (newInstance)
-                        {
-                            mediaFileFacade.EnsureMediaFilePathExistsInLibrary(mf, targetMediaLibrary.LibraryID);
-                        }
-
+                        mediaFileFacade.EnsureMediaFilePathExistsInLibrary(mf, targetMediaLibrary.LibraryID);
                         mediaFileFacade.SetMediaFile(mf, newInstance);
 
                         protocol.Success(ksMediaFile, mf, mapped);
