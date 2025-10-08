@@ -280,11 +280,15 @@ Custom table migration does NOT include:
 
 Media library files are migrated as [content item assets](https://docs.kentico.com/x/content_item_assets_xp) to Content hub into a content folder `<site_name>/<library_folder>`. All assets are created in the default language of the respective site. Migrated assets are created as content items of a _Legacy media file_ content type (code name `Legacy.Mediafile`) created by the tool.
 
+If you want to use Xperience by Kentico's [automatic image optimization](https://docs.kentico.com/documentation/developers-and-admins/development/content-types#configure-asset-content-types) feature for the _Legacy media file_ type, follow along with our [guide about customizing asset migration](https://docs.kentico.com/x/optimize_images_during_upgrade_guides).
+
 If required, you can [configure the tool](#convert-attachments-and-media-library-files-to-media-libraries-instead-of-content-item-assets) to instead migrate media libraries as media libraries on the target instance.
 
 #### Attachments
 
 Attachment files are migrated as [content item assets](https://docs.kentico.com/x/content_item_assets_xp) to Content hub into a content folder `<site_name>/__Attachments`. Assets are created in the specified language if the language is available (e.g., attachments of pages). Migrated assets are created as content items of a _Legacy attachment_ content type (code name `Legacy.Attachment`) created by the tool.
+
+If you want to use Xperience by Kentico's [automatic image optimization](https://docs.kentico.com/documentation/developers-and-admins/development/content-types#configure-asset-content-types) feature for the _Legacy attachment_ type, follow along with our [guide about customizing asset migration](https://docs.kentico.com/x/optimize_images_during_upgrade_guides).
 
 If required, you can [configure the tool](#convert-attachments-and-media-library-files-to-media-libraries-instead-of-content-item-assets) to instead migrate attachments as media libraries on the target instance.
 
