@@ -36,6 +36,7 @@ Currently, the Kentico Migration Tool supports the following types of data:
   - Page permissions are currently not supported by the Kentico Migration Tool and are not migrated. If you need page ACLs to be migrated, please [open an issue and request the feature](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/issues/new?assignees=&labels=&projects=&template=feature_request.md).
   - Migration of Page Builder content is only available for Kentico Xperience 13.
     - If you are [migrating a Kentico 12 MVC application](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/blob/master/docs/Usage-Guide.md#kentico-12-mvc) you can upgrade it to Kentico Xperience 13 using the Kentico Installation Manager (KIM) and then upgrade to Xperience by Kentico with Page Builder content.
+  - You can find examples of how to update your page retrieval code to work with Xperience by Kentico's _content items_ [in our guides](https://docs.kentico.com/x/upgrade_content_retrieval_code_guides).
 - **Page attachments**
   - Page attachments are not supported in Xperience by Kentico. Attachments are migrated into media libraries. See [`Migration.Tool.CLI/README.md - Attachments`](../Migration.Tool.CLI/README.md#Attachments) for detailed information about the conversion process.
 - **Preset page templates** (_Custom page templates_ in Kentico Xperience 13)
