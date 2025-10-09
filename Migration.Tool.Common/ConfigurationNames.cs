@@ -24,6 +24,7 @@ public class ConfigurationNames
 
     public const string MigrateMediaToMediaLibrary = "MigrateMediaToMediaLibrary";
     public const string LegacyFlatAssetTree = "LegacyFlatAssetTree";
+    public const string LegacyPermissiveMediaLibrarySubfolders = "LegacyPermissiveMediaLibrarySubfolders";
     public const string AssetRootFolders = "AssetRootFolders";
 
     public const string UseDeprecatedFolderPageType = "UseDeprecatedFolderPageType";

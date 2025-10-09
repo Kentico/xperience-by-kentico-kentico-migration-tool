@@ -49,6 +49,9 @@ public class ToolConfiguration
     [ConfigurationKeyName(ConfigurationNames.LegacyFlatAssetTree)]
     public bool? LegacyFlatAssetTree { get; set; }
 
+    [ConfigurationKeyName(ConfigurationNames.LegacyPermissiveMediaLibrarySubfolders)]
+    public bool? LegacyPermissiveMediaLibrarySubfolders { get; set; }
+
     [ConfigurationKeyName(ConfigurationNames.AssetRootFolders)]
     public Dictionary<string, string>? AssetRootFolders { get; set; }
 
