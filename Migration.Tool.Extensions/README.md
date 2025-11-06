@@ -154,6 +154,9 @@ You can see a sample: [SampleWidgetMigration.cs](./CommunityMigrations/SampleWid
 
 After implementing the migration, you need to [register the migration](#register-migrations) in the system.
 
+> [!TIP]
+> For a complete end-to-end example, see [how to migrate widget data as reusable content](https://docs.kentico.com/x/migrate_widget_data_as_reusable_content_guides) in Kentico documentation.
+
 ## Customize widget property migrations
 
 In the `Migration.Tool.Extensions/CommunityMigrations` folder, create a new file with a class that implements the `IWidgetPropertyMigration` interface. Implement the following properties and methods required by the interface:
@@ -175,6 +178,9 @@ You can see samples:
 - [File selector migration](./DefaultMigrations/WidgetFileMigration.cs)
 
 After implementing the migration, you need to [register the migration](#register-migrations) in the system.
+
+> [!TIP]
+> For common widget property transformation scenarios, see [our technical deep-dive guide](https://docs.kentico.com/x/transform_widget_properties_guides) in Kentico documentation.
 
 ## Migrate pages to widgets
 
@@ -238,6 +244,9 @@ In `Migration.Tool.Extensions/CommunityMigrations`, create a new file with a cla
 You can see a sample: [SamplePageToWidgetDirector.cs](./CommunityMigrations/SamplePageToWidgetDirector.cs)
 
 After implementing the content item director, you need to [register the director](#register-migrations) in the system.
+
+> [!TIP]
+> For a complete practical example, see [how to convert child pages to widgets](https://docs.kentico.com/x/convert_child_pages_to_widgets_guides) in the documentation.
 
 ## Register migrations
 
