@@ -182,7 +182,7 @@ modifications. On the target Xperience by Kentico instance, the migrated data ca
 compatibility mode. However, we strongly recommend updating your codebase to the new Xperience by Kentico components.
 
 > [!TIP]
-> Read more about different approaches of migrating Page Builder content and their the pros and cons in our  [Learn portal](https://docs.kentico.com/x/migrate_widgets_from_KX13_guides). 
+> Read more about different [approaches of migrating Page Builder content](https://docs.kentico.com/x/migrate_widgets_from_KX13_guides) and their the pros and cons in our documentation. 
 
 The Kentico Migration Tool provides an advanced migration mode for Page Builder content that utilizes API discovery on
 the source instance. To learn more details and how to configure this feature,
