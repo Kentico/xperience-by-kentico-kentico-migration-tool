@@ -313,12 +313,14 @@ public class ClassMappingProvider(
                             patcher.RemoveCategories();
 
                             var fi = new FormInfo(patcher.GetPatched());
-                            return fi.GetFormField(fieldIdentifier.FieldName) switch
+                            var patchedFieldInfo = fi.GetFormField(fieldIdentifier.FieldName) switch
                             {
                                 { } field => field,
                                 _ => throw new InvalidOperationException(
                                     $"Invalid reusable schema field builder for field '{fieldIdentifier.ClassName}': Class '{fieldIdentifier.ClassName}' is missing field '{fieldIdentifier.FieldName}'")
                             };
+                            patchedFieldInfo.Name = fb.TargetFieldName;
+                            return patchedFieldInfo;
                         }
                         default:
                         {
