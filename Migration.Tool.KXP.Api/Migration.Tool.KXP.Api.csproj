@@ -10,8 +10,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Kentico.Xperience.Admin" Version="30.10.1" />
-        <PackageReference Include="Kentico.Xperience.Core" Version="30.10.1" />
+        <PackageReference Include="Kentico.Xperience.Admin" Version="30.11.0" />
+        <PackageReference Include="Kentico.Xperience.Core" Version="30.11.0" />
     </ItemGroup>
 
     <ItemGroup>

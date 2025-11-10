@@ -23,6 +23,7 @@ View all [project releases](https://github.com/Kentico/xperience-by-kentico-kent
 
 | Xperience Version | Library Version |
 | ----------------- | --------------- |
+| 30.11.0           | 3.18.0          |
 | 30.10.1           | 3.16.0          |
 | 30.8.0            | 3.12.0          |
 | 30.6.0            | 3.8.0           |

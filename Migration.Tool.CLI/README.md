@@ -168,19 +168,22 @@ Pages from older product versions can be migrated to either to [website channel 
 - Linked pages are currently not supported in Xperience by Kentico. By default, the migration creates standard page copies for any
   linked pages on the source instance. This behavior can be changed by implementing [custom handling of linked pages](../Migration.Tool.Extensions/README.md#customize-linked-page-handling).
 - Page permissions (ACLs) are currently not migrated into Xperience by Kentico.
-- Migration of page builder content is only available for Kentico Xperience 13.
+- Migration of Page Builder content is only available for Kentico Xperience 13.
 
 Additionally, you can define [custom migrations](../Migration.Tool.Extensions/README.md) to change the default behavior, for example to migrate page content to widgets in Xperience by Kentico.
 
-#### Page builder content
+#### Page Builder content
 
-> :warning: Page builder content migration is only available when migrating from Kentico Xperience 13.
+> :warning: Page Builder content migration is only available when migrating from Kentico Xperience 13.
 
-By default, JSON data storing the page builder content of pages and custom page templates is migrated directly without
+By default, JSON data storing the Page Builder content of pages and custom page templates is migrated directly without
 modifications. On the target Xperience by Kentico instance, the migrated data can work in the Page Builder's legacy
 compatibility mode. However, we strongly recommend updating your codebase to the new Xperience by Kentico components.
 
-The Kentico Migration Tool provides an advanced migration mode for page builder content that utilizes API discovery on
+> [!TIP]
+> Read more about different [approaches of migrating Page Builder content](https://docs.kentico.com/x/migrate_widgets_from_KX13_guides) and their the pros and cons in our documentation. 
+
+The Kentico Migration Tool provides an advanced migration mode for Page Builder content that utilizes API discovery on
 the source instance. To learn more details and how to configure this feature,
 see [Source instance API discovery](#source-instance-api-discovery).
 
@@ -279,11 +282,15 @@ Custom table migration does NOT include:
 
 Media library files are migrated as [content item assets](https://docs.kentico.com/x/content_item_assets_xp) to Content hub into a content folder `<site_name>/<library_folder>`. All assets are created in the default language of the respective site. Migrated assets are created as content items of a _Legacy media file_ content type (code name `Legacy.Mediafile`) created by the tool.
 
+If you want to use Xperience by Kentico's [automatic image optimization](https://docs.kentico.com/documentation/developers-and-admins/development/content-types#configure-asset-content-types) feature for the _Legacy media file_ type, follow along with our [guide about customizing asset migration](https://docs.kentico.com/x/optimize_images_during_upgrade_guides).
+
 If required, you can [configure the tool](#convert-attachments-and-media-library-files-to-media-libraries-instead-of-content-item-assets) to instead migrate media libraries as media libraries on the target instance.
 
 #### Attachments
 
 Attachment files are migrated together with pages when using the `--pages` parameter. They are migrated as [content item assets](https://docs.kentico.com/x/content_item_assets_xp) to Content hub into a content folder `<site_name>/__Attachments`. Assets are created in the specified language if the language is available (e.g., attachments of pages). Migrated assets are created as content items of a _Legacy attachment_ content type (code name `Legacy.Attachment`) created by the tool.
+
+If you want to use Xperience by Kentico's [automatic image optimization](https://docs.kentico.com/documentation/developers-and-admins/development/content-types#configure-asset-content-types) feature for the _Legacy attachment_ type, follow along with our [guide about customizing asset migration](https://docs.kentico.com/x/optimize_images_during_upgrade_guides).
 
 If required, you can [configure the tool](#convert-attachments-and-media-library-files-to-media-libraries-instead-of-content-item-assets) to instead migrate attachments as media libraries on the target instance.
 
@@ -426,16 +433,18 @@ Add the options under the `Settings` section in the configuration file.
 | MigrateOnlyMediaFileInfo                                          | If set to `true`, only the database representations of media files are migrated, without the files in the media folder in the project's file system. For example, enable this option if your media library files are mapped to a shared directory or Cloud storage.<br /><br />If `false`, media files are migrated based on the `KxCmsDirPath` location.                                                                                                                                                                                                  |
 | MigrateMediaToMediaLibrary                                        | Determines whether media library files and attachments from the source instance are migrated to the target instance as media libraries or as [content item assets](https://docs.kentico.com/x/content_item_assets_xp) in the content hub. The default value is `false` – media files and attachments are migrated as content item assets. <br /><br /> See [Convert attachments and media library files to media libraries instead of content item assets](#convert-attachments-and-media-library-files-to-media-libraries-instead-of-content-item-assets) |
 | LegacyFlatAssetTree                                               | Use legacy behavior of versions up to 2.3.0. Content folders for asset content items will be created in a flat structure (all under root folder)                                                                                                                                                                                                                                                                                                                                                                                                           |
-| AssetRootFolders                                                  | Dictionary defining the root folder for Asset content items per site: Key is site name (CMS_Site.SiteName). Value is in format */FolderDisplayName1/FolderDisplayName2/...\_                                                                                                                                                                                                                                                                                                                                                                               |
-| TargetWorkspaceName                                               | The code name of the [workspace](https://docs.kentico.com/x/workspaces_xp) to which content items, content folders and other related entities are migrated. This workspace is used if another workspace is not specified explicitly, for example by the content item director API in [migration customizations](../Migration.Tool.Extensions/README.md). This configuration is not necessary if the target project only contains a single workspace.                                                                                                       |
+| LegacyPermissiveMediaLibrarySubfolders                            | XbyK has restrictions on media library subfolder name. It must contain only alphanumeric characters, underscores ('_'), hyphens ('-'), and cannot contain file names reserved by the operating system (e.g., ‘CON’, ‘PRN’, ‘AUX’ for Windows). If set to `true`, name checks will be bypassed. Note that this may impair some XbyK functionality like migration of media libraries to content hub. User may prefer using this option e.g. for repeated migration after initially migrating with previous versions of Migration Tool, and then manually changing the names in XbyK |                                                                                                                                                                                                                                                                                                                                                                                                             |
+| AssetRootFolders                                                  | Dictionary defining the root folder for Asset content items per site: Key is site name (CMS_Site.SiteName). Value is in format _/FolderDisplayName1/FolderDisplayName2/..._                                                                                                                                                                                                                                                                                                                                                                                |
+| TargetWorkspaceName                                               | The code name of the [workspace](https://docs.kentico.com/x/workspaces_xp) to which content items, content folders and other related entities are migrated. This workspace is used if another workspace is not specified explicitly, for example by the content item director API in [migration customizations](../Migration.Tool.Extensions/README.md). This configuration is not necessary if the target project only contains a single workspace.                                                                                                                                                         |
 | MemberIncludeUserSystemFields                                     | Determines which system fields from the _CMS_User_ and _CMS_UserSettings_ tables are migrated to _CMS_Member_ in Xperience by Kentico. Fields that do not exist in _CMS_Member_ are automatically created. <br /><br />The sample `appsettings.json` file included with the tool by default includes all user fields that can be migrated from Kentico Xperience 13. Exclude specific fields from the migration by removing them from this configuration option.                                                                                           |
 | IncludeExtendedMetadata                                           | Migrates DocumentPageTitle, DocumentPageDescription and DocumentPageKeywords if they are available in the source instance                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | UseOmActivityNodeRelationAutofix                                  | Determines how the migration handles references from Contact management activities to non-existing pages.<br /><br />Possible options:<br />`DiscardData` - faulty references are removed,<br />`AttemptFix` - references are updated to the IDs of corresponding pages created by the migration,<br />`Error` - an error is reported and the reference can be translated or otherwise handled manually                                                                                                                                                    |
 | UseOmActivitySiteRelationAutofix                                  | Determines how the migration handles site references from Contact management activities.<br /><br />Possible options: `DiscardData`,`AttemptFix`,`Error`                                                                                                                                                                                                                                                                                                                                                                                                   |
 | EntityConfigurations                                              | Contains options that allow you to fine-tune the migration of specific object types.                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | EntityConfigurations._&lt;object table name&gt;_.ExcludeCodeNames | Excludes objects with the specified code names from the migration.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| CreateReusableFieldSchemaForClasses                               | Specifies which page types are also converted to [reusable field schemas](#convert-page-types-to-reusable-field-schemas). This option cannot be combined with usage of `ReusableSchemaBuilder` in [custom class mappings](../Migration.Tool.Extensions/README.md#custom-class-mappings).                                                                                                                                                                                                                                                                   |
-| OptInFeatures.QuerySourceInstanceApi.Enabled                      | If `true`, [source instance API discovery](#source-instance-api-discovery) is enabled to allow advanced migration of page builder content for pages and page templates.                                                                                                                                                                                                                                                                                                                                                                                    |
+| CreateReusableFieldSchemaForClasses                               | Specifies which page types are also converted to [reusable field schemas](#convert-page-types-to-reusable-field-schemas). This option cannot be combined with usage of `ReusableSchemaBuilder` in [custom class mappings](../Migration.Tool.Extensions/README.md#custom-class-mappings).                                                                                                                                                                                                                                                                   
+                                                                                                                                                                                                                                                                                                                               |
+| OptInFeatures.QuerySourceInstanceApi.Enabled                      | If `true`, [source instance API discovery](#source-instance-api-discovery) is enabled to allow advanced migration of Page Builder content for pages and page templates.                                                                                                                                                                                                                                                                                                                                                                                    |
 | OptInFeatures.QuerySourceInstanceApi.Connections                  | To use [source instance API discovery](#source-instance-api-discovery), you need to add a connection JSON object containing the following values:<br />`SourceInstanceUri` - the base URI where the source instance's live site application is running.<br />`Secret` - the secret that you set in the _ToolkitApiController.cs_ file on the source instance.                                                                                                                                                                                              |
 | OptInFeatures.CustomMigration.FieldMigrations                     | Enables conversion of media selection text fields to content item assets or media library files. See [Convert text fields with media links](#convert-text-fields-with-media-links) for more information.                                                                                                                                                                                                                                                                                                                                                   |
 
@@ -525,8 +534,8 @@ Add the options under the `Settings` section in the configuration file.
 
 > :warning: **Warning** – source instance API discovery is only available when migrating from Kentico Xperience 13.
 
-By default, JSON data storing the page builder content of pages and custom page templates is migrated directly without
-modifications. Within this content, page builder components (widgets, sections, etc.) with properties have their
+By default, JSON data storing the Page Builder content of pages and custom page templates is migrated directly without
+modifications. Within this content, Page Builder components (widgets, sections, etc.) with properties have their
 configuration based on Kentico Xperience 13 form components, which are assigned to the properties on the source
 instance. On the target Xperience by Kentico instance, the migrated data can work in the Page Builder's legacy
 compatibility mode.
@@ -534,7 +543,7 @@ compatibility mode.
 However, we strongly recommend updating your codebase to the new Xperience by Kentico components.
 See [Editing components in Xperience by Kentico](https://docs.xperience.io/x/wIfWCQ) to learn more.
 
-To convert page builder data to a format suitable for the Xperience by Kentico components, the Kentico Migration Tool
+To convert Page Builder data to a format suitable for the Xperience by Kentico components, the Kentico Migration Tool
 provides an advanced migration mode that utilizes API discovery on the source instance. The advanced mode currently
 provides the following data conversion:
 
@@ -547,8 +556,8 @@ provides the following data conversion:
 
 - To use source instance API discovery, the live site application of your source instance must be running and available
   during the migration.
-- Using the advanced page builder data migration **prevents the data from being used in the Page Builder's legacy
-  compatibility mode**. With this approach, you need to update all page builder component code files to
+- Using the advanced Page Builder data migration **prevents the data from being used in the Page Builder's legacy
+  compatibility mode**. With this approach, you need to update all Page Builder component code files to
   the [Xperience by Kentico format](https://docs.xperience.io/x/wIfWCQ).
 - The source instance API discovery feature only processes component properties defined using `[EditingComponent]`
   attribute notation. Other implementations, such as properties edited via custom view components in the Razer view, are
@@ -641,8 +650,8 @@ You can test the source instance API discovery by making a POST request
 to `<source instance live site URI>/ToolApi/Test` with `{ "secret":"__your secret string__" }` in the body. If your
 setup is correct, the response should be: `{ "pong": true }`
 
-When you now [migrate data](#migrate-data), the tool performs API discovery of page builder component code on the source
-instance and advanced migration of page builder data.
+When you now [migrate data](#migrate-data), the tool performs API discovery of Page Builder component code on the source
+instance and advanced migration of Page Builder data.
 
 ## Convert pages or custom tables to Content hub
 
