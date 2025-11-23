@@ -541,4 +541,56 @@ public static class ClassMappingSample
 
         return serviceCollection;
     }
+
+    public static IServiceCollection AddMappingToPrefabricatedContentTypeSample(this IServiceCollection serviceCollection)
+    {
+        // Summary:
+        //   This sample shows how to migrate pages to a content type that is already present in the target instance
+        //   - i.e., not created by the --page-types command.
+        //
+        // Prerequisites:
+        //   1. CLI is invoked with --bypass-dependency-check argument and without --page-types argument.
+        //
+        //   2. The following structures already exist in the target XbyK instance. They might have been created by MT,
+        //      manually in XbyK administration or by other means.
+        //          A. Reusable field schema PrefabBase
+        //          B. Content type DancingGoatCore.PrefabArticle that uses PrefabBase. It can be of both reusable and page usage.
+        //          C. In case of migrating media to content hub, Legacy Media File content type must exist
+        //             and match AssetFacade.LegacyMediaFileContentType class name and class GUID. See PrefabArticleTeaser below.
+        //
+        //   3. Field types in the target structures must be compatible with source field types - i.e., Migration Tool must support
+        //      migration from one to the other.
+        //
+        //      If you're unsure what the target field type should be, let MT migrate page types (--page-types CLI command)
+        //      into a disposable clone of your target instance and see the produced field types.
+
+        var m = new MultiClassMapping("DancingGoatCore.PrefabArticle");
+        const string sourceClassName = "DancingGoatCore.Article";
+
+        // Field mapping
+        m.BuildField("PrefabArticleSummary")
+            .SetFrom(sourceClassName, "ArticleSummary");
+
+        // For media file mapping, make sure the target field supports the media file migration strategy 
+        // set by appsettings MigrateMediaToMediaLibrary.
+        //   - MigrateMediaToMediaLibrary=true -> target field data type = 'Media files'
+        //   - MigrateMediaToMediaLibrary=false -> target field data type = 'Pages and reusable content'
+        //     and allowed content types must include Legacy Media File content type. See AssetFacade.LegacyMediaFileContentType
+        m.BuildField("PrefabArticleTeaser")
+            .SetFrom(sourceClassName, "ArticleTeaser");
+
+        // For linked items mapping, make sure the target field has 'Pages and reusable content' data type
+        // and allowed content types include the content type of linked items. What this linked content type actually is
+        // depends on your specific setup (custom class mapping, content item directors, etc.).
+        m.BuildField("PrefabArticleRelatedArticles")
+            .SetFrom(sourceClassName, "ArticleRelatedArticles");
+
+        // Reusable field schema field mapping
+        m.UseResusableSchema("PrefabBase");
+        m.BuildField("PrefabBaseTitle")
+            .SetFrom(sourceClassName, "ArticleTitle");
+
+        serviceCollection.AddSingleton<IClassMapping>(m);
+        return serviceCollection;
+    }
 }
