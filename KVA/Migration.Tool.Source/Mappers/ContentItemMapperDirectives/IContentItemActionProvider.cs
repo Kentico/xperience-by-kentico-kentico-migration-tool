@@ -26,6 +26,12 @@ public interface IContentItemActionProvider : IBaseContentItemActionProvider
     /// <param name="fieldName">Name of the field to add the child content item references to</param>
     /// <param name="children">One or more child objects passed by <see cref="ContentItemSource.ChildNodes"/></param>
     void LinkChildren(string fieldName, IEnumerable<ICmsTree> children);
+
+    /// <summary>
+    /// Instructs Migration Tool to map the source page to a specific content type on XbyK side.
+    /// </summary>
+    /// <param name="targetTypeName">Class name of the target content type (ClassName of CMS_Class table)</param>
+    void OverrideTargetType(string targetTypeName);
 }
 
 public record FormerPageUrlPath(string LanguageName, string Path, DateTime? LastModified = null);

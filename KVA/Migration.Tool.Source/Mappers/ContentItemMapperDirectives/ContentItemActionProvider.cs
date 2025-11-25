@@ -35,4 +35,5 @@ internal partial class ContentItemActionProvider : IContentItemActionProvider
             Directive.ChildLinks.Add((fieldName, child));
         }
     }
+    public void OverrideTargetType(string targetType) => Directive.TargetTypeOverride = targetType;
 }

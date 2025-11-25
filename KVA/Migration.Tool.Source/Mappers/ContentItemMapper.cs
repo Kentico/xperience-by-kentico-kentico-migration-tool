@@ -39,7 +39,6 @@ public record CmsTreeMapperSource(
     Guid SiteGuid,
     Guid? NodeParentGuid,
     Dictionary<string, Guid> CultureToLanguageGuid,
-    string? TargetFormDefinition,
     string SourceFormDefinition,
     List<ICmsDocument> MigratedDocuments,
     ICmsSite SourceSite,
@@ -91,50 +90,45 @@ public class ContentItemMapper(
 
     protected override IEnumerable<IUmtModel> MapInternal(CmsTreeMapperSource source)
     {
-        (var cmsTree, string safeNodeName, var siteGuid, var nodeParentGuid, var cultureToLanguageGuid, string? targetFormDefinition, string sourceFormDefinition, var migratedDocuments, var sourceSite, bool deferred) = source;
+        (var cmsTree, string safeNodeName, var siteGuid, var nodeParentGuid, var cultureToLanguageGuid, string sourceFormDefinition, var migratedDocuments, var sourceSite, bool deferred) = source;
         logger.LogTrace("Mapping {Value}", new { cmsTree.NodeAliasPath, cmsTree.NodeName, cmsTree.NodeGUID, cmsTree.NodeSiteID });
 
         var childNodes = modelFacade.Select<ICmsTree>("NodeParentID = @nodeID", "NodeOrder", new SqlParameter("nodeID", cmsTree.NodeID))!.ToArray();
 
         var sourceNodeClass = modelFacade.SelectById<ICmsClass>(cmsTree.NodeClassID) ?? throw new InvalidOperationException($"Fatal: node class is missing, class id '{cmsTree.NodeClassID}'");
         var mapping = classMappingProvider.GetMapping(sourceNodeClass.ClassName);
-        var targetClassGuid = sourceNodeClass.ClassGUID;
-        var targetClassInfo = DataClassInfoProvider.ProviderObject.Get(sourceNodeClass.ClassName);
-        if (mapping is not null)
+
+        var formerUrlPaths = GetFormerUrlPaths(cmsTree);
+        var directive = GetDirective(new ContentItemSource(cmsTree, sourceNodeClass.ClassName, mapping?.TargetClassName ?? sourceNodeClass.ClassName, sourceSite, formerUrlPaths, childNodes));
+
+        if (directive is DropDirective)
         {
-            targetClassInfo = DataClassInfoProvider.ProviderObject.Get(mapping.TargetClassName) ?? throw new InvalidOperationException($"Unable to find target class '{mapping.TargetClassName}'");
-            targetClassGuid = targetClassInfo.ClassGUID;
+            logger.LogInformation("Content item skipped. Reason: {Reason} NodeGUID: {NodeGUID} NodeAliasPath: {NodeAliasPath}", "Explicit drop directive", cmsTree.NodeGUID, cmsTree.NodeAliasPath);
+            yield break;
         }
 
+        string targetClassName = directive.TargetTypeOverride ?? mapping?.TargetClassName ?? sourceNodeClass.ClassName;
+        var targetClassInfo = DataClassInfoProvider.ProviderObject.Get(targetClassName);
         bool migratedAsContentFolder = sourceNodeClass.ClassName.Equals("cms.folder", StringComparison.InvariantCultureIgnoreCase) && !configuration.UseDeprecatedFolderPageType.GetValueOrDefault(false);
 
         if (targetClassInfo is null && !migratedAsContentFolder)
         {
-            logger.LogError("Could not map content item. Target class DataClassInfo ClassGUID={ClassGUID} not found.", targetClassGuid);
+            logger.LogError("Could not map source node NodeGUID={NodeGuid}. Target class with name {ClassName} was not identified in target instance.", cmsTree.NodeGUID, targetClassName);
             yield break;
         }
 
         var contentItemGuid = spoiledGuidContext.EnsureNodeGuid(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsTree.NodeID);
 
-        var formerUrlPaths = GetFormerUrlPaths(cmsTree);
-
-        var directive = GetDirective(new ContentItemSource(cmsTree, sourceNodeClass.ClassName, mapping?.TargetClassName ?? sourceNodeClass.ClassName, sourceSite, formerUrlPaths, childNodes));
         directive.ContentItemGuid = contentItemGuid;
         directive.TargetClassInfo = targetClassInfo;
         directive.Node = cmsTree;
         yield return directive;
 
-        if (directive is DropDirective)
-        {
-            logger.LogInformation("Content item skipped. Reason: {Explicit drop directive} NodeGUID: {NodeGUID} NodeAliasPath: {NodeAliasPath}", "Explicit drop directive", cmsTree.NodeGUID, cmsTree.NodeAliasPath);
-            yield break;
-        }
-        else if (directive is ConvertToWidgetDirective && cmsTree.NodeHasChildren == true && !deferred)
+        if (directive is ConvertToWidgetDirective && cmsTree.NodeHasChildren == true && !deferred)
         {
             deferredTreeNodesService.AddNode(cmsTree);
             yield break;
         }
-
 
         bool isMappedTypeReusable = targetClassInfo?.ClassContentTypeType is ClassContentTypeType.REUSABLE || configuration.ClassNamesConvertToContentHub.Contains(sourceNodeClass.ClassName);
         if (isMappedTypeReusable)
@@ -153,7 +147,7 @@ public class ContentItemMapper(
             ContentItemName = safeNodeName,
             ContentItemIsReusable = isMappedTypeReusable,
             ContentItemIsSecured = cmsTree.IsSecuredNode ?? false,
-            ContentItemDataClassGuid = migratedAsContentFolder ? null : targetClassGuid,
+            ContentItemDataClassGuid = migratedAsContentFolder ? null : targetClassInfo!.ClassGUID,
             ContentItemChannelGuid = isMappedTypeReusable ? null : siteGuid,
             ContentItemContentFolderGUID = contentFolderGuid,
             ContentItemWorkspaceGUID = workspaceGuid
@@ -200,7 +194,7 @@ public class ContentItemMapper(
                 List<IUmtModel>? migratedDraft = null;
                 try
                 {
-                    migratedDraft = MigrateDraft(draftVersion, cmsTree, sourceFormDefinition, targetFormDefinition!, contentItemGuid, languageGuid, sourceNodeClass, websiteChannelInfo, sourceSite, mapping).ToList();
+                    migratedDraft = MigrateDraft(draftVersion, cmsTree, sourceFormDefinition, targetClassInfo!.ClassFormDefinition, contentItemGuid, languageGuid, sourceNodeClass, websiteChannelInfo, sourceSite, mapping).ToList();
                     draftMigrated = true;
                 }
                 catch
@@ -325,9 +319,9 @@ public class ContentItemMapper(
 
             if (!migratedAsContentFolder)
             {
-                var dataModel = new ContentItemDataModel { ContentItemDataGUID = commonDataModel.ContentItemCommonDataGUID, ContentItemDataCommonDataGuid = commonDataModel.ContentItemCommonDataGUID, ContentItemContentTypeName = mapping?.TargetClassName ?? sourceNodeClass.ClassName };
+                var dataModel = new ContentItemDataModel { ContentItemDataGUID = commonDataModel.ContentItemCommonDataGUID, ContentItemDataCommonDataGuid = commonDataModel.ContentItemCommonDataGUID, ContentItemContentTypeName = targetClassInfo!.ClassName };
 
-                var fi = new FormInfo(targetFormDefinition);
+                var fi = new FormInfo(targetClassInfo!.ClassFormDefinition);
 
                 var includedMetadata = configuration.IncludeExtendedMetadata.GetValueOrDefault(false) ? IncludedMetadata.Extended : IncludedMetadata.Basic;
                 FormFieldInfo[] commonFields = UnpackReusableFieldSchemas(fi.GetFields<FormSchemaInfo>()).ToArray();
@@ -357,8 +351,6 @@ public class ContentItemMapper(
                         yield return model;
                     }
                 }
-
-                string targetClassName = mapping?.TargetClassName ?? sourceNodeClass.ClassName;
 
                 // Map legacy metadata fields
                 // Fields from custom class mapping
@@ -915,7 +907,7 @@ public class ContentItemMapper(
                     {
                         // relation to other document
                         var convertedRelation = relationshipService.GetNodeRelationships(documentSourceObjectContext.CmsTree.NodeID, sourceNodeClass.ClassName, field.Guid)
-                            .Select(r => new WebPageRelatedItem { WebPageGuid = spoiledGuidContext.EnsureNodeGuid(r.RightNode!.NodeGUID, r.RightNode.NodeSiteID, r.RightNode.NodeID) });
+                            .Select(r => new { Identifier = spoiledGuidContext.EnsureNodeGuid(r.RightNode!.NodeGUID, r.RightNode.NodeSiteID, r.RightNode.NodeID) });
 
                         target.SetValueAsJson(targetFieldName, valueConvertor.Invoke(convertedRelation, convertorContext));
                     }
