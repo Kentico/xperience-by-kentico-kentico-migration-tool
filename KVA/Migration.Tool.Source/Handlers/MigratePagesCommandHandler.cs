@@ -335,7 +335,6 @@ public class MigratePagesCommandHandler(
                         ? (Guid?)null
                         : spoiledGuidContext.EnsureNodeGuid(ksNodeParent);
 
-                    DataClassInfo targetClass = null!;
                     var classMapping = classMappingProvider.GetMapping(ksNodeClass.ClassName);
 
                     var producedReusableSchemas = reusableSchemaBuilders.Where(x =>
@@ -348,17 +347,12 @@ public class MigratePagesCommandHandler(
                         continue;
                     }
 
-                    targetClass = classMapping != null
-                        ? DataClassInfoProvider.ProviderObject.Get(classMapping.TargetClassName)
-                        : DataClassInfoProvider.ProviderObject.Get(ksNodeClass.ClassGUID);
-
                     var results = mapper.Map(new CmsTreeMapperSource(
                         ksNode,
                         safeNodeName,
                         ksSite.SiteGUID,
                         nodeParentGuid,
                         cultureCodeToLanguageGuid!,
-                        targetClass?.ClassFormDefinition,
                         ksNodeClass.ClassFormDefinition,
                         migratedDocuments,
                         ksSite,
@@ -424,11 +418,13 @@ public class MigratePagesCommandHandler(
                             }
                         }
 
+                        var targetClassInfo = contentItemDirective!.TargetClassInfo;
+
                         if (contentItemDirective is not DropDirective)
                         {
                             AssertVersionStatusRule(commonDataInfos);
 
-                            if (webPageItemInfo != null && targetClass is { ClassWebPageHasUrl: true })
+                            if (webPageItemInfo != null && targetClassInfo is { ClassWebPageHasUrl: true })
                             {
                                 await GenerateDefaultPageUrlPath(ksNode, webPageItemInfo);
                                 if (!contentItemDirective!.RegenerateUrlPath)

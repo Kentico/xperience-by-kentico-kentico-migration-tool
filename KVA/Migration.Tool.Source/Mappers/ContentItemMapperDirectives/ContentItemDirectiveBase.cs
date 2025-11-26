@@ -14,6 +14,7 @@ internal abstract class ContentItemDirectiveBase : IUmtModel
     public bool RegenerateUrlPath { get; set; } = false;
     public IEnumerable<FormerPageUrlPath>? FormerUrlPaths { get; set; }
     public List<(string fieldName, ICmsTree)> ChildLinks { get; set; } = [];
+    public string? TargetTypeOverride { get; set; }
 
     #region Mapping results, used for postprocessing
     public Guid ContentItemGuid { get; set; }

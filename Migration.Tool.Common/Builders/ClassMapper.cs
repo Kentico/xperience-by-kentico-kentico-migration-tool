@@ -40,9 +40,9 @@ public record FieldMapping(string TargetFieldName, string SourceClassName, strin
 
 public record FieldMappingWithConversion(string TargetFieldName, string SourceClassName, string SourceFieldName, bool IsTemplate, Func<object?, IConvertorContext, object?> Converter) : IFieldMapping;
 
-public class MultiClassMapping(string targetClassName, Action<DataClassInfo> classPatcher) : IClassMapping
+public class MultiClassMapping(string targetClassName, Action<DataClassInfo> classPatcher = null) : IClassMapping
 {
-    public void PatchTargetDataClass(DataClassInfo target) => classPatcher(target);
+    public void PatchTargetDataClass(DataClassInfo target) => classPatcher?.Invoke(target);
 
     ICollection<string> IClassMapping.SourceClassNames => SourceClassNames;
     IList<IFieldMapping> IClassMapping.Mappings => Mappings;
