@@ -72,4 +72,14 @@ public class ConfigurationNames
     public const string XbyKApiSettings = "XbyKApiSettings";
 
     #endregion
+
+    #region Commerce Configuration
+
+    public const string CommerceConfiguration = "CommerceConfiguration";
+    public const string OrderStatuses = "OrderStatuses";
+    public const string OrderFromDate = "OrderFromDate";
+    public const string OrderToDate = "OrderToDate";
+    public const string CommerceSiteName = "CommerceSiteName";
+
+    #endregion
 }
