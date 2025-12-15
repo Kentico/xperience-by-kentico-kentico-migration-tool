@@ -72,7 +72,7 @@ public class MigrateCustomersCommandHandler(
             {
                 foreach (var kx13CustomerAddress in kx13Customer.ComAddresses.Where(a => a.AddressGuid.HasValue))
                 {
-                    var xbkCustomerAddress = CustomerAddressInfo.Provider.Get(kx13CustomerAddress.AddressGuid.Value);
+                    var xbkCustomerAddress = CustomerAddressInfo.Provider.Get(kx13CustomerAddress.AddressGuid!.Value);
                     var mappedAddresses = customerAddressInfoMapper.Map(new CustomerAddressInfoMapperSource(kx13CustomerAddress, customerInfo), xbkCustomerAddress);
                     SaveCustomerAddressUsingKenticoApi(mappedAddresses!, kx13CustomerAddress);
                 }
@@ -258,7 +258,7 @@ public class MigrateCustomersCommandHandler(
     /// </remarks>
     public static Expression<Func<CmsSite, bool>> BuildSiteNameOrFilter(IEnumerable<string> names)
     {
-        var list = names?.Where(n => !string.IsNullOrWhiteSpace(n)).Distinct().ToArray() ?? [];
+        var list = names?.Where(n => !string.IsNullOrWhiteSpace(n)).Distinct().ToArray() ?? Array.Empty<string>();
         // Return 'false' if empty to avoid invalid SQL
         if (list.Length == 0)
         {
