@@ -130,6 +130,12 @@ public class CommandParser : ICommandParser
                 continue;
             }
 
+            if (arg == $"--{MigrateCustomersCommand.Moniker}")
+            {
+                subcommands.Add(new MigrateCustomersCommand());
+                continue;
+            }
+
             throw new InvalidOperationException($"Unknown command '{arg}'");
         }
 
@@ -153,6 +159,7 @@ public class CommandParser : ICommandParser
         WriteCommandDesc($"starts migration of {Green(MigrateMembersCommand.MonikerFriendly)}", $"migrate --{MigrateMembersCommand.Moniker}");
         WriteCommandDesc($"starts migration of {Green(MigrateAttachmentsCommand.MonikerFriendly)}", $"migrate --{MigrateAttachmentsCommand.Moniker}");
         WriteCommandDesc($"starts migration of {Green(MigrateCustomModulesCommand.MonikerFriendly)}", $"migrate --{MigrateCustomModulesCommand.Moniker}");
+        WriteCommandDesc($"starts migration of {Green(MigrateCustomersCommand.MonikerFriendly)}", $"migrate --{MigrateCustomersCommand.Moniker}");
         Console.WriteLine();
         Console.WriteLine($"Command {Green("patch")}: Applies migration patches to XbyK database. Patches are also applied at each run of {Green("migrate")}. Use this command to run patches without migration. " +
             $"Migration patches fix data problems caused by bugs in previous versions of Migration Tool. This command is idempotent - i.e. tolerant to multiple runs.");
