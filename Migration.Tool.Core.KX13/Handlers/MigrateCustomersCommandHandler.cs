@@ -153,6 +153,11 @@ public class MigrateCustomersCommandHandler(
 
         var includedSystemFields = includeSystemFieldsConfig?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? [];
 
+        // Get configured prefix or use default
+        string systemFieldPrefix = !string.IsNullOrWhiteSpace(toolConfiguration.CommerceConfiguration?.SystemFieldPrefix)
+            ? toolConfiguration.CommerceConfiguration.SystemFieldPrefix
+            : CommerceConstants.SYSTEM_FIELD_PREFIX;
+
         // Merge custom fields into XbK class
         var xbkFormInfo = new FormInfo(xbkClass.ClassFormDefinition);
         var kx13FormInfo = new FormInfo(patchedDefinition);
@@ -163,40 +168,66 @@ public class MigrateCustomersCommandHandler(
         {
             var field = kx13FormInfo.GetFormField(columnName);
 
+            bool isSystemFieldMigration = field.System && includedSystemFields.Contains(columnName, StringComparer.OrdinalIgnoreCase);
+
+            // Determine the target field name based on whether it's a system field
+            string targetFieldName = isSystemFieldMigration
+                ? $"{systemFieldPrefix}{columnName}"
+                : columnName;
+
             if (
                 !field.PrimaryKey &&
-                !existingColumns.Contains(columnName)
+                !existingColumns.Contains(targetFieldName)
                 && (includedSystemFields.Contains(columnName, StringComparer.OrdinalIgnoreCase) || !field.System)
             )
             {
-                field.System = false; // no longer system field
+                // Prefix system fields with configured prefix when migrating them
+                if (isSystemFieldMigration)
+                {
+                    field.System = false; // no longer system field
+                    field.Name = targetFieldName;
+                    logger.LogInformation("Added system field '{OriginalFieldName}' as '{PrefixedFieldName}' to {TargetClassName} class",
+                        columnName, targetFieldName, logEntityName);
+                }
+                else
+                {
+                    logger.LogInformation("Added custom field '{FieldName}' to {TargetClassName} class", columnName, logEntityName);
+                }
+
                 xbkFormInfo.AddFormItem(field);
                 addedFieldsCount++;
-                logger.LogInformation("Added custom field '{FieldName}' to {TargetClassName} class", columnName, logEntityName);
+            }
+            else if (!field.PrimaryKey && existingColumns.Contains(targetFieldName))
+            {
+                logger.LogDebug("Field '{FieldName}' already exists in {TargetClassName} class, skipping", targetFieldName, logEntityName);
             }
         }
 
         // Add custom SiteOriginName field if requested and it doesn't exist
-        if (addSiteOriginField &&
-            !existingColumns.Contains(CommerceConstants.SITE_ORIGIN_FIELD_NAME) &&
-            !kx13FormInfo.GetColumnNames().Contains(CommerceConstants.SITE_ORIGIN_FIELD_NAME))
+        if (addSiteOriginField)
         {
-            var siteOriginNameField = new FormFieldInfo
-            {
-                Name = CommerceConstants.SITE_ORIGIN_FIELD_NAME,
-                DataType = FieldDataType.Text,
-                Size = 200,
-                AllowEmpty = true,
-                System = false,
-                Visible = true,
-                Enabled = true,
-                Caption = CommerceConstants.SITE_ORIGIN_FIELD_DISPLAY_NAME,
-                Guid = Guid.NewGuid()
-            };
+            string siteOriginFieldName = $"{systemFieldPrefix}{CommerceConstants.SITE_ORIGIN_FIELD_NAME}";
 
-            xbkFormInfo.AddFormItem(siteOriginNameField);
-            addedFieldsCount++;
-            logger.LogInformation("Added new custom field '{FieldName}' to {TargetClassName} class", CommerceConstants.SITE_ORIGIN_FIELD_NAME, logEntityName);
+            if (!existingColumns.Contains(siteOriginFieldName) &&
+                !kx13FormInfo.GetColumnNames().Contains(CommerceConstants.SITE_ORIGIN_FIELD_NAME))
+            {
+                var siteOriginNameField = new FormFieldInfo
+                {
+                    Name = siteOriginFieldName,
+                    DataType = FieldDataType.Text,
+                    Size = 200,
+                    AllowEmpty = true,
+                    System = false,
+                    Visible = true,
+                    Enabled = true,
+                    Caption = CommerceConstants.SITE_ORIGIN_FIELD_DISPLAY_NAME,
+                    Guid = Guid.NewGuid()
+                };
+
+                xbkFormInfo.AddFormItem(siteOriginNameField);
+                addedFieldsCount++;
+                logger.LogInformation("Added new custom field '{FieldName}' to {TargetClassName} class", siteOriginFieldName, logEntityName);
+            }
         }
 
         if (addedFieldsCount > 0)

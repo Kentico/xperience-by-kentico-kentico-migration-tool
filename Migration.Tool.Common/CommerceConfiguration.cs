@@ -12,4 +12,7 @@ public class CommerceConfiguration
 
     [JsonPropertyName(ConfigurationNames.IncludeAddressSystemFields)]
     public string? IncludeAddressSystemFields { get; set; }
+
+    [JsonPropertyName(ConfigurationNames.SystemFieldPrefix)]
+    public string? SystemFieldPrefix { get; set; }
 }

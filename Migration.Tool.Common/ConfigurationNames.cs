@@ -79,6 +79,7 @@ public class ConfigurationNames
     public const string CommerceSiteNames = "CommerceSiteNames";
     public const string IncludeCustomerSystemFields = "IncludeCustomerSystemFields";
     public const string IncludeAddressSystemFields = "IncludeAddressSystemFields";
+    public const string SystemFieldPrefix = "SystemFieldPrefix";
 
     #endregion
 }
