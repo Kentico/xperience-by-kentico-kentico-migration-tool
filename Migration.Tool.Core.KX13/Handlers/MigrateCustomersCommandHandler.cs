@@ -54,9 +54,7 @@ public class MigrateCustomersCommandHandler(
         {
             logger.LogTrace("Migrating customer {CustomerId} with CustomerGuid {CustomerGuid}", kx13Customer.CustomerId, kx13Customer.CustomerGuid);
 
-            await using var kx13UserContext = await kx13ContextFactory.CreateDbContextAsync(cancellationToken);
-
-            var kx13User = kx13UserContext.CmsUsers.FirstOrDefault(u => u.UserId == kx13Customer.CustomerUserId);
+            var kx13User = kx13Customer.CustomerUser;
             var xbkCustomerInfo = CustomerInfo.Provider.Get(kx13Customer.CustomerGuid);
 
             MemberInfo? xbkMemberInfo = null;
@@ -72,14 +70,11 @@ public class MigrateCustomersCommandHandler(
 
             if (mapped is { Success: true, Item: CustomerInfo customerInfo })
             {
-                foreach (var kx13CustomerAddress in kx13Customer.ComAddresses)
+                foreach (var kx13CustomerAddress in kx13Customer.ComAddresses.Where(a => a.AddressGuid.HasValue))
                 {
-                    if (kx13CustomerAddress.AddressGuid.HasValue)
-                    {
-                        var xbkCustomerAddress = CustomerAddressInfo.Provider.Get(kx13CustomerAddress.AddressGuid.Value);
-                        var mappedAddresses = customerAddressInfoMapper.Map(new CustomerAddressInfoMapperSource(kx13CustomerAddress, customerInfo), xbkCustomerAddress);
-                        SaveCustomerAddressUsingKenticoApi(mappedAddresses!, kx13CustomerAddress);
-                    }
+                    var xbkCustomerAddress = CustomerAddressInfo.Provider.Get(kx13CustomerAddress.AddressGuid.Value);
+                    var mappedAddresses = customerAddressInfoMapper.Map(new CustomerAddressInfoMapperSource(kx13CustomerAddress, customerInfo), xbkCustomerAddress);
+                    SaveCustomerAddressUsingKenticoApi(mappedAddresses!, kx13CustomerAddress);
                 }
             }
         }
@@ -225,7 +220,6 @@ public class MigrateCustomersCommandHandler(
             throw new InvalidOperationException("No commerce site names configured.");
         }
 
-        var query = kx13Context.CmsSites.AsQueryable();
         // Builds: s => (s.SiteName == names[0]) || (s.SiteName == names[1]) || ...
         var predicate = BuildSiteNameOrFilter(commerceSiteNames);
         var commerceSites = await kx13Context.CmsSites
@@ -278,15 +272,10 @@ public class MigrateCustomersCommandHandler(
         var siteNameProp = Expression.Property(param, nameof(CmsSite.SiteName));
 
         // Build first comparison
-        Expression? body = null;
-        foreach (var name in list)
-        {
-            var constant = Expression.Constant(name, typeof(string));
-            var equals = Expression.Equal(siteNameProp, constant); // s.SiteName == name
-
-            body = body == null ? equals : Expression.OrElse(body, equals);
-        }
-
+        // Build the OR expression for all names
+        Expression body = list
+            .Select(name => Expression.Equal(siteNameProp, Expression.Constant(name, typeof(string))))
+            .Aggregate((left, right) => Expression.OrElse(left, right));
         return Expression.Lambda<Func<CmsSite, bool>>(body!, param);
     }
 

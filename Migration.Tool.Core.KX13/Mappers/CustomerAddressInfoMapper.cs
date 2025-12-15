@@ -39,7 +39,7 @@ public class CustomerAddressInfoMapper(
         // Split personal name into first and last name
         var nameParts = address.AddressPersonalName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         target.CustomerAddressFirstName = nameParts.Length > 0 ? nameParts[0] : string.Empty;
-        target.CustomerAddressLastName = nameParts.Length > 1 ? nameParts[1] : string.Empty;
+        target.CustomerAddressLastName = nameParts.Length > 1 ? string.Join(" ", nameParts.Skip(1)) : string.Empty;
 
         target.CustomerAddressLine1 = address.AddressLine1;
         target.CustomerAddressLine2 = address.AddressLine2;
