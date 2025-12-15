@@ -258,7 +258,7 @@ public class MigrateCustomersCommandHandler(
     /// </remarks>
     public static Expression<Func<CmsSite, bool>> BuildSiteNameOrFilter(IEnumerable<string> names)
     {
-        var list = names?.Where(n => !string.IsNullOrWhiteSpace(n)).Distinct().ToArray() ?? Array.Empty<string>();
+        var list = names?.Where(n => !string.IsNullOrWhiteSpace(n)).Distinct().ToArray() ?? [];
         // Return 'false' if empty to avoid invalid SQL
         if (list.Length == 0)
         {
@@ -271,11 +271,11 @@ public class MigrateCustomersCommandHandler(
         // Member: s.SiteName
         var siteNameProp = Expression.Property(param, nameof(CmsSite.SiteName));
 
-        // Build first comparison
         // Build the OR expression for all names
         Expression body = list
             .Select(name => Expression.Equal(siteNameProp, Expression.Constant(name, typeof(string))))
-            .Aggregate((left, right) => Expression.OrElse(left, right));
+            .Aggregate(Expression.OrElse);
+
         return Expression.Lambda<Func<CmsSite, bool>>(body!, param);
     }
 
