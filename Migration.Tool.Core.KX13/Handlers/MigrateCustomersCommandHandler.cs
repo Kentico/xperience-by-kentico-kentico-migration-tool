@@ -153,10 +153,7 @@ public class MigrateCustomersCommandHandler(
 
         var includedSystemFields = includeSystemFieldsConfig?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? [];
 
-        // Get configured prefix or use default
-        string systemFieldPrefix = toolConfiguration.CommerceConfiguration?.SystemFieldPrefix != null
-            ? toolConfiguration.CommerceConfiguration.SystemFieldPrefix
-            : CommerceConstants.SYSTEM_FIELD_PREFIX;
+        string systemFieldPrefix = CommerceConstants.GetSystemFieldPrefix(toolConfiguration);
 
         // Merge custom fields into XbK class
         var xbkFormInfo = new FormInfo(xbkClass.ClassFormDefinition);

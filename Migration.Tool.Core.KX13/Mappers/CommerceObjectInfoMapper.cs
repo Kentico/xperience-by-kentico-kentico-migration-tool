@@ -48,10 +48,7 @@ public abstract class CommerceObjectInfoMapper<TSourceEntity, TTargetEntity, TSo
 
         var customizedFieldInfos = kxpClassFacade.GetCustomizedFieldInfosAll(GetTargetObjectClassName());
 
-        // Get configured prefix or use default
-        string systemFieldPrefix = toolConfiguration.CommerceConfiguration?.SystemFieldPrefix != null
-            ? toolConfiguration.CommerceConfiguration.SystemFieldPrefix
-            : CommerceConstants.SYSTEM_FIELD_PREFIX;
+        string systemFieldPrefix = CommerceConstants.GetSystemFieldPrefix(toolConfiguration);
 
         MapSystemAndCustomFields(source, target, customizedFieldInfos, systemFieldPrefix);
 
