@@ -157,6 +157,21 @@ public static class ConfigurationValidator
         }
 
         #endregion
+
+        #region Commerce configuration validation
+
+        var commerceConfiguration = settings?.GetSection(ConfigurationNames.CommerceConfiguration);
+        if (commerceConfiguration is not null)
+        {
+            var systemFieldPrefix = commerceConfiguration.GetValue<string?>(ConfigurationNames.SystemFieldPrefix);
+            if (systemFieldPrefix is not null && string.IsNullOrWhiteSpace(systemFieldPrefix))
+            {
+                yield return new ValidationMessage(ValidationMessageType.Error,
+                    $"'{ConfigurationNames.CommerceConfiguration}:{ConfigurationNames.SystemFieldPrefix}' cannot be empty or whitespace when specified. Either provide a valid prefix value or remove the configuration to use the default.");
+            }
+        }
+
+        #endregion
     }
 
     #region "Helper methods"
