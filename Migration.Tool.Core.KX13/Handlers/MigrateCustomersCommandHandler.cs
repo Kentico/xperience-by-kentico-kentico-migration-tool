@@ -175,9 +175,9 @@ public class MigrateCustomersCommandHandler(
             {
                 logger.LogWarning(
                     "System field '{FieldName}' already starts with configured prefix '{Prefix}'. " +
-                    "This will result in double-prefixing (e.g., '{Prefix}{FieldName}'). " +
+                    "This will result in double-prefixing ('{TargetFieldName}'). " +
                     "Consider renaming the source field or adjusting the prefix configuration.",
-                    columnName, systemFieldPrefix, systemFieldPrefix, columnName);
+                    columnName, systemFieldPrefix, $"{systemFieldPrefix}{columnName}");
             }
 
             // Determine the target field name based on whether it's a system field
