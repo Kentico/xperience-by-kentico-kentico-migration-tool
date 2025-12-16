@@ -31,7 +31,9 @@ public abstract class CommerceObjectInfoMapper<TSourceEntity, TTargetEntity, TSo
         {
             string fieldName = customizedFieldInfo.FieldName;
 
-            // Strip the system field prefix (if present - field was system in source instance) to find the original source field name
+            // If the field name in the target has the system field prefix, it corresponds to a system field that was migrated and prefixed during the MigrateCommerceClass process.
+            // In this case, strip the prefix to get the original source field name.
+            // For custom fields (without the prefix in the target), the field name maps directly to the custom field in the source.
             string sourceFieldName = fieldName.StartsWith(systemFieldPrefix, StringComparison.OrdinalIgnoreCase)
                 ? fieldName[systemFieldPrefix.Length..]
                 : fieldName;
