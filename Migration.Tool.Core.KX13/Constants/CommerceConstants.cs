@@ -1,4 +1,6 @@
-﻿namespace Migration.Tool.Core.KX13.Constants;
+using Migration.Tool.Common;
+
+namespace Migration.Tool.Core.KX13.Constants;
 
 public static class CommerceConstants
 {

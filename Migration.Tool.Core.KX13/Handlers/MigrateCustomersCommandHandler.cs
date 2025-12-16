@@ -15,6 +15,7 @@ using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Core.KX13.Constants;
 using Migration.Tool.Core.KX13.Contexts;
+using Migration.Tool.Core.KX13.Helpers;
 using Migration.Tool.Core.KX13.Mappers;
 using Migration.Tool.KX13.Context;
 using Migration.Tool.KX13.Models;
@@ -153,10 +154,7 @@ public class MigrateCustomersCommandHandler(
 
         var includedSystemFields = includeSystemFieldsConfig?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? [];
 
-        // Get configured prefix or use default
-        string systemFieldPrefix = toolConfiguration.CommerceConfiguration?.SystemFieldPrefix != null
-            ? toolConfiguration.CommerceConfiguration.SystemFieldPrefix
-            : CommerceConstants.SYSTEM_FIELD_PREFIX;
+        string systemFieldPrefix = CommerceHelper.GetSystemFieldPrefix(toolConfiguration);
 
         // Merge custom fields into XbK class
         var xbkFormInfo = new FormInfo(xbkClass.ClassFormDefinition);
