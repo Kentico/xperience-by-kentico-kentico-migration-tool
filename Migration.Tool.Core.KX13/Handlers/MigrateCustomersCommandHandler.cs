@@ -154,7 +154,7 @@ public class MigrateCustomersCommandHandler(
         var includedSystemFields = includeSystemFieldsConfig?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? [];
 
         // Get configured prefix or use default
-        string systemFieldPrefix = !string.IsNullOrWhiteSpace(toolConfiguration.CommerceConfiguration?.SystemFieldPrefix)
+        string systemFieldPrefix = toolConfiguration.CommerceConfiguration?.SystemFieldPrefix != null
             ? toolConfiguration.CommerceConfiguration.SystemFieldPrefix
             : CommerceConstants.SYSTEM_FIELD_PREFIX;
 
