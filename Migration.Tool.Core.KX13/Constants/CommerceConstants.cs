@@ -1,3 +1,5 @@
+using Migration.Tool.Common;
+
 namespace Migration.Tool.Core.KX13.Constants;
 
 public static class CommerceConstants
@@ -32,7 +34,7 @@ public static class CommerceConstants
     /// </summary>
     /// <remarks>
     /// This constant serves as the default/fallback value when no custom prefix is configured
-    /// in <see cref="Migration.Tool.Common.CommerceConfiguration.SystemFieldPrefix"/>.
+    /// in <see cref="CommerceConfiguration.SystemFieldPrefix"/>.
     /// System fields from the source instance are prefixed with this value to avoid conflicts
     /// with XbK's internal system fields while making it clear they originated from the source system.
     /// </remarks>
