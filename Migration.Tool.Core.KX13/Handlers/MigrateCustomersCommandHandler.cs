@@ -170,6 +170,16 @@ public class MigrateCustomersCommandHandler(
 
             bool isSystemFieldMigration = field.System && includedSystemFields.Contains(columnName, StringComparer.OrdinalIgnoreCase);
 
+            // Check if source field name already contains the configured prefix
+            if (isSystemFieldMigration && columnName.StartsWith(systemFieldPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                logger.LogWarning(
+                    "System field '{FieldName}' already starts with configured prefix '{Prefix}'. " +
+                    "This will result in double-prefixing (e.g., '{Prefix}{FieldName}'). " +
+                    "Consider renaming the source field or adjusting the prefix configuration.",
+                    columnName, systemFieldPrefix, systemFieldPrefix, columnName);
+            }
+
             // Determine the target field name based on whether it's a system field
             string targetFieldName = isSystemFieldMigration
                 ? $"{systemFieldPrefix}{columnName}"
