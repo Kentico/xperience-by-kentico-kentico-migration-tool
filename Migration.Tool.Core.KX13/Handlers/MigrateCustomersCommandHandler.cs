@@ -170,20 +170,28 @@ public class MigrateCustomersCommandHandler(
 
             bool isSystemFieldMigration = field.System && includedSystemFields.Contains(columnName, StringComparer.OrdinalIgnoreCase);
 
-            // Check if source field name already contains the configured prefix
-            if (isSystemFieldMigration && columnName.StartsWith(systemFieldPrefix, StringComparison.OrdinalIgnoreCase))
-            {
-                logger.LogWarning(
-                    "System field '{FieldName}' already starts with configured prefix '{Prefix}'. " +
-                    "This will result in double-prefixing ('{TargetFieldName}'). " +
-                    "Consider renaming the source field or adjusting the prefix configuration.",
-                    columnName, systemFieldPrefix, $"{systemFieldPrefix}{columnName}");
-            }
-
             // Determine the target field name based on whether it's a system field
-            string targetFieldName = isSystemFieldMigration
-                ? $"{systemFieldPrefix}{columnName}"
-                : columnName;
+            string targetFieldName;
+            if (isSystemFieldMigration)
+            {
+                // Check if source field name already contains the configured prefix to avoid double-prefixing
+                if (columnName.StartsWith(systemFieldPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    logger.LogWarning(
+                        "System field '{FieldName}' already starts with configured prefix '{Prefix}'. " +
+                        "Using the field name as-is to avoid double-prefixing.",
+                        columnName, systemFieldPrefix);
+                    targetFieldName = columnName;
+                }
+                else
+                {
+                    targetFieldName = $"{systemFieldPrefix}{columnName}";
+                }
+            }
+            else
+            {
+                targetFieldName = columnName;
+            }
 
             if (
                 !field.PrimaryKey &&
