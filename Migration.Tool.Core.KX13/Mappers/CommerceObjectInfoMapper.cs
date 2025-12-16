@@ -7,6 +7,7 @@ using Migration.Tool.Common.Helpers;
 using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.Core.KX13.Constants;
 using Migration.Tool.Core.KX13.Contexts;
+using Migration.Tool.Core.KX13.Helpers;
 using Migration.Tool.KXP.Api;
 
 namespace Migration.Tool.Core.KX13.Mappers;
@@ -48,7 +49,7 @@ public abstract class CommerceObjectInfoMapper<TSourceEntity, TTargetEntity, TSo
 
         var customizedFieldInfos = kxpClassFacade.GetCustomizedFieldInfosAll(GetTargetObjectClassName());
 
-        string systemFieldPrefix = CommerceConstants.GetSystemFieldPrefix(toolConfiguration);
+        string systemFieldPrefix = CommerceHelper.GetSystemFieldPrefix(toolConfiguration);
 
         MapSystemAndCustomFields(source, target, customizedFieldInfos, systemFieldPrefix);
 

@@ -1,5 +1,3 @@
-using Migration.Tool.Common;
-
 namespace Migration.Tool.Core.KX13.Constants;
 
 public static class CommerceConstants
@@ -34,22 +32,9 @@ public static class CommerceConstants
     /// </summary>
     /// <remarks>
     /// This constant serves as the default/fallback value when no custom prefix is configured
-    /// in <see cref="CommerceConfiguration.SystemFieldPrefix"/>.
+    /// in <see cref="Migration.Tool.Common.CommerceConfiguration.SystemFieldPrefix"/>.
     /// System fields from the source instance are prefixed with this value to avoid conflicts
     /// with XbK's internal system fields while making it clear they originated from the source system.
     /// </remarks>
     public const string SYSTEM_FIELD_PREFIX = "xp_";
-
-    /// <summary>
-    /// Gets the configured system field prefix or the default value.
-    /// </summary>
-    /// <param name="toolConfiguration">The tool configuration instance.</param>
-    /// <returns>The configured system field prefix from <see cref="CommerceConfiguration.SystemFieldPrefix"/> 
-    /// or <see cref="SYSTEM_FIELD_PREFIX"/> if not configured.</returns>
-    public static string GetSystemFieldPrefix(ToolConfiguration toolConfiguration)
-    {
-        return toolConfiguration.CommerceConfiguration?.SystemFieldPrefix != null
-            ? toolConfiguration.CommerceConfiguration.SystemFieldPrefix
-            : SYSTEM_FIELD_PREFIX;
-    }
 }
