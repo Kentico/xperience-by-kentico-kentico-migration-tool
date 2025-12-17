@@ -166,21 +166,21 @@ public class MigrateCustomersCommandHandler(
         {
             var field = kx13FormInfo.GetFormField(columnName);
 
-            bool isSystemFieldMigration = field.System && includedSystemFields.Contains(columnName, StringComparer.OrdinalIgnoreCase);
+            bool isIncludedSystemField = field.System && includedSystemFields.Contains(columnName, StringComparer.OrdinalIgnoreCase);
 
             // Determine the target field name based on whether it's a system field
-            string targetFieldName = isSystemFieldMigration
+            string targetFieldName = field.System
                 ? $"{systemFieldPrefix}{columnName}"
                 : columnName;
 
             if (
                 !field.PrimaryKey &&
+                (isIncludedSystemField || !field.System) &&
                 !existingColumns.Contains(targetFieldName)
-                && (includedSystemFields.Contains(columnName, StringComparer.OrdinalIgnoreCase) || !field.System)
             )
             {
                 // Prefix system fields with configured prefix when migrating them
-                if (isSystemFieldMigration)
+                if (isIncludedSystemField)
                 {
                     field.System = false; // no longer system field
                     field.Name = targetFieldName;
