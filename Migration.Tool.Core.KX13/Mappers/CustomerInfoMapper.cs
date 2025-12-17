@@ -3,8 +3,7 @@ using CMS.Membership;
 
 using Microsoft.Extensions.Logging;
 
-using Migration.Tool.Common.Abstractions;
-using Migration.Tool.Common.Helpers;
+using Migration.Tool.Common;
 using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.Core.KX13.Constants;
 using Migration.Tool.Core.KX13.Contexts;
@@ -18,14 +17,17 @@ public class CustomerInfoMapper(
     ILogger<CustomerInfoMapper> logger,
     PrimaryKeyMappingContext primaryKeyMappingContext,
     IProtocol protocol,
-    KxpClassFacade kxpClassFacade)
-    : EntityMapperBase<CustomerInfoMapperSource, CustomerInfo>(logger, primaryKeyMappingContext, protocol)
+    KxpClassFacade kxpClassFacade,
+    ToolConfiguration toolConfiguration)
+    : CommerceObjectInfoMapper<CustomerInfoMapperSource, CustomerInfo, KX13M.ComCustomer>(logger, primaryKeyMappingContext, protocol, kxpClassFacade, toolConfiguration)
 {
+    protected override string TargetObjectClassName => CustomerInfo.TYPEINFO.ObjectClassName;
+
     protected override CustomerInfo? CreateNewInstance(CustomerInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
-    protected override CustomerInfo MapInternal(CustomerInfoMapperSource source, CustomerInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override void MapCoreFields(CustomerInfoMapperSource source, CustomerInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
-        var (customer, commerceSiteName, member) = source;
+        var (customer, _, member) = source;
 
         if (!newInstance && customer.CustomerGuid != target.CustomerGUID)
         {
@@ -46,25 +48,22 @@ public class CustomerInfoMapper(
         target.CustomerLastName = customer.CustomerLastName;
         target.CustomerEmail = customer.CustomerEmail;
         target.CustomerPhone = customer.CustomerPhone;
-
-        var customized = kxpClassFacade.GetCustomizedFieldInfosAll(CustomerInfo.TYPEINFO.ObjectClassName);
-
-        var channelNameField = customized.FirstOrDefault(x => x.FieldName == CommerceConstants.SITE_ORIGIN_FIELD_NAME);
-        if (channelNameField is not null)
-        {
-            target.SetValue(channelNameField.FieldName, commerceSiteName);
-        }
-
-        foreach (var customizedFieldInfo in customized)
-        {
-            string fieldName = customizedFieldInfo.FieldName;
-
-            if (ReflectionHelper<KX13M.ComCustomer>.TryGetPropertyValue(customer, fieldName, StringComparison.InvariantCultureIgnoreCase, out object? value))
-            {
-                target.SetValue(fieldName, value);
-            }
-        }
-
-        return target;
     }
+
+    protected override void MapSystemAndCustomFields(CustomerInfoMapperSource source, CustomerInfo target, IEnumerable<CustomizedFieldInfo> customizedFieldInfos, string systemFieldPrefix)
+    {
+        var (_, commerceSiteName, _) = source;
+
+        string siteOriginFieldName = $"{systemFieldPrefix}{CommerceConstants.SITE_ORIGIN_FIELD_NAME}";
+
+        var siteOriginField = customizedFieldInfos.FirstOrDefault(fi => string.Equals(fi.FieldName, siteOriginFieldName, StringComparison.OrdinalIgnoreCase));
+        if (siteOriginField is not null)
+        {
+            target.SetValue(siteOriginField.FieldName, commerceSiteName);
+        }
+
+        base.MapSystemAndCustomFields(source, target, customizedFieldInfos, systemFieldPrefix);
+    }
+
+    protected override KX13M.ComCustomer GetSourceModel(CustomerInfoMapperSource source) => source.Customer;
 }

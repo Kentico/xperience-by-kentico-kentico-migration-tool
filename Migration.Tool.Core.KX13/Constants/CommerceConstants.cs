@@ -1,4 +1,6 @@
-﻿namespace Migration.Tool.Core.KX13.Constants;
+using Migration.Tool.Common;
+
+namespace Migration.Tool.Core.KX13.Constants;
 
 public static class CommerceConstants
 {
@@ -26,4 +28,15 @@ public static class CommerceConstants
     /// Site origin custom field display name.
     /// </summary>
     public const string SITE_ORIGIN_FIELD_DISPLAY_NAME = "Site Origin Name";
+
+    /// <summary>
+    /// Default prefix applied to system fields when migrating them to the target instance.
+    /// </summary>
+    /// <remarks>
+    /// This constant serves as the default/fallback value when no custom prefix is configured
+    /// in <see cref="CommerceConfiguration.SystemFieldPrefix"/>.
+    /// System fields from the source instance are prefixed with this value to avoid conflicts
+    /// with XbK's internal system fields while making it clear they originated from the source system.
+    /// </remarks>
+    public const string SYSTEM_FIELD_PREFIX = "xp_";
 }

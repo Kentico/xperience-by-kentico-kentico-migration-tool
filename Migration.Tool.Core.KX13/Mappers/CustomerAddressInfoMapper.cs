@@ -1,8 +1,8 @@
 ﻿using CMS.Commerce;
 
 using Microsoft.Extensions.Logging;
-using Migration.Tool.Common.Abstractions;
-using Migration.Tool.Common.Helpers;
+
+using Migration.Tool.Common;
 using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.Core.KX13.Contexts;
 using Migration.Tool.KX13.Models;
@@ -12,17 +12,19 @@ namespace Migration.Tool.Core.KX13.Mappers;
 
 public record CustomerAddressInfoMapperSource(ComAddress Address, CustomerInfo Customer);
 
-
 public class CustomerAddressInfoMapper(
     ILogger<CustomerAddressInfoMapper> logger,
     PrimaryKeyMappingContext primaryKeyMappingContext,
     IProtocol protocol,
-    KxpClassFacade kxpClassFacade)
-    : EntityMapperBase<CustomerAddressInfoMapperSource, CustomerAddressInfo>(logger, primaryKeyMappingContext, protocol)
+    KxpClassFacade kxpClassFacade,
+    ToolConfiguration toolConfiguration)
+    : CommerceObjectInfoMapper<CustomerAddressInfoMapperSource, CustomerAddressInfo, ComAddress>(logger, primaryKeyMappingContext, protocol, kxpClassFacade, toolConfiguration)
 {
+    protected override string TargetObjectClassName => CustomerAddressInfo.TYPEINFO.ObjectClassName;
+
     protected override CustomerAddressInfo? CreateNewInstance(CustomerAddressInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
-    protected override CustomerAddressInfo MapInternal(CustomerAddressInfoMapperSource source, CustomerAddressInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
+    protected override void MapCoreFields(CustomerAddressInfoMapperSource source, CustomerAddressInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
     {
         var (address, customer) = source;
 
@@ -48,19 +50,7 @@ public class CustomerAddressInfoMapper(
         target.CustomerAddressZip = address.AddressZip;
         target.CustomerAddressPhone = address.AddressPhone;
         target.CustomerAddressEmail = customer.CustomerEmail;
-
-        var customized = kxpClassFacade.GetCustomizedFieldInfosAll(CustomerAddressInfo.TYPEINFO.ObjectClassName);
-
-        foreach (var customizedFieldInfo in customized)
-        {
-            string fieldName = customizedFieldInfo.FieldName;
-
-            if (ReflectionHelper<ComAddress>.TryGetPropertyValue(address, fieldName, StringComparison.InvariantCultureIgnoreCase, out object? value))
-            {
-                target.SetValue(fieldName, value);
-            }
-        }
-
-        return target;
     }
+
+    protected override ComAddress GetSourceModel(CustomerAddressInfoMapperSource source) => source.Address;
 }
