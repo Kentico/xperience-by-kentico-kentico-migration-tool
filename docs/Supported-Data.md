@@ -1,5 +1,10 @@
 # Supported Data
 
+> **Related Guides:**
+> - [Plan Your Migration Strategy](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/plan-your-strategy-for-migrating-features) - Effort estimates (low/medium/high) for each feature
+> - [Upgrade Walkthrough](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-walkthrough) - See migration in action with Dancing Goat
+> - [Complete Documentation Hub](GUIDES.md) - All upgrade resources
+
 The Kentico Migration Tool does not transfer all data available in the source instance. Xperience by Kentico currently provides a smaller, more focused set of features. As a result, some objects are discarded or migrated to a suitable alternative.
 
 This tool only supports content and objects **stored in the database** and related binary data on the file system, such as media library files. Code, customizations, and any other types of content need to be migrated manually to the target project and adjusted for Xperience by Kentico.

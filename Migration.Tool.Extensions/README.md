@@ -1,5 +1,11 @@
 # Migration Tool customization
 
+> **Companion Guides:** This document shows **HOW** to implement custom migrations. For understanding **WHEN** and **WHY** to use each approach:
+> - [Widget Migration Introduction](https://docs.kentico.com/guides/development/upgrade-deep-dives/upgrade-widgets-introduction) - Choose the right migration strategy
+> - [Transform Widget Properties](https://docs.kentico.com/guides/development/upgrade-deep-dives/transform-widget-properties) - Detailed examples and patterns
+> - [Remodel Page Types](https://docs.kentico.com/guides/development/upgrade-deep-dives/remodel-page-types-as-reusable-field-schemas) - Content modeling best practices
+> - [All Upgrade Resources](../docs/GUIDES.md) - Complete documentation hub
+
 To create custom migrations:
 
 1. Create the custom migration class:
