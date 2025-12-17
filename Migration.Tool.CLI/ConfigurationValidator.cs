@@ -163,6 +163,18 @@ public static class ConfigurationValidator
         var commerceConfiguration = settings?.GetSection(ConfigurationNames.CommerceConfiguration);
         if (commerceConfiguration is not null)
         {
+            var commerceSiteNames = commerceConfiguration.GetSection(ConfigurationNames.CommerceSiteNames).Get<List<string>?>();
+            if (commerceSiteNames is null || commerceSiteNames.Count == 0)
+            {
+                yield return new ValidationMessage(ValidationMessageType.Error,
+                    $"'{ConfigurationNames.CommerceConfiguration}:{ConfigurationNames.CommerceSiteNames}' must contain at least one site name when '{ConfigurationNames.CommerceConfiguration}' is specified.");
+            }
+            else if (commerceSiteNames.Any(string.IsNullOrWhiteSpace))
+            {
+                yield return new ValidationMessage(ValidationMessageType.Error,
+                    $"'{ConfigurationNames.CommerceConfiguration}:{ConfigurationNames.CommerceSiteNames}' cannot contain empty or whitespace values.");
+            }
+
             var systemFieldPrefix = commerceConfiguration.GetValue<string?>(ConfigurationNames.SystemFieldPrefix);
             if (systemFieldPrefix is not null && string.IsNullOrWhiteSpace(systemFieldPrefix))
             {

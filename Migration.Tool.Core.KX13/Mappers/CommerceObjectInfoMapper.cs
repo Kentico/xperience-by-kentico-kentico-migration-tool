@@ -5,7 +5,6 @@ using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.Helpers;
 using Migration.Tool.Common.MigrationProtocol;
-using Migration.Tool.Core.KX13.Constants;
 using Migration.Tool.Core.KX13.Contexts;
 using Migration.Tool.Core.KX13.Helpers;
 using Migration.Tool.KXP.Api;
