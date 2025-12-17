@@ -20,6 +20,8 @@ public abstract class CommerceObjectInfoMapper<TSourceEntity, TTargetEntity, TSo
     : EntityMapperBase<TSourceEntity, TTargetEntity>(logger, primaryKeyMappingContext, protocol)
     where TTargetEntity : BaseInfo
 {
+    protected abstract string TargetObjectClassName { get; }
+
     protected abstract void MapCoreFields(TSourceEntity source, TTargetEntity target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure);
 
     protected virtual void MapSystemAndCustomFields(TSourceEntity source, TTargetEntity target, IEnumerable<CustomizedFieldInfo> customizedFieldInfos, string systemFieldPrefix)
@@ -48,7 +50,7 @@ public abstract class CommerceObjectInfoMapper<TSourceEntity, TTargetEntity, TSo
     {
         MapCoreFields(source, target, newInstance, mappingHelper, addFailure);
 
-        var customizedFieldInfos = kxpClassFacade.GetCustomizedFieldInfosAll(GetTargetObjectClassName());
+        var customizedFieldInfos = kxpClassFacade.GetCustomizedFieldInfosAll(TargetObjectClassName);
 
         string systemFieldPrefix = CommerceHelper.GetSystemFieldPrefix(toolConfiguration);
 
@@ -58,6 +60,4 @@ public abstract class CommerceObjectInfoMapper<TSourceEntity, TTargetEntity, TSo
     }
 
     protected abstract TSourceModel GetSourceModel(TSourceEntity source);
-
-    protected abstract string GetTargetObjectClassName();
 }

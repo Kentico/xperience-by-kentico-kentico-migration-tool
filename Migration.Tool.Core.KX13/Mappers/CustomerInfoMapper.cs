@@ -21,6 +21,8 @@ public class CustomerInfoMapper(
     ToolConfiguration toolConfiguration)
     : CommerceObjectInfoMapper<CustomerInfoMapperSource, CustomerInfo, KX13M.ComCustomer>(logger, primaryKeyMappingContext, protocol, kxpClassFacade, toolConfiguration)
 {
+    protected override string TargetObjectClassName => CustomerInfo.TYPEINFO.ObjectClassName;
+
     protected override CustomerInfo? CreateNewInstance(CustomerInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
     protected override void MapCoreFields(CustomerInfoMapperSource source, CustomerInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
@@ -64,6 +66,4 @@ public class CustomerInfoMapper(
     }
 
     protected override KX13M.ComCustomer GetSourceModel(CustomerInfoMapperSource source) => source.Customer;
-
-    protected override string GetTargetObjectClassName() => CustomerInfo.TYPEINFO.ObjectClassName;
 }

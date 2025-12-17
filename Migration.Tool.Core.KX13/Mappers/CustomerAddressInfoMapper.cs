@@ -20,6 +20,8 @@ public class CustomerAddressInfoMapper(
     ToolConfiguration toolConfiguration)
     : CommerceObjectInfoMapper<CustomerAddressInfoMapperSource, CustomerAddressInfo, ComAddress>(logger, primaryKeyMappingContext, protocol, kxpClassFacade, toolConfiguration)
 {
+    protected override string TargetObjectClassName => CustomerAddressInfo.TYPEINFO.ObjectClassName;
+
     protected override CustomerAddressInfo? CreateNewInstance(CustomerAddressInfoMapperSource source, MappingHelper mappingHelper, AddFailure addFailure) => new();
 
     protected override void MapCoreFields(CustomerAddressInfoMapperSource source, CustomerAddressInfo target, bool newInstance, MappingHelper mappingHelper, AddFailure addFailure)
@@ -51,6 +53,4 @@ public class CustomerAddressInfoMapper(
     }
 
     protected override ComAddress GetSourceModel(CustomerAddressInfoMapperSource source) => source.Address;
-
-    protected override string GetTargetObjectClassName() => CustomerAddressInfo.TYPEINFO.ObjectClassName;
 }
