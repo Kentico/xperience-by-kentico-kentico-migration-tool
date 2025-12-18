@@ -7,9 +7,7 @@ The [Xperience by Kentico: Kentico Migration Tool](/README.md) transfers content
 
 The migration is performed by running a command for the .NET CLI.
 
-> **Documentation Hub:** This is technical reference for the migration tool. For planning guides, walkthroughs, and conceptual overviews, see the **[Complete Documentation Hub](../docs/GUIDES.md)**.
->
-> **New to migration?** Start with the [Upgrade Walkthrough](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-walkthrough) with video tutorials.
+> **New to migration?** Start with the [Upgrade Walkthrough](https://docs.kentico.com/x/upgrade_walkthrough_guides) with video tutorials.
 
 ## Set up the source instance
 

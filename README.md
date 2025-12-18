@@ -18,10 +18,10 @@ This repository contains the data migration tool and its technical reference doc
 
 **Quick Links:**
 
-- [Upgrade Overview](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-from-kx13-overview) - High-level overview of the upgrade process
-- [Upgrades FAQ for architects and team leads](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq) - Common questions and challenges
-- [Plan Your Strategy](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/plan-your-strategy-for-migrating-features) - Feature comparison and effort estimation
-- [Upgrade Walkthrough](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-walkthrough) - Hands-on tutorial with the Dancing Goat sample site
+- [Upgrade Overview](https://docs.kentico.com/x/upgrade_from_kx13_overview_guides) - High-level overview of the upgrade process
+- [Upgrades FAQ for architects and team leads](https://docs.kentico.com/x/upgrade_faq_guides) - Common questions and challenges
+- [Plan Your Strategy](https://docs.kentico.com/x/plan_your_strategy_for_migrating_features_guides) - Feature comparison and effort estimation
+- [Upgrade Walkthrough](https://docs.kentico.com/x/upgrade_walkthrough_guides) - Hands-on tutorial with the Dancing Goat sample site
 
 ## How Data Migration Works
 
@@ -159,7 +159,7 @@ Technical reference documentation for configuring and running the migration tool
 | **[Migration Protocol Reference](./Migration.Tool.CLI/MIGRATION_PROTOCOL_REFERENCE.md)** | Understanding migration results and warnings |
 | **[Contributing Setup](./docs/Contributing-Setup.md)** | For contributors to this tool |
 
-For conceptual guides, planning resources, and walkthroughs, see the **[Complete Documentation Hub](./docs/GUIDES.md)**.
+For conceptual guides, planning resources, and walkthroughs, see the [Learn portal upgrade guides](https://docs.kentico.com/x/migrate_from_kx13_guides).
 
 > [!IMPORTANT]
 > When planning an upgrade, note special considerations for [deploying to production](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#are-there-special-considerations-when-deploying-an-upgraded-project-to-production-for-the-first-time) and [deploying to SaaS](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#are-there-special-considerations-when-performing-an-upgrade-using-xperience-by-kentico-saas).

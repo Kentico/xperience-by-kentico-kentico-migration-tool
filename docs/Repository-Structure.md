@@ -72,7 +72,8 @@ The Migration.Tool.Extensions project contains custom migration logic. It compil
 | **Running migrations** | None - configure appsettings.json only |
 | **Custom field transformation** | `Migration.Tool.Extensions` |
 | **Custom widget migration** | `Migration.Tool.Extensions` |
-| **Custom table mapping** | `Migration.Tool.Extensions` |
+| **Custom class mapping** | `Migration.Tool.Extensions` |
+| **Custom content type relationships** | `Migration.Tool.Extensions` |
 | **Contributing bug fixes** | Relevant `Core.KX##` project |
 | **Adding new data type support** | `Core.KX##` + `Common` + `CLI` |
 
