@@ -27,9 +27,9 @@ This repository contains the data migration tool and its technical reference doc
 
 The migration tool transfers data from source databases (K11/KX12/KX13) to Xperience by Kentico, transforming data structures as needed:
 
-![Migration Flow Diagram](./images/diagrams/migration-flow.drawio)
+![Migration Flow Diagram](./images/diagrams/migration-flow.png)
 
-**Diagram Description:** The migration follows six sequential steps:
+The migration follows six sequential steps:
 
 1. **Execute CLI 'migrate' Command** - Initiates the process
 2. **Read Configuration** - Loads settings from appsettings.json
