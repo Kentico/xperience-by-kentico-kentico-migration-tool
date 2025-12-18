@@ -112,7 +112,7 @@ The migration tool handles standard data transformations automatically. Custom i
 
 To implement customizations:
 
-1. Review the [Migration Tool Architecture](./docs/Migration-Tool-Architecture.md) to understand how the migration tool components interact.
+1. Review the [Repository Structure](./docs/Repository-Structure.md) to understand how the migration tool components interact.
 2. Consult the [Extensions Guide](./Migration.Tool.Extensions/README.md) for detailed instructions on creating field migrations, widget migrations, and custom class mappings.
 
 ## Library Version Matrix
@@ -155,7 +155,7 @@ Technical reference documentation for configuring and running the migration tool
 | **[Supported Data](./docs/Supported-Data.md)** | Complete list of what can/cannot be migrated |
 | **[Extensions README](./Migration.Tool.Extensions/README.md)** | How to create custom migrations |
 | **[Architecture Deep Dive](./docs/Architecture-Deep-Dive.md)** | Internal architecture, handlers, patterns, testing philosophy |
-| **[Migration Tool Architecture](./docs/Migration-Tool-Architecture.md)** | Project organization, component relationships, codebase navigation |
+| **[Repository Structure](./docs/Repository-Structure.md)** | Project organization, component relationships, codebase navigation |
 | **[Migration Protocol Reference](./Migration.Tool.CLI/MIGRATION_PROTOCOL_REFERENCE.md)** | Understanding migration results and warnings |
 | **[Contributing Setup](./docs/Contributing-Setup.md)** | For contributors to this tool |
 
