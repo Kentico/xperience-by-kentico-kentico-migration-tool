@@ -42,8 +42,7 @@ To perform the migration:
 4. Open the command line prompt.
 5. Navigate to the project's output directory.
 6. Run the `Migration.Tool.CLI.exe migrate` command with parameters according to your requirements.
-7. Observe the command line output and review the [migration protocol](./MIGRATION_PROTOCOL_REFERENCE.md), which
-   provides information about the result of the migration, lists required manual steps, etc.
+7. Observe the command line output, which provides information about the result of the migration and lists any errors encountered during data migration.
 8. On SaaS projects, you need to manually move content item asset files. See [Content items](#content-items) for more information.
 
 ### Migrate command parameters
