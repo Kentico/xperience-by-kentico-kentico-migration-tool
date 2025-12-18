@@ -1,5 +1,7 @@
+using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
 using CMS.Core;
+using CMS.DataEngine;
 using Kentico.Xperience.UMT.Services;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
@@ -139,10 +141,11 @@ public class AttachmentMigratorToContentItem(
             throw new InvalidOperationException("Attachment data is null!");
         }
 
-        var contentLanguageRetriever = Service.Resolve<IContentLanguageRetriever>();
-        var defaultContentLanguage = await contentLanguageRetriever.GetDefaultContentLanguage();
+        // language of the migrated attachment = language of the document where the attachment is attached or default site language
+        string languageName = Service.Resolve<IInfoProvider<ContentLanguageInfo>>().Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageCultureFormat), ksAttachmentDocument.DocumentCulture).FirstOrDefault()?.ContentLanguageName
+            ?? (await Service.Resolve<IContentLanguageRetriever>().GetDefaultContentLanguage()).ContentLanguageName;
 
-        var asset = await assetFacade.FromAttachment(ksAttachment, site, ksNode, [ksAttachmentDocument?.DocumentCulture ?? defaultContentLanguage.ContentLanguageName]);
+        var asset = await assetFacade.FromAttachment(ksAttachment, site, ksNode, [languageName]);
 
         foreach (var item in asset.LanguageData)
         {

@@ -121,11 +121,11 @@ public static class FieldMappingInstance
             new FieldMigration(KsFieldDataType.Date, FieldDataType.Date, SfcDirective.CatchAnyNonMatching, FormComponents.AdminDateInputComponent),
             new FieldMigration(KsFieldDataType.TimeSpan, FieldDataType.TimeSpan, SfcDirective.CatchAnyNonMatching, FormComponents.AdminTextInputComponent),
             new FieldMigration(KsFieldDataType.Boolean, FieldDataType.Boolean, SfcDirective.CatchAnyNonMatching, FormComponents.AdminCheckBoxComponent),
-            new FieldMigration(KsFieldDataType.Guid, FieldDataType.LongText, "RelatedDocuments", FormComponents.Kentico_Xperience_Admin_Websites_WebPageSelectorComponent, [TcaDirective.ConvertToPages]),
+            new FieldMigration(KsFieldDataType.Guid, FieldDataType.ContentItemReference, "RelatedDocuments", FormComponents.AdminContentItemSelectorComponent, [TcaDirective.ConvertToPages]),
             new FieldMigration(KsFieldDataType.Guid, FieldDataType.Guid, SfcDirective.CatchAnyNonMatching, TfcDirective.Clear),
             new FieldMigration(KsFieldDataType.Binary, FieldDataType.Binary, SfcDirective.CatchAnyNonMatching, TfcDirective.Clear),
             new FieldMigration(KsFieldDataType.Xml, FieldDataType.Xml, SfcDirective.CatchAnyNonMatching, FormComponents.AdminNumberWithLabelComponent),
-            new FieldMigration(KsFieldDataType.DocRelationships, FieldDataType.WebPages, SfcDirective.CatchAnyNonMatching, FormComponents.Kentico_Xperience_Admin_Websites_WebPageSelectorComponent, [TcaDirective.ConvertToPages]),
+            new FieldMigration(KsFieldDataType.DocRelationships, FieldDataType.ContentItemReference, SfcDirective.CatchAnyNonMatching, FormComponents.AdminContentItemSelectorComponent, [TcaDirective.ConvertToPages]),
 
             new FieldMigration(KsFieldDataType.TimeSpan, FieldDataType.TimeSpan, SfcDirective.CatchAnyNonMatching, FormComponents.AdminTextInputComponent, []),
             new FieldMigration(KsFieldDataType.BizFormFile, BizFormUploadFile.DATATYPE_FORMFILE, SfcDirective.CatchAnyNonMatching, FormComponents.MvcFileUploaderComponent, [])

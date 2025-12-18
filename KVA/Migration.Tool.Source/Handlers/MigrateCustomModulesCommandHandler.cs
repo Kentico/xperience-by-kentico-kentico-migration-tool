@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Data;
 using System.Diagnostics;
 using System.Xml.Linq;
 using CMS.ContentEngine;
@@ -20,6 +21,7 @@ using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.Common.Services.BulkCopy;
 using Migration.Tool.KXP.Api;
 using Migration.Tool.KXP.Api.Services.CmsClass;
+using Migration.Tool.KXP.Api.Services.CmsResource;
 using Migration.Tool.Source.Contexts;
 using Migration.Tool.Source.Helpers;
 using Migration.Tool.Source.Mappers;
@@ -43,7 +45,8 @@ public class MigrateCustomModulesCommandHandler(
     ModelFacade modelFacade,
     ClassMappingProvider classMappingProvider,
     IUmtMapper<CustomModuleItemMapperSource> contentItemMapper,
-    IImporter importer
+    IImporter importer,
+    SqlResourceProvider resourceProvider
 )
     : IRequestHandler<MigrateCustomModulesCommand, CommandResult>
 {
@@ -414,13 +417,22 @@ public class MigrateCustomModulesCommandHandler(
     {
         var k12CmsResources = modelFacade.SelectAll<ICmsResource>();
 
+        using var xbykConn = new SqlConnection(toolConfiguration.KxConnectionString);
+        using var cmd = xbykConn.CreateCommand();
+        cmd.CommandType = CommandType.Text;
+        cmd.CommandTimeout = 3;
+
+        xbykConn.Open();
+
         foreach (var k12CmsResource in k12CmsResources)
         {
             protocol.FetchedSource(k12CmsResource);
+            cmd.CommandText = $"SELECT {nameof(ResourceInfo.ResourceID)}, {nameof(ResourceInfo.ResourceDisplayName)}, {nameof(ResourceInfo.ResourceName)}, " +
+                $"{nameof(ResourceInfo.ResourceDescription)}, {nameof(ResourceInfo.ResourceGUID)}, {nameof(ResourceInfo.ResourceLastModified)}, {nameof(ResourceInfo.ResourceIsInDevelopment)} FROM CMS_Resource WHERE {nameof(ResourceInfo.ResourceGUID)} = @guid";
+            cmd.Parameters.Clear();
+            cmd.Parameters.Add(new SqlParameter("guid", k12CmsResource.ResourceGUID));
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            var xbkResource = ResourceInfoProvider.ProviderObject.Get(k12CmsResource.ResourceGUID);
-#pragma warning restore CS0618 // Type or member is obsolete
+            var xbkResource = resourceProvider.Get(k12CmsResource.ResourceGUID);
 
             protocol.FetchedTarget(xbkResource);
 
@@ -481,9 +493,7 @@ public class MigrateCustomModulesCommandHandler(
                     (var resourceInfo, bool newInstance) = mapped;
                     ArgumentNullException.ThrowIfNull(resourceInfo, nameof(resourceInfo));
 
-#pragma warning disable CS0618 // Type or member is obsolete
-                    ResourceInfoProvider.ProviderObject.Set(resourceInfo);
-#pragma warning restore CS0618 // Type or member is obsolete
+                    resourceProvider.Set(resourceInfo);
 
                     protocol.Success(k12CmsResource, resourceInfo, mapped);
                     logger.LogEntitySetAction(newInstance, resourceInfo);

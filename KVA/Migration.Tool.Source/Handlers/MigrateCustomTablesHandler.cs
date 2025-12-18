@@ -16,6 +16,7 @@ using Migration.Tool.Common.Helpers;
 using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.Common.Services.BulkCopy;
 using Migration.Tool.KXP.Api;
+using Migration.Tool.KXP.Api.Services.CmsResource;
 using Migration.Tool.Source.Contexts;
 using Migration.Tool.Source.Helpers;
 using Migration.Tool.Source.Mappers;
@@ -36,7 +37,8 @@ public class MigrateCustomTablesHandler(
     IEntityMapper<ICmsClass, DataClassInfo> dataClassMapper,
     PrimaryKeyMappingContext primaryKeyMappingContext,
     ClassMappingProvider classMappingProvider,
-    ToolConfiguration toolConfiguration
+    ToolConfiguration toolConfiguration,
+    SqlResourceProvider resourceProvider
 )
     : IRequestHandler<MigrateCustomTablesCommand, CommandResult>
 {
@@ -59,9 +61,7 @@ public class MigrateCustomTablesHandler(
 
         const string resourceName = "customtables";
         var resourceGuid = GuidV5.NewNameBased(resourceGuidNamespace, resourceName);
-#pragma warning disable CS0618 // Type or member is obsolete
-        var resourceInfo = await ResourceInfoProvider.ProviderObject.GetAsync(resourceGuid);
-#pragma warning restore CS0618 // Type or member is obsolete
+        var resourceInfo = resourceProvider.Get(resourceGuid);
         if (resourceInfo == null)
         {
             resourceInfo = new ResourceInfo
@@ -73,9 +73,7 @@ public class MigrateCustomTablesHandler(
                 ResourceLastModified = default,
                 ResourceIsInDevelopment = false
             };
-#pragma warning disable CS0618 // Type or member is obsolete
-            ResourceInfoProvider.ProviderObject.Set(resourceInfo);
-#pragma warning restore CS0618 // Type or member is obsolete
+            resourceProvider.Set(resourceInfo);
         }
 
         customTableResource = resourceInfo;
@@ -262,11 +260,6 @@ public class MigrateCustomTablesHandler(
                 (var dataClassInfo, bool newInstance) = result;
 
                 ArgumentNullException.ThrowIfNull(dataClassInfo, nameof(dataClassInfo));
-
-                // if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(dataClassInfo.ClassName))
-                // {
-                //     dataClassInfo = reusableSchemaService.ConvertToReusableSchema(dataClassInfo);
-                // }
 
                 var containerResource = await EnsureCustomTablesResource();
                 dataClassInfo.ClassResourceID = containerResource.ResourceID;

@@ -65,35 +65,41 @@ public class MigrateSitesCommandHandler(
 
             foreach (var cmsCulture in migratedSiteCultures)
             {
-                var existing = ContentLanguageInfoProvider.ProviderObject.Get()
-                    .WhereEquals(nameof(ContentLanguageInfo.ContentLanguageCultureFormat), cmsCulture.CultureCode)
-                    .FirstOrDefault();
-
-                if (existing != null && existing.ContentLanguageGUID != cmsCulture.CultureGuid)
-                {
-                    existing.ContentLanguageGUID = cmsCulture.CultureGuid;
-                    existing.Update();
-                }
-
                 if (migratedCultureCodes.ContainsKey(cmsCulture.CultureCode))
                 {
                     continue;
                 }
 
-                var langResult = await importer.ImportAsync(new ContentLanguageModel
-                {
-                    ContentLanguageGUID = cmsCulture.CultureGuid,
-                    ContentLanguageDisplayName = cmsCulture.CultureName,
-                    ContentLanguageName = cmsCulture.CultureCode,
-                    ContentLanguageIsDefault = true,
-                    ContentLanguageFallbackContentLanguageGuid = null,
-                    ContentLanguageCultureFormat = cmsCulture.CultureCode
-                });
+                var existing = ContentLanguageInfoProvider.ProviderObject.Get()
+                    .WhereEquals(nameof(ContentLanguageInfo.ContentLanguageCultureFormat), cmsCulture.CultureCode)
+                    .FirstOrDefault();
 
-                if (langResult is { Success: true, Imported: ContentLanguageInfo importedLanguage })
+                if (existing != null)
                 {
-                    migratedCultureCodes.TryAdd(cmsCulture.CultureCode, importedLanguage);
-                    logger.LogTrace("Imported language {Language} from {Culture}", importedLanguage.ContentLanguageName, cmsCulture.CultureCode);
+                    if (existing.ContentLanguageGUID != cmsCulture.CultureGuid)
+                    {
+                        existing.ContentLanguageGUID = cmsCulture.CultureGuid;
+                        existing.Update();
+                    }
+                    migratedCultureCodes.TryAdd(cmsCulture.CultureCode, existing);
+                }
+                else
+                {
+                    var langResult = await importer.ImportAsync(new ContentLanguageModel
+                    {
+                        ContentLanguageGUID = cmsCulture.CultureGuid,
+                        ContentLanguageDisplayName = cmsCulture.CultureName,
+                        ContentLanguageName = cmsCulture.CultureCode,
+                        ContentLanguageIsDefault = string.Equals(cmsCulture.CultureCode, defaultCultureCode, StringComparison.InvariantCultureIgnoreCase),
+                        ContentLanguageFallbackContentLanguageGuid = null,
+                        ContentLanguageCultureFormat = cmsCulture.CultureCode
+                    });
+
+                    if (langResult is { Success: true, Imported: ContentLanguageInfo importedLanguage })
+                    {
+                        migratedCultureCodes.TryAdd(cmsCulture.CultureCode, importedLanguage);
+                        logger.LogTrace("Imported language {Language} from {Culture}", importedLanguage.ContentLanguageName, cmsCulture.CultureCode);
+                    }
                 }
             }
 

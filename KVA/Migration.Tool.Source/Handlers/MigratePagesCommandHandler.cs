@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
@@ -99,7 +98,7 @@ public class MigratePagesCommandHandler(
                     var ksUrlPaths = modelFacade.Select<ICmsPageUrlPath>("PageUrlPathNodeID = @nodeId", "PageUrlPathID", new SqlParameter("nodeId", ksTree.NodeID));
                     foreach (CmsPageUrlPathK13 ksPath in ksUrlPaths)
                     {
-                        var xbykLanguageInfo = GetLanguageInfo(ksPath.PageUrlPathCulture);
+                        var xbykLanguageInfo = GetLanguageInfoByCultureFormat(ksPath.PageUrlPathCulture);
                         pathToXbykPage[$"{ksSite.SiteGUID}|{NormalizeUrlPath(ksPath.PageUrlPathUrlPath)}"] = (xbykContentItemGuid, xbykLanguageInfo);
                     }
 
@@ -111,7 +110,7 @@ public class MigratePagesCommandHandler(
                     {
                         if (ksDocument.DocumentUnpublishedRedirectUrl is not null)
                         {
-                            sourceInstanceRedirects.Add((ksDocument.DocumentGUID!.Value, ksSite.SiteGUID, GetLanguageInfo(ksDocument.DocumentCulture), xbykContentItemGuid, NormalizeUrlPath(ksDocument.DocumentUnpublishedRedirectUrl)));
+                            sourceInstanceRedirects.Add((ksDocument.DocumentGUID!.Value, ksSite.SiteGUID, GetLanguageInfoByCultureFormat(ksDocument.DocumentCulture), xbykContentItemGuid, NormalizeUrlPath(ksDocument.DocumentUnpublishedRedirectUrl)));
                         }
                     }
                 }
@@ -1131,7 +1130,7 @@ public class MigratePagesCommandHandler(
         {
             try
             {
-                var languageInfo = GetLanguageInfo(path.LanguageName);
+                var languageInfo = GetLanguageInfoByLanguageName(path.LanguageName);
                 var ktPath = WebPageFormerUrlPathInfo.Provider.Get()
                     .WhereEquals(nameof(WebPageFormerUrlPathInfo.WebPageFormerUrlPathHash), GetWebPageUrlPathHashQueryExpression(path.Path))
                     .WhereEquals(nameof(WebPageFormerUrlPathInfo.WebPageFormerUrlPathWebsiteChannelID), targetPage.WebPageItemWebsiteChannelID)
@@ -1161,11 +1160,12 @@ public class MigratePagesCommandHandler(
         }
     }
 
-    private readonly ConcurrentDictionary<string, ContentLanguageInfo> languages = new(StringComparer.InvariantCultureIgnoreCase);
-    private ContentLanguageInfo GetLanguageInfo(string culture) => languages.GetOrAdd(
-                culture,
-                s => ContentLanguageInfoProvider.ProviderObject.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageName), s).SingleOrDefault() ?? throw new InvalidOperationException($"Missing content language '{s}'")
-            );
+    private readonly List<ContentLanguageInfo> contentLanguageInfos = new();
+    private ContentLanguageInfo GetLanguageInfoByCultureFormat(string cultureFormat) => contentLanguageInfos.SingleOrDefault(x => x.ContentLanguageCultureFormat.Equals(cultureFormat, StringComparison.InvariantCultureIgnoreCase))
+                ?? ContentLanguageInfoProvider.ProviderObject.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageCultureFormat), cultureFormat).SingleOrDefault() ?? throw new InvalidOperationException($"Missing content language with culture format '{cultureFormat}'");
+
+    private ContentLanguageInfo GetLanguageInfoByLanguageName(string languageName) => contentLanguageInfos.SingleOrDefault(x => x.ContentLanguageName.Equals(languageName, StringComparison.InvariantCultureIgnoreCase))
+                ?? ContentLanguageInfoProvider.ProviderObject.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageName), languageName).SingleOrDefault() ?? throw new InvalidOperationException($"Missing content language with name '{languageName}'");
 
     #region Deffered patch
 
