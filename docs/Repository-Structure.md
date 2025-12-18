@@ -2,9 +2,9 @@
 
 > **Audience:** Developers who need to understand how the repository is organized and where to find specific projects.
 
-The repository contains multiple projects that work together to perform migrations.
+The repository contains multiple projects that work together to perform migrations. As a migration tool user, you only directly interact with **Migration.Tool.CLI** (to run migrations) and **Migration.Tool.Extensions** (to add customizations). All other projects provide version-specific migration logic that runs automatically based on your source instance version.
 
-## Repository Structure and Dependencies
+## Project Organization
 
 ![Project Dependencies Diagram](../images/diagrams/project-dependencies.png)
 
@@ -76,7 +76,7 @@ The Migration.Tool.Extensions project contains custom migration logic. It compil
 | **Contributing bug fixes** | Relevant `Core.KX##` project |
 | **Adding new data type support** | `Core.KX##` + `Common` + `CLI` |
 
-## Related Documentation
+## Related Documentation - TODO update when done
 
 - **[Architecture Deep Dive](Architecture-Deep-Dive.md)** - Detailed internal architecture, handler patterns, testing philosophy
 - **[Extensions README](../Migration.Tool.Extensions/README.md)** - How to create custom migrations
