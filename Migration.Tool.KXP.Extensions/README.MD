@@ -1,5 +1,7 @@
 # Handler for legacy attachment URLs
 
+> **Minimal User Interaction:** This optional project adds a legacy attachment URL handler to your target Xperience by Kentico instance. Most users will not need to modify this - just add it as a project reference if needed.
+
 Page attachments are not supported in Xperience by Kentico. Instead, the [Migration tool](/README.md) transfers
 attachment files into [media libraries](https://docs.xperience.io/x/agKiCQ).
 

@@ -1,5 +1,7 @@
 # Migration CLI
 
+> **User Interaction:** This is the primary executable you run to perform migrations. Users interact with this project by configuring `appsettings.json` and running CLI commands.
+
 The [Xperience by Kentico: Kentico Migration Tool](/README.md) transfers content and other data from **Kentico Xperience
 13**, **Kentico 12** or **Kentico 11** to **Xperience by Kentico**.
 
