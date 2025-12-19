@@ -45,12 +45,10 @@ The migration follows six sequential steps:
 - CMS_Attachment → Content Item Asset
 - Page Builder → New Page Builder format
 
-**Note:** Migration is idempotent (UPSERT). Repeated runs update existing data without creating duplicates.
-
-**Key Points:**
-- **Iterative** - Run multiple times, refining configuration each time
-- **Selective** - Choose which data types to migrate via command parameters
-- **Extensible** - Customize transformations for your specific needs
+The migration tool is:
+- **Iterative** - Supports multiple runs that update existing data without creating duplicates (UPSERT behavior)
+- **Selective** - Migrate only specific data types using command parameters
+- **Extensible** - Apply custom transformations for project-specific requirements
 
 ## How to Run the Kentico Migration Tool
 
