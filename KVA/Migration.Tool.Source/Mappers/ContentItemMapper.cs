@@ -914,11 +914,11 @@ public class ContentItemMapper(
                             if (relation.RightNode is not null)
                             {
                                 EnsureAllowedType(targetClassName, newFormInfo, targetFieldName, relation.RightNode.NodeClassID);
+                                relatedItems.Add(new ContentItemReference
+                                {
+                                    Identifier = spoiledGuidContext.EnsureNodeGuid(relation.RightNode!.NodeGUID, relation.RightNode.NodeSiteID, relation.RightNode.NodeID)
+                                });
                             }
-                            relatedItems.Add(new ContentItemReference
-                            {
-                                Identifier = spoiledGuidContext.EnsureNodeGuid(relation.RightNode!.NodeGUID, relation.RightNode.NodeSiteID, relation.RightNode.NodeID)
-                            });
                         }
                         target.SetValueAsJson(targetFieldName, relatedItems.ToArray());
                     }
@@ -1070,6 +1070,8 @@ public class ContentItemMapper(
             var xbykClassInfo = DataClassInfoProvider.GetDataClassInfo(targetClassName);
             xbykClassInfo.ClassFormDefinition = targetClassFormInfo.GetXmlDefinition();
             DataClassInfoProvider.SetDataClassInfo(xbykClassInfo);
+
+            allowedTypesDict.Add(sourceNodeClassID);
         }
     }
 

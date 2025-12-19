@@ -142,7 +142,12 @@ public class AttachmentMigratorToContentItem(
         }
 
         // language of the migrated attachment = language of the document where the attachment is attached or default site language
-        string languageName = Service.Resolve<IInfoProvider<ContentLanguageInfo>>().Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageCultureFormat), ksAttachmentDocument.DocumentCulture).FirstOrDefault()?.ContentLanguageName
+        string languageName =
+            (ksAttachmentDocument != null
+                ? Service.Resolve<IInfoProvider<ContentLanguageInfo>>().Get()
+                    .WhereEquals(nameof(ContentLanguageInfo.ContentLanguageCultureFormat), ksAttachmentDocument.DocumentCulture)
+                    .FirstOrDefault()?.ContentLanguageName
+                : null)
             ?? (await Service.Resolve<IContentLanguageRetriever>().GetDefaultContentLanguage()).ContentLanguageName;
 
         var asset = await assetFacade.FromAttachment(ksAttachment, site, ksNode, [languageName]);

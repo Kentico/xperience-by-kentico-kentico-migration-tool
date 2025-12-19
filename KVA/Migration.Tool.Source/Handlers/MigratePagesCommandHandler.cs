@@ -1161,11 +1161,29 @@ public class MigratePagesCommandHandler(
     }
 
     private readonly List<ContentLanguageInfo> contentLanguageInfos = new();
-    private ContentLanguageInfo GetLanguageInfoByCultureFormat(string cultureFormat) => contentLanguageInfos.SingleOrDefault(x => x.ContentLanguageCultureFormat.Equals(cultureFormat, StringComparison.InvariantCultureIgnoreCase))
-                ?? ContentLanguageInfoProvider.ProviderObject.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageCultureFormat), cultureFormat).SingleOrDefault() ?? throw new InvalidOperationException($"Missing content language with culture format '{cultureFormat}'");
+    private ContentLanguageInfo GetLanguageInfoByCultureFormat(string cultureFormat)
+    {
+        var result = contentLanguageInfos.SingleOrDefault(x => x.ContentLanguageCultureFormat.Equals(cultureFormat, StringComparison.InvariantCultureIgnoreCase));
+        if (result is null)
+        {
+            result = ContentLanguageInfoProvider.ProviderObject.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageCultureFormat), cultureFormat).SingleOrDefault()
+                ?? throw new InvalidOperationException($"Missing content language with culture format '{cultureFormat}'");
+            contentLanguageInfos.Add(result);
+        }
+        return result;
+    }
 
-    private ContentLanguageInfo GetLanguageInfoByLanguageName(string languageName) => contentLanguageInfos.SingleOrDefault(x => x.ContentLanguageName.Equals(languageName, StringComparison.InvariantCultureIgnoreCase))
-                ?? ContentLanguageInfoProvider.ProviderObject.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageName), languageName).SingleOrDefault() ?? throw new InvalidOperationException($"Missing content language with name '{languageName}'");
+    private ContentLanguageInfo GetLanguageInfoByLanguageName(string languageName)
+    {
+        var result = contentLanguageInfos.SingleOrDefault(x => x.ContentLanguageName.Equals(languageName, StringComparison.InvariantCultureIgnoreCase));
+        if (result is null)
+        {
+            result = ContentLanguageInfoProvider.ProviderObject.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageName), languageName).SingleOrDefault()
+                ?? throw new InvalidOperationException($"Missing content language with name '{languageName}'");
+            contentLanguageInfos.Add(result);
+        }
+        return result;
+    }
 
     #region Deffered patch
 

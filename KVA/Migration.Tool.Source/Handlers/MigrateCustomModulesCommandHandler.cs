@@ -21,7 +21,6 @@ using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.Common.Services.BulkCopy;
 using Migration.Tool.KXP.Api;
 using Migration.Tool.KXP.Api.Services.CmsClass;
-using Migration.Tool.KXP.Api.Services.CmsResource;
 using Migration.Tool.Source.Contexts;
 using Migration.Tool.Source.Helpers;
 using Migration.Tool.Source.Mappers;
@@ -45,9 +44,7 @@ public class MigrateCustomModulesCommandHandler(
     ModelFacade modelFacade,
     ClassMappingProvider classMappingProvider,
     IUmtMapper<CustomModuleItemMapperSource> contentItemMapper,
-    IImporter importer,
-    SqlResourceProvider resourceProvider
-)
+    IImporter importer)
     : IRequestHandler<MigrateCustomModulesCommand, CommandResult>
 {
     public async Task<CommandResult> Handle(MigrateCustomModulesCommand request, CancellationToken cancellationToken)
@@ -417,22 +414,11 @@ public class MigrateCustomModulesCommandHandler(
     {
         var k12CmsResources = modelFacade.SelectAll<ICmsResource>();
 
-        using var xbykConn = new SqlConnection(toolConfiguration.KxConnectionString);
-        using var cmd = xbykConn.CreateCommand();
-        cmd.CommandType = CommandType.Text;
-        cmd.CommandTimeout = 3;
-
-        xbykConn.Open();
-
         foreach (var k12CmsResource in k12CmsResources)
         {
             protocol.FetchedSource(k12CmsResource);
-            cmd.CommandText = $"SELECT {nameof(ResourceInfo.ResourceID)}, {nameof(ResourceInfo.ResourceDisplayName)}, {nameof(ResourceInfo.ResourceName)}, " +
-                $"{nameof(ResourceInfo.ResourceDescription)}, {nameof(ResourceInfo.ResourceGUID)}, {nameof(ResourceInfo.ResourceLastModified)}, {nameof(ResourceInfo.ResourceIsInDevelopment)} FROM CMS_Resource WHERE {nameof(ResourceInfo.ResourceGUID)} = @guid";
-            cmd.Parameters.Clear();
-            cmd.Parameters.Add(new SqlParameter("guid", k12CmsResource.ResourceGUID));
 
-            var xbkResource = resourceProvider.Get(k12CmsResource.ResourceGUID);
+            var xbkResource = ResourceInfo.Provider.Get().WithGuid(k12CmsResource.ResourceGUID).SingleOrDefault();
 
             protocol.FetchedTarget(xbkResource);
 
@@ -493,7 +479,7 @@ public class MigrateCustomModulesCommandHandler(
                     (var resourceInfo, bool newInstance) = mapped;
                     ArgumentNullException.ThrowIfNull(resourceInfo, nameof(resourceInfo));
 
-                    resourceProvider.Set(resourceInfo);
+                    ResourceInfo.Provider.Set(resourceInfo);
 
                     protocol.Success(k12CmsResource, resourceInfo, mapped);
                     logger.LogEntitySetAction(newInstance, resourceInfo);

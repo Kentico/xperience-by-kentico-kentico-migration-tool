@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using Migration.Tool.KXP.Api.Services.CmsClass;
-using Migration.Tool.KXP.Api.Services.CmsResource;
 
 namespace Migration.Tool.KXP.Api;
 
@@ -27,7 +26,6 @@ public static class DependencyInjectionExtensions
 
         services.AddSingleton<KxpClassFacade>();
         services.AddSingleton<KxpMediaFileFacade>();
-        services.AddSingleton<SqlResourceProvider>();
 
         return services;
     }

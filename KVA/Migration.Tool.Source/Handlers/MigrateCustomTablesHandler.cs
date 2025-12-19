@@ -16,7 +16,6 @@ using Migration.Tool.Common.Helpers;
 using Migration.Tool.Common.MigrationProtocol;
 using Migration.Tool.Common.Services.BulkCopy;
 using Migration.Tool.KXP.Api;
-using Migration.Tool.KXP.Api.Services.CmsResource;
 using Migration.Tool.Source.Contexts;
 using Migration.Tool.Source.Helpers;
 using Migration.Tool.Source.Mappers;
@@ -37,8 +36,7 @@ public class MigrateCustomTablesHandler(
     IEntityMapper<ICmsClass, DataClassInfo> dataClassMapper,
     PrimaryKeyMappingContext primaryKeyMappingContext,
     ClassMappingProvider classMappingProvider,
-    ToolConfiguration toolConfiguration,
-    SqlResourceProvider resourceProvider
+    ToolConfiguration toolConfiguration
 )
     : IRequestHandler<MigrateCustomTablesCommand, CommandResult>
 {
@@ -61,7 +59,7 @@ public class MigrateCustomTablesHandler(
 
         const string resourceName = "customtables";
         var resourceGuid = GuidV5.NewNameBased(resourceGuidNamespace, resourceName);
-        var resourceInfo = resourceProvider.Get(resourceGuid);
+        var resourceInfo = ResourceInfo.Provider.Get().WithGuid(resourceGuid).SingleOrDefault();
         if (resourceInfo == null)
         {
             resourceInfo = new ResourceInfo
@@ -73,7 +71,7 @@ public class MigrateCustomTablesHandler(
                 ResourceLastModified = default,
                 ResourceIsInDevelopment = false
             };
-            resourceProvider.Set(resourceInfo);
+            ResourceInfo.Provider.Set(resourceInfo);
         }
 
         customTableResource = resourceInfo;
