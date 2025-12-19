@@ -4,9 +4,6 @@
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="title" value="MIGRATION FLOW" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=32;fontStyle=1" parent="1" vertex="1">
-                    <mxGeometry x="410" width="400" height="40" as="geometry"/>
-                </mxCell>
                 <mxCell id="step1" value="&lt;b style=&quot;font-size: 20px;&quot;&gt;1. Execute &#39;migrate&#39;&lt;br&gt;CLI Command&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=18;align=center;verticalAlign=middle;" parent="1" vertex="1">
                     <mxGeometry x="50" y="75" width="220" height="120" as="geometry"/>
                 </mxCell>
