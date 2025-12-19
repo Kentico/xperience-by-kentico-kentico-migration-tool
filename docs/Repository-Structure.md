@@ -77,8 +77,7 @@ The Migration.Tool.Extensions project contains custom migration logic. It compil
 | **Contributing bug fixes** | Relevant `Core.KX##` project |
 | **Adding new data type support** | `Core.KX##` + `Common` + `CLI` |
 
-## Related Documentation - TODO update when done
+## Related Documentation
 
-- **[Architecture Deep Dive](Architecture-Deep-Dive.md)** - Detailed internal architecture, handler patterns, testing philosophy
-- **[Extensions README](../Migration.Tool.Extensions/README.md)** - How to create custom migrations
+- **[Extensions README](../Migration.Tool.Extensions/README.md)** - How to customize migrations
 - **[Contributing Setup](Contributing-Setup.md)** - For contributors to the tool
