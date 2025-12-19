@@ -25,6 +25,9 @@ public class ToolConfiguration
     [ConfigurationKeyName(ConfigurationNames.EntityConfigurations)]
     public EntityConfigurations EntityConfigurations { get; set; } = [];
 
+    [ConfigurationKeyName(ConfigurationNames.CommerceConfiguration)]
+    public CommerceConfiguration? CommerceConfiguration { get; set; }
+
     [ConfigurationKeyName(ConfigurationNames.MigrateOnlyMediaFileInfo)]
     public bool? MigrateOnlyMediaFileInfo { get; set; } = false;
 
