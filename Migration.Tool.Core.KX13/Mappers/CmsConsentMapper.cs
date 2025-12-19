@@ -3,6 +3,7 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 
 using CMS.ContentEngine;
+using CMS.Core;
 using CMS.DataProtection;
 using Microsoft.Extensions.Logging;
 
@@ -24,7 +25,7 @@ public class CmsConsentMapper : EntityMapperBase<KX13M.CmsConsent, ConsentInfo>
     {
         target.ConsentDisplayName = source.ConsentDisplayName;
         var defaultContentLanguageInfo = ContentLanguageInfo.Provider.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageIsDefault), true).FirstOrDefault() ?? throw new InvalidCastException("Missing default content language");
-        target.ConsentName = source.ConsentName;
+        target.ConsentName = Service.Resolve<IContentItemCodeNameProvider>().Get(source.ConsentName).GetAwaiter().GetResult();
         target.ConsentContent = ConsentContentPatcher.PatchConsentContent(source.ConsentContent, defaultContentLanguageInfo);
         target.ConsentGuid = source.ConsentGuid;
         target.ConsentLastModified = source.ConsentLastModified;
