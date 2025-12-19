@@ -1,5 +1,7 @@
 # Usage Guide
 
+> **Learn by Doing:** New to migration? Start with the [Upgrade Walkthrough](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-walkthrough) to see the complete process step-by-step with video tutorials.
+
 Below you can find a list of prerequisites for the versions of Kentico supported by this migration tool.
 
 For a full list of content and data that is supported by the migration tool, please see [Supported Data](/docs/Supported-Data.md).

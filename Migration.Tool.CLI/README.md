@@ -1,9 +1,13 @@
 # Migration CLI
 
+> **User Interaction:** This is the primary executable you run to perform migrations. Users interact with this project by configuring `appsettings.json` and running CLI commands.
+
 The [Xperience by Kentico: Kentico Migration Tool](/README.md) transfers content and other data from **Kentico Xperience
 13**, **Kentico 12** or **Kentico 11** to **Xperience by Kentico**.
 
 The migration is performed by running a command for the .NET CLI.
+
+> **New to migration?** Start with the [Upgrade Walkthrough](https://docs.kentico.com/x/upgrade_walkthrough_guides) with video tutorials.
 
 ## Set up the source instance
 
@@ -38,8 +42,7 @@ To perform the migration:
 4. Open the command line prompt.
 5. Navigate to the project's output directory.
 6. Run the `Migration.Tool.CLI.exe migrate` command with parameters according to your requirements.
-7. Observe the command line output and review the [migration protocol](./MIGRATION_PROTOCOL_REFERENCE.md), which
-   provides information about the result of the migration, lists required manual steps, etc.
+7. Observe the command line output, which provides information about the result of the migration and lists any errors encountered during data migration.
 8. On SaaS projects, you need to manually move content item asset files. See [Content items](#content-items) for more information.
 
 ### Migrate command parameters
@@ -180,8 +183,11 @@ By default, JSON data storing the Page Builder content of pages and custom page 
 modifications. On the target Xperience by Kentico instance, the migrated data can work in the Page Builder's legacy
 compatibility mode. However, we strongly recommend updating your codebase to the new Xperience by Kentico components.
 
-> [!TIP]
-> Read more about different [approaches of migrating Page Builder content](https://docs.kentico.com/x/migrate_widgets_from_KX13_guides) and their the pros and cons in our documentation. 
+> **Learn About Widget Migration:**
+> - [**Widget Migration Introduction**](https://docs.kentico.com/guides/development/upgrade-deep-dives/upgrade-widgets-introduction) - **Start here** - Understand your migration options (legacy mode, API discovery, custom migrations)
+> - [Transform Widget Properties](https://docs.kentico.com/guides/development/upgrade-deep-dives/transform-widget-properties) - Detailed customization examples
+> - [Migrate Widget Data to Content Hub](https://docs.kentico.com/guides/development/upgrade-deep-dives/migrate-widget-data-to-content-hub) - Convert inline content to reusable items
+> - [Convert Child Pages to Widgets](https://docs.kentico.com/guides/development/upgrade-deep-dives/convert-child-pages-to-widgets) - Advanced page-to-widget conversion
 
 The Kentico Migration Tool provides an advanced migration mode for Page Builder content that utilizes API discovery on
 the source instance. To learn more details and how to configure this feature,

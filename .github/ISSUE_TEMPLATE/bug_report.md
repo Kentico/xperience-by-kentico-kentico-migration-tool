@@ -9,7 +9,7 @@ What went wrong?
 
 ## Output logs
 
-Please include the command line output log file and migration protocol generated for your `Migration.Tool.CLI.exe migrate` command.
+Please include the command line output log file generated for your `Migration.Tool.CLI.exe migrate` command.
 
 ### Repro steps
 
