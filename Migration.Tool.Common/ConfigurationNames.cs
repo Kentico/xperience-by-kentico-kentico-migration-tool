@@ -72,4 +72,14 @@ public class ConfigurationNames
     public const string XbyKApiSettings = "XbyKApiSettings";
 
     #endregion
+
+    #region Commerce Configuration
+
+    public const string CommerceConfiguration = "CommerceConfiguration";
+    public const string CommerceSiteNames = "CommerceSiteNames";
+    public const string IncludeCustomerSystemFields = "IncludeCustomerSystemFields";
+    public const string IncludeAddressSystemFields = "IncludeAddressSystemFields";
+    public const string SystemFieldPrefix = "SystemFieldPrefix";
+
+    #endregion
 }
