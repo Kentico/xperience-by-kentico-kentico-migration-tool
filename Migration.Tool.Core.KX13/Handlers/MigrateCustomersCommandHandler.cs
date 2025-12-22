@@ -1,6 +1,4 @@
-﻿using System.Linq.Expressions;
-
-using CMS.Commerce;
+﻿using CMS.Commerce;
 using CMS.DataEngine;
 using CMS.FormEngine;
 using CMS.Membership;
@@ -15,7 +13,7 @@ using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Core.KX13.Constants;
 using Migration.Tool.Core.KX13.Contexts;
-using Migration.Tool.Core.KX13.Helpers;
+using Migration.Tool.Core.KX13.Handlers.Base;
 using Migration.Tool.Core.KX13.Mappers;
 using Migration.Tool.KX13.Context;
 using Migration.Tool.KX13.Models;
@@ -32,12 +30,13 @@ public class MigrateCustomersCommandHandler(
     PrimaryKeyMappingContext primaryKeyMappingContext,
     ToolConfiguration toolConfiguration,
     IFieldMigrationService fieldMigrationService,
-    KxpClassFacade kxpClassFacade)
-    : IRequestHandler<MigrateCustomersCommand, CommandResult>
+    KxpClassFacade kxpClassFacade) :
+    MigrateCommerceHandlerBase(logger, kx13ContextFactory, toolConfiguration, fieldMigrationService, kxpClassFacade),
+    IRequestHandler<MigrateCustomersCommand, CommandResult>
 {
     public async Task<CommandResult> Handle(MigrateCustomersCommand request, CancellationToken cancellationToken)
     {
-        await using var kx13Context = await kx13ContextFactory.CreateDbContextAsync(cancellationToken);
+        await using var kx13Context = await Kx13ContextFactory.CreateDbContextAsync(cancellationToken);
         var kx13CommerceSites = await GetCommerceSites(kx13Context);
         var kx13CommerceSiteIds = kx13CommerceSites.Select(s => s.SiteId).ToHashSet();
 
@@ -87,9 +86,10 @@ public class MigrateCustomersCommandHandler(
         await MigrateCommerceClass(
             sourceClassName: CommerceConstants.KX13_CUSTOMER_CLASS_NAME,
             targetClassName: CustomerInfo.TYPEINFO.ObjectClassName,
-            includeSystemFieldsConfig: toolConfiguration.CommerceConfiguration?.IncludeCustomerSystemFields,
+            includeSystemFieldsConfig: ToolConfiguration.CommerceConfiguration?.IncludeCustomerSystemFields,
             logEntityName: nameof(CustomerInfo),
             addSiteOriginField: true,
+            addCurrencyField: false,
             cancellationToken
         );
 
@@ -97,216 +97,13 @@ public class MigrateCustomersCommandHandler(
         await MigrateCommerceClass(
             sourceClassName: CommerceConstants.KX13_ADDRESS_CLASS_NAME,
             targetClassName: CustomerAddressInfo.TYPEINFO.ObjectClassName,
-            includeSystemFieldsConfig: toolConfiguration.CommerceConfiguration?.IncludeAddressSystemFields,
+            includeSystemFieldsConfig: ToolConfiguration.CommerceConfiguration?.IncludeAddressSystemFields,
             logEntityName: nameof(CustomerAddressInfo),
             addSiteOriginField: false,
+            addCurrencyField: false,
             cancellationToken
         );
 
-    private async Task MigrateCommerceClass(
-        string sourceClassName,
-        string targetClassName,
-        string? includeSystemFieldsConfig,
-        string logEntityName,
-        bool addSiteOriginField,
-        CancellationToken cancellationToken)
-    {
-        await using var kx13Context = await kx13ContextFactory.CreateDbContextAsync(cancellationToken);
-
-        // Get KX13 class definition
-        var kx13Class = kx13Context.CmsClasses
-            .FirstOrDefault(c => c.ClassName == sourceClassName);
-
-        if (kx13Class == null)
-        {
-            logger.LogWarning("KX13 {SourceClassName} class not found, skipping custom field migration", sourceClassName);
-            return;
-        }
-
-        // Get XbK target class
-        var xbkClass = kxpClassFacade.GetClass(targetClassName);
-        if (xbkClass == null)
-        {
-            logger.LogWarning("XbK {TargetClassName} class not found, skipping custom field migration", logEntityName);
-            return;
-        }
-
-        // Patch KX13 form definition
-        var patcher = new FormDefinitionPatcher(
-            logger,
-            kx13Class.ClassFormDefinition,
-            fieldMigrationService,
-            classIsForm: false,
-            classIsDocumentType: false,
-            discardSysFields: false,
-            classIsCustom: false
-        );
-
-        patcher.PatchFields();
-        patcher.RemoveCategories();
-
-        var patchedDefinition = patcher.GetPatched();
-        if (string.IsNullOrWhiteSpace(patchedDefinition))
-        {
-            logger.LogDebug("No custom fields found in KX13 {SourceClassName} class", sourceClassName);
-            return;
-        }
-
-        var includedSystemFields = includeSystemFieldsConfig?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? [];
-
-        string systemFieldPrefix = CommerceHelper.GetSystemFieldPrefix(toolConfiguration);
-
-        // Merge custom fields into XbK class
-        var xbkFormInfo = new FormInfo(xbkClass.ClassFormDefinition);
-        var kx13FormInfo = new FormInfo(patchedDefinition);
-        var existingColumns = xbkFormInfo.GetColumnNames();
-        int addedFieldsCount = 0;
-
-        foreach (string columnName in kx13FormInfo.GetColumnNames())
-        {
-            var field = kx13FormInfo.GetFormField(columnName);
-
-            bool isIncludedSystemField = field.System && includedSystemFields.Contains(columnName, StringComparer.OrdinalIgnoreCase);
-
-            // Determine the target field name based on whether it's a system field
-            string targetFieldName = field.System
-                ? $"{systemFieldPrefix}{columnName}"
-                : columnName;
-
-            if (
-                !field.PrimaryKey &&
-                (isIncludedSystemField || !field.System) &&
-                !existingColumns.Contains(targetFieldName)
-            )
-            {
-                // Prefix system fields with configured prefix when migrating them
-                if (isIncludedSystemField)
-                {
-                    field.System = false; // no longer system field
-                    field.Name = targetFieldName;
-                    logger.LogInformation("Added system field '{OriginalFieldName}' as '{PrefixedFieldName}' to {TargetClassName} class",
-                        columnName, targetFieldName, logEntityName);
-                }
-                else
-                {
-                    logger.LogInformation("Added custom field '{FieldName}' to {TargetClassName} class", columnName, logEntityName);
-                }
-
-                xbkFormInfo.AddFormItem(field);
-                addedFieldsCount++;
-            }
-            else if (!field.PrimaryKey && existingColumns.Contains(targetFieldName))
-            {
-                logger.LogDebug("Field '{FieldName}' already exists in {TargetClassName} class, skipping", targetFieldName, logEntityName);
-            }
-        }
-
-        // Add custom SiteOriginName field if requested and it doesn't exist
-        if (addSiteOriginField)
-        {
-            string siteOriginFieldName = $"{systemFieldPrefix}{CommerceConstants.SITE_ORIGIN_FIELD_NAME}";
-
-            if (!existingColumns.Contains(siteOriginFieldName) &&
-                !kx13FormInfo.GetColumnNames().Contains(CommerceConstants.SITE_ORIGIN_FIELD_NAME))
-            {
-                var siteOriginNameField = new FormFieldInfo
-                {
-                    Name = siteOriginFieldName,
-                    DataType = FieldDataType.Text,
-                    Size = 200,
-                    AllowEmpty = true,
-                    System = false,
-                    Visible = true,
-                    Enabled = true,
-                    Caption = CommerceConstants.SITE_ORIGIN_FIELD_DISPLAY_NAME,
-                    Guid = Guid.NewGuid()
-                };
-
-                xbkFormInfo.AddFormItem(siteOriginNameField);
-                addedFieldsCount++;
-                logger.LogInformation("Added new custom field '{FieldName}' to {TargetClassName} class", siteOriginFieldName, logEntityName);
-            }
-        }
-
-        if (addedFieldsCount > 0)
-        {
-            xbkClass.ClassFormDefinition = xbkFormInfo.GetXmlDefinition();
-            DataClassInfoProvider.ProviderObject.Set(xbkClass);
-            logger.LogInformation("Migrated {Count} custom field(s) to {TargetClassName} class", addedFieldsCount, logEntityName);
-        }
-        else
-        {
-            logger.LogDebug("No new custom fields to migrate to {TargetClassName} class", logEntityName);
-        }
-    }
-
-    private async Task<List<CmsSite>> GetCommerceSites(KX13Context kx13Context)
-    {
-        var commerceSiteNames = toolConfiguration.CommerceConfiguration?.CommerceSiteNames ?? [];
-
-        if (commerceSiteNames.Count == 0)
-        {
-            throw new InvalidOperationException("No commerce site names configured.");
-        }
-
-        // Builds: s => (s.SiteName == names[0]) || (s.SiteName == names[1]) || ...
-        var predicate = BuildSiteNameOrFilter(commerceSiteNames);
-        var commerceSites = await kx13Context.CmsSites
-            .Where(predicate)
-            .ToListAsync();
-
-        var foundSiteNames = commerceSites.Select(s => s.SiteName).ToList();
-        var missingSiteNames = commerceSiteNames.Except(foundSiteNames).ToList();
-
-        if (missingSiteNames.Count > 0)
-        {
-            throw new InvalidOperationException($"Commerce site(s) '{string.Join(", ", missingSiteNames)}' not found.");
-        }
-
-        return commerceSites;
-    }
-
-    /// <summary>
-    /// Builds an expression tree that generates SQL-compatible OR predicates for site name filtering,
-    /// avoiding EF Core's OPENJSON optimization which requires SQL Server 2016+ compatibility.
-    /// </summary>
-    /// <remarks>
-    /// This method builds an expression tree manually to avoid EF Core's OPENJSON optimization.
-    /// When using .Where(s => commerceSiteNames.Contains(s.SiteName)), EF Core's SQL Server provider
-    /// translates the collection into SQL using OPENJSON with JSON path syntax (e.g., WITH ([value] nvarchar(100) '$')).
-    /// While efficient for modern SQL Server, OPENJSON and the '$' JSON path syntax are only available in:
-    /// - SQL Server 2016 (v13) or newer
-    /// - Database compatibility level ≥ 130
-    /// 
-    /// For SQL Server 2014 or older, or databases with compatibility level below 130, this generates:
-    /// "Microsoft.Data.SqlClient.SqlException: Incorrect syntax near '$'."
-    /// 
-    /// By building an explicit OR chain (s.SiteName == name1 || s.SiteName == name2 || ...),
-    /// EF Core generates standard SQL with individual equality comparisons or a simple IN clause,
-    /// ensuring compatibility with older SQL Server versions.
-    /// </remarks>
-    public static Expression<Func<CmsSite, bool>> BuildSiteNameOrFilter(IEnumerable<string> names)
-    {
-        var list = names?.Where(n => !string.IsNullOrWhiteSpace(n)).Distinct().ToArray() ?? Array.Empty<string>();
-        // Return 'false' if empty to avoid invalid SQL
-        if (list.Length == 0)
-        {
-            return s => false;
-        }
-
-        // Parameter: s
-        var param = Expression.Parameter(typeof(CmsSite), "s");
-
-        // Member: s.SiteName
-        var siteNameProp = Expression.Property(param, nameof(CmsSite.SiteName));
-
-        // Build the OR expression for all names
-        Expression body = list
-            .Select(name => Expression.Equal(siteNameProp, Expression.Constant(name, typeof(string))))
-            .Aggregate(Expression.OrElse);
-
-        return Expression.Lambda<Func<CmsSite, bool>>(body!, param);
-    }
 
     private void SaveCustomerUsingKenticoApi(IModelMappingResult<CustomerInfo> mapped, CmsUser? kx13User) =>
         SaveEntityUsingKenticoApi(

@@ -1,4 +1,6 @@
 using System.Reflection;
+using CMS.Core;
+using CMS.DataEngine;
 using MediatR;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
@@ -168,8 +170,11 @@ var invokedCommands = new InvokedCommands();
 services.AddSingleton(invokedCommands);
 
 services.AddTransient<DatabasePatcher>();
+CMSApplication.PreInit(false);
+Service.MergeDescriptors(services);
 
 await using var serviceProvider = services.BuildServiceProvider();
+Service.SetProvider(serviceProvider);
 KsCoreDiExtensions.InitServiceProvider(serviceProvider);
 using var scope = serviceProvider.CreateScope();
 
@@ -233,3 +238,4 @@ if (!args.Contains("--nowait"))
     Console.WriteLine(Resources.ProgramAwaitingExitMessage);
     Console.ReadKey();
 }
+CMSApplication.ApplicationEnd();
