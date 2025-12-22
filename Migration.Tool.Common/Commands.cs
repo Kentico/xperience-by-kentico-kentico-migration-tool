@@ -163,3 +163,14 @@ public record MigrateCustomersCommand : IRequest<CommandResult>, ICommand
 
     public Type[] Dependencies => [typeof(MigrateSitesCommand), typeof(MigrateCustomModulesCommand), typeof(MigrateUsersCommand), typeof(MigrateMembersCommand)];
 }
+
+public record MigrateOrdersCommand : IRequest<CommandResult>, ICommand
+{
+    public static readonly int Rank = 1 + MigrateSitesCommand.Rank + MigrateCustomModulesCommand.Rank + MigrateUsersCommand.Rank + MigrateMembersCommand.Rank + MigrateCustomersCommand.Rank;
+
+    public static string Moniker => "orders";
+
+    public static string MonikerFriendly => "Orders";
+
+    public Type[] Dependencies => [typeof(MigrateSitesCommand), typeof(MigrateCustomModulesCommand), typeof(MigrateUsersCommand), typeof(MigrateMembersCommand), typeof(MigrateCustomersCommand)];
+}

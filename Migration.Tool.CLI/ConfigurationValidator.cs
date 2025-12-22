@@ -181,6 +181,13 @@ public static class ConfigurationValidator
                 yield return new ValidationMessage(ValidationMessageType.Error,
                     $"'{ConfigurationNames.CommerceConfiguration}:{ConfigurationNames.SystemFieldPrefix}' cannot be empty or whitespace when specified. Either provide a valid prefix value or remove the configuration to use the default.");
             }
+
+            var orderStatuses = commerceConfiguration.GetValue<Dictionary<string, string[]>>(ConfigurationNames.OrderStatuses);
+            if (orderStatuses is not null && orderStatuses.Count == 0)
+            {
+                yield return new ValidationMessage(ValidationMessageType.Error,
+                    $"'{ConfigurationNames.CommerceConfiguration}:{ConfigurationNames.OrderStatuses}' must contain at least one order status from XbK counterpart.");
+            }
         }
 
         #endregion
