@@ -1,8 +1,8 @@
 # Supported Data
 
 > **Related Guides:**
-> - [Plan Your Migration Strategy](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/plan-your-strategy-for-migrating-features) - Effort estimates (low/medium/high) for each feature
-> - [Upgrade Walkthrough](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-walkthrough) - See migration in action with Dancing Goat
+> - [Plan Your Migration Strategy](https://docs.kentico.com/x/plan_your_strategy_for_migrating_features_guides) - Effort estimates (low/medium/high) for each feature
+> - [Upgrade Walkthrough](https://docs.kentico.com/x/upgrade_walkthrough_guides) - See migration in action with Dancing Goat
 
 The Kentico Migration Tool does not transfer all data available in the source instance. Xperience by Kentico currently provides a smaller, more focused set of features. As a result, some objects are discarded or migrated to a suitable alternative.
 

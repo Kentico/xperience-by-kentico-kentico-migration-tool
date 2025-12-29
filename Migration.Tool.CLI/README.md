@@ -184,10 +184,10 @@ modifications. On the target Xperience by Kentico instance, the migrated data ca
 compatibility mode. However, we strongly recommend updating your codebase to the new Xperience by Kentico components.
 
 > **Learn About Widget Migration:**
-> - [**Widget Migration Introduction**](https://docs.kentico.com/guides/development/upgrade-deep-dives/upgrade-widgets-introduction) - **Start here** - Understand your migration options (legacy mode, API discovery, custom migrations)
-> - [Transform Widget Properties](https://docs.kentico.com/guides/development/upgrade-deep-dives/transform-widget-properties) - Detailed customization examples
-> - [Migrate Widget Data to Content Hub](https://docs.kentico.com/guides/development/upgrade-deep-dives/migrate-widget-data-to-content-hub) - Convert inline content to reusable items
-> - [Convert Child Pages to Widgets](https://docs.kentico.com/guides/development/upgrade-deep-dives/convert-child-pages-to-widgets) - Advanced page-to-widget conversion
+> - [**Widget migration introduction**](https://docs.kentico.com/x/migrate_widgets_from_KX13_guides) - **Start here** - Understand your migration options (legacy mode, API discovery, custom migrations)
+> - [Transform widget properties](https://docs.kentico.com/x/transform_widget_properties_guides) - Detailed customization examples
+> - [Migrate widget data to Content Hub](https://docs.kentico.com/x/migrate_widget_data_as_reusable_content_guides) - Convert inline content to reusable items
+> - [Convert child pages to widgets](https://docs.kentico.com/x/convert_child_pages_to_widgets_guides) - Advanced page-to-widget conversion
 
 The Kentico Migration Tool provides an advanced migration mode for Page Builder content that utilizes API discovery on
 the source instance. To learn more details and how to configure this feature,

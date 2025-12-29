@@ -6,7 +6,7 @@ The repository contains multiple projects that work together to perform migratio
 
 ## Project Organization
 
-![Project Dependencies Diagram](../images/diagrams/project-dependencies.png)
+![Project Dependencies Diagram](../images/diagrams/project-dependencies.drawio.svg)
 
 The diagram shows five functional groups:
 
