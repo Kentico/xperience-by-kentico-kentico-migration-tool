@@ -18,10 +18,26 @@ This repository contains the data migration tool and its technical reference doc
 
 **Quick Links:**
 
-- [Upgrade Overview](https://docs.kentico.com/x/upgrade_from_kx13_overview_guides) - High-level overview of the upgrade process
+- [Upgrade overview](https://docs.kentico.com/x/upgrade_from_kx13_overview_guides) - High-level overview of the upgrade process
 - [Upgrades FAQ for architects and team leads](https://docs.kentico.com/x/upgrade_faq_guides) - Common questions and challenges
-- [Plan Your Strategy](https://docs.kentico.com/x/plan_your_strategy_for_migrating_features_guides) - Feature comparison and effort estimation
-- [Upgrade Walkthrough](https://docs.kentico.com/x/upgrade_walkthrough_guides) - Hands-on tutorial with the Dancing Goat sample site
+- [Plan your strategy](https://docs.kentico.com/x/plan_your_strategy_for_migrating_features_guides) - Feature comparison and effort estimation
+- [Upgrade walkthrough](https://docs.kentico.com/x/upgrade_walkthrough_guides) - Hands-on tutorial with the Dancing Goat sample site
+- [Advanced upgrade deep dives](https://docs.kentico.com/x/upgrade_deep_dives_guides) - Developer-focused guides for customizing migrations and handling complex scenarios
+
+> [!IMPORTANT]
+> When planning an upgrade, note special considerations for [deploying to production](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#are-there-special-considerations-when-deploying-an-upgraded-project-to-production-for-the-first-time) and [deploying to SaaS](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#are-there-special-considerations-when-performing-an-upgrade-using-xperience-by-kentico-saas).
+
+## Technical Documentation (This Repository)
+
+Technical reference documentation for configuring and running the migration tool:
+
+| Document | Purpose |
+|----------|---------|
+| **[Migration CLI README](./Migration.Tool.CLI/README.md)** | Commands, configuration options, object-specific instructions |
+| **[Supported Data](./docs/Supported-Data.md)** | Complete list of what can/cannot be migrated |
+| **[Extensions README](./Migration.Tool.Extensions/README.md)** | How to create custom migrations |
+| **[Repository Structure](./docs/Repository-Structure.md)** | Project organization, component relationships, codebase navigation |
+| **[Contributing Setup](./docs/Contributing-Setup.md)** | For contributors to this tool |
 
 ## How Data Migration Works
 
@@ -32,10 +48,10 @@ The migration tool transfers data from source databases (K11/KX12/KX13) to Xperi
 The migration follows six sequential steps:
 
 1. **Execute CLI 'migrate' Command** - Initiates the process
-2. **Read Configuration** - Loads settings from appsettings.json
-3. **Load Source Data** - Retrieves from source database (K11/KX12/KX13), filesystem (media/attachments), and API (widget info for KX13)
+2. **Read configuration** - Loads settings from appsettings.json
+3. **Load source data** - Retrieves data from source database (K11/KX12/KX13), filesystem (media/attachments), and API (widget info for KX13)
 4. **Transform Data** - Applies built-in mappers and custom migrations (field, widget, and class mappings)
-5. **Write to Target** - Uses Universal Migration Tool (primary), XbyK API, or Bulk SQL copy
+5. **Write to target** - Uses [Universal Migration Tool](https://github.com/Kentico/xperience-by-kentico-universal-migration-tool) (primary), XbyK API, or Bulk SQL copy to recreate content and other data in your target Xperience by Kentico instance.
 6. **Generate Reports** - Outputs console logs and log files
 
 **Example transformations:**
@@ -47,8 +63,8 @@ The migration follows six sequential steps:
 
 The migration tool is:
 - **Iterative** - Supports multiple runs that update existing data without creating duplicates (UPSERT behavior)
-- **Selective** - Migrate only specific data types using command parameters
-- **Extensible** - Apply custom transformations for project-specific requirements
+- **Selective** - Migrates only specific data types using command parameters
+- **Extensible** - Applies custom transformations for project-specific requirements
 
 ## How to Run the Kentico Migration Tool
 
@@ -65,27 +81,19 @@ Before running the migration, ensure you have:
 
 > **Need help with instance setup?** The [Migration CLI README](./Migration.Tool.CLI/README.md) provides detailed instructions for configuring both source and target instances.
 
-### Quick Start (Basic Migration)
+### Running Your First Migration
 
 For a lift-and-shift migration, use the migration tool's default configuration:
 
 1. **Set up your instances** - Ensure both source and target instances are accessible. The source instance must be running. The target instance must not be running.
+
 2. **Configure connections** - Update `appsettings.json` in the `Migration.Tool.CLI` project with database connection strings.
-3. **Build the solution** - Open `Migration.Tool.sln` in your IDE and build.
-4. **Run the migration** - Execute the CLI tool with desired data types.
-5. **Review results** - Check console output and log files for issues or manual steps.
 
-> **First-time user?** See the **[Migration CLI Setup Guide](./Migration.Tool.CLI/README.md)** for detailed instructions on configuring source and target instances, understanding `appsettings.json` options, and running your first migration.
+3. **Build the solution** - Open `Migration.Tool.sln` in your IDE and build in Release mode for optimal performance. (Use Debug mode when developing custom migrations or troubleshooting issues.)
 
-### Running Your First Migration
-
-1. Navigate to the output directory of the `Migration.Tool.CLI` project:
+4. **Run the migration** - Navigate to the output directory and execute the CLI tool:
    ```powershell
-   cd .\Migration.Tool.CLI\bin\Debug\net8.0
-   ```
-
-2. Run the migration command with desired parameters:
-   ```powershell
+   cd .\Migration.Tool.CLI\bin\Release\net8.0
    .\Migration.Tool.CLI.exe migrate --sites --users --page-types --pages
    ```
 
@@ -94,10 +102,12 @@ For a lift-and-shift migration, use the migration tool's default configuration:
    .\Migration.Tool.CLI.exe migrate --sites --custom-modules --users --settings-keys --page-types --pages --contact-management --forms --media-libraries --data-protection --custom-tables --members --categories
    ```
 
-3. Monitor the output:
+5. **Review results** - Check console output and log files for issues or manual steps:
    - **Console** shows real-time progress and results
    - **Log files** capture detailed execution logs (`logs\log-<date>.txt`)
 
+> **First-time user?** See the **[Migration CLI Setup Guide](./Migration.Tool.CLI/README.md)** for detailed instructions on configuring source and target instances, understanding `appsettings.json` options, and command parameters.
+>
 > **What gets migrated?** See [Supported Data](./docs/Supported-Data.md) for a complete list of data types and any limitations.
 
 ### When You Need Customization
@@ -141,23 +151,6 @@ View all [project releases](https://github.com/Kentico/xperience-by-kentico-kent
 
 - [ASP.NET Core 8.0](https://dotnet.microsoft.com/en-us/download)
 - [Xperience by Kentico](https://docs.kentico.com/changelog)
-
-## Technical Documentation (This Repository)
-
-Technical reference documentation for configuring and running the migration tool:
-
-| Document | Purpose |
-|----------|---------|
-| **[Migration CLI README](./Migration.Tool.CLI/README.md)** | Commands, configuration options, object-specific instructions |
-| **[Supported Data](./docs/Supported-Data.md)** | Complete list of what can/cannot be migrated |
-| **[Extensions README](./Migration.Tool.Extensions/README.md)** | How to create custom migrations |
-| **[Repository Structure](./docs/Repository-Structure.md)** | Project organization, component relationships, codebase navigation |
-| **[Contributing Setup](./docs/Contributing-Setup.md)** | For contributors to this tool |
-
-For conceptual guides, planning resources, and walkthroughs, see the [Learn portal upgrade guides](https://docs.kentico.com/x/migrate_from_kx13_guides).
-
-> [!IMPORTANT]
-> When planning an upgrade, note special considerations for [deploying to production](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#are-there-special-considerations-when-deploying-an-upgraded-project-to-production-for-the-first-time) and [deploying to SaaS](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#are-there-special-considerations-when-performing-an-upgrade-using-xperience-by-kentico-saas).
 
 ## Contributing
 
