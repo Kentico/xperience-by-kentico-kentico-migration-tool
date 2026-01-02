@@ -16,6 +16,9 @@ using Migration.Tool.KXP.Api.Services.CmsClass;
 
 namespace Migration.Tool.Core.KX13.Handlers.Base;
 
+/// <summary>
+/// Base class for migrate commerce data from KX13 to XbK.
+/// </summary>
 public abstract class MigrateCommerceHandlerBase
 {
     protected readonly ILogger Logger;
@@ -193,9 +196,9 @@ public abstract class MigrateCommerceHandlerBase
 
 
         if (!existingColumns.Contains(fieldName) &&
-            !kx13FormInfo.GetColumnNames().Contains(CommerceConstants.SITE_ORIGIN_FIELD_NAME))
+            !kx13FormInfo.GetColumnNames().Contains(fieldName))
         {
-            var siteOriginNameField = new FormFieldInfo
+            var field = new FormFieldInfo
             {
                 Name = fieldName,
                 DataType = FieldDataType.Text,
@@ -208,7 +211,7 @@ public abstract class MigrateCommerceHandlerBase
                 Guid = Guid.NewGuid()
             };
 
-            xbkFormInfo.AddFormItem(siteOriginNameField);
+            xbkFormInfo.AddFormItem(field);
             Logger.LogInformation("Added new custom field '{FieldName}' to {TargetClassName} class", fieldName, logEntityName);
             return 1;
         }
@@ -255,25 +258,24 @@ public abstract class MigrateCommerceHandlerBase
     }
 
 
-    public static Expression<Func<KX13Type, bool>> BuildSiteNameOrFilterGeneric<KX13Type>(IEnumerable<int> names, string columnName)
-    {
-        var list = names.ToArray();
-        if (list.Length == 0)
-        {
-            return s => false;
-        }
-
-        var param = Expression.Parameter(typeof(KX13Type), "s");
-        var siteNameProp = Expression.Property(param, columnName);
-
-        Expression body = list
-            .Select(name => Expression.Equal(siteNameProp, Expression.Constant(name, typeof(int?))))
-            .Aggregate(Expression.OrElse);
-
-        return Expression.Lambda<Func<KX13Type, bool>>(body!, param);
-    }
-
-
+    /// <summary>
+    /// Builds an expression tree that generates SQL-compatible OR predicates for nullable integer filtering,
+    /// avoiding EF Core's OPENJSON optimization which requires SQL Server 2016+ compatibility.
+    /// </summary>
+    /// <remarks>
+    /// This method builds an expression tree manually to avoid EF Core's OPENJSON optimization.
+    /// When using .Where(s => s.StatusSiteId.HasValue && values.Contains(s.StatusSiteId.Value)), EF Core's SQL Server provider
+    /// translates the collection into SQL using OPENJSON with JSON path syntax (e.g., WITH ([value] int '$')).
+    /// While efficient for modern SQL Server, OPENJSON and the '$' JSON path syntax are only available in:
+    /// - SQL Server 2016 (v13) or newer
+    /// - Database compatibility level ≥ 130
+    /// 
+    /// For SQL Server 2014 or older, or databases with compatibility level below 130, this generates:
+    /// "Microsoft.Data.SqlClient.SqlException: Incorrect syntax near '$'."
+    /// </remarks>
+    /// <param name="values">The values to filter by.</param>
+    /// <param name="nullablePropertyName">The name of the nullable property to filter by.</param>
+    /// <returns>An expression tree that generates SQL-compatible OR predicates for nullable integer filtering.</returns>
     public static Expression<Func<KX13Type, bool>> BuildNullableIntOrFilter<KX13Type>(IEnumerable<int> values, string nullablePropertyName)
     {
         var list = values.ToArray();

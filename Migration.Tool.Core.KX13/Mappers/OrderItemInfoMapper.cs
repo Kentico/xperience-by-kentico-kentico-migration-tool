@@ -12,8 +12,11 @@ namespace Migration.Tool.Core.KX13.Mappers;
 
 public record OrderItemInfoMapperSource
 (ComOrderItem OrderItem,
-OrderInfo? Order);
+OrderInfo Order);
 
+/// <summary>
+/// Mapper for OrderItemInfo.
+/// </summary>
 public class OrderItemInfoMapper(
     ILogger<OrderItemInfoMapper> logger,
     PrimaryKeyMappingContext primaryKeyMappingContext,
@@ -43,7 +46,7 @@ public class OrderItemInfoMapper(
 
         target.OrderItemGUID = orderItem.OrderItemGuid;
         target.OrderItemOrderID = order.OrderID;
-        target.OrderItemSKU = orderItem.OrderItemSku.Skunumber;
+        target.OrderItemSKU = orderItem.OrderItemSku?.Skunumber;
         target.OrderItemName = orderItem.OrderItemSkuname;
         target.OrderItemQuantity = orderItem.OrderItemUnitCount;
         target.OrderItemUnitPrice = orderItem.OrderItemUnitPrice;

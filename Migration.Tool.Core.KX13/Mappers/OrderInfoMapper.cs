@@ -21,6 +21,9 @@ CustomerInfo? Customer,
 string? CommerceSiteName);
 
 
+/// <summary>
+/// Mapper for OrderInfo.
+/// </summary>
 public class OrderInfoMapper(
     ILogger<OrderInfoMapper> logger,
     PrimaryKeyMappingContext primaryKeyMappingContext,

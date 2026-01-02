@@ -12,6 +12,9 @@ namespace Migration.Tool.Core.KX13.Mappers;
 
 public record OrderAddressInfoMapperSource(ComOrderAddress Address, ComCustomer Customer, OrderInfo Order);
 
+/// <summary>
+/// Mapper for OrderAddressInfo.
+/// </summary>
 public class OrderAddressInfoMapper(
     ILogger<OrderAddressInfoMapper> logger,
     PrimaryKeyMappingContext primaryKeyMappingContext,
@@ -51,12 +54,13 @@ public class OrderAddressInfoMapper(
             1 => OrderAddressType.Billing,
             2 => OrderAddressType.Shipping,
             3 => new OrderAddressType("Company"),
-            _ => new OrderAddressType("Unknown") // Default to Billing if unknown
+            _ => new OrderAddressType("Unknown")
         };
         target.OrderAddressType = addressType;
 
         // Split personal name into first and last name
-        var nameParts = address.AddressPersonalName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var personalName = (address.AddressPersonalName ?? string.Empty).Trim();
+        var nameParts = personalName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         target.OrderAddressFirstName = nameParts.Length > 0 ? nameParts[0] : string.Empty;
         target.OrderAddressLastName = nameParts.Length > 1 ? string.Join(" ", nameParts.Skip(1)) : string.Empty;
 
@@ -76,12 +80,9 @@ public class OrderAddressInfoMapper(
         }
 
         // Map state ID (optional)
-        if (address.AddressStateId.HasValue)
+        if (address.AddressStateId.HasValue && mappingHelper.TryTranslateId<CmsState>(s => s.StateId, address.AddressStateId.Value, out int? stateId))
         {
-            if (mappingHelper.TryTranslateId<CmsState>(s => s.StateId, address.AddressStateId.Value, out int? stateId))
-            {
-                target.OrderAddressStateID = stateId ?? 0;
-            }
+            target.OrderAddressStateID = stateId ?? 0;
         }
     }
 }

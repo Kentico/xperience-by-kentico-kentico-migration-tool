@@ -2,6 +2,9 @@
 
 namespace Migration.Tool.Common;
 
+/// <summary>
+/// Configuration for commerce data migration.
+/// </summary>
 public class CommerceConfiguration
 {
     [JsonPropertyName(ConfigurationNames.CommerceSiteNames)]
@@ -30,17 +33,4 @@ public class CommerceConfiguration
 
     [JsonPropertyName(ConfigurationNames.KX13OrderFilter)]
     public CommerceOrderFilterConfiguration? KX13OrderFilter { get; set; }
-}
-
-
-public class CommerceOrderFilterConfiguration
-{
-    [JsonPropertyName(ConfigurationNames.OrderFromDate)]
-    public DateTime? OrderFromDate { get; set; }
-
-    [JsonPropertyName(ConfigurationNames.OrderToDate)]
-    public DateTime? OrderToDate { get; set; }
-
-    [JsonPropertyName(ConfigurationNames.OrderStatusCodeNames)]
-    public List<string> OrderStatusCodeNames { get; set; } = [];
 }
