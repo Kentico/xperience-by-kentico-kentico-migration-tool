@@ -5,8 +5,6 @@
 The [Xperience by Kentico: Kentico Migration Tool](/README.md) transfers content and other data from **Kentico Xperience
 13**, **Kentico 12** or **Kentico 11** to **Xperience by Kentico**.
 
-The migration is performed by running a command for the .NET CLI.
-
 > **New to migration?** Start with the [Upgrade Walkthrough](https://docs.kentico.com/x/upgrade_walkthrough_guides) with video tutorials.
 
 ## Set up the source instance

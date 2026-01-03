@@ -2,7 +2,10 @@
 
 > **Audience:** Developers who need to understand how the repository is organized and where to find specific projects.
 
-The repository contains multiple projects that work together to perform migrations. As a migration tool user, you only directly interact with **Migration.Tool.CLI** (to run migrations) and **Migration.Tool.Extensions** (to add customizations). All other projects provide version-specific migration logic that runs automatically based on your source instance version.
+The repository contains multiple projects that work together to perform migrations.
+As a migration tool user, you only directly interact with **Migration.Tool.CLI** (to run migrations) and **Migration.Tool.Extensions** (to add customizations). Some [migration scenarios](../Migration.Tool.CLI/README.md#api-discovery-setup) may also require interaction with **KX13.Extensions** or **KX13.NET48.Extensions** for source instance setup.
+
+All other projects provide version-specific migration logic that runs automatically based on your source instance version.
 
 ## Project Organization
 
@@ -69,15 +72,15 @@ The Migration.Tool.Extensions project contains custom migration logic. It compil
 
 | Scenario | Projects to Modify |
 |----------|-------------------|
-| **Running migrations** | None - configure appsettings.json only |
-| **Custom field transformation** | `Migration.Tool.Extensions` |
-| **Custom widget migration** | `Migration.Tool.Extensions` |
-| **Custom class mapping** | `Migration.Tool.Extensions` |
-| **Custom content type relationships** | `Migration.Tool.Extensions` |
-| **Contributing bug fixes** | Relevant `Core.KX##` project |
+| **[Running migrations](../README.md#running-your-first-migration)** | None - configure appsettings.json only |
+| **[Custom field transformation](../Migration.Tool.Extensions/README.md#customize-field-migrations)** | `Migration.Tool.Extensions` |
+| **[Custom widget migration](../Migration.Tool.Extensions/README.md#customize-widget-migrations)** | `Migration.Tool.Extensions` |
+| **[Custom class mapping](../Migration.Tool.Extensions/README.md#custom-class-mappings)** | `Migration.Tool.Extensions` |
+| **[Custom content type relationships](../Migration.Tool.Extensions/README.md#custom-child-links)** | `Migration.Tool.Extensions` |
+| **[Contributing bug fixes](../README.md#contributing)** | Relevant `Core.KX##` project |
 | **Adding new data type support** | `Core.KX##` + `Common` + `CLI` |
 
 ## Related Documentation
 
-- **[Extensions README](../Migration.Tool.Extensions/README.md)** - How to customize migrations
-- **[Contributing Setup](Contributing-Setup.md)** - For contributors to the tool
+- **[Extensions README](../Migration.Tool.Extensions/README.md)** - Complete implementation guide for custom migrations, field transformations, and class mappings
+- **[Contributing Setup](Contributing-Setup.md)** - Development environment setup and workflow for contributing to the migration tool

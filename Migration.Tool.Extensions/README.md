@@ -7,7 +7,7 @@
 The project enables you to:
 - Customize migration behavior with custom transformations
 - Handle project-specific data structures and field mappings
-- Transform widget properties and page builder content
+- Transform widget properties and Page Builder content
 - Remodel content types and merge page types
 - Control how linked pages and child relationships are migrated
 
@@ -17,7 +17,6 @@ The project enables you to:
 
 ## Table of Contents
 
-- [When to Use Customization](#when-to-use-customization)
 - [Available Customization Types](#available-customization-types)
 - [Execution Order](#execution-order)
 - [Understanding the Architecture](#understanding-the-architecture)
@@ -33,72 +32,41 @@ The project enables you to:
 
 ---
 
-## When to Use Customization
-
-Migration presents an opportunity to remodel your content structure. Use custom migrations to:
-
-**Custom Class Mappings:**
-- Change content type structure or field definitions
-- Merge or split page types
-- Create reusable field schemas
-- Convert custom tables or module classes to content types
-
-**Content Item Directors:**
-- Control behavior for specific content items
-- Convert pages to widgets or reusable content
-- Handle linked pages or child relationships
-
-**Field Migrations:**
-- Transform field values during migration
-- Handle custom form controls
-- Convert data from one format to another
-
-**Widget Migrations:**
-- Change widget types
-- Rename or restructure widgets
-
-**Widget Property Migrations:**
-- Transform widget property values
-- Update content references in widget properties
-
 ## Available Customization Types
+
+Migration presents an opportunity to remodel your content structure. The following customization types allow you to transform data during migration.
+
+Each customization type is implemented by creating a class that implements a specific interface (e.g., `IFieldMigration`, `IWidgetMigration`) or inherits from a base class (e.g., `ContentItemDirectorBase`). These interfaces and classes are provided by the Migration Tool and define the methods your custom logic must implement.
 
 ### Custom Class Mappings (`IClassMapping`)
 
 Transforms content type structure and field definitions between source and target instances.
 
 **Use cases:**
-- Merge multiple page types into one content type
-- Remodel page types as reusable field schemas
-- Change field names, data types, or form controls
+
+- Merge multiple page types (e.g., `Article.BlogPost`, `Article.NewsArticle`) into a single content type
+- Remodel page types as reusable field schemas by extracting common fields
+- Change field names, data types, or form controls (e.g., rename `OldName` to `NewName` and convert from `text` to `longtext` or custom type)
 - Split one page type into multiple content types
 - Convert custom tables or module classes to content types
-
-**Examples:**
-- Merge two article page types (`Article.BlogPost`, `Article.NewsArticle`) into a single `Article` content type
-- Extract common fields from multiple page types into a reusable field schema
-- Change field `OldName` to `NewName` and convert its data type from `text` to `longtext`
 
 ### Content Item Directors (`ContentItemDirectorBase`)
 
 Controls migration behavior and relationships of individual content items during data migration.
 
 **Use cases:**
-- Handle linked pages (materialize, drop, or reference)
-- Migrate pages as widgets
-- Link child pages as content item references in parent content
-- Apply conditional logic based on content structure or hierarchy
 
-**Examples:**
-- Drop linked pages in `/Archive/`, materialize others
-- Convert `NewsItem` pages to `NewsWidget` widgets on their parent pages
-- Link child `Book` pages in a `Books` reference field when migrating `Author` pages to reusable content
+- Handle linked pages by materializing, dropping, or storing as references (e.g., drop links in `/Archive/`, materialize others)
+- Migrate pages as widgets (e.g., convert `NewsItem` pages to `NewsWidget` widgets on their parent pages)
+- Link child pages as content item references (e.g., link child `Book` pages in a `Books` field when migrating `Author` pages to reusable content)
+- Apply conditional logic based on content structure or hierarchy
 
 ### Field Migrations (`IFieldMigration`)
 
 Transforms individual field values during data migration.
 
 **Use cases:**
+
 - Handle custom form controls
 - Convert data formats (date formats, URL structures)
 - Transform content (HTML cleanup, path updates)
@@ -108,6 +76,7 @@ Transforms individual field values during data migration.
 Changes widget types or restructures widget data.
 
 **Use cases:**
+
 - Handle renamed widget types
 - Consolidate multiple widgets into one
 - Change widget structure
@@ -117,27 +86,10 @@ Changes widget types or restructures widget data.
 Transforms individual widget property values.
 
 **Use cases:**
+
 - Update content references in widget properties
 - Convert property value formats
 - Transform paths or URLs in widget data
-
-## When Custom Migrations Execute
-
-Customizations execute based on CLI migration parameters. The order depends on parameter dependencies (e.g., `--pages` requires `--page-types` to run first):
-
-```powershell
-.\Migration.Tool.CLI.exe migrate --page-types --custom-modules --forms --pages
-```
-
-| Migration Type | CLI Parameter | What It Does |
-|---|---|---|
-| **Custom Class Mappings** | `--page-types`<br>`--custom-modules` | Transform content type structure (merge types, change fields, create reusable schemas) |
-| **Content Item Directors** | `--pages` | Control what happens to each page (drop, materialize links, convert to widgets) |
-| **Field Migrations** | `--pages`<br>`--forms`<br>Custom tables | Transform individual field values (handle custom controls, convert formats) |
-| **Widget Migrations** | `--pages` | Change widget types or restructure widget data |
-| **Widget Property Migrations** | `--pages` | Transform widget property values (runs after other page migrations) |
-
----
 
 ## Registration
 
@@ -148,6 +100,26 @@ All custom migrations must be registered in `Migration.Tool.Extensions/ServiceCo
 - Use `AddSingleton` for class mappings
 - See the [Registration](#register-migrations) section for detailed examples
 - **After adding or modifying customizations, rebuild your migration tool solution before running the migration**
+
+See [Implementation guides](#implementation-guides) below for more details and examples.
+
+## When Custom Migrations Execute
+
+When registered, the customizations execute based on CLI migration parameters. The order depends on parameter dependencies (e.g., `--pages` requires `--page-types` to run first):
+
+```powershell
+.\Migration.Tool.CLI.exe migrate --page-types --custom-modules --forms --pages
+```
+
+For detailed information about all available CLI parameters, their dependencies, and execution order, see [Migrate command parameters](../Migration.Tool.CLI/README.md#migrate-command-parameters) in the Migration.Tool.CLI README.
+
+| Migration Type | CLI Parameter |
+|---|---|
+| **Custom Class Mappings** | `--page-types` `--custom-modules` |
+| **Content Item Directors** | `--pages` |
+| **Field Migrations** | `--pages` `--forms` `--custom-tables` |
+| **Widget Migrations** | `--pages` |
+| **Widget Property Migrations** | `--pages` |
 
 ## Implementation Guides
 
@@ -551,7 +523,7 @@ Customizations execute in the order of CLI migration parameters:
 - Widget property migrations are deferred until target context is available
 - Field migrations run for multiple parameters (forms, pages, custom tables)
 
----
+
 
 ## Understanding the Architecture
 
@@ -587,28 +559,23 @@ Field migrations execute once per field for every entity being migrated.
 
 ### Deferred Processing
 
-Some migrations require multiple passes for dependencies:
+Widget migrations and widget property migrations run during the same pass as page migration. After all pages are migrated, a deferred patch executes to handle specific post-migration updates:
 
 ```
-Pass 1: Initial Page Migration
+Page Migration
 ├─ Migrate page structure
 ├─ Widget migrations run (change types)
-├─ Collect widgets needing property transformation
-└─ Store for deferred processing
+├─ Widget property migrations run (transform properties)
+└─ Import page with migrated widgets
 
-Pass 2: Widget Property Migration
-├─ Target content types now available
-├─ Widget property migrations run
-└─ Transform widget JSON data
-
-Pass 3: Update Pages
-└─ Import updated pages with transformed widgets
+Deferred Patch (after all pages migrated)
+└─ Update TreePath properties (NodeAliasPath conversions)
 ```
 
-**Reasons for multi-pass processing:**
-- Widget property migrations need target content type metadata
-- Content item references need target items to exist first
-- Some transformations require cross-entity context
+**Why deferred patching exists:**
+- TreePath conversions require all pages to be migrated first
+- Path references between pages need final tree structure
+- Widget properties using path selectors need post-migration updates
 
 ### Field vs. Widget Property Selection
 

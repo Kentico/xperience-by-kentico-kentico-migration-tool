@@ -4,18 +4,32 @@
 
 ## Purpose
 
-Provides ASP.NET Core API controllers that expose widget metadata from your Kentico Xperience 13 source instance. The migration tool calls these APIs to retrieve Page Builder widget configurations during migration.
-
-## When to Use
-
-Required when migrating **Page Builder widgets** from KX13. The migration tool needs access to widget metadata (available properties, data types, default values) that is not stored in the database.
+Required when migrating **Page Builder widgets** from KX13. Provides ASP.NET Core API controllers that expose widget metadata (available properties, data types, default values) from your source instance. The migration tool calls these APIs to retrieve Page Builder widget configurations that are not stored in the database.
 
 ## Setup
 
 1. **Copy** this project to your KX13 source web application
 2. **Reference** it in your KX13 web project's .csproj
-3. **Run** your KX13 application
-4. Configure the migration tool's appsettings.json with the API endpoint URL
+3. **Run** your KX13 application (e.g., `https://localhost:5001`)
+4. **Configure** the migration tool's `appsettings.json` with the API endpoint URL:
+
+```json
+...
+"OptInFeatures": {
+  "QuerySourceInstanceApi": {
+    "Enabled": true,
+    "Connections": [
+      {
+        "SourceInstanceUri": "https://localhost:5001",
+        "Secret": "your-secret-key"
+      }
+    ]
+  }
+}
+...
+```
+
+See [Migration.Tool.CLI/appsettings.json](../Migration.Tool.CLI/appsettings.json) for the full configuration reference.
 
 ## API Endpoints
 
