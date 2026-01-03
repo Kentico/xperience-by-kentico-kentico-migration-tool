@@ -1,19 +1,133 @@
-# Migration Tool customization
+# Migration Tool Customization
 
-To create custom migrations:
+## About This Project
 
-1. Create the custom migration class:
-    - [Field migrations](#customize-field-migrations)
-    - [Widget migrations](#customize-widget-migrations)
-    - [Widget property migrations](#customize-widget-property-migrations)
-    - [Page to widget migrations](#migrate-pages-to-widgets)
-    - [Custom class mappings](#custom-class-mappings)
-    - [Custom child links](#custom-child-links)
-2. [Register the migration](#register-migrations)
+**Migration.Tool.Extensions** is the customization layer for the Kentico Migration Tool. Use this project to implement custom logic that transforms your data during migration from Kentico Xperience 13, Kentico 12, or Kentico 11 to Xperience by Kentico.
+
+The project enables you to:
+- Customize migration behavior with custom transformations
+- Handle project-specific data structures and field mappings
+- Transform widget properties and Page Builder content
+- Remodel content types and merge page types
+- Control how linked pages and child relationships are migrated
+
+> **User Interaction:** This project is where you implement custom migration logic. Modify this project to add field migrations, widget migrations, and custom class mappings that transform your data during migration.
+
+> This page provides implementation guidance for custom migrations. For conceptual understanding and migration strategies, see the [Upgrade Deep Dive guides](https://docs.kentico.com/x/upgrade_deep_dives_guides).
+
+## Table of Contents
+
+- [Available Customization Types](#available-customization-types)
+- [Execution Order](#execution-order)
+- [Understanding the Architecture](#understanding-the-architecture)
+- [Implementation Guides](#implementation-guides)
+  - [Field Migrations](#customize-field-migrations)
+  - [Widget Migrations](#customize-widget-migrations)
+  - [Widget Property Migrations](#customize-widget-property-migrations)
+  - [Linked Page Handling](#customize-linked-page-handling)
+  - [Page to Widget Migrations](#migrate-pages-to-widgets)
+  - [Class Mappings](#custom-class-mappings)
+  - [Child Links](#custom-child-links)
+- [Registration](#register-migrations)
+
+---
+
+## Available Customization Types
+
+Migration presents an opportunity to remodel your content structure. The following customization types allow you to transform data during migration.
+
+Each customization type is implemented by creating a class that implements a specific interface (e.g., `IFieldMigration`, `IWidgetMigration`) or inherits from a base class (e.g., `ContentItemDirectorBase`). These interfaces and classes are provided by the Migration Tool and define the methods your custom logic must implement.
+
+### Custom Class Mappings (`IClassMapping`)
+
+Transforms content type structure and field definitions between source and target instances.
+
+**Use cases:**
+
+- Merge multiple page types (e.g., `Article.BlogPost`, `Article.NewsArticle`) into a single content type
+- Remodel page types as reusable field schemas by extracting common fields
+- Change field names, data types, or form controls (e.g., rename `OldName` to `NewName` and convert from `text` to `longtext` or custom type)
+- Split one page type into multiple content types
+- Convert custom tables or module classes to content types
+
+### Content Item Directors (`ContentItemDirectorBase`)
+
+Controls migration behavior and relationships of individual content items during data migration.
+
+**Use cases:**
+
+- Handle linked pages by materializing, dropping, or storing as references (e.g., drop links in `/Archive/`, materialize others)
+- Migrate pages as widgets (e.g., convert `NewsItem` pages to `NewsWidget` widgets on their parent pages)
+- Link child pages as content item references (e.g., link child `Book` pages in a `Books` field when migrating `Author` pages to reusable content)
+- Apply conditional logic based on content structure or hierarchy
+
+### Field Migrations (`IFieldMigration`)
+
+Transforms individual field values during data migration.
+
+**Use cases:**
+
+- Handle custom form controls
+- Convert data formats (date formats, URL structures)
+- Transform content (HTML cleanup, path updates)
+
+### Widget Migrations (`IWidgetMigration`)
+
+Changes widget types or restructures widget data.
+
+**Use cases:**
+
+- Handle renamed widget types
+- Consolidate multiple widgets into one
+- Change widget structure
+
+### Widget Property Migrations (`IWidgetPropertyMigration`)
+
+Transforms individual widget property values.
+
+**Use cases:**
+
+- Update content references in widget properties
+- Convert property value formats
+- Transform paths or URLs in widget data
+
+## Registration
+
+All custom migrations must be registered in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs`:
+
+**Notes:**
+- Use `AddTransient` for field, widget, and director migrations
+- Use `AddSingleton` for class mappings
+- See the [Registration](#register-migrations) section for detailed examples
+- **After adding or modifying customizations, rebuild your migration tool solution before running the migration**
+
+See [Implementation guides](#implementation-guides) below for more details and examples.
+
+## When Custom Migrations Execute
+
+When registered, the customizations execute based on CLI migration parameters. The order depends on parameter dependencies (e.g., `--pages` requires `--page-types` to run first):
+
+```powershell
+.\Migration.Tool.CLI.exe migrate --page-types --custom-modules --forms --pages
+```
+
+For detailed information about all available CLI parameters, their dependencies, and execution order, see [Migrate command parameters](../Migration.Tool.CLI/README.md#migrate-command-parameters) in the Migration.Tool.CLI README.
+
+| Migration Type | CLI Parameter |
+|---|---|
+| **Custom Class Mappings** | `--page-types` `--custom-modules` |
+| **Content Item Directors** | `--pages` |
+| **Field Migrations** | `--pages` `--forms` `--custom-tables` |
+| **Widget Migrations** | `--pages` |
+| **Widget Property Migrations** | `--pages` |
+
+## Implementation Guides
+
+The following sections provide detailed instructions for implementing each type of custom migration.
 
 ## Customize field migrations
 
-You can customize field migrations to customize the default mappings of fields of page types, modules, system objects, and forms. In the `Migration.Tool.Extensions/CommunityMigrations` folder, create a new file with a class that implements the `IFieldMigration` interface. Implement the following properties and methods required by the interface:
+You can customize field migrations to control how fields are mapped for page types, modules, system objects, and forms. In the `Migration.Tool.Extensions/CommunityMigrations` folder, create a new file with a class that implements the `IFieldMigration` interface. Implement the following properties and methods required by the interface:
 
 - `Rank` - An integer property that determines the order in which migrations are applied. Use a value lower than *100000*, as that is the value for system migrations.
 - `ShallMigrate` - A boolean method that specifies whether the migration shall be applied for the current field. Use properties of the `FieldMigrationContext` object passed as an argument to the method to evaluate the condition. For each field, the migration with the lowest rank that returns `true` from the `ShallMigrate` method is used.
@@ -134,7 +248,6 @@ services.AddTransient<ContentItemDirectorBase, CustomLinkedPageDirector>();
 
 **Debugging Tips:**
 - Use logging to track which strategy is applied to each linked page
-- Check the migration protocol output for warnings about cross-site links
 - Verify that ancestor pages exist and have the expected structure
 
 ## Customize widget migrations
@@ -269,11 +382,11 @@ You can customize class mappings to adjust the content model between the source 
     var m = new MultiClassMapping(targetClassName, target =>
     {
       // Target content type name
-      target.ClassName = "Acme.Event";
+      target.ClassName = "Acme.Article";
       // Database table name of the new type
-      target.ClassTableName = "Acme_Event";
+      target.ClassTableName = "Acme_Article";
       // Display name of the content type
-      target.ClassDisplayName = "My new transformed event";
+      target.ClassDisplayName = "Article";
       // Type of the class (specifies that the class is a content type)
       target.ClassType = ClassType.CONTENT_TYPE;
       // What the content type is used for (reusable content, pages, email, or headless)
@@ -284,7 +397,7 @@ You can customize class mappings to adjust the content model between the source 
 4. Define a new primary key:
 
     ```csharp
-    m.BuildField("EventID").AsPrimaryKey();
+    m.BuildField("ArticleID").AsPrimaryKey();
     ```
 
 5. Define individual fields of the new content type:
@@ -296,26 +409,26 @@ You can customize class mappings to adjust the content model between the source 
     // You can map any number of source fields. The migration creates items of the target data class for every item from a mapped source data class.
     // The default migration is skipped for any data class / page type where you map at least one source field
 
-    // Maps the "EventTitle" field from the source data class "_ET.Event1"
+    // Maps the "ArticleTitle" field from the source data class "Article.BlogPost"
     // Sets the isTemplate parameter to true, which makes the new field inherit the source field definition as a template
     // The field definition is migrated according to the migration tool's data type and form control/component mappings
-    title.SetFrom("_ET.Event1", "EventTitle", true);
-    // Maps the "EventTitle" field from a second source data class "_ET.Event2"
+    title.SetFrom("Article.BlogPost", "ArticleTitle", true);
+    // Maps the "ArticleTitle" field from a second source data class "Article.NewsArticle"
     // The isTemplate parameter is not set, so only the value is taken from this source field
-    title.SetFrom("_ET.Event2", "EventTitle");
+    title.SetFrom("Article.NewsArticle", "ArticleTitle");
 
     // You can modify the field definition, e.g., change the caption of the field
-    title.WithFieldPatch(f => f.Caption = "Event title");
+    title.WithFieldPatch(f => f.Caption = "Article title");
     ```
 
 6. (*Optional*) You can add custom value conversions:
 
     ```csharp
-    var startDate = m.BuildField("StartDate");
-    startDate.SetFrom("_ET.Event1", "EventDateStart", true);
+    var publishDate = m.BuildField("PublishDate");
+    publishDate.SetFrom("Article.BlogPost", "BlogPostDate", true);
     
     // Uses value conversion to modify the field value
-    startDate.ConvertFrom("_ET.Event2", "EventStartDateAsText", false,
+    publishDate.ConvertFrom("Article.NewsArticle", "ArticleDateAsText", false,
         (v, context) =>
         {
             switch (context)
@@ -370,5 +483,125 @@ This feature is available by means of content item director.
 You can apply a simple general rule to link child pages e.g. in `Children` field or you can apply more elaborate rules. You can see samples of both approaches in [SampleChildLinkDirector.cs](./CommunityMigrations/SampleChildLinkDirector.cs) or follow along with our [guide to transfer page hierarchy to the Content hub](https://docs.kentico.com/x/transfer_page_hierarchy_to_content_hub_guides).
 
 After implementing the content item director, you need to [register the director](#register-migrations) in the system.
+
+---
+
+## Execution Order
+
+Customizations execute in the order of CLI migration parameters:
+
+```powershell
+.\Migration.Tool.CLI.exe migrate --page-types --custom-modules --forms --pages
+```
+
+**Execution sequence:**
+
+```
+1. --page-types
+   └─ Custom class mappings for page types
+
+2. --custom-modules
+   └─ Custom class mappings for module classes
+
+3. --forms
+   └─ Field migrations for form fields
+
+4. --pages
+   ├─ Content item directors (Pass 1)
+   │  └─ Control behavior for each content item
+   ├─ Field migrations
+   │  └─ Transform page field values
+   ├─ Widget migrations
+   │  └─ Change widget types
+   └─ Widget property migrations (Pass 2)
+      └─ Transform widget property values
+```
+
+**Notes:**
+- Structure changes (class mappings) execute before data migrations
+- Content types must exist before pages can reference them
+- Widget property migrations are deferred until target context is available
+- Field migrations run for multiple parameters (forms, pages, custom tables)
+
+
+
+## Understanding the Architecture
+
+### Data Processing Flow
+
+The Migration Tool uses a handler-based architecture:
+
+```
+CLI Command (--pages)
+    ↓
+Tool routes to appropriate handler
+    ↓
+Handler queries source database
+    ↓
+For each source entity:
+    - Transform entity to target model
+    - Custom migrations execute here
+    ↓
+Import to target database
+```
+
+You do not interact with handlers directly. Handlers automatically call your migrations during transformation.
+
+### Migration Execution
+
+Custom migrations are called automatically during transformation:
+
+1. **Selection** - The tool checks your migration's `ShallMigrate()` method
+2. **Ranking** - Lowest rank wins if multiple migrations match
+3. **Execution** - If selected, your transformation method runs
+
+Field migrations execute once per field for every entity being migrated.
+
+### Deferred Processing
+
+Widget migrations and widget property migrations run during the same pass as page migration. After all pages are migrated, a deferred patch executes to handle specific post-migration updates:
+
+```
+Page Migration
+├─ Migrate page structure
+├─ Widget migrations run (change types)
+├─ Widget property migrations run (transform properties)
+└─ Import page with migrated widgets
+
+Deferred Patch (after all pages migrated)
+└─ Update TreePath properties (NodeAliasPath conversions)
+```
+
+**Why deferred patching exists:**
+- TreePath conversions require all pages to be migrated first
+- Path references between pages need final tree structure
+- Widget properties using path selectors need post-migration updates
+
+### Field vs. Widget Property Selection
+
+**Field Migrations** - Data Type + Form Control:
+
+```csharp
+public bool ShallMigrate(FieldMigrationContext context)
+{
+    // Both data type and form control available
+    return context.SourceDataType == "longtext" 
+        && context.SourceFormControl == "MyCustomControl";
+}
+```
+
+Available context: `SourceDataType`, `SourceFormControl`, `FieldName`
+
+**Widget Property Migrations** - Form Control Only:
+
+```csharp
+public bool ShallMigrate(WidgetPropertyMigrationContext context)
+{
+    // Only form control available (no data type in JSON)
+    return context.SourceFormControl == "MyCustomFormControl";
+}
+```
+
+Widget properties are stored as JSON without data type information. Form control metadata is retrieved from your KX13 instance via the API controller extension.
 
 
