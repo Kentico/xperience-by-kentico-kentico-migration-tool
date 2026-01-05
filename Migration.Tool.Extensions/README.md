@@ -18,8 +18,8 @@ The project enables you to:
 ## Table of Contents
 
 - [Available Customization Types](#available-customization-types)
-- [Execution Order](#execution-order)
-- [Understanding the Architecture](#understanding-the-architecture)
+- [Registration](#registration)
+- [When Custom Migrations Execute](#when-custom-migrations-execute)
 - [Implementation Guides](#implementation-guides)
   - [Field Migrations](#customize-field-migrations)
   - [Widget Migrations](#customize-widget-migrations)
@@ -28,7 +28,6 @@ The project enables you to:
   - [Page to Widget Migrations](#migrate-pages-to-widgets)
   - [Class Mappings](#custom-class-mappings)
   - [Child Links](#custom-child-links)
-- [Registration](#register-migrations)
 
 ---
 
@@ -105,7 +104,7 @@ See [Implementation guides](#implementation-guides) below for more details and e
 
 ## When Custom Migrations Execute
 
-When registered, the customizations execute based on CLI migration parameters. The order depends on parameter dependencies (e.g., `--pages` requires `--page-types` to run first):
+When registered, customizations execute based on CLI migration parameters. The order depends on parameter dependencies (e.g., `--pages` requires `--page-types` to run first):
 
 ```powershell
 .\Migration.Tool.CLI.exe migrate --page-types --custom-modules --forms --pages
@@ -120,6 +119,26 @@ For detailed information about all available CLI parameters, their dependencies,
 | **Field Migrations** | `--pages` `--forms` `--custom-tables` |
 | **Widget Migrations** | `--pages` |
 | **Widget Property Migrations** | `--pages` |
+
+### How Custom Migrations Are Applied
+
+The Kentico Migration Tool uses a handler-based architecture where handlers automatically call your custom migrations during data transformation. You do not interact with handlers directly—simply register your migrations and they will be invoked automatically.
+
+Custom migrations are called during transformation:
+
+1. **Selection** - The tool checks your migration's `ShallMigrate()` method
+2. **Ranking** - Lowest rank wins if multiple migrations match
+3. **Execution** - If selected, your transformation method runs
+
+**Execution during page migration:**
+
+As multiple custom migrations run during the `--pages` migration, custom migrations execute in the following order for each page:
+
+1. Content item directors control overall behavior (e.g., dropping pages, converting to widgets, handling linked pages)
+2. Widget migrations and widget property migrations transform Page Builder content
+3. Field migrations transform page field values
+
+After all pages are migrated, the tool performs a final pass to update `TreePath` properties (converting `NodeAliasPath` references). This happens automatically and doesn't require custom migration logic.
 
 ## Implementation Guides
 
@@ -483,125 +502,4 @@ This feature is available by means of content item director.
 You can apply a simple general rule to link child pages e.g. in `Children` field or you can apply more elaborate rules. You can see samples of both approaches in [SampleChildLinkDirector.cs](./CommunityMigrations/SampleChildLinkDirector.cs) or follow along with our [guide to transfer page hierarchy to the Content hub](https://docs.kentico.com/x/transfer_page_hierarchy_to_content_hub_guides).
 
 After implementing the content item director, you need to [register the director](#register-migrations) in the system.
-
----
-
-## Execution Order
-
-Customizations execute in the order of CLI migration parameters:
-
-```powershell
-.\Migration.Tool.CLI.exe migrate --page-types --custom-modules --forms --pages
-```
-
-**Execution sequence:**
-
-```
-1. --page-types
-   └─ Custom class mappings for page types
-
-2. --custom-modules
-   └─ Custom class mappings for module classes
-
-3. --forms
-   └─ Field migrations for form fields
-
-4. --pages
-   ├─ Content item directors (Pass 1)
-   │  └─ Control behavior for each content item
-   ├─ Field migrations
-   │  └─ Transform page field values
-   ├─ Widget migrations
-   │  └─ Change widget types
-   └─ Widget property migrations (Pass 2)
-      └─ Transform widget property values
-```
-
-**Notes:**
-- Structure changes (class mappings) execute before data migrations
-- Content types must exist before pages can reference them
-- Widget property migrations are deferred until target context is available
-- Field migrations run for multiple parameters (forms, pages, custom tables)
-
-
-
-## Understanding the Architecture
-
-### Data Processing Flow
-
-The Migration Tool uses a handler-based architecture:
-
-```
-CLI Command (--pages)
-    ↓
-Tool routes to appropriate handler
-    ↓
-Handler queries source database
-    ↓
-For each source entity:
-    - Transform entity to target model
-    - Custom migrations execute here
-    ↓
-Import to target database
-```
-
-You do not interact with handlers directly. Handlers automatically call your migrations during transformation.
-
-### Migration Execution
-
-Custom migrations are called automatically during transformation:
-
-1. **Selection** - The tool checks your migration's `ShallMigrate()` method
-2. **Ranking** - Lowest rank wins if multiple migrations match
-3. **Execution** - If selected, your transformation method runs
-
-Field migrations execute once per field for every entity being migrated.
-
-### Deferred Processing
-
-Widget migrations and widget property migrations run during the same pass as page migration. After all pages are migrated, a deferred patch executes to handle specific post-migration updates:
-
-```
-Page Migration
-├─ Migrate page structure
-├─ Widget migrations run (change types)
-├─ Widget property migrations run (transform properties)
-└─ Import page with migrated widgets
-
-Deferred Patch (after all pages migrated)
-└─ Update TreePath properties (NodeAliasPath conversions)
-```
-
-**Why deferred patching exists:**
-- TreePath conversions require all pages to be migrated first
-- Path references between pages need final tree structure
-- Widget properties using path selectors need post-migration updates
-
-### Field vs. Widget Property Selection
-
-**Field Migrations** - Data Type + Form Control:
-
-```csharp
-public bool ShallMigrate(FieldMigrationContext context)
-{
-    // Both data type and form control available
-    return context.SourceDataType == "longtext" 
-        && context.SourceFormControl == "MyCustomControl";
-}
-```
-
-Available context: `SourceDataType`, `SourceFormControl`, `FieldName`
-
-**Widget Property Migrations** - Form Control Only:
-
-```csharp
-public bool ShallMigrate(WidgetPropertyMigrationContext context)
-{
-    // Only form control available (no data type in JSON)
-    return context.SourceFormControl == "MyCustomFormControl";
-}
-```
-
-Widget properties are stored as JSON without data type information. Form control metadata is retrieved from your KX13 instance via the API controller extension.
-
 
