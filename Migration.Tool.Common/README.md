@@ -8,7 +8,6 @@ Provides shared infrastructure used by all other migration projects:
 
 - **Configuration Management** - `ToolConfiguration.cs` defines all appsettings.json configuration options with validation
 - **Command Pipeline** - MediatR command handlers and behaviors for orchestrating migrations
-- **Migration Protocol** - Tracks migration progress, errors, and warnings in structured format
 - **Logging Infrastructure** - Centralized logging with progress reporting
 - **Extension Points** - Abstract interfaces for field migrations, widget migrations, and custom mappers
 - **Primary Key Mapping** - Tracks relationships between source and target entity IDs across migration runs

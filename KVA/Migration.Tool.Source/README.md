@@ -1,6 +1,6 @@
 # Migration.Tool.Source (KVA/)
 
-> **Contributor-Only:** This is an internal abstraction layer. Users do not interact with this project directly. Only modify this if you are contributing to the migration tool itself.
+> **Advanced Customization:** This is an internal abstraction layer. Most users do not need to modify this project. Only modify this if you are contributing to the migration tool itself or need to customize advanced features like [automatic image optimization during migration](https://docs.kentico.com/x/optimize_images_during_upgrade_guides).
 
 ## Purpose
 
