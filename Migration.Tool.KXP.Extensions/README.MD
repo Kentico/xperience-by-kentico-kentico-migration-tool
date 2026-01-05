@@ -27,7 +27,7 @@ The `LegacyAttachmentHandler.cs` handler can serve the following legacy attachme
 - `/getattachment/[AttachmentGUID]/[AttachmentName].[AttachmentExtension]`
   - Example: `/getattachment/454BD7D7-200F-4976-AD21-8B5D70CBE7FD/image.jpg`
 
-## Add the handler to your project
+## Add the Handler to Your Project
 
 1. Open your Xperience by Kentico solution in Visual Studio.
 2. Add a custom assembly (_Class Library_ project) to your solution or re-use an existing one. See

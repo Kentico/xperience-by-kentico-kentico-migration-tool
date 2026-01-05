@@ -18,8 +18,8 @@ This repository contains the data migration tool and its technical reference doc
 
 **Quick Links:**
 
-- [Upgrade overview](https://docs.kentico.com/x/upgrade_from_kx13_overview_guides) - High-level overview of the upgrade process
-- [Upgrades FAQ for architects and team leads](https://docs.kentico.com/x/upgrade_faq_guides) - Common questions and challenges
+- [Upgrade overview](https://docs.kentico.com/x/migrate_from_kx13_overview_guides) - High-level overview of the upgrade process
+- [Upgrades FAQ for architects and team leads](https://docs.kentico.com/x/upgrade_from_kx13_faq_guides) - Common questions and challenges
 - [Plan your strategy](https://docs.kentico.com/x/plan_your_strategy_for_migrating_features_guides) - Feature comparison and effort estimation
 - [Upgrade walkthrough](https://docs.kentico.com/x/upgrade_walkthrough_guides) - Hands-on tutorial with the Dancing Goat sample site
 - [Advanced upgrade deep dives](https://docs.kentico.com/x/upgrade_deep_dives_guides) - Developer-focused guides for customizing migrations and handling complex scenarios
@@ -53,13 +53,6 @@ The migration follows six sequential steps:
 4. **Transform Data** - Applies built-in mappers and custom migrations (field, widget, and class mappings)
 5. **Write to target** - Uses [Universal Migration Tool](https://github.com/Kentico/xperience-by-kentico-universal-migration-tool) (primary), XbyK API, or Bulk SQL copy to recreate content and other data in your target Xperience by Kentico instance.
 6. **Generate Reports** - Outputs console logs and log files
-
-**Example transformations:**
-- CMS_Site → Website Channel
-- CMS_User → CMS_User (admin) + CMS_Member (live site)
-- CMS_Document → Content Item
-- CMS_Attachment → Content Item Asset
-- Page Builder → New Page Builder format
 
 The migration tool is:
 - **Iterative** - Supports multiple runs that update existing data without creating duplicates (UPSERT behavior)
@@ -109,6 +102,8 @@ For a lift-and-shift migration, use the migration tool's default configuration:
 > **First-time user?** See the **[Migration CLI Setup Guide](./Migration.Tool.CLI/README.md)** for detailed instructions on configuring source and target instances, understanding `appsettings.json` options, and command parameters.
 >
 > **What gets migrated?** See [Supported Data](./docs/Supported-Data.md) for a complete list of data types and any limitations.
+>
+> **Learning by doing?** Follow our [Upgrade Walkthrough](https://docs.kentico.com/x/upgrade_walkthrough_guides) - a step-by-step, code-along guide using the Dancing Goat sample site. The guide covers both data migration and code adjustments to display a Kentico Xperience 13 page seamlessly in Xperience by Kentico.
 
 ### When You Need Customization
 

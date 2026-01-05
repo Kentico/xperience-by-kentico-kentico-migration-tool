@@ -18,16 +18,18 @@ The project enables you to:
 ## Table of Contents
 
 - [Available Customization Types](#available-customization-types)
-- [Registration](#registration)
 - [When Custom Migrations Execute](#when-custom-migrations-execute)
 - [Implementation Guides](#implementation-guides)
-  - [Field Migrations](#customize-field-migrations)
-  - [Widget Migrations](#customize-widget-migrations)
-  - [Widget Property Migrations](#customize-widget-property-migrations)
-  - [Linked Page Handling](#customize-linked-page-handling)
-  - [Page to Widget Migrations](#migrate-pages-to-widgets)
-  - [Class Mappings](#custom-class-mappings)
-  - [Child Links](#custom-child-links)
+  - [Customize Field Migrations](#customize-field-migrations)
+  - [Customize Linked Page Handling](#customize-linked-page-handling)
+  - [Customize Widget Migrations](#customize-widget-migrations)
+  - [Customize Widget Property Migrations](#customize-widget-property-migrations)
+  - [Migrate Pages to Widgets](#migrate-pages-to-widgets)
+  - [Custom Class Mappings](#custom-class-mappings)
+    - [Remodel Page Types as Reusable Field Schemas Guide](#remodel-page-types-as-reusable-field-schemas-guide)
+    - [Sample Class Mappings](#sample-class-mappings)
+  - [Custom Child Links](#custom-child-links)
+- [Registration](#registration)
 
 ---
 
@@ -36,6 +38,8 @@ The project enables you to:
 Migration presents an opportunity to remodel your content structure. The following customization types allow you to transform data during migration.
 
 Each customization type is implemented by creating a class that implements a specific interface (e.g., `IFieldMigration`, `IWidgetMigration`) or inherits from a base class (e.g., `ContentItemDirectorBase`). These interfaces and classes are provided by the Migration Tool and define the methods your custom logic must implement.
+
+> **Important:** After implementing any custom migration, you must register it in the dependency injection container. See [Registration](#registration) for complete registration instructions.
 
 ### Custom Class Mappings (`IClassMapping`)
 
@@ -90,18 +94,6 @@ Transforms individual widget property values.
 - Convert property value formats
 - Transform paths or URLs in widget data
 
-## Registration
-
-All custom migrations must be registered in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs`:
-
-**Notes:**
-- Use `AddTransient` for field, widget, and director migrations
-- Use `AddSingleton` for class mappings
-- See the [Registration](#register-migrations) section for detailed examples
-- **After adding or modifying customizations, rebuild your migration tool solution before running the migration**
-
-See [Implementation guides](#implementation-guides) below for more details and examples.
-
 ## When Custom Migrations Execute
 
 When registered, customizations execute based on CLI migration parameters. The order depends on parameter dependencies (e.g., `--pages` requires `--page-types` to run first):
@@ -122,7 +114,7 @@ For detailed information about all available CLI parameters, their dependencies,
 
 ### How Custom Migrations Are Applied
 
-The Kentico Migration Tool uses a handler-based architecture where handlers automatically call your custom migrations during data transformation. You do not interact with handlers directly—simply register your migrations and they will be invoked automatically.
+The Kentico Migration Tool uses a handler-based architecture where handlers automatically call your custom migrations during data transformation. Typically, you do not interact with handlers directly—simply register your migrations and they will be invoked automatically.
 
 Custom migrations are called during transformation:
 
@@ -144,7 +136,7 @@ After all pages are migrated, the tool performs a final pass to update `TreePath
 
 The following sections provide detailed instructions for implementing each type of custom migration.
 
-## Customize field migrations
+### Customize Field Migrations
 
 You can customize field migrations to control how fields are mapped for page types, modules, system objects, and forms. In the `Migration.Tool.Extensions/CommunityMigrations` folder, create a new file with a class that implements the `IFieldMigration` interface. Implement the following properties and methods required by the interface:
 
@@ -164,22 +156,22 @@ You can see samples:
 - [AssetMigration.cs](./DefaultMigrations/AssetMigration.cs)
   - An example of a usable migration
 
-After implementing the migration, you need to [register the migration](#register-migrations) in the system.
+After implementing the migration, you need to [register the migration](#registration) in the system.
 
-## Customize linked page handling
+### Customize Linked Page Handling
 
 When migrating from Kentico versions that support linked pages (pages that reference content from other pages in the content tree), you need to decide how to handle these linked relationships since Xperience by Kentico doesn't support linked pages in the same way.
 
 The linked pages director feature provides a flexible solution to customize how linked pages are handled during migration. You can choose to materialize linked content, drop it entirely, or store references in ancestor pages.
 
-### Understanding Linked Pages
+#### Understanding Linked Pages
 
 In older Kentico versions, linked pages allowed you to create pages that displayed content from other pages without duplicating the actual content. This was useful for:
 - Sharing content across multiple sections of a website
 - Creating content references without data duplication  
 - Building complex content hierarchies
 
-### Migration Strategies
+#### Migration Strategies
 
 The linked pages director offers three main strategies for handling linked pages:
 
@@ -198,7 +190,7 @@ Creates a content item reference field in an ancestor page that points to the or
 - **Use when**: You want to preserve the relationship without duplicating content
 - **Result**: The linked content is referenced through a content item selector field
 
-### Implementation
+#### Implementation
 
 In `Migration.Tool.Extensions/CommunityMigrations`, create a new file with a class that inherits from the `ContentItemDirectorBase` class and override the `DirectLinkedNode(source, options)` method.
 
@@ -209,9 +201,9 @@ The `LinkedPageSource` provides access to:
 
 Implement your decision logic based on available node properties (`NodeClassID`, `NodeAliasPath`, `NodeName`, etc.) and call the appropriate action method.
 
-### Available Actions
+#### Available Actions
 
-#### `options.Drop()`
+##### `options.Drop()`
 Skips migration of the linked page entirely. Use for temporary content, archived pages, or content that should be handled manually.
 
 #### `options.Materialize()`
@@ -224,7 +216,7 @@ Creates a content item reference field in an ancestor page that points to the or
 - `parentLevel`: Relative level of the ancestor page (-1 = direct parent, -2 = grandparent, etc.)
 - `fieldName`: Name of the content item reference field (created automatically if it doesn't exist)
 
-### Common Strategies
+#### Common Strategies
 
 **Content Type-Based**: Use `NodeClassID` to look up the content type and apply different strategies based on page type.
 
@@ -234,31 +226,25 @@ Creates a content item reference field in an ancestor page that points to the or
 
 **Contextual**: Combine node properties with ancestor analysis to make intelligent decisions about reference placement.
 
-### Important Considerations
+#### Important Considerations
 
-1. **Field Creation**: When using `StoreReferenceInAncestor`, the content item reference field is created automatically if it doesn't exist.
+1. **Field creation**: When using `StoreReferenceInAncestor`, the content item reference field is created automatically if it doesn't exist.
 
-2. **Allowed Types**: If the reference field exists but doesn't allow the linked content's type, the type is automatically added to the allowed types.
+2. **Allowed types**: If the reference field exists but doesn't allow the linked content's type, the type is automatically added to the allowed types.
 
-3. **Content Hub**: For the reference strategy to work properly, ensure that the linked content types are configured as reusable content in your `appsettings.json` under `ConvertClassesToContentHub`.
+3. **Content hub**: For the reference strategy to work properly, ensure that the linked content types are configured as reusable content in your `appsettings.json` under `ConvertClassesToContentHub`.
 
-4. **Processing Order**: Linked pages are processed using topological sorting to ensure that referenced content is migrated before the pages that reference it.
+4. **Processing order**: Linked pages are processed using topological sorting to ensure that referenced content is migrated before the pages that reference it.
 
-5. **Cross-Site Links**: Links between different sites are not supported and will be skipped with a warning.
+5. **Cross-site links**: Links between different sites are not supported and will be skipped with a warning.
 
-### Sample Implementation
+#### Sample Implementation
 
 You can see a comprehensive sample implementation in [SampleLinkedPageDirector.cs](./CommunityMigrations/SampleLinkedPageDirector.cs) that demonstrates various strategies for handling linked pages based on content type, path, and site context.
 
-### Registration
+After implementing your linked page director, you need to [register the director](#registration) in the system.
 
-After implementing your linked page director, register it in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs`:
-
-```csharp
-services.AddTransient<ContentItemDirectorBase, CustomLinkedPageDirector>();
-```
-
-### Troubleshooting
+#### Troubleshooting
 
 **Common Issues:**
 - **"Ancestor not found" error**: Check that the `parentLevel` value is correct (negative values for ancestors)
@@ -269,7 +255,7 @@ services.AddTransient<ContentItemDirectorBase, CustomLinkedPageDirector>();
 - Use logging to track which strategy is applied to each linked page
 - Verify that ancestor pages exist and have the expected structure
 
-## Customize widget migrations
+### Customize Widget Migrations
 
 You can customize widget migration to change the widget to which source widgets are migrated in the target instance. In the `Migration.Tool.Extensions/CommunityMigrations` folder, create a new file with a class that implements the `IWidgetMigration` interface. Implement the following properties and methods required by the interface:
 
@@ -284,12 +270,12 @@ You can customize widget migration to change the widget to which source widgets 
 
 You can see a sample: [SampleWidgetMigration.cs](./CommunityMigrations/SampleWidgetMigration.cs)
 
-After implementing the migration, you need to [register the migration](#register-migrations) in the system.
+After implementing the migration, you need to [register the migration](#registration) in the system.
 
 > [!TIP]
 > For a complete end-to-end example, see our guide on [how to migrate widget data as reusable content](https://docs.kentico.com/x/migrate_widget_data_as_reusable_content_guides) in the Kentico documentation.
 
-## Customize widget property migrations
+### Customize Widget Property Migrations
 
 In the `Migration.Tool.Extensions/CommunityMigrations` folder, create a new file with a class that implements the `IWidgetPropertyMigration` interface. Implement the following properties and methods required by the interface:
 
@@ -309,12 +295,12 @@ You can see samples:
 - [Page selector migration](./DefaultMigrations/WidgetPageSelectorMigration.cs)
 - [File selector migration](./DefaultMigrations/WidgetFileMigration.cs)
 
-After implementing the migration, you need to [register the migration](#register-migrations) in the system.
+After implementing the migration, you need to [register the migration](#registration) in the system.
 
 > [!TIP]
 > For common widget property transformation scenarios, see [our technical deep-dive guide](https://docs.kentico.com/x/transform_widget_properties_guides) in the Kentico documentation.
 
-## Migrate pages to widgets
+### Migrate Pages to Widgets
 
 This migration allows you to migrate pages from the source instance as [widgets](https://docs.kentico.com/x/7gWiCQ) in the target instance. This migration can be used in the following ways:
 
@@ -375,21 +361,12 @@ In `Migration.Tool.Extensions/CommunityMigrations`, create a new file with a cla
 
 You can see a sample: [SamplePageToWidgetDirector.cs](./CommunityMigrations/SamplePageToWidgetDirector.cs)
 
-After implementing the content item director, you need to [register the director](#register-migrations) in the system.
+After implementing the content item director, you need to [register the director](#registration) in the system.
 
 > [!TIP]
 > For a complete practical example, see [how to convert child pages to widgets](https://docs.kentico.com/x/convert_child_pages_to_widgets_guides) in the Kentico documentation.
 
-## Register migrations
-
-Register the migration in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as a `Transient` dependency into the service collection:
-
-- Field migrations - `services.AddTransient<IFieldMigration, MyFieldMigration>();`
-- Widget migrations - `services.AddTransient<IWidgetMigration, MyWidgetMigration>();`
-- Widget property migrations - `services.AddTransient<IWidgetPropertyMigration, MyWidgetPropertyMigration>();`
-- Page to widget migrations - `services.AddTransient<ContentItemDirectorBase, MyPageToWidgetDirector>();`
-
-## Custom class mappings
+### Custom Class Mappings
 
 You can customize class mappings to adjust the content model between the source instance and the target Xperience by Kentico instance. For example, you can merge multiple page types into a single content type, remodel page types as [reusable field scehams](https://docs.kentico.com/x/remodel_page_types_as_reusable_field_schemas_guides), or migrate them to the [content hub](https://docs.kentico.com/x/barWCQ) as reusable content.
 
@@ -466,11 +443,7 @@ You can customize class mappings to adjust the content model between the source 
     startDate.WithFieldPatch(f => f.Caption = "Event start date");
     ```
 
-7. Register the class mapping to the dependency injection container:
-
-    ```csharp
-    serviceCollection.AddSingleton<IClassMapping>(m);
-    ```
+7. Complete the implementation by [registering the class mapping](#registration) in the dependency injection container.
 
 8. Ensure that your class mapping extension methods run during the startup of the migration tool. Call the methods from `UseCustomizations` in the [ServiceCollectionExtensions](/Migration.Tool.Extensions/ServiceCollectionExtensions.cs) class.
 
@@ -478,13 +451,13 @@ You can customize class mappings to adjust the content model between the source 
 
 If you need class mappings to alter several data classes in Kentico Xperience 13, consider [using AI tools to help you generate mappings quickly](https://docs.kentico.com/x/speed_up_remodeling_with_ai_guides).
 
-### Remodel page types as reusable field schemas guide
+#### Remodel Page Types as Reusable Field Schemas Guide
 
 For an end-to-end example of how to extract common fields from two page types from Kentico Xperience 13 and move them to a [reusable field schema](https://docs.kentico.com/x/D4_OD) shared by both web page content types in Xperience by Kentico follow this [migration guide](https://docs.kentico.com/x/remodel_page_types_as_reusable_field_schemas_guides) in the documentation.
 
 Note that any usage of `ReusableSchemaBuilder` in custom class mappings cannot be combined together with the `Settings.CreateReusableFieldSchemaForClasses` configuration option.
 
-### Sample class mappings
+#### Sample Class Mappings
 
 You can find sample class mappings in the [ClassMappingSample.cs](/Migration.Tool.Extensions/ClassMappings/ClassMappingSample.cs) file.
 
@@ -493,7 +466,7 @@ You can find sample class mappings in the [ClassMappingSample.cs](/Migration.Too
 - `AddReusableRemodelingSample` showcases how to migrate a page type as reusable content
 
 
-## Custom child links
+### Custom Child Links
 
 This feature allows you to link child pages as referenced content items of a page converted to reusable content item.
 
@@ -501,5 +474,22 @@ This feature is available by means of content item director.
 
 You can apply a simple general rule to link child pages e.g. in `Children` field or you can apply more elaborate rules. You can see samples of both approaches in [SampleChildLinkDirector.cs](./CommunityMigrations/SampleChildLinkDirector.cs) or follow along with our [guide to transfer page hierarchy to the Content hub](https://docs.kentico.com/x/transfer_page_hierarchy_to_content_hub_guides).
 
-After implementing the content item director, you need to [register the director](#register-migrations) in the system.
+After implementing the content item director, you need to [register the director](#registration) in the system.
 
+## Registration
+
+All custom migrations must be registered in `Migration.Tool.Extensions/ServiceCollectionExtensions.cs` as dependencies in the service collection.
+
+- Use `AddTransient` for field, widget, and director migrations
+- Use `AddSingleton` for class mappings
+- **After adding or modifying customizations, rebuild your migration tool solution before running the migration**
+
+**Registration by migration type:**
+
+- Field migrations - `services.AddTransient<IFieldMigration, MyFieldMigration>();`
+- Linked page directors - `services.AddTransient<ContentItemDirectorBase, MyLinkedPageDirector>();`
+- Widget migrations - `services.AddTransient<IWidgetMigration, MyWidgetMigration>();`
+- Widget property migrations - `services.AddTransient<IWidgetPropertyMigration, MyWidgetPropertyMigration>();`
+- Page to widget migrations - `services.AddTransient<ContentItemDirectorBase, MyPageToWidgetDirector>();`
+- Class mappings - `services.AddSingleton<IClassMapping>(m);` (where `m` is your `MultiClassMapping` instance)
+- Child link directors - `services.AddTransient<ContentItemDirectorBase, MyChildLinkDirector>();`

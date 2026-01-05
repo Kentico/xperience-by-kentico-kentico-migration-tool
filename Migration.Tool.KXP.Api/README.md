@@ -4,21 +4,22 @@
 
 ## Purpose
 
-Provides typed API wrappers and helpers for interacting with the Xperience by Kentico target instance:
+Provides API wrappers and services for interacting with the Xperience by Kentico target instance using the native Kentico Info/Provider pattern:
 
-- **Target Database Context** - Entity Framework Core DbContext for XbyK database
-- **API Wrappers** - Strongly-typed interfaces for XbyK Info/Provider APIs
-- **UMT Integration** - Universal Migration Toolkit adapter implementations
-- **Data Validation** - Target-side validation rules and constraints
-- **Bulk Operations** - Optimized bulk insert/update helpers for large datasets
+- **KxpClassFacade** - CRUD operations for DataClassInfo (content types, forms, custom classes)
+- **KxpMediaFileFacade** - Media library and media file management operations
+- **Migration Services** - Field and widget migration customization services
+- **API Initialization** - Ensures Kentico API is properly initialized before operations
+- **Auxiliary Helpers** - Form components, user helpers, and supporting utilities
 
 ## Key Components
 
-- Target database models and DbContext for Xperience by Kentico
-- Service interfaces for XbyK Managers and InfoProviders
-- UMT (Universal Migration Toolkit) integration services
-- Validation logic for target entity constraints
-- Helper methods for common XbyK API operations
+- **KxpClassFacade** - Wrapper for DataClassInfoProvider operations (SetClass, GetClass, customized field enumeration)
+- **KxpMediaFileFacade** - Wrapper for MediaFileInfoProvider and MediaLibraryInfoProvider operations
+- **FieldMigrationService** - Service for registering and executing custom field migrations
+- **WidgetMigrationService** - Service for registering and executing custom widget migrations
+- **KxpApiInitializer** - Initializes Xperience by Kentico API environment
+- **Auxiliary** - DummyFormFile, FormComponents, UserHelper for supporting operations
 
 ## Dependencies
 

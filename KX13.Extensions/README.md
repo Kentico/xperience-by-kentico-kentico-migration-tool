@@ -14,7 +14,6 @@ Required when migrating **Page Builder widgets** from KX13. Provides ASP.NET Cor
 4. **Configure** the migration tool's `appsettings.json` with the API endpoint URL:
 
 ```json
-...
 "OptInFeatures": {
   "QuerySourceInstanceApi": {
     "Enabled": true,
@@ -26,7 +25,6 @@ Required when migrating **Page Builder widgets** from KX13. Provides ASP.NET Cor
     ]
   }
 }
-...
 ```
 
 See [Migration.Tool.CLI/appsettings.json](../Migration.Tool.CLI/appsettings.json) for the full configuration reference.

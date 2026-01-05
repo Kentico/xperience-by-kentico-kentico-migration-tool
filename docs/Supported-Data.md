@@ -88,7 +88,7 @@ Currently, the Kentico Migration Tool supports the following types of data:
 
 - **Countries and states**
 
-## Unsupported data
+## Unsupported Data
 
 The following types of data exist in Xperience by Kentico but are currently **not supported** by the Kentico Migration Tool:
 

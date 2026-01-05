@@ -2,8 +2,7 @@
 
 > **User Interaction:** This is the primary executable you run to perform migrations. Users interact with this project by configuring `appsettings.json` and running CLI commands.
 
-The [Xperience by Kentico: Kentico Migration Tool](/README.md) transfers content and other data from **Kentico Xperience
-13**, **Kentico 12** or **Kentico 11** to **Xperience by Kentico**.
+This document describes how to configure and run the Migration CLI, the main executable of the Kentico Migration Tool. It covers configuration options, command parameters, and migration details for transferring data from Kentico Xperience 13, Kentico 12, or Kentico 11 to Xperience by Kentico.
 
 > **New to migration?** Start with the [Upgrade Walkthrough](https://docs.kentico.com/x/upgrade_walkthrough_guides) with video tutorials.
 
@@ -43,7 +42,7 @@ To perform the migration:
 7. Observe the command line output, which provides information about the result of the migration and lists any errors encountered during data migration.
 8. On SaaS projects, you need to manually move content item asset files. See [Content items](#content-items) for more information.
 
-### Migrate command parameters
+### Migrate Command Parameters
 
 Command usage:
 
@@ -84,7 +83,7 @@ Migration.Tool.CLI.exe migrate --sites --custom-modules --users --members --form
 > [!TIP]
 > Refer to our [FAQ page](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#can-i-run-the-kentico-migration-tool-against-my-project-multiple-times) for best practices of performing repeated (iterative) data migration.
 
-### Migration details for specific object types
+### Migration Details for Specific Object Types
 
 #### Content types
 
@@ -184,7 +183,7 @@ compatibility mode. However, we strongly recommend updating your codebase to the
 > **Learn About Widget Migration:**
 > - [**Widget migration introduction**](https://docs.kentico.com/x/migrate_widgets_from_KX13_guides) - **Start here** - Understand your migration options (legacy mode, API discovery, custom migrations)
 > - [Transform widget properties](https://docs.kentico.com/x/transform_widget_properties_guides) - Detailed customization examples
-> - [Migrate widget data to Content Hub](https://docs.kentico.com/x/migrate_widget_data_as_reusable_content_guides) - Convert inline content to reusable items
+> - [Migrate widget data to Content hub](https://docs.kentico.com/x/migrate_widget_data_as_reusable_content_guides) - Convert inline content to reusable items
 > - [Convert child pages to widgets](https://docs.kentico.com/x/convert_child_pages_to_widgets_guides) - Advanced page-to-widget conversion
 
 The Kentico Migration Tool provides an advanced migration mode for Page Builder content that utilizes API discovery on
@@ -577,7 +576,7 @@ public class MyWidgetProperties : IWidgetProperties
 }
 ```
 
-### API discovery setup
+### API Discovery Setup
 
 1. Copy the `ToolApiController.cs` file to the `Controllers` folder in the **live site project** of your Kentico
    Xperience 13 source instance. Get the file from the following location in the Kentico Migration Tool repository:
@@ -760,7 +759,7 @@ _Content items_ data type and use the _Content item selector_ form component, or
 
 - If the target instance is a [SaaS project](https://docs.kentico.com/x/saas_xp), you need to manually move content item asset files. See [Content items](#content-items) for more information.
 
-### Convert to content item assets
+### Convert to Content Item Assets
 
 To enable this feature, configure the `OptInFeatures.CustomMigration.FieldMigrations` [options](#configuration) for this
 tool. Use the values in the code snippet below:
@@ -787,7 +786,9 @@ tool. Use the values in the code snippet below:
 `FieldNameRegex` - a regular expression used to filter what fields are converted. Only fields with field names that
 match the regular expressions are converted. Use `.*` to match all fields.
 
-### Convert to media libraries
+### Convert to Media Libraries
+
+> :warning: **Deprecation Notice:** Media libraries will be removed from Xperience by Kentico in a future release. Migrating to media libraries will require re-migration to Content hub later, resulting in additional costs and effort. We strongly recommend using the default migration to content item assets.
 
 - Attachment links (containing a `getattachment` handler) are migrated as [attachments](#attachments) and changed to the
   _Media files_ data type.
@@ -823,7 +824,7 @@ match the regular expressions are converted. Use `.*` to match all fields.
 
 By default, media libraries and attachments are migrated as content item assets in the target instance, which is the recommended approach to ensure future-proofing of project and improve the [content model](https://docs.kentico.com/x/f4HWCQ). You can modify this behavior by configuring the value of the `MigrateMediaToMediaLibrary` setting to `true` and convert media library files and attachments to media libraries if you want to continue using media libraries. When set to `false`, media libraries and attachments are migrated as content item assets in the target instance.
 
-### Media libraries
+### Media Libraries
 
 - In Xperience by Kentico, Media libraries are global instead of site-specific.
 - The code name of each media library on the target instance is `{SiteName}_{LibraryCodeName}`.

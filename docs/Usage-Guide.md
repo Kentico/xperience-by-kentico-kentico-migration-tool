@@ -47,13 +47,13 @@ The migration currently supports the Kentico Xperience 13, Kentico 12 or Kentico
 - The target instance's database and file system must be accessible from the environment where you run this tool.
 - The target instance's database must be empty except for data from the source instance created by previous runs of this tool to avoid conflicts and inconsistencies.
 
-## Upgrade paths
+## Upgrade Paths
 
 The full set of upgrade paths to Xperience by Kentico can be seen below.
 
 [![Full Kentico upgrade paths to Xperience by Kentico](/images/xperience-by-kentico-migration-tool-kentico-migration-tool-full-embedded.jpg)](/images/xperience-by-kentico-migration-tool-kentico-migration-tool-full-embedded.jpg)
 
-## Migration paths review
+## Migration Paths Review
 
 As previously mentioned, there are multiple upgrade paths available, particularly when upgrading a project from Kentico 12 to Xperience by Kentico. This section provides an overview of what to expect from each upgrade variant, outlining their respective benefits and costs. This information should help in your strategic decision-making process.
 
