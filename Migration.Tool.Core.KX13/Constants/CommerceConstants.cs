@@ -27,7 +27,7 @@ public static class CommerceConstants
     /// <summary>
     /// KX13 order address class name.
     /// </summary>
-    public const string KX13_ORDER_ADDRESS_CLASS_NAME = "ecommerce.address";
+    public const string KX13_ORDER_ADDRESS_CLASS_NAME = "ecommerce.orderaddress";
 
     /// <summary>
     /// Site origin custom field name.

@@ -1,7 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Text.Json.Serialization;
+using Microsoft.Extensions.Logging;
 using Migration.Tool.Common.Enumerations;
 using Migration.Tool.KXP.Api.Services.CmsClass;
-using Migration.Tool.Source.Services.Model;
 using Newtonsoft.Json.Linq;
 
 namespace Migration.Tool.Extensions.DefaultMigrations;
@@ -16,9 +16,9 @@ public class WidgetPathSelectorMigration(ILogger<WidgetPathSelectorMigration> lo
 
     public Task<WidgetPropertyMigrationResult> MigrateWidgetProperty(string key, JToken? value, WidgetPropertyMigrationContext context)
     {
-        if (value?.ToObject<List<PathSelectorItem>>() is { Count: > 0 } items)
+        if (value?.ToObject<List<Source.Services.Model.PathSelectorItem>>() is { Count: > 0 } items)
         {
-            var result = items.Select(x => new Kentico.Components.Web.Mvc.FormComponents.PathSelectorItem { TreePath = x.NodeAliasPath }).ToList();
+            var result = items.Select(x => new PathSelectorItem { TreePath = x.NodeAliasPath }).ToList();
             var resultAsJToken = JToken.FromObject(result);
             return Task.FromResult(new WidgetPropertyMigrationResult(resultAsJToken));
         }
@@ -29,5 +29,14 @@ public class WidgetPathSelectorMigration(ILogger<WidgetPathSelectorMigration> lo
             // leave value as it is
             return Task.FromResult(new WidgetPropertyMigrationResult(value));
         }
+    }
+
+    private class PathSelectorItem
+    {
+        /// <summary>
+        /// Node Alias Path of a page.
+        /// </summary>
+        [JsonPropertyName("treePath")]
+        public string TreePath { get; set; }
     }
 }

@@ -1,6 +1,6 @@
 using CMS.Commerce;
 using CMS.Core;
-using CMS.DataEngine;
+
 using MediatR;
 
 using Microsoft.Data.SqlClient;
@@ -27,11 +27,6 @@ public class MigrateOrdersCommandHandler(
     IEntityMapper<OrderInfoMapperSource, OrderInfo> orderInfoMapper,
     IEntityMapper<OrderItemInfoMapperSource, OrderItemInfo> orderItemInfoMapper,
     IEntityMapper<OrderAddressInfoMapperSource, OrderAddressInfo> orderAddressInfoMapper,
-    IInfoProvider<OrderInfo> orderInfoProvider,
-    IInfoProvider<OrderItemInfo> orderItemInfoProvider,
-    IInfoProvider<OrderAddressInfo> orderAddressInfoProvider,
-    IInfoProvider<OrderStatusInfo> orderStatusInfoProvider,
-    IInfoProvider<CustomerInfo> customerInfoProvider,
     ToolConfiguration toolConfiguration,
     PrimaryKeyMappingContext primaryKeyMappingContext,
     IFieldMigrationService fieldMigrationService,
@@ -73,7 +68,7 @@ public class MigrateOrdersCommandHandler(
             .Include(o => o.OrderPaymentOption);
 
         var orderStatusesMapping = ToolConfiguration.CommerceConfiguration?.OrderStatuses ?? throw new InvalidOperationException("Order statuses mapping is not configured");
-        var xbkOrderStatuses = orderStatusInfoProvider.Get().ToList();
+        var xbkOrderStatuses = OrderStatusInfo.Provider.Get().ToList();
         await using var kx13OrderItemContext = await Kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
         foreach (var kx13Order in kx13Orders)
@@ -159,7 +154,9 @@ public class MigrateOrdersCommandHandler(
 
             try
             {
-                orderInfoProvider.Set(orderInfo);
+
+                OrderInfo.Provider.Set(orderInfo);
+
                 logger.LogEntitySetAction(newInstance, orderInfo);
             }
             /*Violation in unique index or Violation in unique constraint */
@@ -189,7 +186,7 @@ public class MigrateOrdersCommandHandler(
 
             try
             {
-                orderItemInfoProvider.Set(orderItemInfo);
+                OrderItemInfo.Provider.Set(orderItemInfo);
                 logger.LogEntitySetAction(newInstance, orderItemInfo);
             }
             /*Violation in unique index or Violation in unique constraint */
@@ -219,7 +216,7 @@ public class MigrateOrdersCommandHandler(
 
             try
             {
-                orderAddressInfoProvider.Set(orderAddressInfo);
+                OrderAddressInfo.Provider.Set(orderAddressInfo);
                 logger.LogEntitySetAction(newInstance, orderAddressInfo);
             }
             /*Violation in unique index or Violation in unique constraint */

@@ -47,7 +47,6 @@ public static class DependencyInjectionExtensions
         services.AddScoped<IPrimaryKeyLocatorService, PrimaryKeyLocatorService>();
         services.AddSingleton<KeyLocatorService>();
 
-        services.AddHttpContextAccessor();
         // mappers
 #pragma warning disable CS0618 // Type or member is obsolete
         services.AddTransient<IEntityMapper<CmsAttachmentMapperSource, MediaFileInfo>, CmsAttachmentMapper>();
