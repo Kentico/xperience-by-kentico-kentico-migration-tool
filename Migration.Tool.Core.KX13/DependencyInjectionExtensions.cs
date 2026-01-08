@@ -66,6 +66,9 @@ public static class DependencyInjectionExtensions
         services.AddTransient<IEntityMapper<KX13M.CmsState, StateInfo>, StateInfoMapper>();
         services.AddTransient<IEntityMapper<CustomerInfoMapperSource, CustomerInfo>, CustomerInfoMapper>();
         services.AddTransient<IEntityMapper<CustomerAddressInfoMapperSource, CustomerAddressInfo>, CustomerAddressInfoMapper>();
+        services.AddTransient<IEntityMapper<OrderInfoMapperSource, OrderInfo>, OrderInfoMapper>();
+        services.AddTransient<IEntityMapper<OrderItemInfoMapperSource, OrderItemInfo>, OrderItemInfoMapper>();
+        services.AddTransient<IEntityMapper<OrderAddressInfoMapperSource, OrderAddressInfo>, OrderAddressInfoMapper>();
 
         services.AddUniversalMigrationToolkit();
 
