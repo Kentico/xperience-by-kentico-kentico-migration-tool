@@ -5,7 +5,6 @@ namespace Migration.Tool.KXP.Api.Auxiliary;
 public class FormComponents
 {
     ///<summary>Form component value type: Kentico.Forms.Web.Mvc.BoolFieldValueTypes</summary>
-    ///<summary>Form component value type: Kentico.Forms.Web.Mvc.BoolFieldValueTypes</summary>
     public static string MvcBoolComparisonTypeSelectorComponent => Kentico.Forms.Web.Mvc.BoolComparisonTypeSelectorComponent.IDENTIFIER;
 
     ///<summary>Form component value type: System.Boolean</summary>
