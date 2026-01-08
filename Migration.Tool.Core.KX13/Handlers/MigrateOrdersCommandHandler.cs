@@ -1,6 +1,6 @@
 using CMS.Commerce;
 using CMS.Core;
-
+using CMS.Helpers.Internal;
 using MediatR;
 
 using Microsoft.Data.SqlClient;
@@ -154,7 +154,6 @@ public class MigrateOrdersCommandHandler(
 
             try
             {
-
                 OrderInfo.Provider.Set(orderInfo);
 
                 logger.LogEntitySetAction(newInstance, orderInfo);
@@ -182,7 +181,10 @@ public class MigrateOrdersCommandHandler(
         if (mapped is { Success: true } result)
         {
             (var orderItemInfo, bool newInstance) = result;
-            ArgumentNullException.ThrowIfNull(orderItemInfo);
+            if (orderItemInfo is null)
+            {
+                throw new InvalidOperationException("Order item info is null");
+            }
 
             try
             {
@@ -212,7 +214,10 @@ public class MigrateOrdersCommandHandler(
         if (mapped is { Success: true } result)
         {
             (var orderAddressInfo, bool newInstance) = result;
-            ArgumentNullException.ThrowIfNull(orderAddressInfo);
+            if (orderAddressInfo is null)
+            {
+                throw new InvalidOperationException("Order address info is null");
+            }
 
             try
             {

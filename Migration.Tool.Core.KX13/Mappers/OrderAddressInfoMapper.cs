@@ -64,7 +64,9 @@ public class OrderAddressInfoMapper(
         target.OrderAddressFirstName = nameParts.Length > 0 ? nameParts[0] : string.Empty;
         target.OrderAddressLastName = nameParts.Length > 1 ? string.Join(" ", nameParts.Skip(1)) : string.Empty;
 
+        // KX13 order address has no company system field, so we don't need to map it.
         //target.OrderAddressCompany
+
         target.OrderAddressEmail = customer.CustomerEmail;
 
         target.OrderAddressLine1 = address.AddressLine1;

@@ -9,7 +9,7 @@ using Migration.Tool.Source;
 using Migration.Tool.Source.Auxiliary;
 using Migration.Tool.Source.Model;
 using Migration.Tool.Source.Services;
-using Newtonsoft.Json;
+using Migration.Tool.Source.Services.Model;
 using Newtonsoft.Json.Linq;
 
 namespace Migration.Tool.Extensions.DefaultMigrations;
@@ -28,7 +28,7 @@ public class WidgetFileMigration(ILogger<WidgetFileMigration> logger, EntityIden
         (int siteId, _) = context;
 
         var refsToMedia = new List<object>();
-        if (value?.ToObject<List<Source.Services.Model.MediaFilesSelectorItem>>() is { Count: > 0 } mediaSelectorItems)
+        if (value?.ToObject<List<MediaFilesSelectorItem>>() is { Count: > 0 } mediaSelectorItems)
         {
             foreach (var mediaSelectorItem in mediaSelectorItems)
             {
@@ -37,7 +37,7 @@ public class WidgetFileMigration(ILogger<WidgetFileMigration> logger, EntityIden
                     if (entityIdentityFacade.Translate<IMediaFile>(mediaSelectorItem.FileGuid, siteId) is var (_, identity) && mediaFileFacade.GetMediaFile(identity) is not null)
                     {
 #pragma warning disable CS0618 // Type or member is obsolete
-                        refsToMedia.Add(new MediaFilesSelectorItem { FileGuid = identity });
+                        refsToMedia.Add(new Kentico.Components.Web.Mvc.FormComponents.MediaFilesSelectorItem { FileGuid = identity });
 #pragma warning restore CS0618 // Type or member is obsolete
                     }
                     else
@@ -71,15 +71,5 @@ public class WidgetFileMigration(ILogger<WidgetFileMigration> logger, EntityIden
             // leave value as it is
             return Task.FromResult(new WidgetPropertyMigrationResult(value));
         }
-    }
-
-
-    private class MediaFilesSelectorItem
-    {
-        /// <summary>
-        /// Media file GUID.
-        /// </summary>
-        [JsonProperty("fileGuid")]
-        public Guid FileGuid { get; set; }
     }
 }
