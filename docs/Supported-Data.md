@@ -82,6 +82,11 @@ Currently, the Kentico Migration Tool supports the following types of data:
   - The migration only transfers the settings that exist in Xperience by Kentico.
   - The migration excludes site-specific settings that do not have a corresponding website channel-specific alternative in Xperience by Kentico.
 
+- **Customers**
+  - The migration includes customer records and customer addresses from the source instance.
+- **Orders**
+  - The migration includes order records, order items, order addresses, and order statuses from the source instance.
+
 - **Countries and states**
 
 ## Unsupported data
