@@ -31,6 +31,6 @@ public class CommerceConfiguration
     [JsonPropertyName(ConfigurationNames.OrderStatuses)]
     public Dictionary<string, string[]> OrderStatuses { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
-    [JsonPropertyName(ConfigurationNames.KX13OrderFilter)]
-    public CommerceOrderFilterConfiguration? KX13OrderFilter { get; set; }
+    [JsonPropertyName(ConfigurationNames.KX13OrdersFilter)]
+    public CommerceOrderFilterConfiguration? KX13OrdersFilter { get; set; }
 }

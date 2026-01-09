@@ -84,12 +84,12 @@ public class ConfigurationNames
     public const string IncludeOrderItemsSystemFields = "IncludeOrderItemsSystemFields";
     public const string IncludeOrderAddressSystemFields = "IncludeOrderAddressSystemFields";
     public const string OrderStatuses = "OrderStatuses";
-    public const string KX13OrderFilter = "KX13OrderFilter";
+    public const string KX13OrdersFilter = "KX13OrdersFilter";
 
     #region KX13 Order Filter Configuration
-    public const string OrderFromDate = "OrderFromDate";
-    public const string OrderToDate = "OrderToDate";
-    public const string OrderStatusCodeNames = "OrderStatusCodeNames";
+    public const string OrdersFromDate = "OrdersFromDate";
+    public const string OrdersToDate = "OrdersToDate";
+    public const string OrdersStatusCodeNames = "OrdersStatusCodeNames";
     #endregion
 
     #endregion

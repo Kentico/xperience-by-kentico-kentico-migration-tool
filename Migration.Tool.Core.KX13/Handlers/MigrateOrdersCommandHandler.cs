@@ -1,6 +1,5 @@
 using CMS.Commerce;
 using CMS.Core;
-using CMS.Helpers.Internal;
 using MediatR;
 
 using Microsoft.Data.SqlClient;
@@ -48,7 +47,7 @@ public class MigrateOrdersCommandHandler(
         await using var kx13OrderStatusContext = await Kx13ContextFactory.CreateDbContextAsync(cancellationToken);
         var kx13OrderStatuses = kx13OrderStatusContext.ComOrderStatuses.Where(status => !status.StatusSiteId.HasValue || kx13CommerceSiteIds.Contains(status.StatusSiteId.Value)).ToList();
 
-        var filterStatusCodeNames = ToolConfiguration.CommerceConfiguration?.KX13OrderFilter?.OrderStatusCodeNames;
+        var filterStatusCodeNames = ToolConfiguration.CommerceConfiguration?.KX13OrdersFilter?.OrdersStatusCodeNames;
         int[] statusIds = [];
         if (filterStatusCodeNames is not null && filterStatusCodeNames.Count != 0)
         {
@@ -58,7 +57,7 @@ public class MigrateOrdersCommandHandler(
         var kx13Orders = kx13Context.ComOrders
             .Where(o => kx13CommerceSiteIds.Contains(o.OrderSiteId))
             .Include(o => o.OrderSite)
-            .FilterByDate(ToolConfiguration.CommerceConfiguration?.KX13OrderFilter?.OrderFromDate, ToolConfiguration.CommerceConfiguration?.KX13OrderFilter?.OrderToDate)
+            .FilterByDate(ToolConfiguration.CommerceConfiguration?.KX13OrdersFilter?.OrdersFromDate, ToolConfiguration.CommerceConfiguration?.KX13OrdersFilter?.OrdersToDate)
             .FilterByOrderStatus(statusIds)
             .Include(o => o.OrderCurrency)
             .Include(o => o.ComOrderAddresses)
