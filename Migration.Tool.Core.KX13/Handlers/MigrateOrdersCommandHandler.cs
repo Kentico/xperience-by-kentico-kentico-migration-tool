@@ -1,6 +1,5 @@
 using CMS.Commerce;
 using CMS.Core;
-using CMS.Helpers.Internal;
 using MediatR;
 
 using Microsoft.Data.SqlClient;
