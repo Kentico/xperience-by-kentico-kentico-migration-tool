@@ -10,13 +10,13 @@ This tool only supports content and objects **stored in the database** and relat
 
 Currently, the Kentico Migration Tool supports the following types of data:
 
-#### Sites
+### Sites
 - The tool migrates each site on the source to a [website channel](https://docs.kentico.com/x/34HFC) object in Xperience by Kentico.
 
-#### Cultures
+### Cultures
 - The set of cultures used across all sites in the source gets mapped to a [language](https://docs.kentico.com/x/OxT_Cw) in the _Languages_ application.
 
-#### Content types (_Page types_ in earlier Kentico versions)
+### Content types (_Page types_ in earlier Kentico versions)
   - The Kentico Migration Tool attempts to map the _Data type_ and _Form control_ of page type fields to an appropriate equivalent in Xperience by Kentico. This mapping is not always possible and does not work for custom data types or form controls. We recommend checking your content type fields after the migration and adjusting them if necessary.
   - The migration includes only page types assigned to at least one site on the source instance.
   - The migration supports [content type restrictions](https://docs.kentico.com/x/bw2RBg) (scopes and allowed child types).
@@ -27,7 +27,7 @@ Currently, the Kentico Migration Tool supports the following types of data:
       - However, you can create [reusable field schemas](../Migration.Tool.CLI/README.md#convert-page-types-to-reusable-field-schemas) for page types from which other page types inherit.
   - All migrated Content types have the **Include in routing** option enabled (the migration never creates pages without URL and routing).
 
-#### Pages
+### Pages
   - Pages can be migrated either to [website channel pages](https://docs.kentico.com/x/JwKQC) (default behavior) or [reusable content items](https://docs.kentico.com/x/barWCQ) in Content hub.
   - The migration includes the following versions of pages:
     - _Published_
@@ -45,43 +45,43 @@ Currently, the Kentico Migration Tool supports the following types of data:
     - If you are [migrating a Kentico 12 MVC application](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/blob/master/docs/Usage-Guide.md#kentico-12-mvc) you can upgrade it to Kentico Xperience 13 using the Kentico Installation Manager (KIM) and then upgrade to Xperience by Kentico with Page Builder content.
   - You can find examples of how to update your page retrieval code to work with Xperience by Kentico's _content items_ [in our guides](https://docs.kentico.com/x/upgrade_content_retrieval_code_guides).
 
-#### Page attachments
+### Page attachments
 - Page attachments are not supported in Xperience by Kentico. Attachments are migrated into media libraries. See [`Migration.Tool.CLI/README.md - Attachments`](../Migration.Tool.CLI/README.md#Attachments) for detailed information about the conversion process.
 
-#### Preset page templates (_Custom page templates_ in Kentico Xperience 13)
+### Preset page templates (_Custom page templates_ in Kentico Xperience 13)
   - Migration of custom page templates is only available for Kentico Xperience 13.
 
-#### Categories
+### Categories
 - Xperience by Kentico uses a different approach to categorization. Categories are migrated to [taxonomies](https://docs.kentico.com/x/taxonomies_xp) and selected categories for each page are assigned to pages in the target instance via a [reusable field schema](https://docs.kentico.com/x/D4_OD). See [`Migration.Tool.CLI/README.md - Categories`](../Migration.Tool.CLI/README.md#categories).
 - [Categories stored as a field of pages](https://docs.kentico.com/x/wA_RBg) and [personal categories](https://docs.kentico.com/x/IgqRBg) are not supported.
 
-#### Media libraries and media files
+### Media libraries and media files
 - Media library permissions are currently not supported in Xperience by Kentico and are not migrated.
 
-#### Forms
+### Forms
   - The migration does not include the content of form autoresponder and notification emails. You can migrate form autoresponders to Xperience by Kentico manually by copying your HTML code and content into Email templates and Emails. See [Emails](https://docs.kentico.com/x/IaDWCQ).
 
-#### Users
+### Users
   - Xperience by Kentico uses separate entities for users with access to the administration interface (_CMS_User_ table) and live site visitor accounts (_CMS_Member_ table). Consequently, only users whose _Privilege level_ is _Editor_ or higher are migrated (_Users_ -> edit a user -> _General_ tab).
   - Users in Xperience by Kentico must have an email address. Migration is only supported for users who have a unique email address value on the source instance.
   - Custom user fields are an optional part of _module class_ migration.
   - Live site users are represented using a separate **Member** entity and stored in the _CMS_Member_ table. The migration identifies live site users as those without access to the administration interface - accounts with _Privilege level_ set to _None_ (Users -> edit a user -> General tab).
 
-#### Roles
+### Roles
 - Only roles that have at least one user whose _Privilege level_ is set to _Editor_ and above are migrated.
 - Because Xperience by Kentico uses a different [permission model](https://docs.kentico.com/x/7IVwCg), no existing role permissions or UI personalization settings are migrated. After the migration, the permissions for each role must be configured again.
 
-#### Contacts
+### Contacts
   - The target instance's _OMContact_ and _OMActivity_ database tables must be empty for performance reasons.
   - Custom contact fields are an optional part of _module class_ migration.
 
-#### Activities
+### Activities
 - The migration tool transfers custom activities data into the target XbyK instance.
 
-#### Consents and consent agreements
+### Consents and consent agreements
 - Consents and agreements data migrates into the target instance.
 
-#### Modules and classes
+### Modules and classes
   - The migration includes the following:
     - Custom modules
     - All classes associated with custom modules
@@ -95,22 +95,22 @@ Currently, the Kentico Migration Tool supports the following types of data:
     - As with all object types, the Kentico Migration Tool does not transfer code files to the target project. You must manually move all code files generated for your custom classes (_Info_, _InfoProvider_, etc.).
   - Module classes and the stored data can optionally be migrated as [reusable content items](https://docs.kentico.com/x/content_items_xp) in Content hub.
 
-#### Custom tables
+### Custom tables
 - Custom tables are not supported in Xperience by Kentico. Data from custom tables can be migrated to the target instance either as [custom module classes](https://docs.kentico.com/x/AKDWCQ) (default behavior) or as [reusable content items](https://docs.kentico.com/x/content_items_xp) in Content hub.
 - Any user interface, listings, filters, and other functionality related to migrated custom tables needs to be implemented in the target instance.
 
-#### Setting values
+### Setting values
 - The migration only transfers the settings that exist in Xperience by Kentico.
 - The migration excludes site-specific settings that do not have a corresponding website channel-specific alternative in Xperience by Kentico.
 
-#### Countries and states
+### Countries and states
 - Countries and states are migrated as part of contact management.
 
 ## Unsupported Data
 
 The following types of data exist in Xperience by Kentico but are currently **not supported** by the Kentico Migration Tool:
 
-#### Contact groups
+### Contact groups
 - Static contact groups are currently not supported in Xperience by Kentico.
 - The condition format for dynamic contact groups is not compatible. To migrate contact groups:
   1. Migrate your contacts using the tool.
@@ -118,10 +118,10 @@ The following types of data exist in Xperience by Kentico but are currently **no
   3. Build equivalent conditions.
   4. Recalculate the contact groups.
 
-#### License keys
+### License keys
 - Xperience by Kentico uses a different license key format.
 
-#### Marketing automation
+### Marketing automation
 - Migration of Marketing automation is currently not supported
 
 Additionally, object values or other content with **Macros** will not work correctly after the migration. Macro expressions are currently not supported for most data in Xperience by Kentico.
