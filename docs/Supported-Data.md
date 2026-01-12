@@ -83,9 +83,18 @@ Currently, the Kentico Migration Tool supports the following types of data:
   - The migration excludes site-specific settings that do not have a corresponding website channel-specific alternative in Xperience by Kentico.
 
 - **Customers**
-  - The migration includes customer records and customer addresses from the source instance.
+  - The migration includes customer records and customer addresses.
+  - All custom fields are migrated. Optionally, you can also migrate selected system fields.
+  - A `SiteOriginName` custom field is created to preserve the source site information.
+
 - **Orders**
-  - The migration includes order records, order items, order addresses, and order statuses from the source instance.
+  - The migration includes order records, order items, and order addresses.
+  - All custom fields are migrated. Optionally, you can also migrate selected system fields.
+  - Orders are migrated with shipping and payment method **display names only** -- the methods themselves are not migrated.
+  - Custom fields `CurrencyCode` and `SiteOriginName` are created to preserve currency and source site information.
+  - New fields `OrderItemTotalTax` and `OrderItemTaxRate` are set to 0 and need to be recalculated manually.
+  - Orders can be filtered by date range or status during migration.
+  - [Order statuses](https://docs.kentico.com/x/commerce_order_statuses_xp) are **not migrated** - they must be created manually on the target instance and mapped via configuration.
 
 - **Countries and states**
 

@@ -457,6 +457,7 @@ The migration includes:
 The migration includes:
 - Order items and order statuses are migrated as part of orders.
 - Two custom fields are created to preserve source data: `CurrencyCode` (stores the order currency) and `SiteOriginName` (stores the source site/channel code name).
+- Shipping and payment method display names are migrated to the `Commerce_Order` table. The shipping and payment methods themselves are not migrated.
 
 Before migrating orders, the following requirements have to be met:
 - Migration of customers has to be finished first.
@@ -469,6 +470,8 @@ Before migrating orders, the following requirements have to be met:
     "XbKStatusCodeNameTwo": ["KX13StatusCodeNameTwo", "AnotherKX13StatusCodeName"]
   }
   ```
+
+  Based on the order status mapping, the `OrderStatusID` field is populated appropriately, linking to the key Xperience by Kentico [order status](https://docs.kentico.com/x/commerce_order_statuses_xp).
 
   Some system fields in Kentico Xperience 13 are no longer used in Xperience by Kentico, in case you want to migrate them, you have to specify their names in the `appsettings.json` file using the `IncludeOrderSystemFields`, `IncludeOrderItemsSystemFields`, and `IncludeOrderAddressSystemFields` configuration options. The specified fields are migrated to the respective database tables in the order in which they were specified. As an example take the following `Commerce_Order` columns.
 
@@ -489,6 +492,8 @@ Before migrating orders, the following requirements have to be met:
   ```text
   |OrderID|OrderGUID|...|OrderShippingMethodPrice|OrderCouponCodes|OrderOtherPayments|
   ```
+
+  Xperience by Kentico also introduces new fields to the `Commerce_Order` table, `OrderItemTotalTax` and `OrderItemTaxRate`, which are not handled by the migration of orders and are set to 0. You need to recalculate these values yourself.
 
   In case you don't want to migrate all of your orders, you can filter the orders based on their date of creation (in UTC date format), or their status. For example:
 
