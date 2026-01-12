@@ -419,7 +419,7 @@ The migration **_DOES NOT_** include:
 
 #### Customers
 
-- Xperience by Kentico does not have multistore support. To migrate commerce data, configure the `CommerceConfiguration` section in `appsettings.json` and specify the site name(s) to migrate using the `CommerceSiteNames` option:
+Xperience by Kentico does not have multistore support. To migrate commerce data, configure the `CommerceConfiguration` section in `appsettings.json` and specify the site name(s) to migrate using the `CommerceSiteNames` option:
 
   ```json
   "CommerceConfiguration": {
@@ -427,6 +427,7 @@ The migration **_DOES NOT_** include:
   }
   ```
 
+The migration includes:
 - Customer addresses are migrated as part of customers.
 - All custom fields from _COM_Customer_ and _COM_Address_ are migrated to the _Commerce_Customer_ and _Commerce_CustomerAddress_ respectively.
 - A `SiteOriginName` custom field is created for customers who are not registered users to preserve the source site information. For registered users, this value will be `null` because Xperience by Kentico does not support site-specific customer bindings.
@@ -448,24 +449,26 @@ The migration **_DOES NOT_** include:
   This will result in the following `Commerce_Customer` structure after migration.
 
   ```text
-  |CustomerID|CustomerGUID|...|CustomerPhone|CustomerCompany|CustomerTaxRegistrationID|CustomerSiteID|`
+  |CustomerID|CustomerGUID|...|CustomerPhone|CustomerCompany|CustomerTaxRegistrationID|CustomerSiteID|
   ```
 
 #### Orders
 
+The migration includes:
 - Order items and order statuses are migrated as part of orders.
 - Two custom fields are created to preserve source data: `CurrencyCode` (stores the order currency) and `SiteOriginName` (stores the source site/channel code name).
-- Before migrating orders, the following requirements have to be met:
-  - Migration of customers has to be finished first.
-  - Order statuses have to be created on the target Xperience by Kentico instance.
-  - In `appsetting.json` of the Kentico Migration Tool you need to specify how the `OrderStatus` objects should be mapped from Kentico Xperience 13 to Xperience by Kentico. For example:
 
-    ```json
-    "OrderStatuses": {
-      "XbKStatusCodeNameOne": ["KX13StatusCodeNameOne"],
-      "XbKStatusCodeNameTwo": ["KX13StatusCodeNameTwo", "AnotherKX13StatusCodeName"]
-    }
-    ```
+Before migrating orders, the following requirements have to be met:
+- Migration of customers has to be finished first.
+- Order statuses have to be created on the target Xperience by Kentico instance.
+- In `appsettings.json` of the Kentico Migration Tool you need to specify how the `OrderStatus` objects should be mapped from Kentico Xperience 13 to Xperience by Kentico. For example:
+
+  ```json
+  "OrderStatuses": {
+    "XbKStatusCodeNameOne": ["KX13StatusCodeNameOne"],
+    "XbKStatusCodeNameTwo": ["KX13StatusCodeNameTwo", "AnotherKX13StatusCodeName"]
+  }
+  ```
 
   Some system fields in Kentico Xperience 13 are no longer used in Xperience by Kentico, in case you want to migrate them, you have to specify their names in the `appsettings.json` file using the `IncludeOrderSystemFields`, `IncludeOrderItemsSystemFields`, and `IncludeOrderAddressSystemFields` configuration options. The specified fields are migrated to the respective database tables in the order in which they were specified. As an example take the following `Commerce_Order` columns.
 
@@ -481,10 +484,10 @@ The migration **_DOES NOT_** include:
   }
   ```
 
-  This will result in the following `Commerce_Customer` structure after migration.
+  This will result in the following `Commerce_Order` structure after migration.
 
   ```text
-  |OrderID|OrderGUID|...|OrderShippingMethodPrice|OrderCouponCodes|OrderOtherPayments|`
+  |OrderID|OrderGUID|...|OrderShippingMethodPrice|OrderCouponCodes|OrderOtherPayments|
   ```
 
   In case you don't want to migrate all of your orders, you can filter the orders based on their date of creation (in UTC date format), or their status. For example:
