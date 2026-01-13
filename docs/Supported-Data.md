@@ -90,7 +90,7 @@ Currently, the Kentico Migration Tool supports the following types of data:
 - **Orders**
   - The migration includes order records, order items, and order addresses.
   - All custom fields are migrated. Optionally, you can also migrate selected system fields.
-  - Orders are migrated with shipping and payment method **display names only** -- the methods themselves are not migrated.
+  - Orders are migrated with shipping and payment method **display names only** - the methods themselves are not migrated.
   - Custom fields `CurrencyCode` and `SiteOriginName` are created to preserve currency and source site information.
   - New fields `OrderItemTotalTax` and `OrderItemTaxRate` are set to 0 and need to be recalculated manually.
   - Orders can be filtered by date range or status during migration.
