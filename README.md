@@ -72,6 +72,9 @@ Before running the migration, ensure you have:
 - **[.NET 8.0 or newer](https://dotnet.microsoft.com/en-us/download/dotnet) SDK** installed
 - **Kentico Migration Tool source code** cloned or downloaded from this repository
 
+   > [!NOTE]
+   > We recommend to maintain a separate copy of the Migration Tool per project to keep project-specific configurations and customizations isolated.
+
 > **Need help with instance setup?** The [Migration CLI README](./Migration.Tool.CLI/README.md) provides detailed instructions for configuring both source and target instances.
 
 ### Running Your First Migration

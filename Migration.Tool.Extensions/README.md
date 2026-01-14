@@ -30,6 +30,7 @@ The project enables you to:
     - [Sample Class Mappings](#sample-class-mappings)
   - [Custom Child Links](#custom-child-links)
 - [Registration](#registration)
+- [Working with Source and Target APIs](#working-with-source-and-target-apis)
 
 ---
 
@@ -501,3 +502,17 @@ All custom migrations must be registered in `Migration.Tool.Extensions/ServiceCo
 - Page to widget migrations - `services.AddTransient<ContentItemDirectorBase, MyPageToWidgetDirector>();`
 - Class mappings - `services.AddSingleton<IClassMapping>(m);` (where `m` is your `MultiClassMapping` instance)
 - Child link directors - `services.AddTransient<ContentItemDirectorBase, MyChildLinkDirector>();`
+
+## Working with Source and Target APIs
+
+When implementing custom migrations, you may need to query additional data from the source instance or create data in the target instance.
+
+### Querying Source Instance Data
+
+Use [`ModelFacade`](../KVA/Migration.Tool.Source/ModelFacade.cs) to query data from the source instance (K11/KX12/KX13). Inject it into your custom migration class and use methods like `SelectById<T>()`, `SelectWhere<T>()`, or `Select<T>()` to retrieve source data.
+
+### Writing to Target Instance
+
+Use `IImporter` with [Universal Migration Toolkit (UMT)](https://github.com/Kentico/xperience-by-kentico-universal-migration-tool) models to write data to the target Xperience by Kentico instance. Common UMT models include `ContentItemModel`, `DataClassModel`, `ContentItemLanguageMetadataModel`, and `WebPageItemModel`.
+
+For advanced scenarios, you can also use native [Xperience database table APIs](https://docs.kentico.com/x/OoXWCQ) and the Info/Provider pattern.
