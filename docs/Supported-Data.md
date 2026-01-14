@@ -83,11 +83,13 @@ Currently, the Kentico Migration Tool supports the following types of data:
   - The migration excludes site-specific settings that do not have a corresponding website channel-specific alternative in Xperience by Kentico.
 
 - **Customers**
+  - Migration of customers is only available for Kentico Xperience 13.
   - The migration includes customer records and customer addresses.
   - All custom fields are migrated. Optionally, you can also migrate selected system fields.
   - A `SiteOriginName` custom field is created to preserve the source site information.
 
 - **Orders**
+  - Migration of orders is only available for Kentico Xperience 13.
   - The migration includes order records, order items, and order addresses.
   - All custom fields are migrated. Optionally, you can also migrate selected system fields.
   - Orders are migrated with shipping and payment method **display names only** - the methods themselves are not migrated.

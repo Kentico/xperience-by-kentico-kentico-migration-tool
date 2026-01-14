@@ -419,7 +419,9 @@ The migration **_DOES NOT_** include:
 
 #### Customers
 
-Xperience by Kentico does not have multistore support. To migrate commerce data, configure the `CommerceConfiguration` section in `appsettings.json` and specify the site name(s) to migrate using the `CommerceSiteNames` option:
+> Migration of customers is only available for Kentico Xperience 13.
+
+Xperience by Kentico does not have multistore support. To migrate commerce data, configure the `CommerceConfiguration` section in `appsettings.json` and specify the site name(s) to migrate using the `CommerceSiteNames` option. See [configuration](#configuration) for all available options.
 
   ```json
   "CommerceConfiguration": {
@@ -428,10 +430,11 @@ Xperience by Kentico does not have multistore support. To migrate commerce data,
   ```
 
 The migration includes:
-- Customer addresses, and customers.
-- All custom fields from _COM_Customer_ and _COM_Address_ tables. They are added to the _Commerce_Customer_ and _Commerce_CustomerAddress_ respectively.
-- A `SiteOriginName` custom field is created for customers. For unregistered users the field contains source site information. For registered users, this  field's value will be `null` because Xperience by Kentico does not support site-specific customer bindings.
-- Some system fields in Kentico Xperience 13 are no longer used in Xperience by Kentico. Specify the ones you want to migrate in `appsettings.json` using the `IncludeCustomerSystemFields` and `IncludeAddressSystemFields` configuration options. Migrated system fields are prefixed with a configurable prefix (default `KX13_`) to avoid conflicts. You can customize the prefix using the `SystemFieldPrefix` option. The specified fields are migrated to the respective database tables as custom fields in the order in which they were specified.
+- Customers and customer addresses.
+- All custom fields from the _COM_Customer_ and _COM_Address_ tables. They are added to _Commerce_Customer_ and _Commerce_CustomerAddress_ respectively.
+- A `SiteOriginName` custom field is created for customers. For unregistered users the field contains information about the source site. For registered users, this field's value is `null` because Xperience by Kentico does not support site-specific customer bindings.
+- Certain system fields in Kentico Xperience 13 do not have a direct equivalent in Xperience by Kentico and are by default skipped by the migration. Specify the ones you want to migrate in `appsettings.json` using the `IncludeCustomerSystemFields` and `IncludeAddressSystemFields` [configuration options](#configuration). Migrated system fields are prefixed with a configurable prefix (default `KX13_`) to avoid conflicts. You can customize the prefix using the `SystemFieldPrefix` option. The specified fields are migrated to the respective database tables as custom fields in the order in which they were specified.
+
   As an example, take the following `Commerce_Customer` columns:
 
   ```text
@@ -449,20 +452,21 @@ The migration includes:
   This will result in the following `Commerce_Customer` structure after migration.
 
   ```text
-  |CustomerID|CustomerGUID|...|CustomerPhone|CustomerCompany|CustomerTaxRegistrationID|CustomerSiteID|
+  |CustomerID|CustomerGUID|...|CustomerPhone|KX13_CustomerCompany|KX13_CustomerTaxRegistrationID|KX13_CustomerSiteID|
   ```
 
 #### Orders
+
+> Migration of orders is only available for Kentico Xperience 13.
 
 The migration includes:
 - Orders, order items, and order addresses.
 - Two custom fields are created to preserve source data: `CurrencyCode` (stores the order currency) and `SiteOriginName` (stores the source site/channel code name).
 - Shipping and payment method display names are migrated to the `Commerce_Order` table. The shipping and payment methods themselves are not migrated.
 
-Before migrating orders, the following requirements have to be met:
-- Migration of customers has to be finished first.
-- [Order statuses](https://docs.kentico.com/x/commerce_order_statuses_xp) have to be created on the target Xperience by Kentico instance, they are **not migrated**.
-- In `appsettings.json` of the Kentico Migration Tool you need to specify how the `OrderStatus` objects should be mapped from Kentico Xperience 13 to Xperience by Kentico. For example:
+Before migrating orders, the following requirements need to be met:
+- The `--customers` parameter needs to be included when migrating orders. If customers have already been migrated in a previous run, you can use the `--bypass-dependency-check` parameter to skip this requirement.
+- [Order statuses](https://docs.kentico.com/x/commerce_order_statuses_xp) need to be created on the target Xperience by Kentico instance (they are **not migrated**), and you need to specify in `appsettings.json` of the Kentico Migration Tool how the `OrderStatus` objects should be mapped from Kentico Xperience 13 to Xperience by Kentico. See [configuration](#configuration) for the `OrderStatuses` option. For example:
 
   ```json
   "OrderStatuses": {
@@ -471,9 +475,11 @@ Before migrating orders, the following requirements have to be met:
   }
   ```
 
-  Based on the order status mapping, the `OrderStatusID` field is populated appropriately, linking to the key Xperience by Kentico order status.
+  Based on the order status mapping, the `OrderStatusID` field is populated appropriately, linking to the corresponding Xperience by Kentico order status.
 
-  Some system fields in Kentico Xperience 13 are no longer used in Xperience by Kentico, in case you want to migrate them, you have to specify their names in the `appsettings.json` file using the `IncludeOrderSystemFields`, `IncludeOrderItemsSystemFields`, and `IncludeOrderAddressSystemFields` configuration options. The specified fields are migrated to the respective database tables as custom fields in the order in which they were specified. As an example take the following `Commerce_Order` columns.
+- Certain system fields in Kentico Xperience 13 do not have a direct equivalent in Xperience by Kentico and are by default skipped by the migration. Specify the ones you want to migrate in the `appsettings.json` file using the `IncludeOrderSystemFields`, `IncludeOrderItemsSystemFields`, and `IncludeOrderAddressSystemFields` [configuration options](#configuration). Migrated system fields are prefixed with a configurable prefix (default `KX13_`) to avoid conflicts. You can customize the prefix using the `SystemFieldPrefix` option. The specified fields are migrated to the respective database tables as custom fields in the order in which they were specified.
+
+  As an example, take the following `Commerce_Order` columns:
 
   ```text
   |OrderID|OrderGUID|...|OrderShippingMethodPrice|
@@ -490,12 +496,12 @@ Before migrating orders, the following requirements have to be met:
   This will result in the following `Commerce_Order` structure after migration.
 
   ```text
-  |OrderID|OrderGUID|...|OrderShippingMethodPrice|OrderCouponCodes|OrderOtherPayments|
+  |OrderID|OrderGUID|...|OrderShippingMethodPrice|KX13_OrderCouponCodes|KX13_OrderOtherPayments|
   ```
 
-  Xperience by Kentico also introduces new fields to the `Commerce_OrderItem` table, `OrderItemTotalTax` and `OrderItemTaxRate`, which are not handled by the migration of orders and are set to 0. If you want to populate these fields with specific values, you need to calculate them yourself.
+  Xperience by Kentico introduces new fields to the `Commerce_OrderItem` table, `OrderItemTotalTax` and `OrderItemTaxRate`, which are not handled by the migration of orders and are set to 0. If you want to populate these fields with specific values, you need to calculate them yourself.
 
-  In case you don't want to migrate all of your orders, you can filter the orders based on their date of creation (in UTC date format), or their status. For example:
+  In case you don't want to migrate all of your orders, you can filter the orders based on their date of creation (in UTC date format), or their status using the `KX13OrderFilter` [configuration option](#configuration). For example:
 
   ```json
   "KX13OrderFilter": {
@@ -536,6 +542,15 @@ Add the options under the `Settings` section in the configuration file.
 | OptInFeatures.QuerySourceInstanceApi.Enabled                      | If `true`, [source instance API discovery](#source-instance-api-discovery) is enabled to allow advanced migration of Page Builder content for pages and page templates.                                                                                                                                                                                                                                                                                                                                                                                    |
 | OptInFeatures.QuerySourceInstanceApi.Connections                  | To use [source instance API discovery](#source-instance-api-discovery), you need to add a connection JSON object containing the following values:<br />`SourceInstanceUri` - the base URI where the source instance's live site application is running.<br />`Secret` - the secret that you set in the _ToolkitApiController.cs_ file on the source instance.                                                                                                                                                                                              |
 | OptInFeatures.CustomMigration.FieldMigrations                     | Enables conversion of media selection text fields to content item assets or media library files. See [Convert text fields with media links](#convert-text-fields-with-media-links) for more information.                                                                                                                                                                                                                                                                                                                                                   |
+| CommerceConfiguration.CommerceSiteNames                           | Specifies the site names from the source instance for which commerce data (customers, orders) should be migrated. This option is required when migrating commerce data.                                                                                                                                                                                                                                                                                                                                                                                     |
+| CommerceConfiguration.SystemFieldPrefix                           | The prefix added to migrated system fields of commerce objects from the source instance to avoid conflicts with Xperience by Kentico's internal system fields. Default value is `KX13_`.                                                                                                                                                                                                                                                                                                                                                                                        |
+| CommerceConfiguration.IncludeCustomerSystemFields                  | Determines which system fields from the _COM_Customer_ table are migrated to _Commerce_Customer_ in Xperience by Kentico. Fields are migrated as custom fields and prefixed with the value set in `SystemFieldPrefix`.                                                                                                                                                                                                                                                                                        |
+| CommerceConfiguration.IncludeAddressSystemFields                   | Determines which system fields from the _COM_Address_ table are migrated to _Commerce_CustomerAddress_ in Xperience by Kentico. Fields are migrated as custom fields and prefixed with the value set in `SystemFieldPrefix`.                                                                                                                                                                                                                                                                                  |
+| CommerceConfiguration.IncludeOrderSystemFields                     | Determines which system fields from the _COM_Order_ table are migrated to _Commerce_Order_ in Xperience by Kentico. Fields are migrated as custom fields and prefixed with the value set in `SystemFieldPrefix`.                                                                                                                                                                                                                                                                                              |
+| CommerceConfiguration.IncludeOrderItemsSystemFields                | Determines which system fields from the _COM_OrderItem_ table are migrated to _Commerce_OrderItem_ in Xperience by Kentico. Fields are migrated as custom fields and prefixed with the value set in `SystemFieldPrefix`.                                                                                                                                                                                                                                                                                      |
+| CommerceConfiguration.IncludeOrderAddressSystemFields              | Determines which system fields from the _COM_OrderAddress_ table are migrated to _Commerce_OrderAddress_ in Xperience by Kentico.  Fields are migrated as custom fields and prefixed with the value set in `SystemFieldPrefix`.                                                                                                                                                                                                                                                                                |
+| CommerceConfiguration.OrderStatuses                                | Specifies how order statuses from Kentico Xperience 13 are mapped to order statuses in Xperience by Kentico. Order statuses are **not migrated** – they must be created manually on the target instance before running the migration. The mapping is a dictionary where the key is the Xperience by Kentico order status code name and the value is an array of Kentico Xperience 13 order status code names that should be mapped to it.                                                                                                                   |
+| CommerceConfiguration.KX13OrderFilter                              | Configuration for filtering orders during migration. Contains `OrderFromDate` and `OrderToDate` (both required together, UTC format) to filter by date range, and `OrderStatusCodeNames` (array) to filter by order status code names from the source instance.                                                                                                                                                                                                                                                                                             |
 
 ### Example
 
@@ -613,6 +628,24 @@ Add the options under the `Settings` section in the configuration file.
         "TargetFormComponent": "Kentico.Administration.AssetSelector",
         "Actions": ["convert to asset"],
         "FieldNameRegex": ".*"
+      }
+    },
+    "CommerceConfiguration": {
+      "CommerceSiteNames": ["DancingGoatCore"],
+      "SystemFieldPrefix": "KX13_",
+      "IncludeCustomerSystemFields": ["CustomerCompany", "CustomerTaxRegistrationID"],
+      "IncludeAddressSystemFields": ["AddressName"],
+      "IncludeOrderSystemFields": ["OrderCouponCodes", "OrderOtherPayments"],
+      "IncludeOrderItemsSystemFields": [],
+      "IncludeOrderAddressSystemFields": [],
+      "OrderStatuses": {
+        "XbKStatusCodeNameOne": ["KX13StatusCodeNameOne"],
+        "XbKStatusCodeNameTwo": ["KX13StatusCodeNameTwo", "AnotherKX13StatusCodeName"]
+      },
+      "KX13OrderFilter": {
+        "OrderFromDate": "2024-01-01T00:00:00Z",
+        "OrderToDate": "2025-11-30T00:00:00Z",
+        "OrderStatusCodeNames": ["Completed", "Processing"]
       }
     }
   }
