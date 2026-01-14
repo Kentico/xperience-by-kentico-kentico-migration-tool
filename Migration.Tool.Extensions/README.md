@@ -316,7 +316,7 @@ This migration allows you to migrate pages from the source instance as [widgets]
 - If you have a page with content stored in page fields, you can migrate the values of the fields into widget properties and display the content as a widget.
 - If you have a page that serves as a listing and displays content from child pages, you can convert the child pages into widgets and as content items in the content hub, then link them from the widgets.
 
-> [!WARNING]
+> :warning:
 > The target page (with a [Page Builder editable area](https://docs.kentico.com/x/7AWiCQ)) and any [Page Builder components](https://docs.kentico.com/x/6QWiCQ) used in the migration need to be present in the system before you migrate content. The target page must be either the page itself or any ancestor of the page from which the content is migrated.
 
 In `Migration.Tool.Extensions/CommunityMigrations`, create a new file with a class that inherits from the `ContentItemDirectorBase` class and override the `Direct(source, options)` method:
