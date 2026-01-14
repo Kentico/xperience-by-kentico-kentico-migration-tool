@@ -430,7 +430,7 @@ Xperience by Kentico does not have multistore support. To migrate commerce data,
 The migration includes:
 - Customer addresses, and customers.
 - All custom fields from _COM_Customer_ and _COM_Address_ tables. They are added to the _Commerce_Customer_ and _Commerce_CustomerAddress_ respectively.
-- A `SiteOriginName` custom field is created for customers who are not registered users to preserve the source site information. For registered users, this value will be `null` because Xperience by Kentico does not support site-specific customer bindings.
+- A `SiteOriginName` custom field is created for customers. For unregistered users the field contains source site information. For registered users, this  field's value will be `null` because Xperience by Kentico does not support site-specific customer bindings.
 - Some system fields in Kentico Xperience 13 are no longer used in Xperience by Kentico. Specify the ones you want to migrate in `appsettings.json` using the `IncludeCustomerSystemFields` and `IncludeAddressSystemFields` configuration options. Migrated system fields are prefixed with a configurable prefix (default `KX13_`) to avoid conflicts. You can customize the prefix using the `SystemFieldPrefix` option. The specified fields are migrated to the respective database tables as custom fields in the order in which they were specified.
   As an example, take the following `Commerce_Customer` columns:
 
