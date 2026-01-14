@@ -906,10 +906,21 @@ public class ContentItemMapper(
                     if ((fieldMigration.Actions?.Contains(TcaDirective.ConvertToPages) ?? false) && documentSourceObjectContext != null)
                     {
                         // relation to other document
-                        var convertedRelation = relationshipService.GetNodeRelationships(documentSourceObjectContext.CmsTree.NodeID, sourceNodeClass.ClassName, field.Guid)
-                            .Select(r => new { Identifier = spoiledGuidContext.EnsureNodeGuid(r.RightNode!.NodeGUID, r.RightNode.NodeSiteID, r.RightNode.NodeID) });
+                        var relations = relationshipService.GetNodeRelationships(documentSourceObjectContext.CmsTree.NodeID, sourceNodeClass.ClassName, field.Guid);
 
-                        target.SetValueAsJson(targetFieldName, valueConvertor.Invoke(convertedRelation, convertorContext));
+                        var relatedItems = new List<ContentItemReference>();
+                        foreach (var relation in relations)
+                        {
+                            if (relation.RightNode is not null)
+                            {
+                                EnsureAllowedType(targetClassName, newFormInfo, targetFieldName, relation.RightNode.NodeClassID);
+                                relatedItems.Add(new ContentItemReference
+                                {
+                                    Identifier = spoiledGuidContext.EnsureNodeGuid(relation.RightNode!.NodeGUID, relation.RightNode.NodeSiteID, relation.RightNode.NodeID)
+                                });
+                            }
+                        }
+                        target.SetValueAsJson(targetFieldName, relatedItems.ToArray());
                     }
                     else
                     {
@@ -1023,6 +1034,44 @@ public class ContentItemMapper(
                     });
                 }
             }
+        }
+    }
+
+    // key = ClassName|FieldName, value = hashset of class IDs, which were already allowed for the target field
+    private readonly Dictionary<string, HashSet<int>> fieldAllowedTypes = new();
+
+    /// <summary>
+    /// If the class corresponding to source node class ID is not among allowed linked item types of the target field, update the form definition to allow it.
+    /// <paramref name="targetClassFormInfo"/> will be updated and immediately persisted into the target database if needed.
+    /// </summary>
+    private void EnsureAllowedType(string targetClassName, FormInfo targetClassFormInfo, string targetFieldName, int sourceNodeClassID)
+    {
+        string key = $"{targetClassName}|{targetFieldName}";
+        HashSet<int> allowedTypesDict;
+        if (!fieldAllowedTypes.ContainsKey(key))
+        {
+            fieldAllowedTypes[key] = new HashSet<int>();
+        }
+        allowedTypesDict = fieldAllowedTypes[key];
+        if (!allowedTypesDict.Contains(sourceNodeClassID))
+        {
+            var fieldInfo = targetClassFormInfo.GetFormField(targetFieldName);
+            var guidList = new List<Guid>();
+            string? settingsString = fieldInfo.Settings[FormDefinitionPatcher.AllowedContentItemTypeIdentifiers] as string;
+            if (settingsString is not null)
+            {
+                guidList.AddRange(JsonConvert.DeserializeObject<Guid[]>(settingsString)!);
+            }
+            guidList.Add(modelFacade.SelectById<ICmsClass>(sourceNodeClassID)!.ClassGUID);
+            settingsString = JsonConvert.SerializeObject(guidList.ToArray());
+            fieldInfo.Settings[FormDefinitionPatcher.AllowedContentItemTypeIdentifiers] = settingsString;
+            targetClassFormInfo.UpdateFormField(targetFieldName, fieldInfo);
+
+            var xbykClassInfo = DataClassInfoProvider.GetDataClassInfo(targetClassName);
+            xbykClassInfo.ClassFormDefinition = targetClassFormInfo.GetXmlDefinition();
+            DataClassInfoProvider.SetDataClassInfo(xbykClassInfo);
+
+            allowedTypesDict.Add(sourceNodeClassID);
         }
     }
 

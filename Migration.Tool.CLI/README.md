@@ -47,7 +47,7 @@ To perform the migration:
 Command usage:
 
 ```powershell
-Migration.Tool.CLI.exe migrate --sites --custom-modules --users --members --forms --media-libraries --page-types --pages --type-restrictions --settings-keys --contact-management --data-protection
+Migration.Tool.CLI.exe migrate --sites --custom-modules --custom-tables --categories --users --members --forms --media-libraries --page-types --pages  --type-restrictions --settings-keys --contact-management --data-protection
 ```
 
 | Parameter                   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Dependencies                                   |
