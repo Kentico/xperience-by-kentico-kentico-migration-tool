@@ -47,7 +47,7 @@ To perform the migration:
 Command usage:
 
 ```powershell
-Migration.Tool.CLI.exe migrate --sites --custom-modules --users --members --forms --media-libraries --page-types --pages --settings-keys --contact-management --data-protection
+Migration.Tool.CLI.exe migrate --sites --custom-modules --users --members --forms --media-libraries --page-types --pages --type-restrictions --settings-keys --contact-management --data-protection
 ```
 
 | Parameter                   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Dependencies                                   |
@@ -174,7 +174,7 @@ Additionally, you can define [custom migrations](../Migration.Tool.Extensions/RE
 
 #### Page Builder content
 
-> :warning: Page Builder content migration is only available when migrating from Kentico Xperience 13.
+> [!WARNING] Page Builder content migration is only available when migrating from Kentico Xperience 13.
 
 By default, JSON data storing the Page Builder content of pages and custom page templates is migrated directly without
 modifications. On the target Xperience by Kentico instance, the migrated data can work in the Page Builder's legacy
@@ -433,7 +433,7 @@ Add the options under the `Settings` section in the configuration file.
 | ConvertClassesToContentHub                                        | Specifies which page types, custom tables or custom module classes are migrated to [reusable content items](https://docs.kentico.com/x/content_items_xp) (instead of website channel pages or custom module classes for custom tables and classes). Enter page type code names, separated with either `;` or `,`. See [Convert pages or custom tables to Content hub](#convert-pages-or-custom-tables-to-content-hub) or [Convert module classes to Content hub](#convert-module-classes-to-content-hub) for detailed information.                         |
 | CustomModuleClassDisplayNamePatterns                              | Specifies the format of content item names for items migrated from custom module classes. Add a dictionary with the class name as the key and the name pattern as the value. The name pattern can use placeholders that are replaced by values from a specific column in the source class. <br /><br />Example: `CustomModuleItem-{CustomClassGuid}`                                                                                                                                                                                                       |
 | MigrateOnlyMediaFileInfo                                          | If set to `true`, only the database representations of media files are migrated, without the files in the media folder in the project's file system. For example, enable this option if your media library files are mapped to a shared directory or Cloud storage.<br /><br />If `false`, media files are migrated based on the `KxCmsDirPath` location.                                                                                                                                                                                                  |
-| MigrateMediaToMediaLibrary                                        | **:warning: Deprecated:** Media libraries will be removed in a future release. <br /><br />Determines whether media library files and attachments from the source instance are migrated to the target instance as media libraries or as [content item assets](https://docs.kentico.com/x/content_item_assets_xp) in the content hub. The default value is `false` – media files and attachments are migrated as content item assets. <br /><br /> See [Convert attachments and media library files to media libraries instead of content item assets](#convert-attachments-and-media-library-files-to-media-libraries-instead-of-content-item-assets) |
+| MigrateMediaToMediaLibrary                                        | **[!WARNING] Deprecated:** Media libraries will be removed in a future release. <br /><br />Determines whether media library files and attachments from the source instance are migrated to the target instance as media libraries or as [content item assets](https://docs.kentico.com/x/content_item_assets_xp) in the content hub. The default value is `false` – media files and attachments are migrated as content item assets. <br /><br /> See [Convert attachments and media library files to media libraries instead of content item assets](#convert-attachments-and-media-library-files-to-media-libraries-instead-of-content-item-assets) |
 | LegacyFlatAssetTree                                               | Use legacy behavior of versions up to 2.3.0. Content folders for asset content items will be created in a flat structure (all under root folder)                                                                                                                                                                                                                                                                                                                                                                                                           |
 | LegacyPermissiveMediaLibrarySubfolders                            | Allows media library subfolder names that don’t follow current Xperience by Kentico naming rules. When set to `true`, skips validation requiring only alphanumeric characters, underscores, and hyphens, and allows names that may otherwise conflict with OS-reserved keywords (such as `CON`, `PRN`, `AUX`). This configuration should only be used when necessary (for example, when re-running migrations from older tool versions), as it may limit functionality like media library migration to the [Content hub](https://docs.kentico.com/documentation/business-users/content-hub). |                                                                                                                                                                                                                                                                                                                                                                                                             |
 | AssetRootFolders                                                  | Dictionary defining the root folder for Asset content items per site: Key is site name (CMS_Site.SiteName). Value is in format _/FolderDisplayName1/FolderDisplayName2/..._                                                                                                                                                                                                                                                                                                                                                                                |
@@ -533,7 +533,7 @@ Add the options under the `Settings` section in the configuration file.
 
 ## Source instance API discovery
 
-> :warning: **Warning** – source instance API discovery is only available when migrating from Kentico Xperience 13.
+> [!WARNING] **Warning** – source instance API discovery is only available when migrating from Kentico Xperience 13.
 
 By default, JSON data storing the Page Builder content of pages and custom page templates is migrated directly without
 modifications. Within this content, Page Builder components (widgets, sections, etc.) with properties have their
@@ -715,7 +715,7 @@ The following example specifies two page types from which reusable schemas are c
 
 For advanced scenarios, you can use the extensibility feature to implement [customizations](../Migration.Tool.Extensions/README.md#custom-class-mappings) that allow you to specify the mapping of page types to reusable field schemas. For example, this allows you to [extract fields from multiple page types into a reusable field schema](https://docs.kentico.com/x/remodel_page_types_as_reusable_field_schemas_guides).
 
-### :warning: Notes
+### [!WARNING] Notes
 
 - Conversion of page types to reusable field schemas works best when all field names of page types are unique (i.e., prefixed with the page type name). If multiple page types converted to reusable field schemas have fields with the same code name, the code name is prefixed with the content type name in the converted reusable field schemas.
 
@@ -730,7 +730,7 @@ selection_ [form control](https://docs.xperience.io/x/0A_RBg) from the source in
 fields in the target instance. You can instead configure the Kentico Migration Tool to convert these fields to the
 _Content items_ data type and use the _Content item selector_ form component, or _Media files_ data type and use the _Media file selector_ form component if you choose to [convert attachments and media library files to media libraries instead of content item assets](#convert-attachments-and-media-library-files-to-media-libraries-instead-of-content-item-assets).
 
-### :warning: Notes
+### [!WARNING] Notes
 
 - Only media libraries using the **Permanent** [file URL format](https://docs.xperience.io/x/xQ_RBg) are supported. Content from media libraries with enabled **Use direct path for files in content** setting will not be converted.
 
@@ -788,7 +788,7 @@ match the regular expressions are converted. Use `.*` to match all fields.
 
 ### Convert to Media Libraries
 
-> :warning: **Deprecation Notice:** Media libraries will be removed from Xperience by Kentico in a future release. Migrating to media libraries will require re-migration to Content hub later, resulting in additional costs and effort. We strongly recommend using the default migration to content item assets.
+> [!WARNING] **Deprecation Notice:** Media libraries will be removed from Xperience by Kentico in a future release. Migrating to media libraries will require re-migration to Content hub later, resulting in additional costs and effort. We strongly recommend using the default migration to content item assets.
 
 - Attachment links (containing a `getattachment` handler) are migrated as [attachments](#attachments) and changed to the
   _Media files_ data type.
@@ -820,7 +820,7 @@ match the regular expressions are converted. Use `.*` to match all fields.
 
 ## Convert attachments and media library files to media libraries instead of content item assets
 
-> :warning: **Deprecation Notice:** Media libraries will be removed from Xperience by Kentico in a future release. Migrating to media libraries will require re-migration to Content hub later, resulting in additional costs and effort. We strongly recommend using the default migration to content item assets.
+> [!WARNING] **Deprecation Notice:** Media libraries will be removed from Xperience by Kentico in a future release. Migrating to media libraries will require re-migration to Content hub later, resulting in additional costs and effort. We strongly recommend using the default migration to content item assets.
 
 By default, media libraries and attachments are migrated as content item assets in the target instance, which is the recommended approach to ensure future-proofing of project and improve the [content model](https://docs.kentico.com/x/f4HWCQ). You can modify this behavior by configuring the value of the `MigrateMediaToMediaLibrary` setting to `true` and convert media library files and attachments to media libraries if you want to continue using media libraries. When set to `false`, media libraries and attachments are migrated as content item assets in the target instance.
 

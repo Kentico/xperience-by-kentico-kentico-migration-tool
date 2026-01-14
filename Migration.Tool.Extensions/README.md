@@ -39,7 +39,7 @@ Migration presents an opportunity to remodel your content structure. The followi
 
 Each customization type is implemented by creating a class that implements a specific interface (e.g., `IFieldMigration`, `IWidgetMigration`) or inherits from a base class (e.g., `ContentItemDirectorBase`). These interfaces and classes are provided by the Migration Tool and define the methods your custom logic must implement.
 
-> **Important:** After implementing any custom migration, you must register it in the dependency injection container. See [Registration](#registration) for complete registration instructions.
+> [!IMPORTANT] After implementing any custom migration, you must register it in the dependency injection container. See [Registration](#registration) for complete registration instructions.
 
 ### Custom Class Mappings (`IClassMapping`)
 
@@ -112,15 +112,15 @@ For detailed information about all available CLI parameters, their dependencies,
 | **Widget Migrations** | `--pages` |
 | **Widget Property Migrations** | `--pages` |
 
-### How Custom Migrations Are Applied
+### Criteria for Custom Migration Execution
 
-The Kentico Migration Tool uses a handler-based architecture where handlers automatically call your custom migrations during data transformation. Typically, you do not interact with handlers directly—simply register your migrations and they will be invoked automatically.
+The Kentico Migration Tool uses a handler-based architecture where handlers automatically call your custom migrations during data transformation. Typically, you do not interact with handlers directly—simply register your migrations and the migration tool will invoke them automatically.
 
 Custom migrations are called during transformation:
 
-1. **Selection** - The tool checks your migration's `ShallMigrate()` method
-2. **Ranking** - Lowest rank wins if multiple migrations match
-3. **Execution** - If selected, your transformation method runs
+1. **Selection** - The tool evaluates your migration's boolean `ShallMigrate()` method, which determines if your migration is applicable in the provided context (e.g., matching field names, widget types, or content types)
+2. **Ranking** - If multiple migrations match, the one with the lowest `Rank` value is selected and applied
+3. **Execution** - Once selected, the tool invokes your transformation method to migrate the data (e.g., `MigrateValue()`, `MigrateWidget()`, or `Direct()`)
 
 **Execution during page migration:**
 
@@ -131,6 +131,15 @@ As multiple custom migrations run during the `--pages` migration, custom migrati
 3. Field migrations transform page field values
 
 After all pages are migrated, the tool performs a final pass to update `TreePath` properties (converting `NodeAliasPath` references). This happens automatically and doesn't require custom migration logic.
+
+**Overall migration order:**
+
+When running a complete migration with multiple parameters, custom migrations execute in this sequence:
+
+1. **Class mappings** (with `--page-types` or `--custom-modules`) - Define content type structure and field definitions, including value conversions via `ConvertFrom`
+2. **Content item directors, widget migrations, and field migrations** (with `--pages`) - Transform individual page data in the order described above
+
+Note that class mappings run before page data migration, so any field value transformations defined in class mappings (e.g., using `ConvertFrom`) are applied during the content type structure migration, not during individual page processing.
 
 ## Implementation Guides
 
@@ -160,7 +169,7 @@ After implementing the migration, you need to [register the migration](#registra
 
 ### Customize Linked Page Handling
 
-When migrating from Kentico versions that support linked pages (pages that reference content from other pages in the content tree), you need to decide how to handle these linked relationships since Xperience by Kentico doesn't support linked pages in the same way.
+When migrating from Kentico versions that support [linked pages](https://docs.kentico.com/13/managing-website-content/working-with-pages/copying-and-moving-pages-creating-linked-pages#creating-linked-pages) (pages that reference content from other pages in the content tree), you need to decide how to handle them since Xperience by Kentico doesn't support linked pages in the same way.
 
 The linked pages director feature provides a flexible solution to customize how linked pages are handled during migration. You can choose to materialize linked content, drop it entirely, or store references in ancestor pages.
 
@@ -307,7 +316,8 @@ This migration allows you to migrate pages from the source instance as [widgets]
 - If you have a page with content stored in page fields, you can migrate the values of the fields into widget properties and display the content as a widget.
 - If you have a page that serves as a listing and displays content from child pages, you can convert the child pages into widgets and as content items in the content hub, then link them from the widgets.
 
-> :warning: The target page (with a [Page Builder editable area](https://docs.kentico.com/x/7AWiCQ)) and any [Page Builder components](https://docs.kentico.com/x/6QWiCQ) used in the migration need to be present in the system before you migrate content. The target page must be either the page itself or any ancestor of the page from which the content is migrated.
+> [!WARNING]
+> The target page (with a [Page Builder editable area](https://docs.kentico.com/x/7AWiCQ)) and any [Page Builder components](https://docs.kentico.com/x/6QWiCQ) used in the migration need to be present in the system before you migrate content. The target page must be either the page itself or any ancestor of the page from which the content is migrated.
 
 In `Migration.Tool.Extensions/CommunityMigrations`, create a new file with a class that inherits from the `ContentItemDirectorBase` class and override the `Direct(source, options)` method:
 
@@ -359,12 +369,10 @@ In `Migration.Tool.Extensions/CommunityMigrations`, create a new file with a cla
     }
     ```
 
-You can see a sample: [SamplePageToWidgetDirector.cs](./CommunityMigrations/SamplePageToWidgetDirector.cs)
-
 After implementing the content item director, you need to [register the director](#registration) in the system.
 
 > [!TIP]
-> For a complete practical example, see [how to convert child pages to widgets](https://docs.kentico.com/x/convert_child_pages_to_widgets_guides) in the Kentico documentation.
+> You can see a sample implementation in [SamplePageToWidgetDirector.cs](./CommunityMigrations/SamplePageToWidgetDirector.cs) or follow along with our complete practical example on [how to convert child pages to widgets](https://docs.kentico.com/x/convert_child_pages_to_widgets_guides) in the Kentico documentation.
 
 ### Custom Class Mappings
 

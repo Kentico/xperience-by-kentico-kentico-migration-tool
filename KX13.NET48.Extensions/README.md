@@ -1,6 +1,6 @@
 # KX13.NET48.Extensions
 
-> **Minimal User Interaction:** This project provides API controllers for .NET Framework 4.8 KX13 instances. Most users only need to copy this project to their source instance - no modification required.
+> **Minimal User Interaction:** This project provides API controllers for .NET Framework 4.8 KX13 instances. Most users only need to copy the controller file to their source instance - no modification required.
 
 ## Purpose
 
@@ -8,38 +8,19 @@ Required when migrating **Page Builder widgets** from KX13 instances running on 
 
 ## Setup
 
-1. **Copy** this project to your KX13 .NET Framework web application
-2. **Reference** it in your KX13 web project's .csproj
-3. **Restore NuGet packages** (uses Kentico packages compatible with .NET 4.8)
-4. **Run** your KX13 application (e.g., `https://localhost:5001`)
-5. **Configure** the migration tool's `appsettings.json`:
+For complete setup instructions, see [Source instance API discovery](../Migration.Tool.CLI/README.md#api-discovery-setup) in the Migration.Tool.CLI README.
 
-```json
-"OptInFeatures": {
-  "QuerySourceInstanceApi": {
-    "Enabled": true,
-    "Connections": [
-      {
-        "SourceInstanceUri": "https://localhost:5001",
-        "Secret": "your-secret-key"
-      }
-    ]
-  }
-}
-```
-
-See [Migration.Tool.CLI/appsettings.json](../Migration.Tool.CLI/appsettings.json) for the full configuration reference.
-
-## API Endpoints
-
-Same as KX13.Extensions:
-- `/api/migration-tool/widgets` - Returns all registered Page Builder widgets
-- `/api/migration-tool/widget-properties/{identifier}` - Returns properties for a specific widget
+**Quick summary:**
+1. Copy `ToolApiController.NET48.cs` to your KX13 source instance's `Controllers` folder
+2. Register the controller route in `/App_Start/RouteConfig.cs`
+3. Set a secret value in the controller
+4. Configure the migration tool's `appsettings.json` with the matching secret
 
 ## Technical Details
 
 - ASP.NET MVC (not Core) - for .NET Framework 4.8
 - Uses `System.Web.Http` instead of `Microsoft.AspNetCore.Mvc`
 - Returns JSON metadata consumed by the migration tool
+- Requires matching secret between controller and migration tool configuration
 
 Most users will not need to modify this code. Use this project only if your KX13 source instance runs on .NET Framework 4.8 instead of ASP.NET Core.
