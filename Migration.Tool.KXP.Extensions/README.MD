@@ -1,5 +1,9 @@
 # Handler for legacy attachment URLs
 
+> **Minimal User Interaction:** This optional project adds a legacy attachment URL handler to your target Xperience by Kentico instance. Most users will not need to modify this - just add it as a project reference if needed.
+
+> :warning: **Deprecation Notice:** Media libraries will be sunset from Xperience by Kentico in a future release. We recommend migrating attachments to [content item assets](https://docs.kentico.com/x/content_item_assets_xp) in Content hub (default behavior) instead of media libraries to avoid the need for future re-migration.
+
 Page attachments are not supported in Xperience by Kentico. Instead, the [Migration tool](/README.md) transfers
 attachment files into [media libraries](https://docs.xperience.io/x/agKiCQ).
 
@@ -23,7 +27,7 @@ The `LegacyAttachmentHandler.cs` handler can serve the following legacy attachme
 - `/getattachment/[AttachmentGUID]/[AttachmentName].[AttachmentExtension]`
   - Example: `/getattachment/454BD7D7-200F-4976-AD21-8B5D70CBE7FD/image.jpg`
 
-## Add the handler to your project
+## Add the Handler to Your Project
 
 1. Open your Xperience by Kentico solution in Visual Studio.
 2. Add a custom assembly (_Class Library_ project) to your solution or re-use an existing one. See
