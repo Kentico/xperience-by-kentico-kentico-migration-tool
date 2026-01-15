@@ -435,24 +435,25 @@ The migration includes:
 - A `SiteOriginName` custom field is created for customers. For unregistered users, the field contains information about the source site. For registered users, this field's value is `null` because Xperience by Kentico does not support site-specific customer bindings.
 - Certain system fields in Kentico Xperience 13 do not have a direct equivalent in Xperience by Kentico and are by default skipped by the migration. Specify the ones you want to migrate in `appsettings.json` using the `IncludeCustomerSystemFields` and `IncludeAddressSystemFields` [configuration options](#configuration). Migrated system fields are prefixed with a configurable prefix (default `KX13_`) to avoid conflicts. You can customize the prefix using the `SystemFieldPrefix` option. The specified fields are migrated to the respective database tables as custom fields in the order in which they were specified.
 
-  As an example, take the following `Commerce_Customer` columns:
-
-  ```text
-  |CustomerID|CustomerGUID|...|CustomerPhone|
-  ```
-
-  And the following `Migration.Tool.CLI/appsettings.json` configuration.
+  The following `Migration.Tool.CLI/appsettings.json` configuration migrates all available system fields from Kentico Xperience 13:
 
   ```json
   {
-    "IncludeCustomerSystemFields": "CustomerCompany|CustomerTaxRegistrationID|CustomerSiteID"
+    "IncludeCustomerSystemFields": ["CustomerFax", "CustomerCompany", "CustomerTaxRegistrationID", "CustomerOrganizationID", "CustomerLastModified", "CustomerSiteID"],
+    "IncludeAddressSystemFields": ["AddressName", "AddressLastModified"]
   }
   ```
 
-  This will result in the following `Commerce_Customer` structure after migration.
+  This results in the following table structures after migration (original Xperience by Kentico fields followed by migrated custom fields):
 
+  **Commerce_Customer:**
   ```text
-  |CustomerID|CustomerGUID|...|CustomerPhone|KX13_CustomerCompany|KX13_CustomerTaxRegistrationID|KX13_CustomerSiteID|
+  |CustomerID|CustomerGUID|...|CustomerPhone|KX13_CustomerFax|KX13_CustomerCompany|...|KX13_CustomerSiteID|
+  ```
+
+  **Commerce_CustomerAddress:**
+  ```text
+  |CustomerAddressID|CustomerAddressGUID|...|CustomerAddressEmail|KX13_AddressName|KX13_AddressLastModified|
   ```
 
 #### Orders
@@ -479,24 +480,31 @@ Before migrating orders, the following requirements need to be met:
 
 - Certain system fields in Kentico Xperience 13 do not have a direct equivalent in Xperience by Kentico and are by default skipped by the migration. Specify the ones you want to migrate in the `appsettings.json` file using the `IncludeOrderSystemFields`, `IncludeOrderItemsSystemFields`, and `IncludeOrderAddressSystemFields` [configuration options](#configuration). Migrated system fields are prefixed with a configurable prefix (default `KX13_`) to avoid conflicts. You can customize the prefix using the `SystemFieldPrefix` option. The specified fields are migrated to the respective database tables as custom fields in the order in which they were specified.
 
-  As an example, take the following `Commerce_Order` columns:
-
-  ```text
-  |OrderID|OrderGUID|...|OrderShippingMethodPrice|
-  ```
-
-  And the following `Migration.Tool.CLI/appsettings.json` configuration.
+  The following `Migration.Tool.CLI/appsettings.json` configuration migrates all available system fields from Kentico Xperience 13:
 
   ```json
   {
-    "IncludeOrderSystemFields": "OrderCouponCodes|OrderOtherPayments"
+    "IncludeOrderSystemFields": ["OrderNote", "OrderInvoice", "OrderTrackingNumber", "OrderCustomData", "OrderPaymentResult", "OrderTotalPriceInMainCurrency", "OrderIsPaid", "OrderCulture", "OrderDiscounts", "OrderGrandTotalInMainCurrency", "OrderOtherPayments", "OrderTaxSummary", "OrderCouponCodes"],
+    "IncludeOrderItemsSystemFields": ["OrderItemCustomData", "OrderItemParentGuid", "OrderItemLastModified", "OrderItemValidTo", "OrderItemBundleGuid", "OrderItemTotalPriceInMainCurrency", "OrderItemSendNotification", "OrderItemText", "OrderItemProductDiscounts", "OrderItemDiscountSummary"],
+    "IncludeOrderAddressSystemFields": ["AddressPersonalName", "AddressLastModified"]
   }
   ```
 
-  This will result in the following `Commerce_Order` structure after migration.
+  This results in the following table structures after migration (original Xperience by Kentico fields followed by migrated custom fields):
 
+  **Commerce_Order:**
   ```text
-  |OrderID|OrderGUID|...|OrderShippingMethodPrice|KX13_OrderCouponCodes|KX13_OrderOtherPayments|
+  |OrderID|OrderGUID|...|OrderShippingMethodPrice|KX13_OrderNote|KX13_OrderInvoice|...|KX13_OrderCouponCodes|
+  ```
+
+  **Commerce_OrderItem:**
+  ```text
+  |OrderItemID|OrderItemGUID|...|OrderItemTotalPrice|KX13_OrderItemCustomData|...|KX13_OrderItemDiscountSummary|
+  ```
+
+  **Commerce_OrderAddress:**
+  ```text
+  |AddressID|OrderAddressGUID|...|OrderAddressStateID|KX13_AddressPersonalName|KX13_AddressLastModified|
   ```
 
   Xperience by Kentico introduces new fields to the `Commerce_OrderItem` table, `OrderItemTotalTax` and `OrderItemTaxRate`, which are not handled by the migration of orders and are set to 0. If you want to populate these fields with specific values, you need to calculate them yourself.
