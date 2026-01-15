@@ -9,3 +9,8 @@ appsettings.local.json
 *.sln.DotSettings.user
 Migration.Tool.CLI/appsettings.local.json_
 .nuget/nuget.exe
+
+# MCP server definitions
+mcp.json
+claude_desktop_config.json
+mcp_config.json
