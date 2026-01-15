@@ -15,6 +15,8 @@ public class ConfigurationNames
     public const string MigrateOnlyMediaFileInfo = "MigrateOnlyMediaFileInfo";
     public const string UseOmActivityNodeRelationAutofix = "UseOmActivityNodeRelationAutofix";
     public const string UseOmActivitySiteRelationAutofix = "UseOmActivitySiteRelationAutofix";
+
+    [Obsolete("Use logging instead")]
     public const string MigrationProtocolPath = "MigrationProtocolPath";
     public const string Enabled = "Enabled";
     public const string Connections = "Connections";
