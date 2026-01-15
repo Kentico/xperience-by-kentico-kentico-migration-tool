@@ -8,6 +8,7 @@ appsettings.local.json
 .vs/
 *.sln.DotSettings.user
 Migration.Tool.CLI/appsettings.local.json_
+.nuget/nuget.exe
 
 # MCP server definitions
 mcp.json
