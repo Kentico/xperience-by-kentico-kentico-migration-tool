@@ -153,3 +153,24 @@ public record MigrateContentTypeRestrictionsCommand : IRequest<CommandResult>, I
 
     public Type[] Dependencies => [typeof(MigrateSitesCommand), typeof(MigratePageTypesCommand), typeof(MigratePagesCommand)];
 }
+
+public record MigrateCustomersCommand : IRequest<CommandResult>, ICommand
+{
+    public static readonly int Rank = 1 + MigrateSitesCommand.Rank + MigrateCustomModulesCommand.Rank + MigrateUsersCommand.Rank + MigrateMembersCommand.Rank;
+
+    public static string Moniker => "customers";
+    public static string MonikerFriendly => "Customers and addresses";
+
+    public Type[] Dependencies => [typeof(MigrateSitesCommand), typeof(MigrateCustomModulesCommand), typeof(MigrateUsersCommand), typeof(MigrateMembersCommand)];
+}
+
+public record MigrateOrdersCommand : IRequest<CommandResult>, ICommand
+{
+    public static readonly int Rank = 1 + MigrateSitesCommand.Rank + MigrateCustomModulesCommand.Rank + MigrateUsersCommand.Rank + MigrateMembersCommand.Rank + MigrateCustomersCommand.Rank;
+
+    public static string Moniker => "orders";
+
+    public static string MonikerFriendly => "Orders";
+
+    public Type[] Dependencies => [typeof(MigrateSitesCommand), typeof(MigrateCustomModulesCommand), typeof(MigrateUsersCommand), typeof(MigrateMembersCommand), typeof(MigrateCustomersCommand)];
+}
