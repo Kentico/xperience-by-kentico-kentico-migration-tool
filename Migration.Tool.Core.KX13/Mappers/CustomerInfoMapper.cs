@@ -43,7 +43,7 @@ public class CustomerInfoMapper(
             target.CustomerMemberID = member.MemberID;
         }
 
-        target.CustomerCreatedWhen = customer.CustomerCreated.GetValueOrDefault();
+        target.CustomerCreatedWhen = customer.CustomerCreated ?? DateTime.Now;
         target.CustomerFirstName = customer.CustomerFirstName;
         target.CustomerLastName = customer.CustomerLastName;
         target.CustomerEmail = customer.CustomerEmail;
