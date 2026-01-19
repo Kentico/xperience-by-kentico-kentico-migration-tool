@@ -43,7 +43,7 @@ public class ConfigurationValidatorTests
         var errors = ConfigurationValidator.GetValidationErrors(configuration).ToList();
 
         // Assert - Should contain validation error for empty site names
-        Assert.Contains(errors, e => e.Message.Contains("CommerceConfiguration:CommerceSiteNames") && 
+        Assert.Contains(errors, e => e.Message.Contains("CommerceConfiguration:CommerceSiteNames") &&
                                      e.Message.Contains("cannot contain empty or whitespace values"));
     }
 
@@ -65,9 +65,9 @@ public class ConfigurationValidatorTests
         var errors = ConfigurationValidator.GetValidationErrors(configuration).ToList();
 
         // Assert - Should not contain CommerceConfiguration validation errors
-        Assert.DoesNotContain(errors, e => e.Message.Contains("CommerceConfiguration:CommerceSiteNames") && 
+        Assert.DoesNotContain(errors, e => e.Message.Contains("CommerceConfiguration:CommerceSiteNames") &&
                                            e.Message.Contains("must contain at least one site name"));
-        Assert.DoesNotContain(errors, e => e.Message.Contains("CommerceConfiguration:CommerceSiteNames") && 
+        Assert.DoesNotContain(errors, e => e.Message.Contains("CommerceConfiguration:CommerceSiteNames") &&
                                            e.Message.Contains("cannot contain empty or whitespace values"));
     }
 }
