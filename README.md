@@ -25,7 +25,7 @@ This repository contains the data migration tool and its technical reference doc
 - [Advanced upgrade deep dives](https://docs.kentico.com/x/upgrade_deep_dives_guides) - Developer-focused guides for customizing migrations and handling complex scenarios
 
 > [!IMPORTANT]
-> When planning an upgrade, note special considerations for [deploying to production](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#are-there-special-considerations-when-deploying-an-upgraded-project-to-production-for-the-first-time) and [deploying to SaaS](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#are-there-special-considerations-when-performing-an-upgrade-using-xperience-by-kentico-saas).
+> When planning an upgrade, note special considerations for [deploying to production](https://docs.kentico.com/guides/upgrade-to-xbyk/upgrade-from-kx13/upgrade-faq#are-there-special-considerations-when-deploying-an-upgraded-project-to-production-for-the-first-time) and [deploying to SaaS](https://docs.kentico.com/guides/upgrade-to-xbyk/upgrade-from-kx13/upgrade-faq#are-there-special-considerations-when-performing-an-upgrade-using-xperience-by-kentico-saas).
 
 ## Technical Documentation (This Repository)
 
@@ -182,7 +182,7 @@ To report bugs, upgrade to the latest Migration Tool version before submitting i
 See [`SUPPORT.md`](https://github.com/Kentico/.github/blob/main/SUPPORT.md#full-support) for more information.
 
 > [!IMPORTANT]
-> Before submitting a support ticket, please read about the [best practices on reporting Kentico Migration Tool and upgrade issues](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#what-is-the-difference-between-the-documentation-in-the-github-repo-and-on-the-docs.kentico.com-site).
+> Before submitting a support ticket, please read about the [best practices on reporting Kentico Migration Tool and upgrade issues](https://docs.kentico.com/guides/upgrade-to-xbyk/upgrade-from-kx13/upgrade-faq#what-is-the-difference-between-the-documentation-in-the-github-repo-and-on-the-docs.kentico.com-site).
 
 ## Security
 
