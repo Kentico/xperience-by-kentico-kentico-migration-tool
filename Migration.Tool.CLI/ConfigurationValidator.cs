@@ -161,7 +161,7 @@ public static class ConfigurationValidator
         #region Commerce configuration validation
 
         var commerceConfiguration = settings?.GetSection(ConfigurationNames.CommerceConfiguration);
-        if (commerceConfiguration is not null)
+        if (commerceConfiguration?.Exists() == true)
         {
             var commerceSiteNames = commerceConfiguration.GetSection(ConfigurationNames.CommerceSiteNames).Get<List<string>?>();
             if (commerceSiteNames is null || commerceSiteNames.Count == 0)
