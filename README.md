@@ -99,7 +99,7 @@ For a lift-and-shift migration, use the migration tool's default configuration:
    --sites --custom-modules --users --settings-keys --page-types --pages --type-restrictions --contact-management --forms --media-libraries --data-protection --custom-tables --members --categories
    ```
 
-5. **Review results** - Check console output and log files for issues or manual steps:
+5. **Review results** - Check console [output and log files](./Migration.Tool.CLI/README.md#logging) for issues or manual steps:
    - **Console** shows real-time progress and results
    - **Log files** capture detailed execution logs (`logs\log-<date>.txt`)
 

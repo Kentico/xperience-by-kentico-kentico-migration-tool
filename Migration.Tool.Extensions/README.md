@@ -145,7 +145,7 @@ The following sections provide detailed instructions for implementing each type 
 
 ### Custom Class Mappings
 
-You can customize class mappings to adjust the content model between the source instance and the target Xperience by Kentico instance. For example, you can merge multiple page types into a single content type, remodel page types as [reusable field scehams](https://docs.kentico.com/x/remodel_page_types_as_reusable_field_schemas_guides), or migrate them to the [content hub](https://docs.kentico.com/x/barWCQ) as reusable content.
+You can customize class mappings to adjust the content model between the source instance and the target Xperience by Kentico instance. For example, you can merge multiple page types into a single content type, remodel page types as [reusable field schemas](https://docs.kentico.com/x/remodel_page_types_as_reusable_field_schemas_guides), or migrate them to the [content hub](https://docs.kentico.com/x/barWCQ) as reusable content.
 
 1. Create a new class.
 2. Add an `IServiceCollection` extension method. Use a separate method for every class mapping that you wish to configure.
@@ -287,7 +287,7 @@ Implement your decision logic based on available node properties (`NodeClassID`,
 
 #### Available Actions
 
-##### `options.Drop()`
+#### `options.Drop()`
 Skips migration of the linked page entirely. Use for temporary content, archived pages, or content that should be handled manually.
 
 #### `options.Materialize()`
@@ -302,13 +302,10 @@ Creates a content item reference field in an ancestor page that points to the or
 
 #### Common Strategies
 
-**Content Type-Based**: Use `NodeClassID` to look up the content type and apply different strategies based on page type.
-
-**Path-Based**: Filter by `NodeAliasPath` to handle different sections of your site (e.g., archive pages, temporary content).
-
-**Site-Specific**: Use `source.SourceSite.SiteName` to apply different rules for different sites in multi-site scenarios.
-
-**Contextual**: Combine node properties with ancestor analysis to make intelligent decisions about reference placement.
+- **Content Type-Based**: Use `NodeClassID` to look up the content type and apply different strategies based on page type.
+- **Path-Based**: Filter by `NodeAliasPath` to handle different sections of your site (e.g., archive pages, temporary content).
+- **Site-Specific**: Use `source.SourceSite.SiteName` to apply different rules for different sites in multi-site scenarios.
+- **Contextual**: Combine node properties with ancestor analysis to make intelligent decisions about reference placement.
 
 #### Important Considerations
 
@@ -336,7 +333,7 @@ After implementing your linked page director, you need to [register the director
 - **Deferred processing**: Some linked pages may be processed in a second pass if their dependencies aren't ready
 
 **Debugging Tips:**
-- Use logging to track which strategy is applied to each linked page
+- Use [logging](../Migration.Tool.CLI/README.md#logging) to track which strategy is applied to each linked page
 - Verify that ancestor pages exist and have the expected structure
 
 ### Migrate Pages to Widgets

@@ -661,6 +661,25 @@ Add the options under the `Settings` section in the configuration file.
 }
 ```
 
+## Logging
+
+The migration tool uses [.NET logging](https://learn.microsoft.com/en-us/dotnet/core/extensions/logging) with console and file output. Configure log levels and file path in the `Logging` section of `appsettings.json`:
+
+```json
+"Logging": {
+  "LogLevel": {
+    "Default": "Information",
+    "Microsoft": "Warning"
+  },
+  "pathFormat": "logs/log.txt"
+}
+```
+
+- **Console** - Real-time progress with timestamps
+- **Files** - Detailed logs at the specified path (default: `logs/log-<date>.txt`)
+
+To use logging in custom migrations, inject `ILogger<T>` into your class constructor.
+
 ## Source instance API discovery
 
 > :warning: **Warning** – source instance API discovery is only available when migrating from Kentico Xperience 13.
