@@ -71,7 +71,8 @@ public static class ClassMappingSample
 
         // Example of adding a new field that doesn't exist in the source class
         m
-            .AddField("CoffeeRating", "integer")
+            .BuildField("CoffeeRating")
+            .WithoutSource("integer")
             .WithFieldPatch(f =>
             {
                 f.Caption = "Coffee Rating";
@@ -82,7 +83,8 @@ public static class ClassMappingSample
 
         // Example of adding a new taxonomy field
         m
-            .AddField("CoffeeCategories", "taxonomy")
+            .BuildField("CoffeeCategories")
+            .WithoutSource("taxonomy")
             .WithFieldPatch(f =>
             {
                 f.Caption = "Coffee Categories";
