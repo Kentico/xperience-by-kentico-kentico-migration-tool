@@ -10,7 +10,7 @@ This document describes how to configure and run the Migration CLI, the main exe
 
 The source instance must **not** use a [separated contact management database](https://docs.kentico.com/x/4giRBg), it is recommended that you [rejoin the contact management database](https://docs.kentico.com/x/5giRBg) before proceeding with the migration.
 
-If you are migrating from Kentico Xperience 13, remember to [update your source instance to Refresh 5 or higher](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#do-i-have-to-update-my-kx13-site-before-migration).
+If you are migrating from Kentico Xperience 13, remember to [update your source instance to Refresh 5 or higher](https://docs.kentico.com/guides/upgrade-to-xbyk/upgrade-from-kx13/upgrade-faq#do-i-have-to-update-my-kx13-site-before-migration).
 
 ## Set up the target instance
 
@@ -83,7 +83,7 @@ Migration.Tool.CLI.exe migrate --sites --custom-modules --custom-tables --catego
     successfully.
 
 > [!TIP]
-> Refer to our [FAQ page](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#can-i-run-the-kentico-migration-tool-against-my-project-multiple-times) for best practices of performing repeated (iterative) data migration.
+> Refer to our [FAQ page](https://docs.kentico.com/guides/upgrade-to-xbyk/upgrade-from-kx13/upgrade-faq#can-i-run-the-kentico-migration-tool-against-my-project-multiple-times) for best practices of performing repeated (iterative) data migration.
 
 ### Migration Details for Specific Object Types
 
@@ -588,7 +588,6 @@ Add the options under the `Settings` section in the configuration file.
         "CMSConnectionString": "Data Source=myserver;Initial Catalog=XperienceByKentico;Integrated Security=True;Persist Security Info=False;Connect Timeout=120;Encrypt=False;Current Language=English;"
       }
     },
-    "MigrationProtocolPath": "C:\\_Development\\xperience-migration-toolkit-master\\Migration.Tool.Protocol.log",
     "MemberIncludeUserSystemFields": "FirstName|MiddleName|LastName|FullName|UserPrivilegeLevel|UserIsExternal|LastLogon|UserLastModified|UserGender|UserDateOfBirth",
     "ConvertClassesToContentHub": "Acme.Article,Acme.Product,Acme.CustomClass",
     "CustomModuleClassDisplayNamePatterns": {
@@ -661,6 +660,25 @@ Add the options under the `Settings` section in the configuration file.
   }
 }
 ```
+
+## Logging
+
+The migration tool uses [.NET logging](https://learn.microsoft.com/en-us/dotnet/core/extensions/logging) with console and file output. Configure log levels and file path in the `Logging` section of `appsettings.json`:
+
+```json
+"Logging": {
+  "LogLevel": {
+    "Default": "Information",
+    "Microsoft": "Warning"
+  },
+  "pathFormat": "logs/log.txt"
+}
+```
+
+- **Console** - Real-time progress with timestamps
+- **Files** - Detailed logs at the specified path (default: `logs/log-<date>.txt`)
+
+To use logging in custom migrations, inject `ILogger<T>` into your class constructor.
 
 ## Source instance API discovery
 
