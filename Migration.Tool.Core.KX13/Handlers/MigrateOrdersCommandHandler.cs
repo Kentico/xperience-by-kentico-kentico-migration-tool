@@ -1,5 +1,7 @@
+using CMS.Base;
 using CMS.Commerce;
 using CMS.Core;
+using CMS.Membership;
 using MediatR;
 
 using Microsoft.Data.SqlClient;
@@ -70,70 +72,73 @@ public class MigrateOrdersCommandHandler(
         var xbkOrderStatuses = OrderStatusInfo.Provider.Get().ToList();
         await using var kx13OrderItemContext = await Kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
-        foreach (var kx13Order in kx13Orders)
+        using (GetCMSActionContext())
         {
-            logger.LogTrace("Migrating order {OrderId} with OrderGuid {OrderGuid}", kx13Order.OrderId, kx13Order.OrderGuid);
-
-            CustomerInfo? xbkCustomerInfo = null;
-            if (kx13Order.OrderCustomer is not null)
+            foreach (var kx13Order in kx13Orders)
             {
-                xbkCustomerInfo = CustomerInfo.Provider.Get()
-                    .WhereEquals(nameof(CustomerInfo.CustomerGUID), kx13Order.OrderCustomer.CustomerGuid).FirstOrDefault();
-            }
+                logger.LogTrace("Migrating order {OrderId} with OrderGuid {OrderGuid}", kx13Order.OrderId, kx13Order.OrderGuid);
 
-            var xbkOrderStatusName = orderStatusesMapping.FirstOrDefault(os => os.Value is not null && os.Value.Contains(kx13Order.OrderStatus?.StatusName, StringComparer.OrdinalIgnoreCase)).Key;
-            if (string.IsNullOrEmpty(xbkOrderStatusName))
-            {
-                logger.LogError("Order status {OrderStatusName} not mapped in settings, skipping order {OrderId}", kx13Order.OrderStatus?.StatusName, kx13Order.OrderId);
-                continue;
-            }
-
-            var xbkOrderStatus = xbkOrderStatuses.FirstOrDefault(os => os.OrderStatusName.Equals(xbkOrderStatusName, StringComparison.OrdinalIgnoreCase));
-            if (xbkOrderStatus is null)
-            {
-                logger.LogError("Order status {OrderStatusName} not found in Kentico, skipping order {OrderId}", xbkOrderStatusName, kx13Order.OrderId);
-                continue;
-            }
-
-            var xbkOrderInfo = OrderInfo.Provider.Get()
-                .WhereEquals(nameof(OrderInfo.OrderGUID), kx13Order.OrderGuid).FirstOrDefault();
-
-            var mapped = orderInfoMapper.Map(new OrderInfoMapperSource(kx13Order, kx13Order.OrderShippingOption?.ShippingOptionDisplayName, kx13Order.OrderPaymentOption?.PaymentOptionDisplayName, kx13Order.OrderCurrency, xbkOrderStatus, xbkCustomerInfo, kx13Order.OrderSite?.SiteName), xbkOrderInfo);
-            SaveOrderUsingKenticoApi(mapped!, kx13Order);
-
-            if (mapped is { Success: true, Item: OrderInfo orderInfo })
-            {
-                var kx13OrderItems = kx13OrderItemContext.ComOrderItems
-                .Include(oi => oi.OrderItemSku)
-                .Where(oi => oi.OrderItemOrderId == kx13Order.OrderId);
-
-                foreach (var kx13OrderItem in kx13OrderItems)
-                {
-                    var xbkOrderItemInfo = OrderItemInfo.Provider.Get()
-                        .WhereEquals(nameof(OrderItemInfo.OrderItemGUID), kx13OrderItem.OrderItemGuid).FirstOrDefault();
-
-                    var mappedOrderItem = orderItemInfoMapper.Map(new OrderItemInfoMapperSource(kx13OrderItem, orderInfo), xbkOrderItemInfo);
-
-                    SaveOrderItemUsingKenticoApi(mappedOrderItem!, kx13OrderItem);
-                }
-
+                CustomerInfo? xbkCustomerInfo = null;
                 if (kx13Order.OrderCustomer is not null)
                 {
-                    await using var kx13OrderAddressContext = await Kx13ContextFactory.CreateDbContextAsync(cancellationToken);
-                    var kx13OrderAddresses = kx13OrderAddressContext.ComOrderAddresses
-                        .Where(oa => oa.AddressOrderId == kx13Order.OrderId);
-
-                    foreach (var kx13OrderAddress in kx13OrderAddresses)
-                    {
-                        var xbkOrderAddressInfo = OrderAddressInfo.Provider.Get()
-                            .WhereEquals(nameof(OrderAddressInfo.OrderAddressGUID), kx13OrderAddress.AddressGuid).FirstOrDefault();
-
-                        var mappedOrderAddress = orderAddressInfoMapper.Map(new OrderAddressInfoMapperSource(kx13OrderAddress, kx13Order.OrderCustomer, orderInfo), xbkOrderAddressInfo);
-
-                        SaveOrderAddressUsingKenticoApi(mappedOrderAddress!, kx13OrderAddress);
-                    }
+                    xbkCustomerInfo = CustomerInfo.Provider.Get()
+                        .WhereEquals(nameof(CustomerInfo.CustomerGUID), kx13Order.OrderCustomer.CustomerGuid).FirstOrDefault();
                 }
 
+                var xbkOrderStatusName = orderStatusesMapping.FirstOrDefault(os => os.Value is not null && os.Value.Contains(kx13Order.OrderStatus?.StatusName, StringComparer.OrdinalIgnoreCase)).Key;
+                if (string.IsNullOrEmpty(xbkOrderStatusName))
+                {
+                    logger.LogError("Order status {OrderStatusName} not mapped in settings, skipping order {OrderId}", kx13Order.OrderStatus?.StatusName, kx13Order.OrderId);
+                    continue;
+                }
+
+                var xbkOrderStatus = xbkOrderStatuses.FirstOrDefault(os => os.OrderStatusName.Equals(xbkOrderStatusName, StringComparison.OrdinalIgnoreCase));
+                if (xbkOrderStatus is null)
+                {
+                    logger.LogError("Order status {OrderStatusName} not found in Kentico, skipping order {OrderId}", xbkOrderStatusName, kx13Order.OrderId);
+                    continue;
+                }
+
+                var xbkOrderInfo = OrderInfo.Provider.Get()
+                    .WhereEquals(nameof(OrderInfo.OrderGUID), kx13Order.OrderGuid).FirstOrDefault();
+
+                var mapped = orderInfoMapper.Map(new OrderInfoMapperSource(kx13Order, kx13Order.OrderShippingOption?.ShippingOptionDisplayName, kx13Order.OrderPaymentOption?.PaymentOptionDisplayName, kx13Order.OrderCurrency, xbkOrderStatus, xbkCustomerInfo, kx13Order.OrderSite?.SiteName), xbkOrderInfo);
+                SaveOrderUsingKenticoApi(mapped!, kx13Order);
+
+                if (mapped is { Success: true, Item: OrderInfo orderInfo })
+                {
+                    var kx13OrderItems = kx13OrderItemContext.ComOrderItems
+                    .Include(oi => oi.OrderItemSku)
+                    .Where(oi => oi.OrderItemOrderId == kx13Order.OrderId);
+
+                    foreach (var kx13OrderItem in kx13OrderItems)
+                    {
+                        var xbkOrderItemInfo = OrderItemInfo.Provider.Get()
+                            .WhereEquals(nameof(OrderItemInfo.OrderItemGUID), kx13OrderItem.OrderItemGuid).FirstOrDefault();
+
+                        var mappedOrderItem = orderItemInfoMapper.Map(new OrderItemInfoMapperSource(kx13OrderItem, orderInfo), xbkOrderItemInfo);
+
+                        SaveOrderItemUsingKenticoApi(mappedOrderItem!, kx13OrderItem);
+                    }
+
+                    if (kx13Order.OrderCustomer is not null)
+                    {
+                        await using var kx13OrderAddressContext = await Kx13ContextFactory.CreateDbContextAsync(cancellationToken);
+                        var kx13OrderAddresses = kx13OrderAddressContext.ComOrderAddresses
+                            .Where(oa => oa.AddressOrderId == kx13Order.OrderId);
+
+                        foreach (var kx13OrderAddress in kx13OrderAddresses)
+                        {
+                            var xbkOrderAddressInfo = OrderAddressInfo.Provider.Get()
+                                .WhereEquals(nameof(OrderAddressInfo.OrderAddressGUID), kx13OrderAddress.AddressGuid).FirstOrDefault();
+
+                            var mappedOrderAddress = orderAddressInfoMapper.Map(new OrderAddressInfoMapperSource(kx13OrderAddress, kx13Order.OrderCustomer, orderInfo), xbkOrderAddressInfo);
+
+                            SaveOrderAddressUsingKenticoApi(mappedOrderAddress!, kx13OrderAddress);
+                        }
+                    }
+
+                }
             }
         }
 
@@ -275,4 +280,13 @@ public class MigrateOrdersCommandHandler(
             addCurrencyField: false,
             cancellationToken
         );
+
+
+    private CMSActionContext GetCMSActionContext()
+    {
+        var defaultAdmin = UserInfoProvider.ProviderObject.Get(UserInfoProvider.DEFAULT_ADMIN_USERNAME);
+        return defaultAdmin == null
+            ? throw new InvalidOperationException($"Target XbK doesn't contain default administrator account ('{UserInfoProvider.DEFAULT_ADMIN_USERNAME}')")
+            : new CMSActionContext(defaultAdmin) { User = defaultAdmin, UseGlobalAdminContext = true, SendEmails = false };
+    }
 }
