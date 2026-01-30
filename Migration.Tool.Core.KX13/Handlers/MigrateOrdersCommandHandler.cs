@@ -1,6 +1,7 @@
 using CMS.Base;
 using CMS.Commerce;
 using CMS.Core;
+using CMS.DataEngine;
 using CMS.Membership;
 using MediatR;
 
@@ -81,8 +82,7 @@ public class MigrateOrdersCommandHandler(
                 CustomerInfo? xbkCustomerInfo = null;
                 if (kx13Order.OrderCustomer is not null)
                 {
-                    xbkCustomerInfo = CustomerInfo.Provider.Get()
-                        .WhereEquals(nameof(CustomerInfo.CustomerGUID), kx13Order.OrderCustomer.CustomerGuid).FirstOrDefault();
+                    xbkCustomerInfo = CustomerInfo.Provider.Get(kx13Order.OrderCustomer.CustomerGuid);
                 }
 
                 var xbkOrderStatusName = orderStatusesMapping.FirstOrDefault(os => os.Value is not null && os.Value.Contains(kx13Order.OrderStatus?.StatusName, StringComparer.OrdinalIgnoreCase)).Key;
@@ -99,8 +99,7 @@ public class MigrateOrdersCommandHandler(
                     continue;
                 }
 
-                var xbkOrderInfo = OrderInfo.Provider.Get()
-                    .WhereEquals(nameof(OrderInfo.OrderGUID), kx13Order.OrderGuid).FirstOrDefault();
+                var xbkOrderInfo = OrderInfo.Provider.Get(kx13Order.OrderGuid);
 
                 var mapped = orderInfoMapper.Map(new OrderInfoMapperSource(kx13Order, kx13Order.OrderShippingOption?.ShippingOptionDisplayName, kx13Order.OrderPaymentOption?.PaymentOptionDisplayName, kx13Order.OrderCurrency, xbkOrderStatus, xbkCustomerInfo, kx13Order.OrderSite?.SiteName), xbkOrderInfo);
                 SaveOrderUsingKenticoApi(mapped!, kx13Order);
@@ -113,8 +112,7 @@ public class MigrateOrdersCommandHandler(
 
                     foreach (var kx13OrderItem in kx13OrderItems)
                     {
-                        var xbkOrderItemInfo = OrderItemInfo.Provider.Get()
-                            .WhereEquals(nameof(OrderItemInfo.OrderItemGUID), kx13OrderItem.OrderItemGuid).FirstOrDefault();
+                        var xbkOrderItemInfo = OrderItemInfo.Provider.Get(kx13OrderItem.OrderItemGuid);
 
                         var mappedOrderItem = orderItemInfoMapper.Map(new OrderItemInfoMapperSource(kx13OrderItem, orderInfo), xbkOrderItemInfo);
 
@@ -129,8 +127,7 @@ public class MigrateOrdersCommandHandler(
 
                         foreach (var kx13OrderAddress in kx13OrderAddresses)
                         {
-                            var xbkOrderAddressInfo = OrderAddressInfo.Provider.Get()
-                                .WhereEquals(nameof(OrderAddressInfo.OrderAddressGUID), kx13OrderAddress.AddressGuid).FirstOrDefault();
+                            var xbkOrderAddressInfo = OrderAddressInfo.Provider.Get(kx13OrderAddress.AddressGuid!.Value);
 
                             var mappedOrderAddress = orderAddressInfoMapper.Map(new OrderAddressInfoMapperSource(kx13OrderAddress, kx13Order.OrderCustomer, orderInfo), xbkOrderAddressInfo);
 
