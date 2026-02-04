@@ -50,16 +50,20 @@ public class HtmlProcessor
             {
                 var matchedLink = mediaLinkService.MatchMediaLink(src, currentSiteId);
 
-                imgNode.Attributes["src"].Value = matchedLink switch
+                var newValue = matchedLink switch
                 {
                     { Success: true, MediaKind: MediaKind.MediaFile, LinkKind: MediaLinkKind.Guid } => await mediaLinkTransformer(matchedLink, src),
                     { Success: true, MediaKind: MediaKind.Attachment, LinkKind: MediaLinkKind.Guid } => await mediaLinkTransformer(matchedLink, src),
                     { Success: true, MediaKind: MediaKind.MediaFile, LinkKind: MediaLinkKind.DirectMediaPath } => await mediaLinkTransformer(matchedLink, src),
                     { Success: true, MediaKind: MediaKind.Attachment, LinkKind: MediaLinkKind.DirectMediaPath } => throw new InvalidOperationException($"Invalid image link encountered: {matchedLink}"),
-                    _ => imgNode.Attributes["src"].Value
+                    _ => src
                 };
 
-                anythingChanged = true;
+                if (newValue != src)
+                {
+                    imgNode.Attributes["src"].Value = newValue;
+                    anythingChanged = true;
+                }
             }
         }
 
@@ -69,16 +73,20 @@ public class HtmlProcessor
             {
                 var matchedLink = mediaLinkService.MatchMediaLink(src, currentSiteId);
 
-                hyperlinkNode.Attributes["href"].Value = matchedLink switch
+                var newValue = matchedLink switch
                 {
                     { Success: true, MediaKind: MediaKind.MediaFile, LinkKind: MediaLinkKind.Guid } => await mediaLinkTransformer(matchedLink, src),
                     { Success: true, MediaKind: MediaKind.Attachment, LinkKind: MediaLinkKind.Guid } => await mediaLinkTransformer(matchedLink, src),
                     { Success: true, MediaKind: MediaKind.MediaFile, LinkKind: MediaLinkKind.DirectMediaPath } => await mediaLinkTransformer(matchedLink, src),
                     { Success: true, MediaKind: MediaKind.Attachment, LinkKind: MediaLinkKind.DirectMediaPath } => throw new InvalidOperationException($"Invalid hyperlink encountered: {matchedLink}"),
-                    _ => hyperlinkNode.Attributes["href"].Value
+                    _ => src
                 };
 
-                anythingChanged = true;
+                if (newValue != src)
+                {
+                    hyperlinkNode.Attributes["href"].Value = newValue;
+                    anythingChanged = true;
+                }
             }
         }
 

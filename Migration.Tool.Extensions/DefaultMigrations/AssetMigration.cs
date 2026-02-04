@@ -229,10 +229,10 @@ public class AssetMigration(
         }
         else if (Kx13FormControls.UserControlForText.MediaSelectionControl.Equals(sourceFormControl, StringComparison.InvariantCultureIgnoreCase) && sourceValue is string sourceUrl)
         {
-            if (string.IsNullOrEmpty(sourceUrl))
+            if (string.IsNullOrWhiteSpace(sourceUrl))
             {
-                logger.LogWarning("Asset value '{Value}' of {FieldName} wasn't migrated. Empty URL cannot be processed.", sourceValue, fieldName);
-                return new FieldMigrationResult(false, null);
+                logger.LogInformation("Asset value '{Value}' of {FieldName}' is empty or whitespace. Treating as no value.", sourceValue, fieldName);
+                return new FieldMigrationResult(true, null);
             }
 
             if (!configuration.MigrateMediaToMediaLibrary)

@@ -87,6 +87,7 @@ public class ContentItemMapper(
     ) : UmtMapperBase<CmsTreeMapperSource>, IUmtMapper<CustomModuleItemMapperSource>, IUmtMapper<CustomTableMapperSource>
 {
     private const string CLASS_FIELD_CONTROL_NAME = "controlname";
+    private static readonly Dictionary<string, string?> cultureToLanguageNameCache = new(StringComparer.OrdinalIgnoreCase);
 
     protected override IEnumerable<IUmtModel> MapInternal(CmsTreeMapperSource source)
     {
@@ -1023,9 +1024,7 @@ public class ContentItemMapper(
                                     culture = modelFacade.SelectById<ICmsDocument>(attachmentDocumentId)?.DocumentCulture;
                                 }
 
-                                string? languageName = string.IsNullOrEmpty(culture) ? null : ContentLanguageInfoProvider.ProviderObject.Get()
-                                    .WhereEquals(nameof(ContentLanguageInfo.ContentLanguageCultureFormat), culture)
-                                    .FirstOrDefault()?.ContentLanguageName;
+                                string? languageName = GetLanguageNameByCultureCode(culture);
 
                                 return assetFacade.GetAssetUri(attachment, languageName);
                             }
@@ -1370,5 +1369,26 @@ public class ContentItemMapper(
             ContentItemLanguageMetadataScheduledUnpublishWhen = null
         };
         yield return languageMetadataInfo;
+    }
+
+    private string? GetLanguageNameByCultureCode(string? cultureCode)
+    {
+        if (string.IsNullOrEmpty(cultureCode))
+        {
+            return null;
+        }
+
+        if (cultureToLanguageNameCache.TryGetValue(cultureCode, out var cachedLanguageName))
+        {
+            return cachedLanguageName;
+        }
+
+        var languageName = ContentLanguageInfoProvider.ProviderObject.Get()
+            .WhereEquals(nameof(ContentLanguageInfo.ContentLanguageCultureFormat), cultureCode)
+            .FirstOrDefault()?.ContentLanguageName;
+
+        cultureToLanguageNameCache[cultureCode] = languageName;
+
+        return languageName;
     }
 }
