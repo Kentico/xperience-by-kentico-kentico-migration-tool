@@ -52,6 +52,25 @@ public class HtmlProcessor
             }
         }
 
+        foreach (var hyperlinkNode in document.DocumentNode.SelectNodes("//a[@href]") ?? Enumerable.Empty<HtmlNode>())
+        {
+            if (hyperlinkNode?.Attributes["href"].Value is { } src)
+            {
+                var matchedLink = mediaLinkService.MatchMediaLink(src, currentSiteId);
+
+                hyperlinkNode.Attributes["href"].Value = matchedLink switch
+                {
+                    { Success: true, MediaKind: MediaKind.MediaFile, LinkKind: MediaLinkKind.Guid } => await mediaLinkTransformer(matchedLink, src),
+                    { Success: true, MediaKind: MediaKind.Attachment, LinkKind: MediaLinkKind.Guid } => await mediaLinkTransformer(matchedLink, src),
+                    { Success: true, MediaKind: MediaKind.MediaFile, LinkKind: MediaLinkKind.DirectMediaPath } => await mediaLinkTransformer(matchedLink, src),
+                    { Success: true, MediaKind: MediaKind.Attachment, LinkKind: MediaLinkKind.DirectMediaPath } => throw new InvalidOperationException($"Invalid hyperlink encountered: {matchedLink}"),
+                    _ => hyperlinkNode.Attributes["href"].Value
+                };
+
+                anythingChanged = true;
+            }
+        }
+
         return anythingChanged
             ? document.DocumentNode.OuterHtml
             : html;

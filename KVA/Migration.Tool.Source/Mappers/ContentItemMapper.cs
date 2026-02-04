@@ -1023,7 +1023,11 @@ public class ContentItemMapper(
                                     culture = modelFacade.SelectById<ICmsDocument>(attachmentDocumentId)?.DocumentCulture;
                                 }
 
-                                return assetFacade.GetAssetUri(attachment, culture);
+                                string? languageName = string.IsNullOrEmpty(culture) ? null : ContentLanguageInfoProvider.ProviderObject.Get()
+                                    .WhereEquals(nameof(ContentLanguageInfo.ContentLanguageCultureFormat), culture)
+                                    .FirstOrDefault()?.ContentLanguageName;
+
+                                return assetFacade.GetAssetUri(attachment, languageName);
                             }
 
                             default:

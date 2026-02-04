@@ -79,6 +79,7 @@ public class CommandParser : ICommandParser
             if (arg == $"--{MigratePagesCommand.Moniker}")
             {
                 subcommands.Add(new MigratePagesCommand());
+                subcommands.Add(new MigrateAttachmentsCommand());
                 continue;
             }
 
