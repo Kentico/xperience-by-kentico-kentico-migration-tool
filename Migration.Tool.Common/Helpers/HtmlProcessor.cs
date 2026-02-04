@@ -21,11 +21,22 @@ public class HtmlProcessor
 
     public IEnumerable<MatchMediaLinkResult> GetImages(int currentSiteId)
     {
-        foreach (var imgNode in document.DocumentNode.SelectNodes("//img[@src]"))
+        foreach (var imgNode in document.DocumentNode.SelectNodes("//img[@src]") ?? Enumerable.Empty<HtmlNode>())
         {
             if (imgNode?.Attributes["src"].Value is { } src)
             {
                 yield return mediaLinkService.MatchMediaLink(src, currentSiteId);
+            }
+        }
+    }
+
+    public IEnumerable<MatchMediaLinkResult> GetHyperlinks(int currentSiteId)
+    {
+        foreach (var hyperlinkNode in document.DocumentNode.SelectNodes("//a[@href]") ?? Enumerable.Empty<HtmlNode>())
+        {
+            if (hyperlinkNode?.Attributes["href"].Value is { } href)
+            {
+                yield return mediaLinkService.MatchMediaLink(href, currentSiteId);
             }
         }
     }

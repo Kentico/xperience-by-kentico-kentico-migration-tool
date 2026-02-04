@@ -415,10 +415,7 @@ public class HtmlProcessorTests
 
         var processor = new HtmlProcessor(html, mediaLinkService);
 
-        var result = await processor.ProcessHtml(2, (match, originalUrl) =>
-        {
-            return Task.FromResult($"/transformed/{match.MediaGuid}");
-        });
+        var result = await processor.ProcessHtml(2, (match, originalUrl) => Task.FromResult($"/transformed/{match.MediaGuid}"));
 
         Assert.Multiple(() =>
         {
@@ -468,10 +465,7 @@ public class HtmlProcessorTests
 
         var processor = new HtmlProcessor(html, mediaLinkService);
 
-        var result = await processor.ProcessHtml(2, (match, originalUrl) =>
-        {
-            return Task.FromResult($"/new/{match.MediaGuid}");
-        });
+        var result = await processor.ProcessHtml(2, (match, originalUrl) => Task.FromResult($"/new/{match.MediaGuid}"));
 
         Assert.Multiple(() =>
         {

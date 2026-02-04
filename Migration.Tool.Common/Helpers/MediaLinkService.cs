@@ -125,7 +125,7 @@ public class MediaLinkService(
         {
             if (sites.FirstOrDefault(x => x.siteId == linkSiteId) is var (_, siteName, _))
             {
-                if (siteName.Equals(spl[inspectionIndex], StringComparison.InvariantCultureIgnoreCase))
+                if (spl.Length > inspectionIndex && siteName.Equals(spl[inspectionIndex], StringComparison.InvariantCultureIgnoreCase))
                 {
                     // it is direct path media
                     mediaKind = MediaKind.MediaFile;
