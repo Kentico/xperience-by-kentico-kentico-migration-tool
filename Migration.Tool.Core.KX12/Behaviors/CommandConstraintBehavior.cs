@@ -59,11 +59,6 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
             criticalCheckPassed &= CheckSite(sourceSites, site.SiteId);
         }
 
-        if (request is ICultureReliantCommand cultureReliantCommand)
-        {
-            criticalCheckPassed &= CheckCulture(cultureReliantCommand, sourceSites);
-        }
-
         return criticalCheckPassed;
     }
 
@@ -195,33 +190,6 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
                 .WithMessage("Check program argument '--siteId'")
                 .WithData(new { sourceSiteId, AvailableSites = supportedSites }));
             criticalCheckPassed = false;
-        }
-
-        return criticalCheckPassed;
-    }
-
-    private bool CheckCulture(ICultureReliantCommand cultureReliantCommand, List<KX12M.CmsSite> sourceSites)
-    {
-        bool criticalCheckPassed = true;
-        string cultureCode = cultureReliantCommand.CultureCode;
-        var siteCultureLookup = sourceSites
-            .ToDictionary(x => x.SiteId, x => x.Cultures.Select(s => s.CultureCode.ToLowerInvariant()));
-
-        foreach (var site in sourceSites)
-        {
-            if (siteCultureLookup.TryGetValue(site.SiteId, out var value))
-            {
-                string[] siteCultures = value.ToArray();
-                if (!siteCultures.Contains(cultureCode.ToLowerInvariant()))
-                {
-                    string supportedCultures = string.Join(", ", siteCultures);
-                    logger.LogCritical("Unable to find culture '{Culture}' mapping to site '{SiteId}'. Check --culture parameter. Supported cultures for site: {SupportedCultures}", cultureCode, site.SiteId, supportedCultures);
-                    protocol.Append(HandbookReferences.CommandConstraintBroken("Culture is mapped to site")
-                        .WithMessage("Check program argument '--culture'")
-                        .WithData(new { cultureCode, site.SiteId, SiteCultures = supportedCultures }));
-                    criticalCheckPassed = false;
-                }
-            }
         }
 
         return criticalCheckPassed;
