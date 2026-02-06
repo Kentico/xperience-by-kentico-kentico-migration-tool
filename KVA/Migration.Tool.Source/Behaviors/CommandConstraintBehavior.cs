@@ -20,7 +20,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
     {
         try
         {
-            bool criticalCheckPassed = PerformChecks(request);
+            bool criticalCheckPassed = PerformChecks();
             if (!criticalCheckPassed)
             {
                 return (TResponse)(CommandResult)new CommandCheckFailedResult(criticalCheckPassed);
@@ -36,7 +36,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
         return await next();
     }
 
-    private bool PerformChecks(TRequest request)
+    private bool PerformChecks()
     {
         bool criticalCheckPassed = true;
 

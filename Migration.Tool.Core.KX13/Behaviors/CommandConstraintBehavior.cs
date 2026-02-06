@@ -24,7 +24,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
         {
             var kx13Context = await kx13ContextFactory.CreateDbContextAsync(cancellationToken);
 
-            bool criticalCheckPassed = PerformChecks(request, kx13Context);
+            bool criticalCheckPassed = PerformChecks(kx13Context);
             if (!criticalCheckPassed)
             {
                 return (TResponse)(CommandResult)new CommandCheckFailedResult(criticalCheckPassed);
@@ -40,7 +40,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
         return await next();
     }
 
-    private bool PerformChecks(TRequest request, KX13Context kx13Context)
+    private bool PerformChecks(KX13Context kx13Context)
     {
         bool criticalCheckPassed = true;
         // const string supportedVersion = "13.0.64";

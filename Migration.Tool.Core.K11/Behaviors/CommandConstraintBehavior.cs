@@ -25,7 +25,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
         {
             var k11Context = await k11ContextFactory.CreateDbContextAsync(cancellationToken);
 
-            bool criticalCheckPassed = PerformChecks(request, k11Context);
+            bool criticalCheckPassed = PerformChecks(k11Context);
             if (!criticalCheckPassed)
             {
                 return (TResponse)(CommandResult)new CommandCheckFailedResult(criticalCheckPassed);
@@ -41,7 +41,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
         return await next();
     }
 
-    private bool PerformChecks(TRequest request, K11Context k11Context)
+    private bool PerformChecks(K11Context k11Context)
     {
         bool criticalCheckPassed = true;
         var sourceSites = k11Context.CmsSites
