@@ -462,6 +462,13 @@ public class AssetMigration(
             settings.EnsureElement(FormDefinitionPatcher.SettingsElemControlname, e => e.Value = FormComponents.AdminContentItemSelectorComponent);
             Guid[] allowedContentTypes = [AssetFacade.LegacyMediaFileContentType.ClassGUID!.Value, AssetFacade.LegacyMediaLinkContentType.ClassGUID!.Value, AssetFacade.LegacyAttachmentContentType.ClassGUID!.Value];
             settings.EnsureElement(FormDefinitionPatcher.AllowedContentItemTypeIdentifiers, e => e.Value = JsonConvert.SerializeObject(allowedContentTypes.Select(x => x.ToString()).ToArray()));
+            var allowEmptyField = field.Attribute(FormDefinitionPatcher.FieldAttrAllowEmpty);
+            if (allowEmptyField == null || allowEmptyField.Value.Equals("false", StringComparison.InvariantCultureIgnoreCase))
+            {
+                field.SetAttributeValue(FormDefinitionPatcher.FieldAttrAllowEmpty, "true");
+                settings.EnsureElement(FormDefinitionPatcher.SettingsMaximumitems, x => x.Value = "1");
+                settings.EnsureElement(FormDefinitionPatcher.SettingsMinimumitems, x => x.Value = "1");
+            }
         }
     }
 }
