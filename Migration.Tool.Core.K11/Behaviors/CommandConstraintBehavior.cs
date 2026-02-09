@@ -25,7 +25,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
         {
             var k11Context = await k11ContextFactory.CreateDbContextAsync(cancellationToken);
 
-            bool criticalCheckPassed = PerformChecks(request, k11Context);
+            bool criticalCheckPassed = PerformChecks(k11Context);
             if (!criticalCheckPassed)
             {
                 return (TResponse)(CommandResult)new CommandCheckFailedResult(criticalCheckPassed);
@@ -41,7 +41,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
         return await next();
     }
 
-    private bool PerformChecks(TRequest request, K11Context k11Context)
+    private bool PerformChecks(K11Context k11Context)
     {
         bool criticalCheckPassed = true;
         var sourceSites = k11Context.CmsSites
@@ -51,11 +51,6 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
         foreach (var site in sourceSites)
         {
             criticalCheckPassed &= CheckSite(sourceSites, site.SiteId);
-        }
-
-        if (request is ICultureReliantCommand cultureReliantCommand)
-        {
-            criticalCheckPassed &= CheckCulture(cultureReliantCommand, sourceSites);
         }
 
         return criticalCheckPassed;
@@ -74,34 +69,6 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
                 .WithMessage("Check program argument '--siteId'")
                 .WithData(new { sourceSiteId, AvailableSites = supportedSites }));
             criticalCheckPassed = false;
-        }
-
-        return criticalCheckPassed;
-    }
-
-    private bool CheckCulture(ICultureReliantCommand cultureReliantCommand, List<CmsSite> sourceSites)
-    {
-        bool criticalCheckPassed = true;
-        string cultureCode = cultureReliantCommand.CultureCode;
-        var siteCultureLookup = sourceSites
-            .ToDictionary(x => x.SiteId, x => x.Cultures.Select(s => s.CultureCode.ToLowerInvariant()));
-
-        foreach (var site in sourceSites)
-        {
-            if (siteCultureLookup.TryGetValue(site.SiteId, out var value))
-            {
-                string[] siteCultures = value.ToArray();
-                if (!siteCultures.Contains(cultureCode.ToLowerInvariant()))
-                {
-                    string supportedCultures = string.Join(", ", siteCultures);
-                    logger.LogCritical("Unable to find culture '{Culture}' mapping to site '{SiteId}'. Check --culture parameter. Supported cultures for site: {SupportedCultures}", cultureCode,
-                        site.SiteId, supportedCultures);
-                    protocol.Append(HandbookReferences.CommandConstraintBroken("Culture is mapped to site")
-                        .WithMessage("Check program argument '--culture'")
-                        .WithData(new { cultureCode, site.SiteId, SiteCultures = supportedCultures }));
-                    criticalCheckPassed = false;
-                }
-            }
         }
 
         return criticalCheckPassed;

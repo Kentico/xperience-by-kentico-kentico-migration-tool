@@ -229,6 +229,12 @@ public class AssetMigration(
         }
         else if (Kx13FormControls.UserControlForText.MediaSelectionControl.Equals(sourceFormControl, StringComparison.InvariantCultureIgnoreCase) && sourceValue is string sourceUrl)
         {
+            if (string.IsNullOrWhiteSpace(sourceUrl))
+            {
+                logger.LogInformation("Asset value '{Value}' of {FieldName}' is empty or whitespace. Treating as no value.", sourceValue, fieldName);
+                return new FieldMigrationResult(true, null);
+            }
+
             if (!configuration.MigrateMediaToMediaLibrary)
             {
                 // If we're migrating assets to content hub, unmatched URL can be stored as legacy media link

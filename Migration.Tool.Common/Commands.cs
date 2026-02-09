@@ -114,7 +114,7 @@ public record MigrateSettingKeysCommand : IRequest<CommandResult>, ICommand
     public Type[] Dependencies => [typeof(MigrateSitesCommand)];
 }
 
-public record MigrateAttachmentsCommand(string CultureCode) : IRequest<CommandResult>, ICommand, ICultureReliantCommand
+public record MigrateAttachmentsCommand : IRequest<CommandResult>, ICommand
 {
     public static readonly int Rank = 1 + MigrateSitesCommand.Rank + MigrateCustomModulesCommand.Rank;
 
