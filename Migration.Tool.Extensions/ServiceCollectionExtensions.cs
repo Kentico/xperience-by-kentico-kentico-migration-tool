@@ -1,6 +1,9 @@
+using CMS.ContentEngine;
 using Microsoft.Extensions.DependencyInjection;
+using Migration.Tool.Common.Builders;
 using Migration.Tool.Extensions.CommunityMigrations;
 using Migration.Tool.Extensions.DefaultMigrations;
+using Migration.Tool.Extensions.ReusableSchemas;
 using Migration.Tool.KXP.Api.Services.CmsClass;
 
 namespace Migration.Tool.Extensions;
@@ -25,6 +28,7 @@ public static class ServiceCollectionExtensions
         // services.AddReusableSchemaAutoGenerationSample();
         // services.AddTransient<ContentItemDirectorBase, SamplePageToWidgetDirector>();
         // services.AddTransient<ContentItemDirectorBase, SampleChildLinkDirector>();
+        // services.AddPageMetadataReusableSchema();
 
         // Routing content items to prefabricated content types (i.e., types not created by Migration Tool --page-types CLI argument)
         //
@@ -39,6 +43,12 @@ public static class ServiceCollectionExtensions
         //
         //      services.AddMappingToPrefabricatedContentTypeSample();
 
+        return services;
+    }
+
+    public static IServiceCollection AddPageMetadataReusableSchema(this IServiceCollection services)
+    {
+        services.AddSingleton<IReusableSchemaBuilder>(PageMetadataReusableSchema.CreateBuilder());
         return services;
     }
 }

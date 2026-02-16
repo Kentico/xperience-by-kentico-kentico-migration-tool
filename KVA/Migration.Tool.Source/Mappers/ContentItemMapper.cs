@@ -390,6 +390,13 @@ public class ContentItemMapper(
                             dataModel.CustomProperties[legacyMetadataFieldName] = legacyField.GetValue(cmsDocument);
                         }
                     }
+                    else if (reusableSchemaService.HasClassReusableSchema(targetClassInfo, GuidHelper.CreateReusableSchemaGuid("PageMetadata")) &&
+                             (legacyField.LegacyFieldName.Equals(nameof(ICmsDocument.DocumentPageTitle), StringComparison.InvariantCultureIgnoreCase) ||
+                              legacyField.LegacyFieldName.Equals(nameof(ICmsDocument.DocumentPageDescription), StringComparison.InvariantCultureIgnoreCase) ||
+                              legacyField.LegacyFieldName.Equals(nameof(ICmsDocument.DocumentPageKeyWords), StringComparison.InvariantCultureIgnoreCase)))
+                    {
+                        commonDataModel.CustomProperties[legacyField.LegacyFieldName] = legacyField.GetValue(cmsDocument);
+                    }
                 }
 
                 if (storeContentItem)
@@ -791,7 +798,41 @@ public class ContentItemMapper(
             }
 
             // Fields migrated globally
-            foreach (var legacyField in GetLegacyMetadataFields(modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false) ? IncludedMetadata.Extended : IncludedMetadata.Basic))
+            var legacyFields = GetLegacyMetadataFields(modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false) ? IncludedMetadata.Extended : IncludedMetadata.Basic).ToList();
+
+            bool enablePageMetadata = false;
+            if (modelFacade.SelectVersion().Major == 13)
+            {
+                if (sourceNodeClass is CmsClassK13 { ClassHasMetadata: true })
+                {
+                    enablePageMetadata = true;
+                }
+            }
+            else if (configuration.IncludeExtendedMetadata.GetValueOrDefault(false))
+            {
+                enablePageMetadata = true;
+            }
+
+            if (sourceNodeClass.ClassIsDocumentType)
+            {
+                if (enablePageMetadata)
+                {
+                    foreach (var f in GetPageMetadataFields(modelFacade.SelectVersion()))
+                    {
+                        if (!legacyFields.Any(x => x.LegacyFieldName.Equals(f.LegacyFieldName, StringComparison.InvariantCultureIgnoreCase)))
+                        {
+                            legacyFields.Add(f);
+                        }
+                    }
+                }
+                else
+                {
+                    var pmFields = GetPageMetadataFields(modelFacade.SelectVersion()).Select(x => x.LegacyFieldName).ToHashSet(StringComparer.InvariantCultureIgnoreCase);
+                    legacyFields.RemoveAll(x => pmFields.Contains(x.LegacyFieldName));
+                }
+            }
+
+            foreach (var legacyField in legacyFields)
             {
                 if (reusableSchemaService.IsConversionToReusableFieldSchemaRequested(sourceNodeClass.ClassName))
                 {

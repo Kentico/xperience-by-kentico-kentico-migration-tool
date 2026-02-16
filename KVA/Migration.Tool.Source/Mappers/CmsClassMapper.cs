@@ -172,7 +172,7 @@ public class CmsClassMapper(
                     target.ClassType = ClassType.OTHER;
                     target.ClassContentTypeType = null;
                 }
-                target = PatchDataClassInfo(target, existingFieldGUIDs, modelFacade.SelectVersion(), [], IncludedMetadata.None, out string? oldPrimaryKeyName, out string? documentNameField);
+                target = PatchDataClassInfo(target, existingFieldGUIDs, modelFacade.SelectVersion(), [], IncludedMetadata.None, out string? oldPrimaryKeyName, out string? documentNameField, source);
 
                 break;
             }
@@ -206,7 +206,7 @@ public class CmsClassMapper(
                 target.ClassType = ClassType.CONTENT_TYPE;
                 target.ClassContentTypeType = ClassContentTypeType.REUSABLE;
 
-                target = PatchDataClassInfo(target, existingFieldGUIDs, modelFacade.SelectVersion(), [], configuration.IncludeExtendedMetadata.GetValueOrDefault(false) ? IncludedMetadata.Extended : IncludedMetadata.Basic, out string? oldPrimaryKeyName, out string? documentNameField);
+                target = PatchDataClassInfo(target, existingFieldGUIDs, modelFacade.SelectVersion(), [], configuration.IncludeExtendedMetadata.GetValueOrDefault(false) ? IncludedMetadata.Extended : IncludedMetadata.Basic, out string? oldPrimaryKeyName, out string? documentNameField, source);
                 break;
             }
 
@@ -224,7 +224,7 @@ public class CmsClassMapper(
                     ? ClassContentTypeType.REUSABLE
                     : ClassContentTypeType.WEBSITE;
 
-                target = PatchDataClassInfo(target, existingFieldGUIDs, modelFacade.SelectVersion(), [], configuration.IncludeExtendedMetadata.GetValueOrDefault(false) ? IncludedMetadata.Extended : IncludedMetadata.Basic, out string? oldPrimaryKeyName, out string? documentNameField);
+                target = PatchDataClassInfo(target, existingFieldGUIDs, modelFacade.SelectVersion(), [], configuration.IncludeExtendedMetadata.GetValueOrDefault(false) ? IncludedMetadata.Extended : IncludedMetadata.Basic, out string? oldPrimaryKeyName, out string? documentNameField, source);
                 break;
             }
 
@@ -268,7 +268,7 @@ public class CmsClassMapper(
         Extended
     }
 
-    public static DataClassInfo PatchDataClassInfo(DataClassInfo dataClass, Dictionary<string, Guid> existingFieldGUIDs, SemanticVersion version, Dictionary<Guid, string> reusableSchemaNames, IncludedMetadata includedMetadata, out string? oldPrimaryKeyName, out string? mappedLegacyField)
+    public static DataClassInfo PatchDataClassInfo(DataClassInfo dataClass, Dictionary<string, Guid> existingFieldGUIDs, SemanticVersion version, Dictionary<Guid, string> reusableSchemaNames, IncludedMetadata includedMetadata, out string? oldPrimaryKeyName, out string? mappedLegacyField, ICmsClass? sourceClass = null)
     {
         oldPrimaryKeyName = null;
         mappedLegacyField = null;
@@ -335,9 +335,68 @@ public class CmsClassMapper(
 
             Debug.WriteLineIf(oldPrimaryKeyName == null, $"WARN: old PK is null for class '{dataClass.ClassName}'");
 
-            foreach (var field in GetLegacyMetadataFields(version, includedMetadata))
+            bool enablePageMetadata = false;
+            if (dataClass.ClassContentTypeType == ClassContentTypeType.WEBSITE)
             {
+                if (version.Major == 13)
+                {
+                    if (sourceClass is CmsClassK13 { ClassHasMetadata: true })
+                    {
+                        enablePageMetadata = true;
+                    }
+                }
+                else if (includedMetadata == IncludedMetadata.Extended)
+                {
+                    enablePageMetadata = true;
+                }
+            }
+
+            var legacyFields = GetLegacyMetadataFields(version, includedMetadata).ToList();
+
+            if (dataClass.ClassContentTypeType == ClassContentTypeType.WEBSITE)
+            {
+                var pmFields = GetPageMetadataFields(version).ToList();
+                if (enablePageMetadata)
+                {
+                    foreach (var f in pmFields)
+                    {
+                        if (!legacyFields.Any(x => x.LegacyFieldName.Equals(f.LegacyFieldName, StringComparison.InvariantCultureIgnoreCase)))
+                        {
+                            legacyFields.Add(f);
+                        }
+                    }
+                }
+                else
+                {
+                    var pmSet = pmFields.Select(x => x.LegacyFieldName).ToHashSet(StringComparer.InvariantCultureIgnoreCase);
+                    legacyFields.RemoveAll(x => pmSet.Contains(x.LegacyFieldName));
+                }
+            }
+
+            var schemaGuid = GuidHelper.CreateReusableSchemaGuid("PageMetadata");
+            bool schemaExists = Service.Resolve<IReusableFieldSchemaManager>().Get(schemaGuid) != null;
+            bool useReusableSchema = enablePageMetadata && schemaExists;
+
+            foreach (var field in legacyFields)
+            {
+                if (useReusableSchema && (
+                    field.LegacyFieldName.Equals(nameof(ICmsDocument.DocumentPageTitle), StringComparison.InvariantCultureIgnoreCase) ||
+                    field.LegacyFieldName.Equals(nameof(ICmsDocument.DocumentPageDescription), StringComparison.InvariantCultureIgnoreCase) ||
+                    field.LegacyFieldName.Equals(nameof(ICmsDocument.DocumentPageKeyWords), StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    continue;
+                }
+
                 AppendLegacyMetadataField(nfi, dataClass.ClassName, field, reusableSchemaNames, out mappedLegacyField);
+            }
+
+            if (useReusableSchema)
+            {
+                if (!nfi.ItemsList.OfType<FormSchemaInfo>().Any(x => x.Guid == schemaGuid))
+                {
+                    // Name needs to match the schema Name defined
+                    nfi.AddFormItem(new FormSchemaInfo { Guid = schemaGuid, Name = "PageMetadata" });
+                }
             }
             dataClass.ClassFormDefinition = nfi.GetXmlDefinition();
 
@@ -358,15 +417,26 @@ public class CmsClassMapper(
             List<LegacyDocumentMetadataFieldMapping> fields = [new("DocumentName", "Page Name", 100, false, x => x.DocumentName)];
             if (includedMetadata == IncludedMetadata.Extended && version is { Major: 12 or 13 })
             {
-                fields.AddRange([
-                    new(nameof(ICmsDocument.DocumentPageTitle), "Page Title", -1, true, x => x.DocumentPageTitle),
-                    new(nameof(ICmsDocument.DocumentPageDescription), "Page Description", -1, true, x => x.DocumentPageDescription),
-                    new(nameof(ICmsDocument.DocumentPageKeyWords), "Page Keywords", -1, true, x => x.DocumentPageKeyWords),
-                ]);
+                fields.AddRange(GetPageMetadataFields(version));
             }
             return fields;
         }
     }
+
+    public static IEnumerable<LegacyDocumentMetadataFieldMapping> GetPageMetadataFields(SemanticVersion version)
+    {
+        if (version.Major >= 12)
+        {
+            return
+            [
+                new(nameof(ICmsDocument.DocumentPageTitle), "Page Title", -1, true, x => x.DocumentPageTitle),
+                new(nameof(ICmsDocument.DocumentPageDescription), "Page Description", -1, true, x => x.DocumentPageDescription),
+                new(nameof(ICmsDocument.DocumentPageKeyWords), "Page Keywords", -1, true, x => x.DocumentPageKeyWords),
+            ];
+        }
+        return Enumerable.Empty<LegacyDocumentMetadataFieldMapping>();
+    }
+
     public static string? GetMappedLegacyField(FormInfo nfi, string className, string legacyFieldName)
     {
         if (nfi.GetFields(true, true).FirstOrDefault(f => GuidHelper.CreateFieldGuid($"{legacyFieldName.ToLower()}|{className}").Equals(f.Guid)) is { } foundField)
