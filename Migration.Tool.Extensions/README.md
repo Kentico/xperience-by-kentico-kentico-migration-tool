@@ -13,7 +13,10 @@ The project enables you to:
 
 > **User Interaction:** This project is where you implement custom migration logic. Modify this project to add field migrations, widget migrations, and custom class mappings that transform your data during migration.
 
-> This page provides implementation guidance for custom migrations. For conceptual understanding and migration strategies, see the [Upgrade Deep Dive guides](https://docs.kentico.com/x/upgrade_deep_dives_guides).
+> This page provides implementation guidance for custom migrations. For conceptual understanding and migration strategies, see the [Upgrade Deep Dive guides](https://docs.kentico.com/x/upgrade_deep_dives_guides) or take the [Developer training: Upgrade to Xperience by Kentico](https://docs.kentico.com/paths/xbyk-upgrade-developer) learning path.
+
+> [!TIP]
+> When working with KX13 source APIs, AI coding assistants can use the [Kentico Xperience 13 library on Context7](https://context7.com/websites/kentico_13) for accurate KX13 documentation context. Note that Context7 is a third-party service not maintained or supported by Kentico.
 
 ## Table of Contents
 
@@ -40,11 +43,16 @@ Migration presents an opportunity to remodel your content structure. The followi
 
 Each customization type is implemented by creating a class that implements a specific interface (e.g., `IFieldMigration`, `IWidgetMigration`) or inherits from a base class (e.g., `ContentItemDirectorBase`). These interfaces and classes are provided by the Migration Tool and define the methods your custom logic must implement.
 
+> [!NOTE]
+> You can register **multiple implementations** of each customization type. For example, you can have multiple Directors, multiple class mappings, or multiple field migrations—each handling different content types or scenarios. The migration tool evaluates all registered implementations and applies those that match the current context.
+
 > [!IMPORTANT] After implementing any custom migration, you must register it in the dependency injection container. See [Registration](#registration) for complete registration instructions.
 
 ### Custom Class Mappings (`IClassMapping`)
 
 Transforms content type structure and field definitions between source and target instances.
+
+You can create multiple class mappings, each handling different source content types. For example, one mapping can merge blog-related page types while another handles product page types.
 
 **Use cases:**
 
@@ -57,6 +65,8 @@ Transforms content type structure and field definitions between source and targe
 ### Content Item Directors (`ContentItemDirectorBase`)
 
 Controls migration behavior and relationships of individual content items during data migration.
+
+You can create multiple Directors, each targeting different content types or scenarios. For example, one Director can handle linked pages for `Article` types while another handles `Product` types differently.
 
 **Use cases:**
 

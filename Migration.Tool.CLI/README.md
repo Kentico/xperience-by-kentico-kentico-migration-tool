@@ -4,7 +4,7 @@
 
 This document describes how to configure and run the Migration CLI, the main executable of the Kentico Migration Tool. It covers configuration options, command parameters, and migration details for transferring data from Kentico Xperience 13, Kentico 12, or Kentico 11 to Xperience by Kentico.
 
-> **New to migration?** Start with the [Upgrade Walkthrough](https://docs.kentico.com/x/upgrade_walkthrough_guides) with video tutorials.
+> **New to migration?** Start with the [Developer training: Upgrade to Xperience by Kentico](https://docs.kentico.com/paths/xbyk-upgrade-developer) learning path in our Learn portal.
 
 ## Set up the source instance
 
