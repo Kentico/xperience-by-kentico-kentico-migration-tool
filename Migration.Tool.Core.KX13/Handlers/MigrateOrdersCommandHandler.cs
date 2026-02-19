@@ -1,3 +1,4 @@
+using CMS.Base;
 using CMS.Commerce;
 using CMS.Core;
 using MediatR;
@@ -153,7 +154,10 @@ public class MigrateOrdersCommandHandler(
 
             try
             {
-                OrderInfo.Provider.Set(orderInfo);
+                using (new CMSActionContext { UpdateTimeStamp = false })
+                {
+                    OrderInfo.Provider.Set(orderInfo);
+                }
 
                 logger.LogEntitySetAction(newInstance, orderInfo);
             }
@@ -187,7 +191,10 @@ public class MigrateOrdersCommandHandler(
 
             try
             {
-                OrderItemInfo.Provider.Set(orderItemInfo);
+                using (new CMSActionContext { UpdateTimeStamp = false })
+                {
+                    OrderItemInfo.Provider.Set(orderItemInfo);
+                }
                 logger.LogEntitySetAction(newInstance, orderItemInfo);
             }
             /*Violation in unique index or Violation in unique constraint */
@@ -220,7 +227,10 @@ public class MigrateOrdersCommandHandler(
 
             try
             {
-                OrderAddressInfo.Provider.Set(orderAddressInfo);
+                using (new CMSActionContext { UpdateTimeStamp = false })
+                {
+                    OrderAddressInfo.Provider.Set(orderAddressInfo);
+                }
                 logger.LogEntitySetAction(newInstance, orderAddressInfo);
             }
             /*Violation in unique index or Violation in unique constraint */
