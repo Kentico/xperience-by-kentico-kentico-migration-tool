@@ -57,7 +57,7 @@ Currently, the Kentico Migration Tool supports the following types of data:
 
 ### Media libraries and media files
 - Media library permissions are currently not supported in Xperience by Kentico and are not migrated.
-- The migration tool reads media files from the **local file system** only. Azure Blob Storage, Amazon S3, and other remote storage providers are not supported as a source. If your source instance uses cloud storage, download the files locally before migration or use the `MigrateOnlyMediaFileInfo` configuration option.
+- The migration tool reads media files from the **local file system** only. Azure Blob Storage, Amazon S3, and other remote storage providers are not supported as a source. See [`Migration.Tool.CLI/README.md - Media libraries`](../Migration.Tool.CLI/README.md#media-libraries) for more details.
 
 ### Forms
   - The migration does not include the content of form autoresponder and notification emails. You can migrate form autoresponders to Xperience by Kentico manually by copying your HTML code and content into Email templates and Emails. See [Emails](https://docs.kentico.com/x/IaDWCQ).
