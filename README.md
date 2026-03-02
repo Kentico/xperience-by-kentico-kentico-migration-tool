@@ -130,6 +130,7 @@ View all [project releases](https://github.com/Kentico/xperience-by-kentico-kent
 
 | Xperience Version | Library Version |
 | ------------------| ----------------|
+| >= 31.2.0         | >= 4.2.0        |
 | >= 31.0.0         | >= 4.0.0        |
 | >= 30.12.0        | >= 3.20.0       |
 | >= 30.11.0        | >= 3.18.0       |
