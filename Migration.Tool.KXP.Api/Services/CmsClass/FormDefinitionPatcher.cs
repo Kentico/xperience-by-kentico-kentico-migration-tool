@@ -21,6 +21,7 @@ public class FormDefinitionPatcher
     public const int FieldAttrSizeZero = 0;
     public const string FieldAttrSystem = "system";
     public const string FieldAttrVisible = "visible";
+    public const string FieldAttrAllowEmpty = "allowempty";
     public const string FieldElem = "field";
     public const string FieldElemProperties = "properties";
     public const string FieldElemSettings = "settings";
@@ -31,6 +32,8 @@ public class FormDefinitionPatcher
     public const string SettingsMaximumassets = "MaximumAssets";
     public const string SettingsMaximumassetsFallback = "99";
     public const string SettingsMaximumpages = "MaximumPages";
+    public const string SettingsMaximumitems = "MaximumItems";
+    public const string SettingsMinimumitems = "MinimumItems";
     public const string SettingsMaximumpagesFallback = "99";
     public const string SettingsRootpath = "RootPath";
     public const string SettingsRootpathFallback = "/";
