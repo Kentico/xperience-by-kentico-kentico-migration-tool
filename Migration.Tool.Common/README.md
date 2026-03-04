@@ -17,7 +17,6 @@ Provides shared infrastructure used by all other migration projects:
 - `Commands.cs` - All MediatR commands (MigrateSitesCommand, MigratePagesCommand, etc.)
 - `ToolConfiguration.cs` - Configuration model with validation
 - `IPrinter.cs` / `IPrimaryKeyMappingContext.cs` - Core service abstractions
-- `MigrationProtocol/` - Structured migration result reporting
 - `Abstractions/` - Interfaces for custom migrations and mappers
 - `Services/` - Command line interface parsing and execution logic
 

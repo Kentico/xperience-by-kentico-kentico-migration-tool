@@ -23,9 +23,10 @@ This repository contains the data migration tool and its technical reference doc
 - [Plan your strategy](https://docs.kentico.com/x/plan_your_strategy_for_migrating_features_guides) - Feature comparison and effort estimation
 - [Upgrade walkthrough](https://docs.kentico.com/x/upgrade_walkthrough_guides) - Hands-on tutorial with the Dancing Goat sample site
 - [Advanced upgrade deep dives](https://docs.kentico.com/x/upgrade_deep_dives_guides) - Developer-focused guides for customizing migrations and handling complex scenarios
+- [Upgrade to Xperience by Kentico - development and execution](https://docs.kentico.com/paths/xbyk-upgrade-developer) - Hands-on learning path for developers executing upgrades
 
 > [!IMPORTANT]
-> When planning an upgrade, note special considerations for [deploying to production](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#are-there-special-considerations-when-deploying-an-upgraded-project-to-production-for-the-first-time) and [deploying to SaaS](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#are-there-special-considerations-when-performing-an-upgrade-using-xperience-by-kentico-saas).
+> When planning an upgrade, note special considerations for [deploying to production](https://docs.kentico.com/guides/upgrade-to-xbyk/upgrade-from-kx13/upgrade-faq#are-there-special-considerations-when-deploying-an-upgraded-project-to-production-for-the-first-time) and [deploying to SaaS](https://docs.kentico.com/guides/upgrade-to-xbyk/upgrade-from-kx13/upgrade-faq#are-there-special-considerations-when-performing-an-upgrade-using-xperience-by-kentico-saas).
 
 ## Technical Documentation (This Repository)
 
@@ -99,7 +100,7 @@ For a lift-and-shift migration, use the migration tool's default configuration:
    --sites --custom-modules --users --settings-keys --page-types --pages --type-restrictions --contact-management --forms --media-libraries --data-protection --custom-tables --members --categories
    ```
 
-5. **Review results** - Check console output and log files for issues or manual steps:
+5. **Review results** - Check console [output and log files](./Migration.Tool.CLI/README.md#logging) for issues or manual steps:
    - **Console** shows real-time progress and results
    - **Log files** capture detailed execution logs (`logs\log-<date>.txt`)
 
@@ -182,7 +183,7 @@ To report bugs, upgrade to the latest Migration Tool version before submitting i
 See [`SUPPORT.md`](https://github.com/Kentico/.github/blob/main/SUPPORT.md#full-support) for more information.
 
 > [!IMPORTANT]
-> Before submitting a support ticket, please read about the [best practices on reporting Kentico Migration Tool and upgrade issues](https://docs.kentico.com/guides/architecture/upgrade-from-kx13/upgrade-faq#what-is-the-difference-between-the-documentation-in-the-github-repo-and-on-the-docs.kentico.com-site).
+> Before submitting a support ticket, please read about the [best practices on reporting Kentico Migration Tool and upgrade issues](https://docs.kentico.com/guides/upgrade-to-xbyk/upgrade-from-kx13/upgrade-faq#what-is-the-difference-between-the-documentation-in-the-github-repo-and-on-the-docs.kentico.com-site).
 
 ## Security
 

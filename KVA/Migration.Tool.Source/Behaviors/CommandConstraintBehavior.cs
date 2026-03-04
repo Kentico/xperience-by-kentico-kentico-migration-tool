@@ -20,7 +20,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
     {
         try
         {
-            bool criticalCheckPassed = PerformChecks(request);
+            bool criticalCheckPassed = PerformChecks();
             if (!criticalCheckPassed)
             {
                 return (TResponse)(CommandResult)new CommandCheckFailedResult(criticalCheckPassed);
@@ -36,7 +36,7 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
         return await next();
     }
 
-    private bool PerformChecks(TRequest request)
+    private bool PerformChecks()
     {
         bool criticalCheckPassed = true;
 
@@ -46,14 +46,6 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
         foreach (var site in sourceSites)
         {
             criticalCheckPassed &= CheckSite(sourceSites, site.SiteID);
-        }
-
-
-        if (request is ICultureReliantCommand cultureReliantCommand)
-        {
-            var cultures = modelFacade.SelectAll<ICmsCulture>().ToList();
-            var siteCultures = modelFacade.SelectAll<ICmsSiteCulture>().ToList();
-            criticalCheckPassed &= CheckCulture(cultureReliantCommand, sourceSites, cultures, siteCultures);
         }
 
         return criticalCheckPassed;
@@ -72,34 +64,6 @@ public class CommandConstraintBehavior<TRequest, TResponse>(
                 .WithMessage("Check program argument '--siteId'")
                 .WithData(new { sourceSiteId, AvailableSites = supportedSites }));
             criticalCheckPassed = false;
-        }
-
-        return criticalCheckPassed;
-    }
-
-    private bool CheckCulture(ICultureReliantCommand cultureReliantCommand, List<ICmsSite> sourceSites, List<ICmsCulture> cultures, List<ICmsSiteCulture> cmsSiteCultures)
-    {
-        bool criticalCheckPassed = true;
-        string cultureCode = cultureReliantCommand.CultureCode;
-
-        foreach (var site in sourceSites)
-        {
-            string?[] siteCultures = cmsSiteCultures
-                .Where(x => x.SiteID == site.SiteID)
-                .Select(x => cultures.FirstOrDefault(c => c.CultureID == x.CultureID)?.CultureCode)
-                .Where(x => !string.IsNullOrWhiteSpace(x))
-                .ToArray();
-
-            if (!siteCultures.Contains(cultureCode.ToLowerInvariant()))
-            {
-                string supportedCultures = string.Join(", ", siteCultures);
-                logger.LogCritical("Unable to find culture '{Culture}' mapping to site '{SiteId}'. Check --culture parameter. Supported cultures for site: {SupportedCultures}", cultureCode,
-                    site.SiteID, supportedCultures);
-                protocol.Append(HandbookReferences.CommandConstraintBroken("Culture is mapped to site")
-                    .WithMessage("Check program argument '--culture'")
-                    .WithData(new { cultureCode, site.SiteID, SiteCultures = supportedCultures }));
-                criticalCheckPassed = false;
-            }
         }
 
         return criticalCheckPassed;
