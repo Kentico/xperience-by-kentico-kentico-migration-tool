@@ -29,14 +29,8 @@ public static class MediaHelper
                     return null;
                 }
 
-                string where = modelFacade.SelectVersion() is { Major: 13 }
-                    ? "LibraryUseDirectPathForContent = 1 AND LibraryFolder = @libraryFolder AND LibrarySiteID = @librarySiteID"
-                    : "LibraryFolder = @libraryFolder AND LibrarySiteID = @librarySiteID";
-                var mediaLibraries = modelFacade.SelectWhere<IMediaLibrary>(
-                    where,
-                    new SqlParameter("libraryFolder", libraryDir),
-                    new SqlParameter("librarySiteID", linkSiteId)
-                ).ToList();
+                var mediaLibraries = GetMediaLibraries(modelFacade, libraryDir, linkSiteId);
+
                 switch (mediaLibraries)
                 {
                     case [var mediaLibrary]:
@@ -93,4 +87,35 @@ public static class MediaHelper
                 new SqlParameter("attachmentGUID", matchResult.MediaGuid)
             )
             .FirstOrDefault();
+
+    private static List<IMediaLibrary> GetMediaLibraries(ModelFacade modelFacade, string libraryDir, int? linkSiteId)
+    {
+        var isKx13 = modelFacade.SelectVersion() is { Major: 13 };
+
+        if (isKx13)
+        {
+            var mediaLibraries = modelFacade.SelectWhere<IMediaLibrary>(
+                "LibraryUseDirectPathForContent = 1 AND LibraryFolder = @libraryFolder AND LibrarySiteID = @librarySiteID",
+                new[]
+                {
+                    new SqlParameter("libraryFolder", libraryDir),
+                    new SqlParameter("librarySiteID", linkSiteId)
+                }
+            ).ToList();
+
+            if (mediaLibraries.Count > 0)
+            {
+                return mediaLibraries;
+            }
+        }
+
+        return modelFacade.SelectWhere<IMediaLibrary>(
+            "LibraryFolder = @libraryFolder AND LibrarySiteID = @librarySiteID",
+            new[]
+            {
+                new SqlParameter("libraryFolder", libraryDir),
+                new SqlParameter("librarySiteID", linkSiteId)
+            }
+        ).ToList();
+    }
 }

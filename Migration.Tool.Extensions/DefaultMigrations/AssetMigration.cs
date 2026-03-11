@@ -57,8 +57,7 @@ public class AssetMigration(
 
         if (!invokedCommands.Commands.Any(x => x is MigrateMediaLibrariesCommand))
         {
-            logger.LogError($"Trying to migrate asset field value {{FieldName}}, but command {MigrateMediaLibrariesCommand.Moniker} was not invoked", fieldName);
-            return new(false, null);
+            logger.LogWarning($"Trying to migrate asset field value {{FieldName}}, but command {MigrateMediaLibrariesCommand.Moniker} was not invoked", fieldName);
         }
 
         ICmsSite? cmsSite;
@@ -229,6 +228,12 @@ public class AssetMigration(
         }
         else if (Kx13FormControls.UserControlForText.MediaSelectionControl.Equals(sourceFormControl, StringComparison.InvariantCultureIgnoreCase) && sourceValue is string sourceUrl)
         {
+            if (string.IsNullOrWhiteSpace(sourceUrl))
+            {
+                logger.LogInformation("Asset value '{Value}' of {FieldName}' is empty or whitespace. Treating as no value.", sourceValue, fieldName);
+                return new FieldMigrationResult(true, null);
+            }
+
             if (!configuration.MigrateMediaToMediaLibrary)
             {
                 // If we're migrating assets to content hub, unmatched URL can be stored as legacy media link
@@ -462,6 +467,13 @@ public class AssetMigration(
             settings.EnsureElement(FormDefinitionPatcher.SettingsElemControlname, e => e.Value = FormComponents.AdminContentItemSelectorComponent);
             Guid[] allowedContentTypes = [AssetFacade.LegacyMediaFileContentType.ClassGUID!.Value, AssetFacade.LegacyMediaLinkContentType.ClassGUID!.Value, AssetFacade.LegacyAttachmentContentType.ClassGUID!.Value];
             settings.EnsureElement(FormDefinitionPatcher.AllowedContentItemTypeIdentifiers, e => e.Value = JsonConvert.SerializeObject(allowedContentTypes.Select(x => x.ToString()).ToArray()));
+            var allowEmptyField = field.Attribute(FormDefinitionPatcher.FieldAttrAllowEmpty);
+            if (allowEmptyField == null || allowEmptyField.Value.Equals("false", StringComparison.InvariantCultureIgnoreCase))
+            {
+                field.SetAttributeValue(FormDefinitionPatcher.FieldAttrAllowEmpty, "true");
+                settings.EnsureElement(FormDefinitionPatcher.SettingsMaximumitems, x => x.Value = "1");
+                settings.EnsureElement(FormDefinitionPatcher.SettingsMinimumitems, x => x.Value = "1");
+            }
         }
     }
 }

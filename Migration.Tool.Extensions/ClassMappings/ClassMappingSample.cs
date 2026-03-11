@@ -69,6 +69,32 @@ public static class ClassMappingSample
             .SetFrom(sourceClassName, "CoffeeIsDecaf", true)
             .WithFieldPatch(f => f.SetPropertyValue(FormFieldPropertyEnum.FieldCaption, "IsDecaf RM"));
 
+        // Example of adding a new field that doesn't exist in the source class
+        m
+            .BuildField("CoffeeRating")
+            .WithoutSource("integer")
+            .WithFieldPatch(f =>
+            {
+                f.Caption = "Coffee Rating";
+                f.AllowEmpty = true;
+                f.DataType = FieldDataType.Integer;
+                f.DefaultValue = "0";
+            });
+
+        // Example of adding a new taxonomy field
+        m
+            .BuildField("CoffeeCategories")
+            .WithoutSource("taxonomy")
+            .WithFieldPatch(f =>
+            {
+                f.Caption = "Coffee Categories";
+                f.AllowEmpty = true;
+                f.DataType = "taxonomy";
+                f.Settings["controlname"] = "Kentico.Administration.TagSelector";
+                // example of setting taxonomy group by its GUID
+                f.Settings["TaxonomyGroup"] = "[\"1C9D79E0-482E-468C-9C2A-6CBB53BE53F7\"]";
+            });
+
         // register class mapping
         serviceCollection.AddSingleton<IClassMapping>(m);
 
@@ -564,7 +590,7 @@ public static class ClassMappingSample
         //      If you're unsure what the target field type should be, let MT migrate page types (--page-types CLI command)
         //      into a disposable clone of your target instance and see the produced field types.
 
-        var m = new MultiClassMapping("DancingGoatCore.PrefabArticle");
+        var m = new MultiClassMapping("DancingGoatCore.PrefabArticle", _ => { });
         const string sourceClassName = "DancingGoatCore.Article";
 
         // Field mapping
