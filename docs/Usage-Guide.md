@@ -13,9 +13,10 @@ The migration currently supports the Kentico Xperience 13, Kentico 12 or Kentico
 ### Kentico Xperience 13
 
 - The source of the migration data must be a Kentico Xperience 13 instance, with [Refresh 5](https://docs.kentico.com/13/release-notes-xperience-13#ReleasenotesXperience13-Ref5), [hotfix 13.0.64](https://devnet.kentico.com/download/hotfixes) or newer applied.
-- The development model (Core or MVC 5) does not affect the migration - both are supported.
+- The development model (Core or MVC 5) does not affect the data migration - both are supported.
 - The source instance's database and file system must be accessible from the environment where you run the Kentico Migration Tool.
 - All features described in this repository are available for migration from Kentico Xperience 13.
+- AI coding assistants can use the [Kentico Xperience 13 library on Context7](https://context7.com/websites/kentico_13) MCP server for accurate KX13 documentation context (third-party, not maintained by Kentico).
 
 [![Kentico Xperience 13 upgrade paths](/images/xperience-by-kentico-migration-tool-kentico-migration-tool-kentico-xperience-13-embedded.jpg)](/images/xperience-by-kentico-migration-tool-kentico-migration-tool-kentico-xperience-13-embedded.jpg)
 

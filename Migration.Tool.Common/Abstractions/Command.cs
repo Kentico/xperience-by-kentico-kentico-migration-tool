@@ -11,8 +11,3 @@ public interface ICommand
     static virtual string Moniker { get; } = "";
     static virtual string MonikerFriendly { get; } = "";
 }
-
-public interface ICultureReliantCommand
-{
-    string CultureCode { get; }
-}
