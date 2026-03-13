@@ -192,10 +192,7 @@ public class MigrateOrdersCommandHandler(
 
             try
             {
-                using (new CMSActionContext { UpdateTimeStamp = false })
-                {
-                    OrderItemInfo.Provider.Set(orderItemInfo);
-                }
+                OrderItemInfo.Provider.Set(orderItemInfo);
                 logger.LogEntitySetAction(newInstance, orderItemInfo);
             }
             /*Violation in unique index or Violation in unique constraint */
@@ -228,10 +225,7 @@ public class MigrateOrdersCommandHandler(
 
             try
             {
-                using (new CMSActionContext { UpdateTimeStamp = false })
-                {
-                    OrderAddressInfo.Provider.Set(orderAddressInfo);
-                }
+                OrderAddressInfo.Provider.Set(orderAddressInfo);
                 logger.LogEntitySetAction(newInstance, orderAddressInfo);
             }
             /*Violation in unique index or Violation in unique constraint */
