@@ -57,30 +57,36 @@ Projects for testing and development workflows:
 ## Project Dependencies Explained
 
 ### CLI → Common → Core
+
 The CLI project depends on Common for shared infrastructure, which depends on the appropriate Core project (K11/KX12/KX13) based on source version.
 
 ### Core → Source DB Models
+
 Each Core project (e.g., Migration.Tool.Core.KX13) depends on its corresponding source database model project (e.g., Migration.Tool.KX13) for database access.
 
 ### Core → KXP.Api
+
 All Core projects depend on Migration.Tool.KXP.Api to interact with the target Xperience by Kentico instance.
 
 ### Extensions (Optional)
+
 The Migration.Tool.Extensions project contains custom migration logic. It compiles as part of the solution and is automatically discovered at runtime. Consult the [Extensions Guide](../Migration.Tool.Extensions/README.md) for detailed instructions on creating field migrations, widget migrations, and custom class mappings.
 
 ## Project Modification Guide
 
-| Scenario | Projects to Modify |
-|----------|-------------------|
-| **[Running migrations](../README.md#running-your-first-migration)** | None - configure appsettings.json only |
-| **[Custom field transformation](../Migration.Tool.Extensions/README.md#customize-field-migrations)** | `Migration.Tool.Extensions` |
-| **[Custom widget migration](../Migration.Tool.Extensions/README.md#customize-widget-migrations)** | `Migration.Tool.Extensions` |
-| **[Custom class mapping](../Migration.Tool.Extensions/README.md#custom-class-mappings)** | `Migration.Tool.Extensions` |
-| **[Custom content type relationships](../Migration.Tool.Extensions/README.md#custom-child-links)** | `Migration.Tool.Extensions` |
-| **[Contributing bug fixes](../README.md#contributing)** | Relevant `Core.KX##` project |
-| **Adding new data type support** | `Core.KX##` + `Common` + `CLI` |
+| Scenario                                                                                             | Projects to Modify                     |
+| ---------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| **[Running migrations](../README.md#running-your-first-migration)**                                  | None - configure appsettings.json only |
+| **[Custom field transformation](../Migration.Tool.Extensions/README.md#customize-field-migrations)** | `Migration.Tool.Extensions`            |
+| **[Custom widget migration](../Migration.Tool.Extensions/README.md#customize-widget-migrations)**    | `Migration.Tool.Extensions`            |
+| **[Custom class mapping](../Migration.Tool.Extensions/README.md#custom-class-mappings)**             | `Migration.Tool.Extensions`            |
+| **[Custom content type relationships](../Migration.Tool.Extensions/README.md#custom-child-links)**   | `Migration.Tool.Extensions`            |
+| **[Custom command pipeline behavior](Customization-Pipeline-Behaviors.md)**                          | `Migration.Tool.Extensions`            |
+| **[Contributing bug fixes](../README.md#contributing)**                                              | Relevant `Core.KX##` project           |
+| **Adding new data type support**                                                                     | `Core.KX##` + `Common` + `CLI`         |
 
 ## Related Documentation
 
 - **[Extensions README](../Migration.Tool.Extensions/README.md)** - Complete implementation guide for custom migrations, field transformations, and class mappings
+- **[Command Pipeline Architecture Guide](Customization-Pipeline-Behaviors.md)** - Advanced command-pipeline customization with `IPipelineBehavior`
 - **[Contributing Setup](Contributing-Setup.md)** - Development environment setup and workflow for contributing to the migration tool

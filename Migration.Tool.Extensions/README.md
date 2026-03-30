@@ -1,10 +1,11 @@
-# Migration Tool Customization
+# Migration Tool Targeted Code-Driven Customization Guide
 
 ## About This Project
 
-**Migration.Tool.Extensions** is the customization layer for the Kentico Migration Tool. Use this project to implement custom logic that transforms your data during migration from Kentico Xperience 13, Kentico 12, or Kentico 11 to Xperience by Kentico.
+**Migration.Tool.Extensions** is the primary project for targeted, code-driven customization of the Kentico Migration Tool. Use this project to implement custom logic that transforms your data during migration from Kentico Xperience 13, Kentico 12, or Kentico 11 to Xperience by Kentico.
 
 The project enables you to:
+
 - Customize migration behavior with custom transformations
 - Handle project-specific data structures and field mappings
 - Transform widget properties and Page Builder content
@@ -14,7 +15,6 @@ The project enables you to:
 > **User Interaction:** This project is where you implement custom migration logic. Modify this project to add field migrations, widget migrations, and custom class mappings that transform your data during migration.
 
 > This page provides implementation guidance for custom migrations. For conceptual understanding and migration strategies, see the [Upgrade Deep Dive guides](https://docs.kentico.com/x/upgrade_deep_dives_guides). If you are a developer new to upgrades and data migration, take the [developer training on upgrades](https://docs.kentico.com/paths/xbyk-upgrade-developer) in our Learn portal.
-
 
 > [!TIP]
 > When working with KX13 source APIs, AI coding assistants can use the [Kentico Xperience 13 library on Context7](https://context7.com/websites/kentico_13) for accurate KX13 documentation context. Note that Context7 is a third-party service not maintained or supported by Kentico.
@@ -33,6 +33,7 @@ The project enables you to:
   - [Customize Field Migrations](#customize-field-migrations)
   - [Customize Widget Migrations](#customize-widget-migrations)
   - [Customize Widget Property Migrations](#customize-widget-property-migrations)
+  - [Customize Command Pipeline Behaviors](#customize-command-pipeline-behaviors)
 - [Registration](#registration)
 - [Working with Source and Target APIs](#working-with-source-and-target-apis)
 
@@ -107,6 +108,21 @@ Transforms individual field values during data migration.
 - Convert data formats (date formats, URL structures)
 - Transform content (HTML cleanup, path updates)
 
+### Command Pipeline Behaviors (`IPipelineBehavior<TCommand, CommandResult>`)
+
+Adds command-level pre/post logic around migration handlers.
+
+**Use cases:**
+
+- Run command-stage logic after specific migration stages (for example after `--sites` or `--pages`)
+- Add command-level pre-flight checks and short-circuit execution
+- Add command telemetry/auditing beyond default logging
+- Perform post-command processing that spans multiple content types
+
+Use this approach primarily when customization spans multiple command stages. For single-field or widget transformations, prefer existing extension points (`IFieldMigration`, `IWidgetMigration`, `IWidgetPropertyMigration`, `ContentItemDirectorBase`, `IClassMapping`).
+
+For implementation details, command-stage anchor strategy, and worked recipes, see the [Command Pipeline Architecture Guide](../docs/Customization-Pipeline-Behaviors.md).
+
 ## When Custom Migrations Execute
 
 When registered, customizations execute based on CLI migration parameters. The order depends on parameter dependencies (e.g., `--pages` requires `--page-types` to run first):
@@ -117,13 +133,13 @@ When registered, customizations execute based on CLI migration parameters. The o
 
 For detailed information about all available CLI parameters, their dependencies, and execution order, see [Migrate command parameters](../Migration.Tool.CLI/README.md#migrate-command-parameters) in the Migration.Tool.CLI README.
 
-| Migration Type | CLI Parameter |
-|---|---|
-| **Custom Class Mappings** | `--page-types` `--custom-modules` |
-| **Content Item Directors** | `--pages` |
-| **Field Migrations** | `--pages` `--forms` `--custom-tables` |
-| **Widget Migrations** | `--pages` |
-| **Widget Property Migrations** | `--pages` |
+| Migration Type                 | CLI Parameter                         |
+| ------------------------------ | ------------------------------------- |
+| **Custom Class Mappings**      | `--page-types` `--custom-modules`     |
+| **Content Item Directors**     | `--pages`                             |
+| **Field Migrations**           | `--pages` `--forms` `--custom-tables` |
+| **Widget Migrations**          | `--pages`                             |
+| **Widget Property Migrations** | `--pages`                             |
 
 > [!NOTE]
 > Class mappings run before page data migration. Field value transformations defined in class mappings (using `ConvertFrom`) are applied during content type structure migration, not during individual page processing.
@@ -163,74 +179,74 @@ You can customize class mappings to adjust the content model between the source 
 2. Add an `IServiceCollection` extension method. Use a separate method for every class mapping that you wish to configure.
 3. Within the extension method, define a new `MultiClassMapping` object:
 
-    ```csharp
-    var m = new MultiClassMapping(targetClassName, target =>
-    {
-      // Target content type name
-      target.ClassName = "Acme.Article";
-      // Database table name of the new type
-      target.ClassTableName = "Acme_Article";
-      // Display name of the content type
-      target.ClassDisplayName = "Article";
-      // Type of the class (specifies that the class is a content type)
-      target.ClassType = ClassType.CONTENT_TYPE;
-      // What the content type is used for (reusable content, pages, email, or headless)
-      target.ClassContentTypeType = ClassContentTypeType.WEBSITE;
-    });
-    ```
+   ```csharp
+   var m = new MultiClassMapping(targetClassName, target =>
+   {
+     // Target content type name
+     target.ClassName = "Acme.Article";
+     // Database table name of the new type
+     target.ClassTableName = "Acme_Article";
+     // Display name of the content type
+     target.ClassDisplayName = "Article";
+     // Type of the class (specifies that the class is a content type)
+     target.ClassType = ClassType.CONTENT_TYPE;
+     // What the content type is used for (reusable content, pages, email, or headless)
+     target.ClassContentTypeType = ClassContentTypeType.WEBSITE;
+   });
+   ```
 
 4. Define a new primary key:
 
-    ```csharp
-    m.BuildField("ArticleID").AsPrimaryKey();
-    ```
+   ```csharp
+   m.BuildField("ArticleID").AsPrimaryKey();
+   ```
 
 5. Define individual fields of the new content type:
 
-    ```csharp
-    // Builds a new title field
-    var title = m.BuildField("Title");
+   ```csharp
+   // Builds a new title field
+   var title = m.BuildField("Title");
 
-    // You can map any number of source fields. The migration creates items of the target data class for every item from a mapped source data class.
-    // The default migration is skipped for any data class / page type where you map at least one source field
+   // You can map any number of source fields. The migration creates items of the target data class for every item from a mapped source data class.
+   // The default migration is skipped for any data class / page type where you map at least one source field
 
-    // Maps the "ArticleTitle" field from the source data class "Article.BlogPost"
-    // Sets the isTemplate parameter to true, which makes the new field inherit the source field definition as a template
-    // The field definition is migrated according to the migration tool's data type and form control/component mappings
-    title.SetFrom("Article.BlogPost", "ArticleTitle", true);
-    // Maps the "ArticleTitle" field from a second source data class "Article.NewsArticle"
-    // The isTemplate parameter is not set, so only the value is taken from this source field
-    title.SetFrom("Article.NewsArticle", "ArticleTitle");
+   // Maps the "ArticleTitle" field from the source data class "Article.BlogPost"
+   // Sets the isTemplate parameter to true, which makes the new field inherit the source field definition as a template
+   // The field definition is migrated according to the migration tool's data type and form control/component mappings
+   title.SetFrom("Article.BlogPost", "ArticleTitle", true);
+   // Maps the "ArticleTitle" field from a second source data class "Article.NewsArticle"
+   // The isTemplate parameter is not set, so only the value is taken from this source field
+   title.SetFrom("Article.NewsArticle", "ArticleTitle");
 
-    // You can modify the field definition, e.g., change the caption of the field
-    title.WithFieldPatch(f => f.Caption = "Article title");
-    ```
+   // You can modify the field definition, e.g., change the caption of the field
+   title.WithFieldPatch(f => f.Caption = "Article title");
+   ```
 
-6. (*Optional*) You can add custom value conversions:
+6. (_Optional_) You can add custom value conversions:
 
-    ```csharp
-    var publishDate = m.BuildField("PublishDate");
-    publishDate.SetFrom("Article.BlogPost", "BlogPostDate", true);
-    
-    // Uses value conversion to modify the field value
-    publishDate.ConvertFrom("Article.NewsArticle", "ArticleDateAsText", false,
-        (v, context) =>
-        {
-            switch (context)
-            {
-                case ConvertorTreeNodeContext treeNodeContext:
-                    // You can use the available TreeNode context here
-                    // (var nodeGuid, int nodeSiteId, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
-                    break;
-                default:
-                    // No context is available (possibly when the tool is extended with other conversion possibilities)
-                    break;
-            }
+   ```csharp
+   var publishDate = m.BuildField("PublishDate");
+   publishDate.SetFrom("Article.BlogPost", "BlogPostDate", true);
 
-            return v?.ToString() is { } av && !string.IsNullOrWhiteSpace(av) ? DateTime.Parse(av) : null;
-        });
-    startDate.WithFieldPatch(f => f.Caption = "Event start date");
-    ```
+   // Uses value conversion to modify the field value
+   publishDate.ConvertFrom("Article.NewsArticle", "ArticleDateAsText", false,
+       (v, context) =>
+       {
+           switch (context)
+           {
+               case ConvertorTreeNodeContext treeNodeContext:
+                   // You can use the available TreeNode context here
+                   // (var nodeGuid, int nodeSiteId, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
+                   break;
+               default:
+                   // No context is available (possibly when the tool is extended with other conversion possibilities)
+                   break;
+           }
+
+           return v?.ToString() is { } av && !string.IsNullOrWhiteSpace(av) ? DateTime.Parse(av) : null;
+       });
+   startDate.WithFieldPatch(f => f.Caption = "Event start date");
+   ```
 
 7. Complete the implementation by [registering the class mapping](#registration) in the dependency injection container.
 
@@ -263,8 +279,9 @@ The linked pages director feature provides a flexible solution to customize how 
 #### Understanding Linked Pages
 
 In older Kentico versions, linked pages allowed you to create pages that displayed content from other pages without duplicating the actual content. This was useful for:
+
 - Sharing content across multiple sections of a website
-- Creating content references without data duplication  
+- Creating content references without data duplication
 - Building complex content hierarchies
 
 #### Migration Strategies
@@ -272,17 +289,23 @@ In older Kentico versions, linked pages allowed you to create pages that display
 The linked pages director offers three main strategies for handling linked pages:
 
 #### 1. Materialize (Default)
+
 Creates a full copy of the linked content as an independent page.
+
 - **Use when**: You want to preserve the content structure but can accept content duplication
 - **Result**: Each linked page becomes a separate content item with its own copy of the data
 
 #### 2. Drop
+
 Completely skips migration of the linked page.
+
 - **Use when**: The linked content is no longer needed or should be handled manually
 - **Result**: The linked page will not be migrated to the target instance
 
 #### 3. Store as Reference
+
 Creates a content item reference field in an ancestor page that points to the original linked content.
+
 - **Use when**: You want to preserve the relationship without duplicating content
 - **Result**: The linked content is referenced through a content item selector field
 
@@ -291,8 +314,9 @@ Creates a content item reference field in an ancestor page that points to the or
 In `Migration.Tool.Extensions/CommunityMigrations`, create a new file with a class that inherits from the `ContentItemDirectorBase` class and override the `DirectLinkedNode(source, options)` method.
 
 The `LinkedPageSource` provides access to:
+
 - `source.SourceSite` - The site where the linked page exists
-- `source.SourceNode` - The node that contains the link  
+- `source.SourceNode` - The node that contains the link
 - `source.LinkedNode` - The target node being linked to
 
 Implement your decision logic based on available node properties (`NodeClassID`, `NodeAliasPath`, `NodeName`, etc.) and call the appropriate action method.
@@ -300,15 +324,19 @@ Implement your decision logic based on available node properties (`NodeClassID`,
 #### Available Actions
 
 #### `options.Drop()`
+
 Skips migration of the linked page entirely. Use for temporary content, archived pages, or content that should be handled manually.
 
 #### `options.Materialize()`
+
 Creates an independent copy of the linked content (default behavior). This preserves the content structure but results in content duplication.
 
 #### `options.StoreReferenceInAncestor(parentLevel, fieldName)`
+
 Creates a content item reference field in an ancestor page that points to the original linked content.
 
 **Parameters:**
+
 - `parentLevel`: Relative level of the ancestor page (-1 = direct parent, -2 = grandparent, etc.)
 - `fieldName`: Name of the content item reference field (created automatically if it doesn't exist)
 
@@ -340,11 +368,13 @@ After implementing your linked page director, you need to [register the director
 #### Troubleshooting
 
 **Common Issues:**
+
 - **"Ancestor not found" error**: Check that the `parentLevel` value is correct (negative values for ancestors)
-- **References not working**: Ensure the content type is in `ConvertClassesToContentHub` configuration  
+- **References not working**: Ensure the content type is in `ConvertClassesToContentHub` configuration
 - **Deferred processing**: Some linked pages may be processed in a second pass if their dependencies aren't ready
 
 **Debugging Tips:**
+
 - Use [logging](../Migration.Tool.CLI/README.md#logging) to track which strategy is applied to each linked page
 - Verify that ancestor pages exist and have the expected structure
 
@@ -362,51 +392,51 @@ In `Migration.Tool.Extensions/CommunityMigrations`, create a new file with a cla
 
 1. If the target page uses a [page template](https://docs.kentico.com/x/iInWCQ), ensure that the correct page template is applied.
 
-    ```csharp
-    // Store page uses a template and is the parent listing page
-    if (source.SourceNode.SourceClassName == "Acme.Store")
-    {
-      // Ensures the page template is present in the system
-      options.OverridePageTemplate("StorePageTemplate");
-    }
-    ```
+   ```csharp
+   // Store page uses a template and is the parent listing page
+   if (source.SourceNode.SourceClassName == "Acme.Store")
+   {
+     // Ensures the page template is present in the system
+     options.OverridePageTemplate("StorePageTemplate");
+   }
+   ```
 
 2. Identify pages you want to migrate to widgets and use the `options.AsWidget()` action.
 
-    ```csharp
-    // Identifies pages by their content type
-    else if (source.SourceNode.SourceClassName == "Acme.Coffee")
-    {
-        options.AsWidget("Acme.CoffeeSampleWidget", null, null, options =>
-        {
-            // Determines where to place the widget
-            options.Location
-                // Negative indexing is used - '-1' signifies direct parent node
-                // Use the value of '0' if you want to target the page itself
-                .OnAncestorPage(-1)
-                .InEditableArea("main-area")
-                .InSection("SingleColumnSection")
-                .InFirstZone();
+   ```csharp
+   // Identifies pages by their content type
+   else if (source.SourceNode.SourceClassName == "Acme.Coffee")
+   {
+       options.AsWidget("Acme.CoffeeSampleWidget", null, null, options =>
+       {
+           // Determines where to place the widget
+           options.Location
+               // Negative indexing is used - '-1' signifies direct parent node
+               // Use the value of '0' if you want to target the page itself
+               .OnAncestorPage(-1)
+               .InEditableArea("main-area")
+               .InSection("SingleColumnSection")
+               .InFirstZone();
 
-            // Specifies the widget's properties
-            options.Properties.Fill(true, (itemProps, reusableItemGuid, childGuids) =>
-            {
-                // Simple way to achieve basic conversion of all properties, properties can be refined in the following steps
-                var widgetProps = JObject.FromObject(itemProps);
+           // Specifies the widget's properties
+           options.Properties.Fill(true, (itemProps, reusableItemGuid, childGuids) =>
+           {
+               // Simple way to achieve basic conversion of all properties, properties can be refined in the following steps
+               var widgetProps = JObject.FromObject(itemProps);
 
-                // The converted page is linked as a reusable content item into a single property of the widget.
-                // NOTE: List the page class name app settings in ConvertClassesToContentHub to make it reusable!
-                widgetProps["LinkedContent"] = LinkedItemPropertyValue(reusableItemGuid!.Value);
+               // The converted page is linked as a reusable content item into a single property of the widget.
+               // NOTE: List the page class name app settings in ConvertClassesToContentHub to make it reusable!
+               widgetProps["LinkedContent"] = LinkedItemPropertyValue(reusableItemGuid!.Value);
 
-                // Link reusable content items created from page's original subnodes
-                // NOTE: List the page class names in app settings in ConvertClassesToContentHub to make it reusable!
-                widgetProps["LinkedChildren"] = LinkedItemsPropertyValue(childGuids);
+               // Link reusable content items created from page's original subnodes
+               // NOTE: List the page class names in app settings in ConvertClassesToContentHub to make it reusable!
+               widgetProps["LinkedChildren"] = LinkedItemsPropertyValue(childGuids);
 
-                return widgetProps;
-            });
-        });
-    }
-    ```
+               return widgetProps;
+           });
+       });
+   }
+   ```
 
 After implementing the content item director, you need to [register the director](#registration) in the system.
 
@@ -427,7 +457,7 @@ After implementing the content item director, you need to [register the director
 
 You can customize field migrations to control how fields are mapped for page types, modules, system objects, and forms. In the `Migration.Tool.Extensions/CommunityMigrations` folder, create a new file with a class that implements the `IFieldMigration` interface. Implement the following properties and methods required by the interface:
 
-- `Rank` - An integer property that determines the order in which migrations are applied. Use a value lower than *100000*, as that is the value for system migrations.
+- `Rank` - An integer property that determines the order in which migrations are applied. Use a value lower than _100000_, as that is the value for system migrations.
 - `ShallMigrate` - A boolean method that specifies whether the migration shall be applied for the current field. Use properties of the `FieldMigrationContext` object passed as an argument to the method to evaluate the condition. For each field, the migration with the lowest rank that returns `true` from the `ShallMigrate` method is used.
   - `SourceDataType` - A string property that specifies the [data type](https://docs.kentico.com/x/coJwCg) of the source field.
   - `SourceFormControl` - A string property that specifies the [form control](https://docs.kentico.com/x/lAyRBg) used by the source field.
@@ -449,7 +479,7 @@ After implementing the migration, you need to [register the migration](#registra
 
 You can customize widget migration to change the widget to which source widgets are migrated in the target instance. In the `Migration.Tool.Extensions/CommunityMigrations` folder, create a new file with a class that implements the `IWidgetMigration` interface. Implement the following properties and methods required by the interface:
 
-- `Rank` - An integer property that determines the order in which migrations are applied. Use a value lower than *100000*, as that is the value for system migrations.
+- `Rank` - An integer property that determines the order in which migrations are applied. Use a value lower than _100000_, as that is the value for system migrations.
 - `ShallMigrate` - A boolean method that specifies whether the migration shall be applied for the current widget. Use properties of the `WidgetMigrationContext` and `WidgetIdentifier` objects passed as an argument to the method to evaluate the condition. For each widget, the migration with the lowest rank that returns `true` from the `ShallMigrate` method is used.
   - `WidgetMigrationContext.SiteId` - An integer property that specifies the ID of the site on which the widget was used in the source instance.
   - `WidgetIdentifier.TypeIdentifier` - A string property that specifies the identifier of the widget.
@@ -469,7 +499,7 @@ After implementing the migration, you need to [register the migration](#registra
 
 In the `Migration.Tool.Extensions/CommunityMigrations` folder, create a new file with a class that implements the `IWidgetPropertyMigration` interface. Implement the following properties and methods required by the interface:
 
-- `Rank` - An integer property that determines the order in which migrations are applied. Use a value lower than *100000*, as that is the value for system migrations.
+- `Rank` - An integer property that determines the order in which migrations are applied. Use a value lower than _100000_, as that is the value for system migrations.
 - `ShallMigrate` - A boolean method that specifies whether the migration shall be applied for the current widget. Use properties of the `WidgetPropertyMigrationContext` and `propertyName` objects passed as an argument to the method to evaluate the condition. For each widget property, the migration with the lowest rank that returns `true` from the `ShallMigrate` method is used.
   - `WidgetPropertyMigrationContext.SiteId` - An integer property that specifies the ID of the site on which the widget was used in the source instance.
   - `WidgetPropertyMigrationContext.EditingFormControlModel` - An object representing the [form control](https://docs.kentico.com/x/lAyRBg) of the property.
@@ -489,6 +519,21 @@ After implementing the migration, you need to [register the migration](#registra
 
 > [!TIP]
 > For common widget property transformation scenarios, see [our technical deep-dive guide](https://docs.kentico.com/x/transform_widget_properties_guides) in the Kentico documentation.
+
+### Customize Command Pipeline Behaviors
+
+For advanced command-level pipeline customization, you can register MediatR pipeline behaviors that wrap command execution.
+
+Register project-specific behaviors in [ServiceCollectionExtensions.cs](./ServiceCollectionExtensions.cs), for example:
+
+```csharp
+services.AddTransient(typeof(IPipelineBehavior<,>), typeof(MyCustomBehavior<,>));
+```
+
+> [!IMPORTANT]
+> Behavior registration order matters. Behaviors run in the same order they are added to the DI container.
+
+See the dedicated guide for architecture, lifecycle, and patterns: [Command Pipeline Architecture Guide](../docs/Customization-Pipeline-Behaviors.md).
 
 ## Registration
 
