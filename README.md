@@ -35,6 +35,7 @@ Technical reference documentation for configuring and running the migration tool
 - **[Migration CLI README](./Migration.Tool.CLI/README.md)** - Commands, configuration options, object-specific instructions
 - **[Supported Data](./docs/Supported-Data.md)** - Complete list of what can/cannot be migrated
 - **[Extensions README](./Migration.Tool.Extensions/README.md)** - How to create custom migrations
+- **[Customization Guide](./docs/Customization-Guide.md)** - How you can customize this migration tool and how to choose the right customization approach
 - **[Command Pipeline Architecture Guide](./docs/Customization-Pipeline-Behaviors.md)** - Advanced command-pipeline customization with `IPipelineBehavior`
 - **[Repository Structure](./docs/Repository-Structure.md)** - Project organization, component relationships, codebase navigation
 - **[Contributing Setup](./docs/Contributing-Setup.md)** - For contributors to this tool
@@ -116,39 +117,17 @@ For a lift-and-shift migration, use the migration tool's default configuration:
 >
 > **Learning by doing?** Follow our [Upgrade Walkthrough](https://docs.kentico.com/x/upgrade_walkthrough_guides) - a step-by-step, code-along guide using the Dancing Goat sample site. The guide covers both data migration and code adjustments to display a Kentico Xperience 13 page seamlessly in Xperience by Kentico.
 
-### When You Need Customization
+### Customization Guide
 
-The migration tool handles standard data transformations automatically. However, you may need to customize the migration process for:
+The migration tool supports configuration-driven, code-driven, and hybrid customization patterns.
 
-1. **Project-specific custom implementations** - When migrating custom field types, Page Builder widgets with non-standard properties, or custom modules/tables requiring specialized data handling
-2. **Content model optimization** - When restructuring your content to better align with Xperience by Kentico architecture, such as converting web pages to reusable content items, flattening hierarchical structures, or transforming Page Builder widget data
+For a clear decision flow (targeted changes vs command-stage flows, and where to start), use the [Customization Decision Guide](./docs/Customization-Decision-Guide.md).
 
-Use the following model as a **decision aid**, not a strict process.
+Quick navigation:
 
-Think across two dimensions:
-
-- **Scope of change**
-  - **Targeted**: single field/widget/type adjustments.
-  - **Orchestrated**: multi-step flows across command stages.
-- **Implementation style**
-  - **Configuration-driven** (`appsettings.json`): adjust built-in behavior through options.
-  - **Code-driven** (`Migration.Tool.Extensions`): add custom migrations, directors, class mappings, or pipeline behaviors.
-  - **Hybrid**: most common.
-
-Most projects use a mix. Start with the smallest change that works, then escalate only when needed.
-
-Examples:
-
-- **Targeted + configuration-driven**: tune conversion/feature options in `appsettings.json`.
-- **Targeted + code-driven**: map one custom form control value or rename a widget property in `Migration.Tool.Extensions`.
-- **Orchestrated + hybrid**: run behavior after `--sites` to prepare taxonomy data, then after `--pages` attach reusable schema fields and convert legacy values, while limiting scope via configuration.
-
-To understand when and how to implement customizations:
-
-1. Review the [Repository Structure](./docs/Repository-Structure.md) to understand how the migration tool components interact.
-2. For configuration-driven changes, start with `appsettings.json` options in the [Migration CLI README](./Migration.Tool.CLI/README.md).
-3. For code-driven targeted customizations (fields/widgets/directors/class mappings), use the [Extensions Guide](./Migration.Tool.Extensions/README.md).
-4. For command-stage flows and advanced multi-step customization, use the [Command Pipeline Architecture Guide](./docs/Customization-Pipeline-Behaviors.md).
+- Configuration options: [Migration CLI README](./Migration.Tool.CLI/README.md)
+- Targeted code customizations: [Extensions README](./Migration.Tool.Extensions/README.md)
+- Command-pipeline customization: [Command Pipeline Architecture Guide](./docs/Customization-Pipeline-Behaviors.md)
 
 ## Library Version Matrix
 
