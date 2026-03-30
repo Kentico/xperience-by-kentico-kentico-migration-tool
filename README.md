@@ -117,11 +117,11 @@ For a lift-and-shift migration, use the migration tool's default configuration:
 >
 > **Learning by doing?** Follow our [Upgrade Walkthrough](https://docs.kentico.com/x/upgrade_walkthrough_guides) - a step-by-step, code-along guide using the Dancing Goat sample site. The guide covers both data migration and code adjustments to display a Kentico Xperience 13 page seamlessly in Xperience by Kentico.
 
-### Customization Guide
+### When You Need Customization
 
 The migration tool supports configuration-driven, code-driven, and hybrid customization patterns.
 
-For a clear decision flow (targeted changes vs command-stage flows, and where to start), use the [Customization Decision Guide](./docs/Customization-Decision-Guide.md).
+For a clear decision flow (targeted changes vs command-stage flows, and where to start), use the [Customization Guide](./docs/Customization-Guide.md).
 
 Quick navigation:
 
