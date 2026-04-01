@@ -34,9 +34,7 @@ Technical reference documentation for configuring and running the migration tool
 
 - **[Migration CLI README](./Migration.Tool.CLI/README.md)** - Commands, configuration options, object-specific instructions
 - **[Supported Data](./docs/Supported-Data.md)** - Complete list of what can/cannot be migrated
-- **[Extensions README](./Migration.Tool.Extensions/README.md)** - How to create custom migrations
-- **[Customization Guide](./docs/Customization-Guide.md)** - How you can customize this migration tool and how to choose the right customization approach
-- **[Command Pipeline Architecture Guide](./docs/Customization-Pipeline-Behaviors.md)** - Advanced command-pipeline customization with `IPipelineBehavior`
+- **[Customization Guide](./docs/customization/Customization-Guide.md)** - How you can customize this migration tool and how to choose the right customization approach
 - **[Repository Structure](./docs/Repository-Structure.md)** - Project organization, component relationships, codebase navigation
 - **[Contributing Setup](./docs/Contributing-Setup.md)** - For contributors to this tool
 
@@ -55,13 +53,14 @@ The migration follows six sequential steps:
 5. **Write to target** - Uses [Universal Migration Tool](https://github.com/Kentico/xperience-by-kentico-universal-migration-tool) (primary), XbyK API, or Bulk SQL copy to recreate content and other data in your target Xperience by Kentico instance.
 6. **Generate Reports** - Outputs console logs and log files
 
-Internally, migration execution is orchestrated using the [**Mediator pattern**](https://www.geeksforgeeks.org/system-design/mediator-design-pattern/) (implemented with MediatR command handlers and pipeline behaviors).
-
 The migration tool is:
 
 - **Iterative** - Supports multiple runs that update existing data without creating duplicates (UPSERT behavior)
 - **Selective** - Migrates only specific data types using command parameters
 - **Extensible** - Applies custom transformations for project-specific requirements
+
+> [!NOTE]
+> **Architecture note:** Migration execution is orchestrated using the [**Mediator pattern**](https://refactoring.guru/design-patterns/mediator), implemented with [**MediatR**](https://github.com/LuckyPennySoftware/MediatR) command handlers and pipeline behaviors. This means individual migration commands are handled through a central dispatching layer, which keeps execution flow modular and makes it easier to extend, customize, and reason about stage-specific behavior. For customization entry points, see [When You Need Customization](#when-you-need-customization).
 
 ## How to Run the Kentico Migration Tool
 
@@ -121,13 +120,9 @@ For a lift-and-shift migration, use the migration tool's default configuration:
 
 The migration tool supports configuration-driven, code-driven, and hybrid customization patterns.
 
-For a clear decision flow (targeted changes vs command-stage flows, and where to start), use the [Customization Guide](./docs/Customization-Guide.md).
+Start with the [Customization Guide](./docs/customization/Customization-Guide.md) for the decision flow (configuration vs targeted code vs command pipeline).
 
-Quick navigation:
-
-- Configuration options: [Migration CLI README](./Migration.Tool.CLI/README.md)
-- Targeted code customizations: [Extensions README](./Migration.Tool.Extensions/README.md)
-- Command-pipeline customization: [Command Pipeline Architecture Guide](./docs/Customization-Pipeline-Behaviors.md)
+Then follow the linked implementation guides in the customization docs.
 
 ## Library Version Matrix
 

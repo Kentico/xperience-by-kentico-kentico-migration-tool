@@ -2,20 +2,20 @@
 
 > **Audience:** Developers and AI agents deciding how to customize migration behavior.
 
-Use this guide to choose the right customization approach quickly.
+Use this page to choose the right customization approach quickly.
 
-## When You Need Customization
+## Customization Scenarios
 
-The migration tool handles standard data transformations automatically. You usually customize when:
+The migration tool handles standard data transformations by default. Customization is typically relevant when:
 
 1. **Project-specific behavior is required** (custom field types, non-standard widgets, module/table specifics).
 2. **Content model changes are required** (restructure content types, convert pages to reusable content, transform relationships).
 
 ## Decision Model
 
-Use this as a **decision aid**, not a strict process.
+This model is intended as a decision aid rather than a strict process.
 
-Think across two dimensions:
+Customization choices are commonly evaluated across two dimensions:
 
 - **Scope of change**
   - **Targeted**: single field/widget/type adjustments.
@@ -25,17 +25,19 @@ Think across two dimensions:
   - **Code-driven** (`Migration.Tool.Extensions`): add field/widget/director/class mapping logic.
   - **Hybrid**: combine both (most common).
 
-Most projects use a mix. Start with the smallest change that works, then escalate only when needed.
+Most projects combine approaches, with implementation scope determined by migration complexity.
 
-## Quick Examples
+## Approach Examples
 
 - **Targeted + configuration-driven**: tune conversion/feature options in `appsettings.json`.
 - **Targeted + code-driven**: map one custom form control value or rename a widget property in `Migration.Tool.Extensions`.
 - **Command-stage flow + hybrid**: run behavior after `--sites` to prepare taxonomy data, then after `--pages` attach reusable schema fields and convert legacy values, while limiting scope via configuration.
 
-## Where to Go Next
+## Recommended Customization Path
 
-1. Review [Repository Structure](Repository-Structure.md) to understand components and boundaries.
-2. For configuration-driven changes, start with [Migration CLI README](../Migration.Tool.CLI/README.md).
-3. For targeted code-driven customizations, start with [Targeted Code-Driven Customization](Customization-Targeted-Code.md).
-4. For command-stage pipeline customization, use [Command Pipeline Architecture Guide](Customization-Pipeline-Behaviors.md).
+When customization is required, use this sequence:
+
+1. Review [Repository Structure](../Repository-Structure.md) to confirm where customization code belongs.
+2. Evaluate configuration-first options in [Migration CLI README](../../Migration.Tool.CLI/README.md).
+3. If configuration is not sufficient, implement targeted extensions described in [Targeted Code-Driven Customization](Customization-Targeted-Code.md).
+4. For cross-command or stage-specific orchestration, implement MediatR pipeline behaviors (`IPipelineBehavior<TRequest, TResponse>`) as project-specific extensions using [Command Pipeline Architecture Guide](Customization-Pipeline-Behaviors.md).

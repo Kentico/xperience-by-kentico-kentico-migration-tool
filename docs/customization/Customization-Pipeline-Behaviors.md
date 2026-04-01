@@ -4,6 +4,8 @@
 
 This guide explains command-pipeline architecture and customization using MediatR pipeline behaviors (`IPipelineBehavior<TRequest, TResponse>`).
 
+`IPipelineBehavior<TRequest, TResponse>` is a MediatR abstraction (not specific to this repository). This page documents how the migration tool uses that abstraction and where project-specific behavior implementations are added.
+
 Use this document as the canonical architecture and recipes reference for command-pipeline customizations.
 
 The command pipeline architecture is based on the [Mediator pattern](https://www.geeksforgeeks.org/system-design/mediator-design-pattern/).
@@ -13,7 +15,7 @@ The command pipeline architecture is based on the [Mediator pattern](https://www
 The migration tool executes commands (for example `MigrateSitesCommand`, `MigratePagesCommand`) through MediatR.
 Each command passes through a chain of pipeline behaviors before the command handler runs.
 
-In this repository, migration actions are modeled as MediatR commands implementing `IRequest<CommandResult>` (see [Migration.Tool.Common/Commands.cs](../Migration.Tool.Common/Commands.cs)). Commands are dispatched via `IMediator.Send(...)` in the CLI startup flow (see [Migration.Tool.CLI/Program.cs](../Migration.Tool.CLI/Program.cs)).
+In this repository, migration actions are modeled as MediatR commands implementing `IRequest<CommandResult>` (see [Migration.Tool.Common/Commands.cs](../../Migration.Tool.Common/Commands.cs)). Commands are dispatched via `IMediator.Send(...)` in the CLI startup flow (see [Migration.Tool.CLI/Program.cs](../../Migration.Tool.CLI/Program.cs)).
 
 Conceptually:
 
@@ -35,20 +37,20 @@ The tool registers three standard behaviors:
 
 Reference registrations:
 
-- Shared source abstraction layer: [KVA/Migration.Tool.Source/KsCoreDiExtensions.cs](../KVA/Migration.Tool.Source/KsCoreDiExtensions.cs)
+- Shared source abstraction layer: [KVA/Migration.Tool.Source/KsCoreDiExtensions.cs](../../KVA/Migration.Tool.Source/KsCoreDiExtensions.cs)
 - Version-specific cores:
-  - [Migration.Tool.Core.K11/K11CoreDiExtensions.cs](../Migration.Tool.Core.K11/K11CoreDiExtensions.cs)
-  - [Migration.Tool.Core.KX12/KX12CoreDiExtensions.cs](../Migration.Tool.Core.KX12/KX12CoreDiExtensions.cs)
-  - [Migration.Tool.Core.KX13/DependencyInjectionExtensions.cs](../Migration.Tool.Core.KX13/DependencyInjectionExtensions.cs)
+  - [Migration.Tool.Core.K11/K11CoreDiExtensions.cs](../../Migration.Tool.Core.K11/K11CoreDiExtensions.cs)
+  - [Migration.Tool.Core.KX12/KX12CoreDiExtensions.cs](../../Migration.Tool.Core.KX12/KX12CoreDiExtensions.cs)
+  - [Migration.Tool.Core.KX13/DependencyInjectionExtensions.cs](../../Migration.Tool.Core.KX13/DependencyInjectionExtensions.cs)
 
 Behavior implementation references:
 
-- Shared source: [KVA/Migration.Tool.Source/Behaviors/RequestHandlingBehavior.cs](../KVA/Migration.Tool.Source/Behaviors/RequestHandlingBehavior.cs)
-- Shared source: [KVA/Migration.Tool.Source/Behaviors/CommandConstraintBehavior.cs](../KVA/Migration.Tool.Source/Behaviors/CommandConstraintBehavior.cs)
-- Shared source: [KVA/Migration.Tool.Source/Behaviors/XbyKApiContextBehavior.cs](../KVA/Migration.Tool.Source/Behaviors/XbyKApiContextBehavior.cs)
-- KX13: [Migration.Tool.Core.KX13/Behaviors/RequestHandlingBehavior.cs](../Migration.Tool.Core.KX13/Behaviors/RequestHandlingBehavior.cs)
-- KX13: [Migration.Tool.Core.KX13/Behaviors/CommandConstraintBehavior.cs](../Migration.Tool.Core.KX13/Behaviors/CommandConstraintBehavior.cs)
-- KX13: [Migration.Tool.Core.KX13/Behaviors/XbKApiContextBehavior.cs](../Migration.Tool.Core.KX13/Behaviors/XbKApiContextBehavior.cs)
+- Shared source: [KVA/Migration.Tool.Source/Behaviors/RequestHandlingBehavior.cs](../../KVA/Migration.Tool.Source/Behaviors/RequestHandlingBehavior.cs)
+- Shared source: [KVA/Migration.Tool.Source/Behaviors/CommandConstraintBehavior.cs](../../KVA/Migration.Tool.Source/Behaviors/CommandConstraintBehavior.cs)
+- Shared source: [KVA/Migration.Tool.Source/Behaviors/XbyKApiContextBehavior.cs](../../KVA/Migration.Tool.Source/Behaviors/XbyKApiContextBehavior.cs)
+- KX13: [Migration.Tool.Core.KX13/Behaviors/RequestHandlingBehavior.cs](../../Migration.Tool.Core.KX13/Behaviors/RequestHandlingBehavior.cs)
+- KX13: [Migration.Tool.Core.KX13/Behaviors/CommandConstraintBehavior.cs](../../Migration.Tool.Core.KX13/Behaviors/CommandConstraintBehavior.cs)
+- KX13: [Migration.Tool.Core.KX13/Behaviors/XbKApiContextBehavior.cs](../../Migration.Tool.Core.KX13/Behaviors/XbKApiContextBehavior.cs)
 
 ## When to Use Pipeline Behaviors
 
@@ -91,7 +93,7 @@ Anchor each behavior to the command stage that guarantees the data context you n
 | `MigratePagesCommand`        | Post-page transformations, relationship backfills, schema attachment cleanup        | Page/content items and mappings are already created |
 | `MigrateCustomTablesCommand` | Table-driven transformations when table import stage matters                        | Anchors logic to custom table data stage            |
 
-Command ranks and dependencies are defined in [Migration.Tool.Common/Commands.cs](../Migration.Tool.Common/Commands.cs), and command flags are parsed in [Migration.Tool.Common/Services/CommandParser.cs](../Migration.Tool.Common/Services/CommandParser.cs).
+Command ranks and dependencies are defined in [Migration.Tool.Common/Commands.cs](../../Migration.Tool.Common/Commands.cs), and command flags are parsed in [Migration.Tool.Common/Services/CommandParser.cs](../../Migration.Tool.Common/Services/CommandParser.cs).
 
 When planning behavior placement, always verify command dependencies first.
 
@@ -107,7 +109,7 @@ This is useful for scenarios such as custom-table-to-taxonomy transformations, p
 
 ### ModelFacade
 
-`ModelFacade` ([KVA/Migration.Tool.Source/ModelFacade.cs](../KVA/Migration.Tool.Source/ModelFacade.cs)) provides read access to source instance data (K11/KX12/KX13) without triggering the default migration path. Inject it via DI:
+`ModelFacade` ([KVA/Migration.Tool.Source/ModelFacade.cs](../../KVA/Migration.Tool.Source/ModelFacade.cs)) provides read access to source instance data (K11/KX12/KX13) without triggering the default migration path. Inject it via DI:
 
 ```csharp
 public class MyBehavior(ModelFacade modelFacade)
@@ -164,7 +166,7 @@ dataClass.ClassFormDefinition = formInfo.GetXmlDefinition();
 DataClassInfoProvider.SetDataClassInfo(dataClass);
 ```
 
-`ReusableSchemaService` is registered in DI and can be injected directly into your behavior. See [KVA/Migration.Tool.Source/Services/ReusableSchemaService.cs](../KVA/Migration.Tool.Source/Services/ReusableSchemaService.cs).
+`ReusableSchemaService` is registered in DI and can be injected directly into your behavior. See [KVA/Migration.Tool.Source/Services/ReusableSchemaService.cs](../../KVA/Migration.Tool.Source/Services/ReusableSchemaService.cs).
 
 ## Implementation Pattern
 
@@ -243,11 +245,11 @@ services.AddTransient(typeof(IPipelineBehavior<,>), typeof(MyGlobalBehavior<,>))
 
 For migration customizations, register custom behaviors in:
 
-- [Migration.Tool.Extensions/ServiceCollectionExtensions.cs](../Migration.Tool.Extensions/ServiceCollectionExtensions.cs)
+- [Migration.Tool.Extensions/ServiceCollectionExtensions.cs](../../Migration.Tool.Extensions/ServiceCollectionExtensions.cs)
 
 `UseCustomizations()` is invoked during CLI startup in:
 
-- [Migration.Tool.CLI/Program.cs](../Migration.Tool.CLI/Program.cs)
+- [Migration.Tool.CLI/Program.cs](../../Migration.Tool.CLI/Program.cs)
 
 This makes `Migration.Tool.Extensions` the standard place for project-level behavior customizations.
 
@@ -301,6 +303,6 @@ Attaching schema fields before page import can increase processing overhead and 
 ## Related Documentation
 
 - [Targeted Code-Driven Customization](Customization-Targeted-Code.md)
-- [Migration.Tool.Extensions README](../Migration.Tool.Extensions/README.md)
-- [Migration CLI README](../Migration.Tool.CLI/README.md)
-- [Repository Structure](Repository-Structure.md)
+- [Migration.Tool.Extensions README](../../Migration.Tool.Extensions/README.md)
+- [Migration CLI README](../../Migration.Tool.CLI/README.md)
+- [Repository Structure](../Repository-Structure.md)

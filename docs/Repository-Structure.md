@@ -70,24 +70,25 @@ All Core projects depend on Migration.Tool.KXP.Api to interact with the target X
 
 ### Extensions (Optional)
 
-The Migration.Tool.Extensions project contains custom migration logic. It compiles as part of the solution and is automatically discovered at runtime. Consult the [Extensions Guide](../Migration.Tool.Extensions/README.md) for detailed instructions on creating field migrations, widget migrations, and custom class mappings.
+The Migration.Tool.Extensions project contains custom migration logic. It compiles as part of the solution and is automatically discovered at runtime. For implementation details, start with [Targeted Code-Driven Customization](customization/Customization-Targeted-Code.md).
 
 ## Project Modification Guide
 
-| Scenario                                                                                             | Projects to Modify                     |
-| ---------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| **[Running migrations](../README.md#running-your-first-migration)**                                  | None - configure appsettings.json only |
-| **[Custom field transformation](../Migration.Tool.Extensions/README.md#customize-field-migrations)** | `Migration.Tool.Extensions`            |
-| **[Custom widget migration](../Migration.Tool.Extensions/README.md#customize-widget-migrations)**    | `Migration.Tool.Extensions`            |
-| **[Custom class mapping](../Migration.Tool.Extensions/README.md#custom-class-mappings)**             | `Migration.Tool.Extensions`            |
-| **[Custom content type relationships](../Migration.Tool.Extensions/README.md#custom-child-links)**   | `Migration.Tool.Extensions`            |
-| **[Custom command pipeline behavior](Customization-Pipeline-Behaviors.md)**                          | `Migration.Tool.Extensions`            |
-| **[Contributing bug fixes](../README.md#contributing)**                                              | Relevant `Core.KX##` project           |
-| **Adding new data type support**                                                                     | `Core.KX##` + `Common` + `CLI`         |
+| Scenario                                                                                                          | Projects to Modify                     |
+| ----------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| **[Running migrations](../README.md#running-your-first-migration)**                                               | None - configure appsettings.json only |
+| **[Custom field transformation](customization/Customization-Field-Migrations.md)**                                | `Migration.Tool.Extensions`            |
+| **[Custom widget migration](customization/Customization-Widget-Migrations.md)**                                   | `Migration.Tool.Extensions`            |
+| **[Custom class mapping](customization/Customization-Class-Mappings.md)**                                         | `Migration.Tool.Extensions`            |
+| **[Custom content type relationships](customization/Customization-Content-Item-Directors.md#custom-child-links)** | `Migration.Tool.Extensions`            |
+| **[Custom command pipeline behavior](customization/Customization-Pipeline-Behaviors.md)**                         | `Migration.Tool.Extensions`            |
+| **[Contributing bug fixes](../README.md#contributing)**                                                           | Relevant `Core.KX##` project           |
+| **Adding new data type support**                                                                                  | `Core.KX##` + `Common` + `CLI`         |
 
 ## Related Documentation
 
-- **[Customization Guide](Customization-Decision-Guide.md)** - Decision flow for configuration-driven, code-driven, and hybrid customization approaches
-- **[Extensions README](../Migration.Tool.Extensions/README.md)** - Complete implementation guide for custom migrations, field transformations, and class mappings
-- **[Command Pipeline Architecture Guide](Customization-Pipeline-Behaviors.md)** - Advanced command-pipeline customization with `IPipelineBehavior`
+- **[Customization Guide](customization/Customization-Guide.md)** - Decision flow for configuration-driven, code-driven, and hybrid customization approaches
+- **[Targeted Code-Driven Customization](customization/Customization-Targeted-Code.md)** - Docs-first implementation guide for targeted custom migrations
+- **[Migration.Tool.Extensions README](../Migration.Tool.Extensions/README.md)** - Project purpose and extension point overview
+- **[Command Pipeline Architecture Guide](customization/Customization-Pipeline-Behaviors.md)** - Advanced command-pipeline customization with `IPipelineBehavior`
 - **[Contributing Setup](Contributing-Setup.md)** - Development environment setup and workflow for contributing to the migration tool
