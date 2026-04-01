@@ -37,5 +37,5 @@ Most projects use a mix. Start with the smallest change that works, then escalat
 
 1. Review [Repository Structure](Repository-Structure.md) to understand components and boundaries.
 2. For configuration-driven changes, start with [Migration CLI README](../Migration.Tool.CLI/README.md).
-3. For targeted code-driven customizations, start with [Targeted Code-Driven Customization](Customization-Targeted-Code.md).
+3. For targeted code-driven customizations, start with [Targeted Code-Driven Customization](customization/Customization-Targeted-Code.md).
 4. For command-stage pipeline customization, use [Command Pipeline Architecture Guide](Customization-Pipeline-Behaviors.md).

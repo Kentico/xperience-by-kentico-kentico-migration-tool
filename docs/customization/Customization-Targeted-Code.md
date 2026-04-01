@@ -21,9 +21,11 @@ Each customization type is implemented by creating a class that implements a spe
 > You can register **multiple implementations** of each customization type. For example, you can have multiple Directors, multiple class mappings, or multiple field migrations—each handling different content types or scenarios. The migration tool evaluates all registered implementations and applies those that match the current context.
 
 > [!IMPORTANT]
-> After implementing any custom migration, you must register it in the dependency injection container. See [Registration Notes](#registration-notes) for complete registration instructions.
+> After implementing any custom migration, you must register it in the dependency injection container. See [Registration](#registration) for complete registration instructions.
 
 ### Custom Class Mappings (`IClassMapping`)
+
+See [Class Mappings (`IClassMapping`)](Customization-Class-Mappings.md).
 
 Transforms content type structure and field definitions between source and target instances.
 
@@ -37,9 +39,9 @@ You can create multiple class mappings, each handling different source content t
 - Split one page type into multiple content types
 - Convert custom tables or module classes to content types
 
-See [Class Mappings (`IClassMapping`)](Customization-Class-Mappings.md).
-
 ### Content Item Directors (`ContentItemDirectorBase`)
+
+See [Content Item Directors (`ContentItemDirectorBase`)](Customization-Content-Item-Directors.md).
 
 Controls migration behavior and relationships of individual content items during data migration.
 
@@ -52,9 +54,9 @@ You can create multiple Directors, each targeting different content types or sce
 - Link child pages as content item references (e.g., link child `Book` pages in a `Books` field when migrating `Author` pages to reusable content)
 - Apply conditional logic based on content structure or hierarchy
 
-See [Content Item Directors (`ContentItemDirectorBase`)](Customization-Content-Item-Directors.md).
-
 ### Widget Migrations (`IWidgetMigration`)
+
+See [Widget Migrations (`IWidgetMigration`)](Customization-Widget-Migrations.md).
 
 Changes widget types or restructures widget data.
 
@@ -64,9 +66,9 @@ Changes widget types or restructures widget data.
 - Consolidate multiple widgets into one
 - Change widget structure
 
-See [Widget Migrations (`IWidgetMigration`)](Customization-Widget-Migrations.md).
-
 ### Widget Property Migrations (`IWidgetPropertyMigration`)
+
+See [Widget Property Migrations (`IWidgetPropertyMigration`)](Customization-Widget-Property-Migrations.md).
 
 Transforms individual widget property values.
 
@@ -76,9 +78,9 @@ Transforms individual widget property values.
 - Convert property value formats
 - Transform paths or URLs in widget data
 
-See [Widget Property Migrations (`IWidgetPropertyMigration`)](Customization-Widget-Property-Migrations.md).
-
 ### Field Migrations (`IFieldMigration`)
+
+See [Field Migrations (`IFieldMigration`)](Customization-Field-Migrations.md).
 
 Transforms individual field values during data migration.
 
@@ -88,8 +90,6 @@ Transforms individual field values during data migration.
 - Convert data formats (date formats, URL structures)
 - Transform content (HTML cleanup, path updates)
 
-See [Field Migrations (`IFieldMigration`)](Customization-Field-Migrations.md).
-
 ## When Custom Migrations Execute
 
 When registered, customizations execute based on CLI migration parameters. The order depends on parameter dependencies (e.g., `--pages` requires `--page-types` to run first):
@@ -98,7 +98,7 @@ When registered, customizations execute based on CLI migration parameters. The o
 .\Migration.Tool.CLI.exe migrate --page-types --custom-modules --forms --pages
 ```
 
-For detailed information about all available CLI parameters, their dependencies, and execution order, see [Migrate command parameters](../Migration.Tool.CLI/README.md#migrate-command-parameters) in the Migration.Tool.CLI README.
+For detailed information about all available CLI parameters, their dependencies, and execution order, see [Migrate command parameters](../../Migration.Tool.CLI/README.md#migrate-command-parameters) in the Migration.Tool.CLI README.
 
 | Migration Type                 | CLI Parameter                         |
 | ------------------------------ | ------------------------------------- |
@@ -137,7 +137,7 @@ Custom migrations are called during transformation:
 > [!TIP]
 > Use `Rank < 100000` in custom migrations when you want to override default system migrations.
 
-## Registration Notes
+## Registration
 
 Register custom implementations in [Migration.Tool.Extensions/ServiceCollectionExtensions.cs](../../Migration.Tool.Extensions/ServiceCollectionExtensions.cs).
 
