@@ -154,6 +154,6 @@ Rebuild the solution after changing registrations or custom migration classes.
 
 ## Related Documentation
 
-- [Customization Guide](Customization-Guide.md) - Overview of available Kentico Migration Tool customization options and recommended decision path.
+- [Customization Guide](../Customization-Guide.md) - Overview of available Kentico Migration Tool customization options and recommended decision path.
 - [Repository Structure](../Repository-Structure.md) - Project/component map showing where customization code belongs.
 - [Migration.Tool.Extensions README](../../Migration.Tool.Extensions/README.md) - Scope and extension-point summary for the `Migration.Tool.Extensions` project.

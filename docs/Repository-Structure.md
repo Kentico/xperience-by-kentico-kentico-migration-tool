@@ -87,7 +87,7 @@ The Migration.Tool.Extensions project contains custom migration logic. It compil
 
 ## Related Documentation
 
-- **[Customization Guide](customization/Customization-Guide.md)** - Decision flow for configuration-driven, code-driven, and hybrid customization approaches
+- **[Customization Guide](Customization-Guide.md)** - Decision flow for configuration-driven, code-driven, and hybrid customization approaches
 - **[Data Transformation Extensions](customization/Customization-Data-Transformation-Extensions.md)** - Docs-first implementation guide for targeted custom migrations
 - **[Migration.Tool.Extensions README](../Migration.Tool.Extensions/README.md)** - Project purpose and extension point overview
 - **[Command Pipeline Architecture Guide](customization/Customization-Pipeline-Behaviors.md)** - Advanced command-pipeline customization with `IPipelineBehavior`

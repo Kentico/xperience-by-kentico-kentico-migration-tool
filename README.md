@@ -34,8 +34,8 @@ Technical reference documentation for configuring and running the migration tool
 
 - **[Migration CLI README](./Migration.Tool.CLI/README.md)** - Commands, configuration options, object-specific instructions
 - **[Supported Data](./docs/Supported-Data.md)** - Complete list of what can/cannot be migrated
-- **[Customization Guide](./docs/customization/Customization-Guide.md)** - How you can customize this migration tool and how to choose the right customization approach
 - **[Repository Structure](./docs/Repository-Structure.md)** - Project organization, component relationships, codebase navigation
+- **[Customization Guide](./docs/Customization-Guide.md)** - How you can customize this migration tool and how to choose the right customization approach
 - **[Contributing Setup](./docs/Contributing-Setup.md)** - For contributors to this tool
 
 ## How Data Migration Works
@@ -118,11 +118,11 @@ For a lift-and-shift migration, use the migration tool's default configuration:
 
 ### When You Need Customization
 
-The migration tool supports configuration-driven, code-driven, and hybrid customization patterns.
+The migration tool supports configuration-driven and code-driven customization.
 
-Start with the [Customization Guide](./docs/customization/Customization-Guide.md) for the decision flow (configuration vs data transformation extensions vs command pipeline).
+You typically need customization to achieve custom project-specific behavior, and when you want to adjust your content model to take full advantage of Xperience by Kentico features (recommended).
 
-Then follow the linked implementation guides in the customization docs.
+Start with the [Customization Guide](./docs/Customization-Guide.md) for an overview of options and a decision flow for your migration scenario.
 
 ## Library Version Matrix
 
