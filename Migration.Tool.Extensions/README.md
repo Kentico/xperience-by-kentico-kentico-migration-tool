@@ -4,14 +4,14 @@
 
 ## Purpose
 
-**Migration.Tool.Extensions** is the primary project for targeted, code-driven customization of the Kentico Migration Tool. Use this project to implement custom logic that transforms your data during migration from Kentico Xperience 13, Kentico 12, or Kentico 11 to Xperience by Kentico.
+**Migration.Tool.Extensions** is the primary project for code-driven customization of the Kentico Migration Tool. Use this project to implement custom logic that transforms your data during migration from Kentico Xperience 13, Kentico 12, or Kentico 11 to Xperience by Kentico.
 
 The project enables you to:
 
-- Customize migration behavior with custom transformations
+- Customize migration behavior with content transformations
 - Handle project-specific data structures and field mappings
 - Transform widget properties and Page Builder content
-- Remodel content types and merge page types
+- Remodel content types, merge page types, create reusable field schemas
 - Control how linked pages and child relationships are migrated
 
 ## Extension Points

@@ -8,36 +8,36 @@ Use this page to choose the right customization approach quickly.
 
 The migration tool handles standard data transformations by default. Customization is typically relevant when:
 
-1. **Project-specific behavior is required** (custom field types, non-standard widgets, module/table specifics).
-2. **Content model changes are required** (restructure content types, convert pages to reusable content, transform relationships).
+1. **You need to migrate project-specific behavior** (for example, custom field types, non-standard widgets, or module/table-specific handling).
+2. **You want to evolve your content model** (for example, restructuring content types, converting pages to reusable content, or transforming relationships to better utilize Xperience by Kentico features).
 
-## Decision Model
+## Available Customization Options
 
-This model is intended as a decision aid rather than a strict process.
+See below the full supported set of customization options available in the tool, including when each one fits best:
 
-Customization choices are commonly evaluated across two dimensions:
+- **Configuration** (`appsettings.json`)
+  - Use built-in settings to tune migration behavior without writing custom code.
+  - Typical fit: scoped adjustments to built-in behavior.
+  - Example: set `MigrateOnlyMediaFileInfo` to migrate media records without files, configure `ConvertClassesToContentHub` for selected page types/custom tables, or use `CreateReusableFieldSchemaForClasses` for specific page types.
+  - See all available configuration option details in the [Migration CLI README](../Migration.Tool.CLI/README.md).
 
-- **Scope of change**
-  - **Targeted**: single field/widget/type adjustments.
-  - **Command-stage flow**: multi-step logic spanning command stages.
-- **Implementation style**
-  - **Configuration-driven** (`appsettings.json`): tune built-in behavior through options.
-  - **Code-driven** (`Migration.Tool.Extensions`): add field/widget/director/class mapping logic.
-  - **Hybrid**: combine both (most common).
+- **Data transformation extensions** (`Migration.Tool.Extensions` project)
+  - Use extension points for targeted field, widget, content type, and content item migration logic.
+  - These extensions are often used together with configuration options (`appsettings.json`) as part of a hybrid approach.
+  - Typical fit: targeted, project-specific transformations that configuration alone doesn't cover.
+  - Example: map one custom form control value, transform widget properties, migrate/reshape widget structures, customize linked page handling, convert pages to widgets, link child pages as content item references, or merge/remodel selected content types.
+  - See [Data Transformation Extensions](customization/Customization-Data-Transformation-Extensions.md) for an overview
 
-Most projects combine approaches, with implementation scope determined by migration complexity.
+- **Command pipeline customization** (`IPipelineBehavior<TRequest, TResponse>`)
+  - Use pipeline behaviors for command-stage orchestration before/after specific migration commands.
+  - See [Command Pipeline Architecture Guide](customization/Customization-Pipeline-Behaviors.md) for details.
+  - Typical fit: multi-step logic that must run at specific command stages.
+  - Example: run preparation logic after `--sites` and post-processing after `--pages` in one coordinated flow.
 
-## Approach Examples
+Most projects use a hybrid approach: start with configuration, add targeted data transformation extensions when needed, and use pipeline behaviors only for command-stage orchestration.
 
-- **Targeted + configuration-driven**: tune conversion/feature options in `appsettings.json`.
-- **Targeted + code-driven**: map one custom form control value or rename a widget property in `Migration.Tool.Extensions`.
-- **Command-stage flow + hybrid**: run behavior after `--sites` to prepare taxonomy data, then after `--pages` attach reusable schema fields and convert legacy values, while limiting scope via configuration.
-
-## Recommended Customization Path
-
-When customization is required, use this sequence:
+## Before diving into customizations
 
 1. Review [Repository Structure](../Repository-Structure.md) to confirm where customization code belongs.
-2. Evaluate configuration-first options in [Migration CLI README](../../Migration.Tool.CLI/README.md).
-3. If configuration is not sufficient, implement targeted extensions described in [Data Transformation Extensions](Customization-Data-Transformation-Extensions.md).
-4. For cross-command or stage-specific orchestration, implement MediatR pipeline behaviors (`IPipelineBehavior<TRequest, TResponse>`) as project-specific extensions using [Command Pipeline Architecture Guide](Customization-Pipeline-Behaviors.md).
+2. Start with the smallest option that can solve your scenario (typically configuration first), then move to broader customization only if needed.
+3. Use the linked guides above as your implementation references for the option you choose.
