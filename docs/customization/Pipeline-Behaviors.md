@@ -302,7 +302,8 @@ Attaching schema fields before page import can increase processing overhead and 
 
 ## Related Documentation
 
-- [Data Transformation Extensions](Customization-Data-Transformation-Extensions.md)
+- [Data Transformation Extensions](Data-Transformation-Extensions.md)
 - [Migration.Tool.Extensions README](../../Migration.Tool.Extensions/README.md)
 - [Migration CLI README](../../Migration.Tool.CLI/README.md)
 - [Repository Structure](../Repository-Structure.md)
+

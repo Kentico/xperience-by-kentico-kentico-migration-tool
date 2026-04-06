@@ -44,7 +44,7 @@ Currently, the Kentico Migration Tool supports the following types of data:
   the `DocumentUrlPath` or `NodeAliasPath`.
 - For Kentico Xperience 13 and Kentico 12, [Alternative URLs](https://docs.kentico.com/13/managing-website-content/working-with-pages/managing-page-urls#alternative-urls) are migrated to [Vanity URLs](https://docs.kentico.com/documentation/business-users/website-content/manage-page-urls#manage-vanity-urls-of-pages).
 - Linked pages are currently not supported in Xperience by Kentico. By default, the migration creates standard page copies for any
-  linked pages on the source instance. This behavior can be changed by implementing [custom handling of linked pages](customization/Customization-Content-Item-Directors.md#customize-linked-page-handling).
+  linked pages on the source instance. This behavior can be changed by implementing [custom handling of linked pages](customization/Content-Item-Directors.md#customize-linked-page-handling).
 - Page permissions are currently not supported by the Kentico Migration Tool and are not migrated. If you need page ACLs to be migrated, please [open an issue and request the feature](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/issues/new?assignees=&labels=&projects=&template=feature_request.md).
 - Migration of Page Builder content is only available for Kentico Xperience 13.
   - If you are [migrating a Kentico 12 MVC application](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/blob/master/docs/Usage-Guide.md#kentico-12-mvc) you can upgrade it to Kentico Xperience 13 using the Kentico Installation Manager (KIM) and then upgrade to Xperience by Kentico with Page Builder content.
@@ -166,3 +166,4 @@ The following types of data exist in Xperience by Kentico but are currently **no
 - Migration of Marketing automation is currently not supported
 
 Additionally, object values or other content with **Macros** will not work correctly after the migration. Macro expressions are currently not supported for most data in Xperience by Kentico.
+

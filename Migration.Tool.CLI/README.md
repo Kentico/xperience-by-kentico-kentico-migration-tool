@@ -168,7 +168,7 @@ Pages from older product versions can be migrated to either to [website channel 
     the `DocumentUrlPath` or `NodeAliasPath`.
   - For Kentico Xperience 13 and Kentico 12, [Alternative URLs](https://docs.kentico.com/13/managing-website-content/working-with-pages/managing-page-urls#alternative-urls) are migrated to [Vanity URLs](https://docs.kentico.com/documentation/business-users/website-content/manage-page-urls#manage-vanity-urls-of-pages).
 - Linked pages are currently not supported in Xperience by Kentico. By default, the migration creates standard page copies for any
-  linked pages on the source instance. This behavior can be changed by implementing [custom handling of linked pages](../docs/customization/Customization-Content-Item-Directors.md#customize-linked-page-handling).
+  linked pages on the source instance. This behavior can be changed by implementing [custom handling of linked pages](../docs/customization/Content-Item-Directors.md#customize-linked-page-handling).
 - Page permissions (ACLs) are currently not migrated into Xperience by Kentico.
 - Migration of Page Builder content is only available for Kentico Xperience 13.
 
@@ -873,9 +873,9 @@ The migration then converts the specified page types or custom tables to content
 
 **Note**: Page URLs and other page-specific configuration and metadata is not migrated in this scenario.
 
-For advanced scenarios, you can use the extensibility feature to implement [customizations](../docs/customization/Customization-Class-Mappings.md) that map specific page types, custom tables or their individual fields to reusable content types. For example, this allows you to migrate multiple page types to a single content type.
+For advanced scenarios, you can use the extensibility feature to implement [customizations](../docs/customization/Class-Mappings.md) that map specific page types, custom tables or their individual fields to reusable content types. For example, this allows you to migrate multiple page types to a single content type.
 
-To preserve relationships between pages converted to reusable content items and its children, you can use [Custom child links](../docs/customization/Customization-Content-Item-Directors.md#custom-child-links). This feature allows you to map children of the original page to a content item/page selector field of the target reusable content item.
+To preserve relationships between pages converted to reusable content items and its children, you can use [Custom child links](../docs/customization/Content-Item-Directors.md#custom-child-links). This feature allows you to map children of the original page to a content item/page selector field of the target reusable content item.
 
 ## Convert module classes to Content hub
 
@@ -895,7 +895,7 @@ Specify a list of module class code names (separated with either `;` or `,`) in 
   },
 ```
 
-For advanced scenarios, you can use the extensibility feature to implement [customizations](../docs/customization/Customization-Class-Mappings.md) that map specific module classes or their individual fields to reusable content types. For example, this allows you to migrate multiple classes to a single content type.
+For advanced scenarios, you can use the extensibility feature to implement [customizations](../docs/customization/Class-Mappings.md) that map specific module classes or their individual fields to reusable content types. For example, this allows you to migrate multiple classes to a single content type.
 
 ## Convert page types to reusable field schemas
 
@@ -914,7 +914,7 @@ The following example specifies two page types from which reusable schemas are c
 },
 ```
 
-For advanced scenarios, you can use the extensibility feature to implement [customizations](../docs/customization/Customization-Class-Mappings.md) that allow you to specify the mapping of page types to reusable field schemas. For example, this allows you to [extract fields from multiple page types into a reusable field schema](https://docs.kentico.com/x/remodel_page_types_as_reusable_field_schemas_guides).
+For advanced scenarios, you can use the extensibility feature to implement [customizations](../docs/customization/Class-Mappings.md) that allow you to specify the mapping of page types to reusable field schemas. For example, this allows you to [extract fields from multiple page types into a reusable field schema](https://docs.kentico.com/x/remodel_page_types_as_reusable_field_schemas_guides).
 
 ### :warning: Notes
 
@@ -1052,4 +1052,5 @@ Additionally, any attachments placed into the content of migrated pages **will n
 This includes images and file download links that use **/getattachment** and **/getimage** URLs.
 
 If you wish to continue using these legacy attachment URLs from earlier product versions, you need to add a custom
-handler to your Xperience by Kentico project. See [`Migration.Tool.KXP.Extensions/README.MD`](/Migration.Tool.KXP.Extensions/README.MD) for instructions.
+handler to your Xperience by Kentico project. See [Migration.Tool.KXP.Extensions/README.MD](../Migration.Tool.KXP.Extensions/README.MD) for instructions.
+

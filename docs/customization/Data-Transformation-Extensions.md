@@ -25,7 +25,7 @@ Each customization type is implemented by creating a class that implements a spe
 
 ### Custom Class Mappings (`IClassMapping`)
 
-See [Class Mappings (`IClassMapping`)](Customization-Class-Mappings.md).
+See [Class Mappings (`IClassMapping`)](Class-Mappings.md).
 
 Transforms content type structure and field definitions between source and target instances.
 
@@ -41,7 +41,7 @@ You can create multiple class mappings, each handling different source content t
 
 ### Content Item Directors (`ContentItemDirectorBase`)
 
-See [Content Item Directors (`ContentItemDirectorBase`)](Customization-Content-Item-Directors.md).
+See [Content Item Directors (`ContentItemDirectorBase`)](Content-Item-Directors.md).
 
 Controls migration behavior and relationships of individual content items during data migration.
 
@@ -56,7 +56,7 @@ You can create multiple Directors, each targeting different content types or sce
 
 ### Widget Migrations (`IWidgetMigration`)
 
-See [Widget Migrations (`IWidgetMigration`)](Customization-Widget-Migrations.md).
+See [Widget Migrations (`IWidgetMigration`)](Widget-Migrations.md).
 
 Changes widget types or restructures widget data.
 
@@ -68,7 +68,7 @@ Changes widget types or restructures widget data.
 
 ### Widget Property Migrations (`IWidgetPropertyMigration`)
 
-See [Widget Property Migrations (`IWidgetPropertyMigration`)](Customization-Widget-Property-Migrations.md).
+See [Widget Property Migrations (`IWidgetPropertyMigration`)](Widget-Property-Migrations.md).
 
 Transforms individual widget property values.
 
@@ -80,7 +80,7 @@ Transforms individual widget property values.
 
 ### Field Migrations (`IFieldMigration`)
 
-See [Field Migrations (`IFieldMigration`)](Customization-Field-Migrations.md).
+See [Field Migrations (`IFieldMigration`)](Field-Migrations.md).
 
 Transforms individual field values during data migration.
 
@@ -157,3 +157,4 @@ Rebuild the solution after changing registrations or custom migration classes.
 - [Customization Guide](../Customization-Guide.md) - Overview of available Kentico Migration Tool customization options and recommended decision path.
 - [Repository Structure](../Repository-Structure.md) - Project/component map showing where customization code belongs.
 - [Migration.Tool.Extensions README](../../Migration.Tool.Extensions/README.md) - Scope and extension-point summary for the `Migration.Tool.Extensions` project.
+

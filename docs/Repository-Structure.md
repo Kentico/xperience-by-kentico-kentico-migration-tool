@@ -70,25 +70,26 @@ All Core projects depend on Migration.Tool.KXP.Api to interact with the target X
 
 ### Extensions (Optional)
 
-The Migration.Tool.Extensions project contains custom migration logic. It compiles as part of the solution and is automatically discovered at runtime. For implementation details, start with [Data Transformation Extensions](customization/Customization-Data-Transformation-Extensions.md).
+The Migration.Tool.Extensions project contains custom migration logic. It compiles as part of the solution and is automatically discovered at runtime. For implementation details, start with [Data Transformation Extensions](customization/Data-Transformation-Extensions.md).
 
 ## Project Modification Guide
 
 | Scenario                                                                                                          | Projects to Modify                     |
 | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
 | **[Running migrations](../README.md#running-your-first-migration)**                                               | None - configure appsettings.json only |
-| **[Custom field transformation](customization/Customization-Field-Migrations.md)**                                | `Migration.Tool.Extensions`            |
-| **[Custom widget migration](customization/Customization-Widget-Migrations.md)**                                   | `Migration.Tool.Extensions`            |
-| **[Custom class mapping](customization/Customization-Class-Mappings.md)**                                         | `Migration.Tool.Extensions`            |
-| **[Custom content type relationships](customization/Customization-Content-Item-Directors.md#custom-child-links)** | `Migration.Tool.Extensions`            |
-| **[Custom command pipeline behavior](customization/Customization-Pipeline-Behaviors.md)**                         | `Migration.Tool.Extensions`            |
+| **[Custom field transformation](customization/Field-Migrations.md)**                                | `Migration.Tool.Extensions`            |
+| **[Custom widget migration](customization/Widget-Migrations.md)**                                   | `Migration.Tool.Extensions`            |
+| **[Custom class mapping](customization/Class-Mappings.md)**                                         | `Migration.Tool.Extensions`            |
+| **[Custom content type relationships](customization/Content-Item-Directors.md#custom-child-links)** | `Migration.Tool.Extensions`            |
+| **[Custom command pipeline behavior](customization/Pipeline-Behaviors.md)**                         | `Migration.Tool.Extensions`            |
 | **[Contributing bug fixes](../README.md#contributing)**                                                           | Relevant `Core.KX##` project           |
 | **Adding new data type support**                                                                                  | `Core.KX##` + `Common` + `CLI`         |
 
 ## Related Documentation
 
 - **[Customization Guide](Customization-Guide.md)** - Decision flow for configuration-driven, code-driven, and hybrid customization approaches
-- **[Data Transformation Extensions](customization/Customization-Data-Transformation-Extensions.md)** - Docs-first implementation guide for targeted custom migrations
+- **[Data Transformation Extensions](customization/Data-Transformation-Extensions.md)** - Docs-first implementation guide for targeted custom migrations
 - **[Migration.Tool.Extensions README](../Migration.Tool.Extensions/README.md)** - Project purpose and extension point overview
-- **[Command Pipeline Architecture Guide](customization/Customization-Pipeline-Behaviors.md)** - Advanced command-pipeline customization with `IPipelineBehavior`
+- **[Command Pipeline Architecture Guide](customization/Pipeline-Behaviors.md)** - Advanced command-pipeline customization with `IPipelineBehavior`
 - **[Contributing Setup](Contributing-Setup.md)** - Development environment setup and workflow for contributing to the migration tool
+

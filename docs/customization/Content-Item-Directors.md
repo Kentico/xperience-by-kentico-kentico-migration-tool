@@ -132,4 +132,5 @@ Example:
 services.AddTransient<ContentItemDirectorBase, MyLinkedPageDirector>();
 ```
 
-More details: [Data Transformation Extensions](Customization-Data-Transformation-Extensions.md#registration)
+More details: [Data Transformation Extensions](Data-Transformation-Extensions.md#registration)
+
