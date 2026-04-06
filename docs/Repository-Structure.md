@@ -70,7 +70,7 @@ All Core projects depend on Migration.Tool.KXP.Api to interact with the target X
 
 ### Extensions (Optional)
 
-The Migration.Tool.Extensions project contains custom migration logic. It compiles as part of the solution and is automatically discovered at runtime. For implementation details, start with [Targeted Code-Driven Customization](customization/Customization-Targeted-Code.md).
+The Migration.Tool.Extensions project contains custom migration logic. It compiles as part of the solution and is automatically discovered at runtime. For implementation details, start with [Data Transformation Extensions](customization/Customization-Data-Transformation-Extensions.md).
 
 ## Project Modification Guide
 
@@ -88,7 +88,7 @@ The Migration.Tool.Extensions project contains custom migration logic. It compil
 ## Related Documentation
 
 - **[Customization Guide](customization/Customization-Guide.md)** - Decision flow for configuration-driven, code-driven, and hybrid customization approaches
-- **[Targeted Code-Driven Customization](customization/Customization-Targeted-Code.md)** - Docs-first implementation guide for targeted custom migrations
+- **[Data Transformation Extensions](customization/Customization-Data-Transformation-Extensions.md)** - Docs-first implementation guide for targeted custom migrations
 - **[Migration.Tool.Extensions README](../Migration.Tool.Extensions/README.md)** - Project purpose and extension point overview
 - **[Command Pipeline Architecture Guide](customization/Customization-Pipeline-Behaviors.md)** - Advanced command-pipeline customization with `IPipelineBehavior`
 - **[Contributing Setup](Contributing-Setup.md)** - Development environment setup and workflow for contributing to the migration tool

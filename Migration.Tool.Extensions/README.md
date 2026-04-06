@@ -24,6 +24,6 @@ The project enables you to:
 
 ## Detailed Documentation
 
-See [Targeted Code-Driven Customization](../docs/customization/Customization-Targeted-Code.md) for detailed explanation on how to define custom [Class Mappings](../docs/customization/Customization-Class-Mappings.md), [Content Item Directors](../docs/customization/Customization-Content-Item-Directors.md), [Field Migrations](../docs/customization/Customization-Field-Migrations.md), [Widget Migrations](../docs/customization/Customization-Widget-Migrations.md) and [Widget Property Migrations](../docs/customization/Customization-Widget-Property-Migrations.md).
+See [Data Transformation Extensions](../docs/customization/Customization-Data-Transformation-Extensions.md) for detailed explanation on how to define custom [Class Mappings](../docs/customization/Customization-Class-Mappings.md), [Content Item Directors](../docs/customization/Customization-Content-Item-Directors.md), [Field Migrations](../docs/customization/Customization-Field-Migrations.md), [Widget Migrations](../docs/customization/Customization-Widget-Migrations.md) and [Widget Property Migrations](../docs/customization/Customization-Widget-Property-Migrations.md).
 
 For an overview of available Kentico Migration Tool customization options see the [Customization Guide](../docs/customization/Customization-Guide.md).

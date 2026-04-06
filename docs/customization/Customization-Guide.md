@@ -39,5 +39,5 @@ When customization is required, use this sequence:
 
 1. Review [Repository Structure](../Repository-Structure.md) to confirm where customization code belongs.
 2. Evaluate configuration-first options in [Migration CLI README](../../Migration.Tool.CLI/README.md).
-3. If configuration is not sufficient, implement targeted extensions described in [Targeted Code-Driven Customization](Customization-Targeted-Code.md).
+3. If configuration is not sufficient, implement targeted extensions described in [Extensions for Data Transformation](Customization-Data-Transformation-Extensions.md).
 4. For cross-command or stage-specific orchestration, implement MediatR pipeline behaviors (`IPipelineBehavior<TRequest, TResponse>`) as project-specific extensions using [Command Pipeline Architecture Guide](Customization-Pipeline-Behaviors.md).

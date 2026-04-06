@@ -120,7 +120,7 @@ For a lift-and-shift migration, use the migration tool's default configuration:
 
 The migration tool supports configuration-driven, code-driven, and hybrid customization patterns.
 
-Start with the [Customization Guide](./docs/customization/Customization-Guide.md) for the decision flow (configuration vs targeted code vs command pipeline).
+Start with the [Customization Guide](./docs/customization/Customization-Guide.md) for the decision flow (configuration vs data transformation extensions vs command pipeline).
 
 Then follow the linked implementation guides in the customization docs.
 

@@ -35,4 +35,4 @@ Register in [Migration.Tool.Extensions/ServiceCollectionExtensions.cs](../../Mig
 services.AddTransient<IWidgetMigration, MyWidgetMigration>();
 ```
 
-See also: [Targeted Code-Driven Customization](Customization-Targeted-Code.md#registration)
+See also: [Data Transformation Extensions](Customization-Data-Transformation-Extensions.md#registration)

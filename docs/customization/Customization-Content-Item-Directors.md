@@ -132,4 +132,4 @@ Example:
 services.AddTransient<ContentItemDirectorBase, MyLinkedPageDirector>();
 ```
 
-More details: [Targeted Code-Driven Customization](Customization-Targeted-Code.md#registration)
+More details: [Data Transformation Extensions](Customization-Data-Transformation-Extensions.md#registration)

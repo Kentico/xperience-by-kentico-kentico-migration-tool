@@ -1,10 +1,10 @@
-# Targeted Code-Driven Customization
+# Data Transformation Extensions
 
 > **Audience:** Developers implementing project-specific transformation logic in `Migration.Tool.Extensions`.
 
-Use this page as the docs-first entry point for targeted code-driven customization.
+Use this page as the docs-first entry point for data transformation extensions.
 
-Targeted code-driven customization is the right choice when configuration alone is not enough and you need custom transformation logic for specific fields, widgets, content types, or page relationships.
+Use this page when configuration alone is not enough and you need custom transformation logic for specific fields, widgets, content types, or page relationships.
 
 > For conceptual understanding and migration strategies, see the [Upgrade Deep Dive guides](https://docs.kentico.com/x/upgrade_deep_dives_guides). If you are a developer new to upgrades and data migration, take the [developer training on upgrades](https://docs.kentico.com/paths/xbyk-upgrade-developer) in our Learn portal.
 

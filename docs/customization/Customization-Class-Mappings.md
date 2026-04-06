@@ -96,4 +96,4 @@ Usage of `ReusableSchemaBuilder` in custom class mappings cannot be combined wit
   - `AddReusableRemodelingSample`
 - Kentico guide: [Remodel page types as reusable field schemas](https://docs.kentico.com/x/remodel_page_types_as_reusable_field_schemas_guides)
 - Kentico guide: [Speed up remodeling with AI](https://docs.kentico.com/x/speed_up_remodeling_with_ai_guides)
-- Registration details: [Targeted Code-Driven Customization](Customization-Targeted-Code.md#registration)
+- Registration details: [Data Transformation Extensions](Customization-Data-Transformation-Extensions.md#registration)
