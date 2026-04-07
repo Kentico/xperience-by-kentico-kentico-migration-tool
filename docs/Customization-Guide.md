@@ -30,7 +30,7 @@ See below the full supported set of customization options available in the tool,
 
 - **Command pipeline customization** (`IPipelineBehavior<TRequest, TResponse>`)
   - Use pipeline behaviors for command-stage orchestration before/after specific migration commands.
-  - See [Command Pipeline Architecture Guide](customization/Pipeline-Behaviors.md) for details.
+  - See [Command Pipeline Architecture](customization/Pipeline-Behaviors.md) for details.
   - Typical fit: multi-step logic that must run at specific command stages.
   - Example: run preparation logic after `--sites` and post-processing after `--pages` in one coordinated flow.
 
@@ -41,4 +41,3 @@ Most projects use a hybrid approach: start with configuration, add targeted data
 1. Review [Repository Structure](Repository-Structure.md) to confirm where customization code belongs.
 2. Start with the smallest option that can solve your scenario (typically configuration first), then move to broader customization only if needed.
 3. Use the linked guides above as your implementation references for the option you choose.
-

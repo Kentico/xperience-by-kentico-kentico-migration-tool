@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Widget migrations customize widget types or restructures widget data during migration.
+Widget migrations customize widget types or restructure widget data during migration.
 
 **Use cases:**
 
@@ -20,7 +20,7 @@ You can customize widget migration to change the widget to which source widgets 
 - `ShallMigrate` - A boolean method that specifies whether the migration shall be applied for the current widget. Use properties of the `WidgetMigrationContext` and `WidgetIdentifier` objects passed as an argument to the method to evaluate the condition. For each widget, the migration with the lowest rank that returns `true` from the `ShallMigrate` method is used.
   - `WidgetMigrationContext.SiteId` - An integer property that specifies the ID of the site on which the widget was used in the source instance.
   - `WidgetIdentifier.TypeIdentifier` - A string property that specifies the identifier of the widget.
-- `MigrateWidget`- Migrate the widget data using the following properties:
+- `MigrateWidget` - Migrate the widget data using the following properties:
   - `identifier` - A `WidgetIdentifier` object, see `ShallMigrate` to see properties.
   - `value` - A `JToken` object containing the deserialized value of the property.
   - `context` - A `WidgetMigrationContext` object, see `ShallMigrate` to see properties.

@@ -21,7 +21,7 @@ In the `Migration.Tool.Extensions/CommunityMigrations` folder, create a new file
   - `WidgetPropertyMigrationContext.SiteId` - An integer property that specifies the ID of the site on which the widget was used in the source instance.
   - `WidgetPropertyMigrationContext.EditingFormControlModel` - An object representing the [form control](https://docs.kentico.com/x/lAyRBg) of the property.
   - `propertyName` - A string property that specifies the identifier of the property.
-- `MigrateWidgetProperty`- Migrate the widget property data using the following properties:
+- `MigrateWidgetProperty` - Migrate the widget property data using the following properties:
   - `key` - Name of the property.
   - `value` - A `JToken` object containing the deserialized value of the property.
   - `context` - A `WidgetPropertyMigrationContext`. See `ShallMigrate` method to see the properties.

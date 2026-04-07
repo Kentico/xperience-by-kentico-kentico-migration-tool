@@ -2,7 +2,7 @@
 
 > **Audience:** Developers customizing page/content-item migration flow and relationships.
 
-Content item directors (`ContentItemDirectorBase`) migration behavior and relationships of individual content items during data migration.
+Content item directors (`ContentItemDirectorBase`) control migration behavior and relationships of individual content items during data migration.
 
 You can create multiple Directors, each targeting different content types or scenarios. For example, one Director can handle linked pages for `Article` types while another handles `Product` types differently.
 
@@ -190,7 +190,7 @@ After implementing the content item director, you need to [register the director
 
 This feature allows you to link child pages as referenced content items of a page converted to reusable content item.
 
-This feature is available by means of content item director.
+This feature is available through a content item director.
 
 You can apply a simple general rule to link child pages e.g. in `Children` field or you can apply more elaborate rules.
 
@@ -209,6 +209,6 @@ services.AddTransient<ContentItemDirectorBase, MyLinkedPageDirector>();
 ```
 
 > [!WARNING]
-> After adding or updating class mappings, rebuild the migration tool solution before running migration.
+> After adding or updating content item directors, rebuild the migration tool solution before running migration.
 
 For general registration guidance across all customization types, see [Data Transformation Extensions](Data-Transformation-Extensions.md#registration).

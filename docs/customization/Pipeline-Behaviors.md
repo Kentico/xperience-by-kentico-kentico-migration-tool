@@ -8,6 +8,20 @@ This page explains command-pipeline architecture and customization using MediatR
 
 Use this document as the main reference for command-pipeline customizations.
 
+## Table of Contents
+
+- [Command Pipeline Architecture](#command-pipeline-architecture)
+  - [Built-in Behaviors](#built-in-behaviors)
+  - [Custom Behaviors](#custom-behaviors)
+    - [Where custom behaviors run in the chain](#where-custom-behaviors-run-in-the-chain)
+    - [Steps to use a custom pipeline behavior](#steps-to-use-a-custom-pipeline-behavior)
+- [When to Use Custom Pipeline Behaviors](#when-to-use-custom-pipeline-behaviors)
+- [Accessing Source and Target Data](#accessing-source-and-target-data)
+  - [ModelFacade](#modelfacade)
+  - [Target API — content type and field manipulation](#target-api--content-type-and-field-manipulation)
+- [Example: Global Tags Taxonomy Migration (KX13)](#example-global-tags-taxonomy-migration-kx13)
+- [Related Documentation](#related-documentation)
+
 ## Command Pipeline Architecture
 
 The command pipeline architecture is based on the [Mediator pattern](https://www.geeksforgeeks.org/system-design/mediator-design-pattern/).
@@ -39,11 +53,11 @@ Built-in pipeline order:
 1. `XbyKApiContextBehavior` (or `XbKApiContextBehavior`, depending on source/core)
 1. Command `Handler`
 
-## Custom Behaviors
+### Custom Behaviors
 
 Project customization is done by adding your own `IPipelineBehavior<TRequest, TResponse>` implementations.
 
-### Where custom behaviors run in the chain
+#### Where custom behaviors run in the chain
 
 For a given command, the execution order is:
 
@@ -85,7 +99,7 @@ services.AddTransient(
     typeof(AttachGlobalTagsSchemaAfterPageTypesBehavior));
 ```
 
-### Steps to use a custom pipeline behavior
+#### Steps to use a custom pipeline behavior
 
 1. Pick the command stage where your data is available (for example `MigrateSitesCommand` or `MigratePagesCommand`).
    - `MigrateSitesCommand` - site-level setup

@@ -82,7 +82,7 @@ See [Widget Property Migrations (`IWidgetPropertyMigration`)](Widget-Property-Mi
 
 Transforms individual field values during data migration.
 
-See [Field Migrations (`IFieldMigration`)](Field-Migrations.md) for details an implementation.
+See [Field Migrations (`IFieldMigration`)](Field-Migrations.md) for details and implementation.
 
 **Use cases:**
 
