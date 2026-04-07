@@ -208,7 +208,7 @@ public static class ClassMappingSample
             {
                 case ConvertorTreeNodeContext treeNodeContext:
                     // here you can use available treenode context
-                    // (var nodeGuid, int nodeSiteId, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
+                    // (var nodeGuid, int nodeSiteId, int? nodeSKUID, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
                     break;
                 default:
                     // no context is available (in future, mapping feature could be extended and therefore different context will be supplied or no context at all)
@@ -303,7 +303,7 @@ public static class ClassMappingSample
             {
                 case ConvertorTreeNodeContext treeNodeContext:
                     // here you can use available treenode context
-                    // (var nodeGuid, int nodeSiteId, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
+                    // (var nodeGuid, int nodeSiteId, int? nodeSKUID, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
                     break;
                 case ConvertorCustomTableContext customTableContext:
                 {

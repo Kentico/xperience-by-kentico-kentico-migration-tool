@@ -220,7 +220,7 @@ You can customize class mappings to adjust the content model between the source 
             {
                 case ConvertorTreeNodeContext treeNodeContext:
                     // You can use the available TreeNode context here
-                    // (var nodeGuid, int nodeSiteId, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
+                    // (var nodeGuid, int nodeSiteId, int? nodeSKUID, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
                     break;
                 default:
                     // No context is available (possibly when the tool is extended with other conversion possibilities)
