@@ -25,7 +25,7 @@ You can customize widget migration to change the widget to which source widgets 
   - `value` - A `JToken` object containing the deserialized value of the property.
   - `context` - A `WidgetMigrationContext` object, see `ShallMigrate` to see properties.
 
-You can see a sample: [SampleWidgetMigration.cs](./CommunityMigrations/SampleWidgetMigration.cs)
+You can see a sample: [SampleWidgetMigration.cs](../../Migration.Tool.Extensions/CommunityMigrations/SampleWidgetMigration.cs)
 
 After implementing the migration, you need to [register the migration](#registration) in the system.
 

@@ -28,9 +28,9 @@ In the `Migration.Tool.Extensions/CommunityMigrations` folder, create a new file
 
 You can see samples:
 
-- [Path selector migration](./DefaultMigrations/WidgetPathSelectorMigration.cs)
-- [Page selector migration](./DefaultMigrations/WidgetPageSelectorMigration.cs)
-- [File selector migration](./DefaultMigrations/WidgetFileMigration.cs)
+- [Path selector migration](../../Migration.Tool.Extensions/DefaultMigrations/WidgetPathSelectorMigration.cs)
+- [Page selector migration](../../Migration.Tool.Extensions/DefaultMigrations/WidgetPageSelectorMigration.cs)
+- [File selector migration](../../Migration.Tool.Extensions/DefaultMigrations/WidgetFileMigration.cs)
 
 After implementing the migration, you need to [register the migration](#registration) in the system.
 
