@@ -50,6 +50,18 @@ public class CustomerAddressInfoMapper(
         target.CustomerAddressZip = address.AddressZip;
         target.CustomerAddressPhone = address.AddressPhone;
         target.CustomerAddressEmail = customer.CustomerEmail;
+
+        // Map country ID
+        if (mappingHelper.TranslateRequiredId<CmsCountry>(k => k.CountryId, address.AddressCountryId, out int countryId))
+        {
+            target.CustomerAddressCountryID = countryId;
+        }
+
+        // Map state ID (optional)
+        if (address.AddressStateId.HasValue && mappingHelper.TryTranslateId<CmsState>(s => s.StateId, address.AddressStateId.Value, out int? stateId))
+        {
+            target.CustomerAddressStateID = stateId ?? 0;
+        }
     }
 
     protected override ComAddress GetSourceModel(CustomerAddressInfoMapperSource source) => source.Address;
