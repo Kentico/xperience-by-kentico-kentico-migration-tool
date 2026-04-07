@@ -150,7 +150,7 @@ For more details by migration type, visit the detailed customization pages in th
 
 ## Working with Source and Target APIs
 
-- Query source data using [ModelFacade](../../KVA/Migration.Tool.Source/ModelFacade.cs).
+- Query source data using [ModelFacade](../../KVA/Migration.Tool.Source/ModelFacade.cs); for usage patterns, see [ModelFacade in Pipeline Behaviors](Pipeline-Behaviors.md#modelfacade).
 - Write to target using `IImporter` with UMT models (`ContentItemModel`, `DataClassModel`, `ContentItemLanguageMetadataModel`, `WebPageItemModel`).
 - For advanced scenarios, native [Xperience table APIs](https://docs.kentico.com/documentation/developers-and-admins/api/database-table-api) are also available.
 

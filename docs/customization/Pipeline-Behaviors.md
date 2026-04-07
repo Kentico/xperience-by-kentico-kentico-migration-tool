@@ -1,115 +1,143 @@
-# Command Pipeline Architecture Guide
+# Customization: Command Pipeline Architecture
 
 > **Audience:** Developers implementing advanced command-pipeline scenarios that span command boundaries (for example, logic that must run after `--sites` or after `--pages`).
 
-This guide explains command-pipeline architecture and customization using MediatR pipeline behaviors (`IPipelineBehavior<TRequest, TResponse>`).
+This page explains command-pipeline architecture and customization using MediatR pipeline behaviors (`IPipelineBehavior<TRequest, TResponse>`).
 
 `IPipelineBehavior<TRequest, TResponse>` is a MediatR abstraction (not specific to this repository). This page documents how the migration tool uses that abstraction and where project-specific behavior implementations are added.
 
-Use this document as the canonical architecture and recipes reference for command-pipeline customizations.
+Use this document as the main reference for command-pipeline customizations.
+
+## Command Pipeline Architecture
 
 The command pipeline architecture is based on the [Mediator pattern](https://www.geeksforgeeks.org/system-design/mediator-design-pattern/).
 
-## What It Is
-
-The migration tool executes commands (for example `MigrateSitesCommand`, `MigratePagesCommand`) through MediatR.
+The migration tool executes commands (for example `MigrateSitesCommand`, `MigratePagesCommand`) through the MediatR library.
 Each command passes through a chain of pipeline behaviors before the command handler runs.
 
 In this repository, migration actions are modeled as MediatR commands implementing `IRequest<CommandResult>` (see [Migration.Tool.Common/Commands.cs](../../Migration.Tool.Common/Commands.cs)). Commands are dispatched via `IMediator.Send(...)` in the CLI startup flow (see [Migration.Tool.CLI/Program.cs](../../Migration.Tool.CLI/Program.cs)).
 
-Conceptually:
+### Built-in Behaviors
 
-`Request -> Behavior 1 -> Behavior 2 -> ... -> Handler -> Response`
+The tool uses three standard behavior types:
 
-Concrete built-in sequence (registration order):
+- **`RequestHandlingBehavior`**
+  - Cross-cutting logging and protocol tracking around command execution. It starts a stopwatch, logs start/end timing, and reports command request/finish/error events to `IMigrationProtocol`. See [KVA/Migration.Tool.Source/Behaviors/RequestHandlingBehavior.cs](../../KVA/Migration.Tool.Source/Behaviors/RequestHandlingBehavior.cs).
+- **`CommandConstraintBehavior`**
+  - Pre-flight validation gate. It performs critical source checks and short-circuits with `CommandCheckFailedResult` if checks fail (site validity in all cores, and source-version key checks in KX12/KX13). See [KVA/Migration.Tool.Source/Behaviors/CommandConstraintBehavior.cs](../../KVA/Migration.Tool.Source/Behaviors/CommandConstraintBehavior.cs).
+- **`XbyKApiContextBehavior` / `XbKApiContextBehavior`**
+  - Target-environment bootstrap. It ensures target API initialization, verifies default admin existence, and executes downstream steps in a `CMSActionContext` under that admin. See [KVA/Migration.Tool.Source/Behaviors/XbyKApiContextBehavior.cs](../../KVA/Migration.Tool.Source/Behaviors/XbyKApiContextBehavior.cs).
 
-`Request -> RequestHandlingBehavior -> CommandConstraintBehavior -> XbyKApiContextBehavior/XbKApiContextBehavior -> Handler -> Response`
+The same three behavior categories are also implemented in the version-specific source cores for Kentico 11, Kentico Xperience 12, and Kentico Xperience 13 (`Migration.Tool.Core.K11`, `Migration.Tool.Core.KX12`, `Migration.Tool.Core.KX13`). In those projects, the API-context behavior is named `XbKApiContextBehavior`.
 
-This enables cross-cutting customization such as pre-checks, post-processing, command-flow control, and telemetry.
+Behavior registrations are configured in [KVA/Migration.Tool.Source/KsCoreDiExtensions.cs](../../KVA/Migration.Tool.Source/KsCoreDiExtensions.cs), [Migration.Tool.Core.K11/K11CoreDiExtensions.cs](../../Migration.Tool.Core.K11/K11CoreDiExtensions.cs), [Migration.Tool.Core.KX12/KX12CoreDiExtensions.cs](../../Migration.Tool.Core.KX12/KX12CoreDiExtensions.cs), and [Migration.Tool.Core.KX13/DependencyInjectionExtensions.cs](../../Migration.Tool.Core.KX13/DependencyInjectionExtensions.cs).
 
-## Built-in Behaviors
+Built-in pipeline order:
 
-The tool registers three standard behaviors:
+1. `RequestHandlingBehavior`
+1. `CommandConstraintBehavior`
+1. `XbyKApiContextBehavior` (or `XbKApiContextBehavior`, depending on source/core)
+1. Command `Handler`
 
-- `RequestHandlingBehavior` - cross-cutting logging and protocol tracking around command execution. It starts a stopwatch, logs start/end timing, and reports command request/finish/error events to `IMigrationProtocol`.
-- `CommandConstraintBehavior` - pre-flight validation gate. It performs critical source checks (for example supported source-version keys in KX12/KX13 and source-site validity) and short-circuits with `CommandCheckFailedResult` if checks fail.
-- `XbyKApiContextBehavior` / `XbKApiContextBehavior` - target-environment bootstrap. It ensures target API initialization, verifies default admin existence, and executes downstream steps in a `CMSActionContext` under that admin.
+## Custom Behaviors
 
-Reference registrations:
+Project customization is done by adding your own `IPipelineBehavior<TRequest, TResponse>` implementations.
 
-- Shared source abstraction layer: [KVA/Migration.Tool.Source/KsCoreDiExtensions.cs](../../KVA/Migration.Tool.Source/KsCoreDiExtensions.cs)
-- Version-specific cores:
-  - [Migration.Tool.Core.K11/K11CoreDiExtensions.cs](../../Migration.Tool.Core.K11/K11CoreDiExtensions.cs)
-  - [Migration.Tool.Core.KX12/KX12CoreDiExtensions.cs](../../Migration.Tool.Core.KX12/KX12CoreDiExtensions.cs)
-  - [Migration.Tool.Core.KX13/DependencyInjectionExtensions.cs](../../Migration.Tool.Core.KX13/DependencyInjectionExtensions.cs)
+### Where custom behaviors run in the chain
 
-Behavior implementation references:
+For a given command, the execution order is:
 
-- Shared source: [KVA/Migration.Tool.Source/Behaviors/RequestHandlingBehavior.cs](../../KVA/Migration.Tool.Source/Behaviors/RequestHandlingBehavior.cs)
-- Shared source: [KVA/Migration.Tool.Source/Behaviors/CommandConstraintBehavior.cs](../../KVA/Migration.Tool.Source/Behaviors/CommandConstraintBehavior.cs)
-- Shared source: [KVA/Migration.Tool.Source/Behaviors/XbyKApiContextBehavior.cs](../../KVA/Migration.Tool.Source/Behaviors/XbyKApiContextBehavior.cs)
-- KX13: [Migration.Tool.Core.KX13/Behaviors/RequestHandlingBehavior.cs](../../Migration.Tool.Core.KX13/Behaviors/RequestHandlingBehavior.cs)
-- KX13: [Migration.Tool.Core.KX13/Behaviors/CommandConstraintBehavior.cs](../../Migration.Tool.Core.KX13/Behaviors/CommandConstraintBehavior.cs)
-- KX13: [Migration.Tool.Core.KX13/Behaviors/XbKApiContextBehavior.cs](../../Migration.Tool.Core.KX13/Behaviors/XbKApiContextBehavior.cs)
+1. `RequestHandlingBehavior`
+2. `CommandConstraintBehavior`
+3. `XbyKApiContextBehavior` / `XbKApiContextBehavior`
+4. Your custom behavior (if registered for that exact command type)
+5. Command handler logic executes
 
-## When to Use Pipeline Behaviors
+Then control returns back up the chain in reverse order.
 
-Prefer documented extension points first:
+This means code before `await next()` in your custom behavior runs before the handler, and code after `await next()` runs after the handler.
 
-- `IFieldMigration` for single-field value transformation
-- `IWidgetMigration` / `IWidgetPropertyMigration` for widget-level changes
-- `ContentItemDirectorBase` for page/content-item migration decisions
-- `IClassMapping` for content type/model remapping
+For example, when migration runs with the `--sites` switch:
 
-Use `IPipelineBehavior` when you need command-flow customization around execution itself, for example:
+1. CLI triggers `IMediator.Send(new MigrateSitesCommand())`
+2. `RequestHandlingBehavior` runs
+3. `CommandConstraintBehavior` runs
+4. `XbyKApiContextBehavior`/`XbKApiContextBehavior` runs
+5. Custom behavior for `MigrateSitesCommand` (if registered) starts, runs pre-handler logic, then calls `await next()`
+6. `MigrateSitesCommand` handler runs
+7. Control returns to the custom behavior for post-handler logic (code after `await next()`), then returns up the remaining chain
 
-- run custom logic immediately before/after `MigrateSitesCommand` or `MigratePagesCommand`
-- coordinate multi-step flows that depend on command order
-- perform command-level validation and fail early
-- emit external audit/telemetry for command runs
+> [!NOTE] “Post-command” means logic that runs after `await next()` returns.
 
-## Decision Framework
+This lets you add common command-level logic, for example checks before a command runs, logic after it finishes, run-order control, and logging/monitoring.
 
-Use this preference order when choosing customization approach:
+For migration projects, the most practical pattern is **command-scoped behaviors** (closed generic registration), for example one behavior after `MigrateSitesCommand` and one after `MigratePagesCommand`.
 
-1. **Default preference** - Existing extension points:
-   - `IFieldMigration`
-   - `IWidgetMigration` / `IWidgetPropertyMigration`
-   - `ContentItemDirectorBase`
-   - `IClassMapping`
-2. **Escalation path** - `IPipelineBehavior` for command-stage flows that span multiple handlers.
-3. **Rare / avoid** - Custom CLI commands, unless you are introducing a truly new top-level migration workflow.
+Register custom behaviors in [Migration.Tool.Extensions/ServiceCollectionExtensions.cs](../../Migration.Tool.Extensions/ServiceCollectionExtensions.cs):
 
-This keeps the migration flow predictable while still allowing advanced command-pipeline customization when needed.
+```csharp
+services.AddTransient(
+    typeof(IPipelineBehavior<MigrateSitesCommand, CommandResult>),
+    typeof(CreateTaxonomiesFromCustomTablesBehavior));
 
-## Execution Anchor Model (Command Stages)
+services.AddTransient(
+    typeof(IPipelineBehavior<MigratePagesCommand, CommandResult>),
+    typeof(AttachGlobalTagsSchemaAfterPageTypesBehavior));
+```
 
-Anchor each behavior to the command stage that guarantees the data context you need.
+### Steps to use a custom pipeline behavior
 
-| Anchor command               | Typical purpose                                                                     | Why this anchor                                     |
-| ---------------------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------- |
-| `MigrateSitesCommand`        | Prepare shared prerequisites (languages, site-level metadata, taxonomy scaffolding) | Site and language context is available early        |
-| `MigratePageTypesCommand`    | Content type model changes that should happen before page migration                 | Content type shape is established here              |
-| `MigratePagesCommand`        | Post-page transformations, relationship backfills, schema attachment cleanup        | Page/content items and mappings are already created |
-| `MigrateCustomTablesCommand` | Table-driven transformations when table import stage matters                        | Anchors logic to custom table data stage            |
+1. Pick the command stage where your data is available (for example `MigrateSitesCommand` or `MigratePagesCommand`).
+   - `MigrateSitesCommand` - site-level setup
+   - `MigratePageTypesCommand` - content type structure
+   - `MigratePagesCommand` - post-page data updates
+   - `MigrateCustomTablesCommand` - custom-table processing
+   - Other commands are valid for domain-specific scenarios (for example orders, customers, forms, media libraries). If unsure, confirm order in [Migration.Tool.Common/Commands.cs](../../Migration.Tool.Common/Commands.cs).
+2. Implement `IPipelineBehavior<TCommand, CommandResult>` for that command.
+3. In `Handle(...)`, call `await next()` once, then run post-processing logic.
+4. Register the behavior in DI with a closed generic mapping in [Migration.Tool.Extensions/ServiceCollectionExtensions.cs](../../Migration.Tool.Extensions/ServiceCollectionExtensions.cs).
 
-Command ranks and dependencies are defined in [Migration.Tool.Common/Commands.cs](../../Migration.Tool.Common/Commands.cs), and command flags are parsed in [Migration.Tool.Common/Services/CommandParser.cs](../../Migration.Tool.Common/Services/CommandParser.cs).
+For a full end-to-end example, see [Example: Global Tags Taxonomy Migration (KX13)](#example-global-tags-taxonomy-migration-kx13).
 
-When planning behavior placement, always verify command dependencies first.
+> [!IMPORTANT]
+> If you have multiple custom processes for the same command stage (for example multiple post-`MigratePagesCommand` concerns), use **one consolidated custom behavior** for that command and delegate to processor services. In end-to-end runs with many customizations, this pattern is more predictable and makes it easier to verify that all steps run.
 
-## Why It Works Well for Advanced Scenarios
+```csharp
+// Processor services
+services.AddTransient<GlobalTagsSchemaPostProcessor>();
+services.AddTransient<HomepageSlideSmartFolderPostProcessor>();
+services.AddTransient<VerticalTabContentItemReferencePostProcessor>();
 
-Pipeline behaviors can combine:
+// Single consolidated behavior for post-pages stage
+services.AddTransient(
+    typeof(IPipelineBehavior<MigratePagesCommand, CommandResult>),
+    typeof(PostPageImportBehavior));
+```
 
-- **Command timing control** - anchor logic to a specific command stage
-- **Source data access** - read source objects through `ModelFacade` without forcing default migration paths
-- **Target API access** - use standard Xperience APIs in the same execution flow
+## When to Use Custom Pipeline Behaviors
 
-This is useful for scenarios such as custom-table-to-taxonomy transformations, post-page schema updates, or staged remodel operations.
+When possible, prefer data transformation extension points first (for example field, widget, content-item-director, and class-mapping customizations); see [Data Transformation Extensions](Data-Transformation-Extensions.md).
+
+Use `IPipelineBehavior` when you need command-flow customization around execution and explicit control over when logic runs.
+
+**Example use cases:**
+
+- **Create tags from source custom tables (`MigrateSitesCommand`)** - Read source lookup tables and create tags/taxonomies in the target. Do this when those tables are only helper data and should not be migrated as final objects.
+- **Fix page data after page import (`MigratePagesCommand`)** - After pages are migrated, add reusable schemas, convert old values (for example `"1|2|3"`) to a new taxonomy JSON format, and remove old fields.
+- **Run commerce commands in a safe order (`MigrateCustomersCommand` / `MigrateOrdersCommand`)** - Add checks so order migration runs only after customer/member data is ready and mapped.
+- **Run many post-page steps in one place** - Use one behavior for `MigratePagesCommand` and call small processor services from it, in a fixed order, with separate error logging for each step.
+
+## Accessing Source and Target Data
 
 ### ModelFacade
 
-`ModelFacade` ([KVA/Migration.Tool.Source/ModelFacade.cs](../../KVA/Migration.Tool.Source/ModelFacade.cs)) provides read access to source instance data (K11/KX12/KX13) without triggering the default migration path. Inject it via DI:
+`ModelFacade` ([KVA/Migration.Tool.Source/ModelFacade.cs](../../KVA/Migration.Tool.Source/ModelFacade.cs)) is your read-only window into source instance data (K11/KX12/KX13) without triggering default object migration.
+
+In practice, this means a command-scoped `IPipelineBehavior` can read source data at a precise stage (for example after `MigrateSitesCommand`) and apply custom logic before or after `await next()`.
+
+This is especially useful when your behavior depends on source table data, but you do not want to migrate those tables as final target structures.
+
+Inject it via DI and query the source directly:
 
 ```csharp
 public class MyBehavior(ModelFacade modelFacade)
@@ -120,10 +148,10 @@ public class MyBehavior(ModelFacade modelFacade)
         RequestHandlerDelegate<CommandResult> next,
         CancellationToken cancellationToken)
     {
-        // Read all records of a typed source model
+        // Get source class definitions
         var sourceClasses = modelFacade.SelectAll<ICmsClass>().ToList();
 
-        // Read rows from an arbitrary table as dictionaries (useful for custom tables)
+        // Get rows for a specific source table as dictionaries
         var rows = modelFacade.SelectAllAsDictionary("CustomTable_MyTags").ToList();
 
         return await next();
@@ -168,20 +196,45 @@ DataClassInfoProvider.SetDataClassInfo(dataClass);
 
 `ReusableSchemaService` is registered in DI and can be injected directly into your behavior. See [KVA/Migration.Tool.Source/Services/ReusableSchemaService.cs](../../KVA/Migration.Tool.Source/Services/ReusableSchemaService.cs).
 
-## Implementation Pattern
+## Example: Global Tags Taxonomy Migration (KX13)
 
-1. Create a behavior class implementing `IPipelineBehavior<TRequest, TResponse>`.
-2. Add custom pre-processing.
-3. Call `await next()` to continue (or short-circuit when required).
-4. Add custom post-processing.
-5. Register the behavior in DI.
+This example reflects a common migration pattern and shows why command-scoped behaviors are chosen.
 
-### Command-specific behavior (recommended for most customizations)
+### Scenario summary
 
-Constrain the behavior to a single command by using a closed generic. This is the most common pattern for migration customizations — you know exactly which command stage your logic depends on:
+- Source (KX13) has 6 custom tables functioning as taxonomy/tag sources.
+- Pages store selected tag IDs in pipe-separated values (for example `"1|2|3|4|5"`).
+- Target (XbyK) needs taxonomy/tag fields and reusable schema fields.
+- Goal: use source table data, but do not migrate those tables as final structures in the target instance.
+
+### Stage mapping used in practice
+
+0. **Pre-run setup (one-time, outside behaviors)**
+   - Create the reusable field schema definition once (for example with a startup customization step or admin/API setup).
+1. **After `MigrateSitesCommand`**
+   - Read source custom-table metadata/data through `ModelFacade`.
+   - Create taxonomies and tags in target.
+2. **Normal migration flow**
+   - Migrate page types and pages.
+3. **After `MigratePagesCommand`**
+   - Attach reusable schema to target content types.
+   - Convert legacy pipe-separated values to target taxonomy JSON format.
+   - Populate schema fields and remove old source fields.
+
+### Why the post-pages step matters
+
+In this case, attaching schema before page import causes heavy slowdown and repeated unmapped-field warnings. Running schema attachment and value conversion after pages are imported is more reliable.
+
+### Consolidated behavior pattern
+
+When you have multiple post-pages operations, use one consolidated behavior and call processor services from it:
 
 ```csharp
-public class MyPostPagesBehavior(ILogger<MyPostPagesBehavior> logger)
+public sealed class PostPageImportBehavior(
+    ILogger<PostPageImportBehavior> logger,
+    GlobalTagsSchemaPostProcessor globalTagsProcessor,
+    HomepageSlideSmartFolderPostProcessor homepageSlideProcessor,
+    VerticalTabContentItemReferencePostProcessor verticalTabProcessor)
     : IPipelineBehavior<MigratePagesCommand, CommandResult>
 {
     public async Task<CommandResult> Handle(
@@ -189,121 +242,95 @@ public class MyPostPagesBehavior(ILogger<MyPostPagesBehavior> logger)
         RequestHandlerDelegate<CommandResult> next,
         CancellationToken cancellationToken)
     {
-        logger.LogInformation("Before pages migration");
+        var result = await next();
 
-        var response = await next();
+        try
+        {
+            logger.LogInformation("Starting Global Tags schema post-processing...");
+            await globalTagsProcessor.ExecuteAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed during Global Tags schema post-processing.");
+        }
 
-        // Post-processing runs only after MigratePagesCommand completes
-        logger.LogInformation("After pages migration");
-        return response;
+        try
+        {
+            logger.LogInformation("Starting HomepageSlide smart folder post-processing...");
+            await homepageSlideProcessor.ExecuteAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed during HomepageSlide smart folder post-processing.");
+        }
+
+        try
+        {
+            logger.LogInformation("Starting VerticalTab content item reference post-processing...");
+            verticalTabProcessor.Execute();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed during VerticalTab content item reference post-processing.");
+        }
+
+        return result;
     }
 }
 ```
 
-Register with the closed generic:
+Processor shape:
+
+```csharp
+public sealed class VerticalTabContentItemReferencePostProcessor(
+    ILogger<VerticalTabContentItemReferencePostProcessor> logger,
+    ModelFacade modelFacade,
+    ISpoiledGuidContext spoiledGuidContext)
+{
+    public void Execute()
+    {
+        AddContentItemReferenceField();
+        PopulateContentItemReferences();
+    }
+
+    private void AddContentItemReferenceField() { /* ... */ }
+    private void PopulateContentItemReferences() { /* ... */ }
+}
+```
+
+### Registration
+
+Register custom behaviors in [Migration.Tool.Extensions/ServiceCollectionExtensions.cs](../../Migration.Tool.Extensions/ServiceCollectionExtensions.cs):
 
 ```csharp
 services.AddTransient(
     typeof(IPipelineBehavior<MigratePagesCommand, CommandResult>),
-    typeof(MyPostPagesBehavior));
+    typeof(AttachGlobalTagsSchemaAfterPageTypesBehavior));
+
+services.AddTransient<GlobalTagsSchemaPostProcessor>();
+services.AddTransient<HomepageSlideSmartFolderPostProcessor>();
+services.AddTransient<VerticalTabContentItemReferencePostProcessor>();
+services.AddTransient(
+    typeof(IPipelineBehavior<MigratePagesCommand, CommandResult>),
+    typeof(PostPageImportBehavior));
 ```
 
-### Cross-cutting behavior (all commands)
-
-To intercept every command, use the open generic form:
-
-```csharp
-public class MyGlobalBehavior<TRequest, TResponse>(
-    ILogger<MyGlobalBehavior<TRequest, TResponse>> logger)
-    : IPipelineBehavior<TRequest, TResponse>
-    where TRequest : IRequest<TResponse>
-    where TResponse : CommandResult
-{
-    public async Task<TResponse> Handle(
-        TRequest request,
-        RequestHandlerDelegate<TResponse> next,
-        CancellationToken cancellationToken)
-    {
-        logger.LogInformation("Before {Command}", typeof(TRequest).Name);
-        var response = await next();
-        logger.LogInformation("After {Command}", typeof(TRequest).Name);
-        return response;
-    }
-}
-```
-
-Register with the open generic:
-
-```csharp
-services.AddTransient(typeof(IPipelineBehavior<,>), typeof(MyGlobalBehavior<,>));
-```
+`UseCustomizations()` is wired during CLI startup in [Migration.Tool.CLI/Program.cs](../../Migration.Tool.CLI/Program.cs).
 
 > [!IMPORTANT]
-> Registration order matters. Behaviors run in the order they are added to the service collection.
-
-## Where to Register Project-Specific Behaviors
-
-For migration customizations, register custom behaviors in:
-
-- [Migration.Tool.Extensions/ServiceCollectionExtensions.cs](../../Migration.Tool.Extensions/ServiceCollectionExtensions.cs)
-
-`UseCustomizations()` is invoked during CLI startup in:
-
-- [Migration.Tool.CLI/Program.cs](../../Migration.Tool.CLI/Program.cs)
-
-This makes `Migration.Tool.Extensions` the standard place for project-level behavior customizations.
-
-## Custom CLI Command vs Pipeline Behavior
-
-It is possible to add custom commands, but this is usually unnecessary for project migrations.
-
-In most cases, use a pipeline behavior attached to an existing command stage instead of introducing a new command moniker. This avoids command-rank/dependency complexity and keeps customization aligned with the standard migration flow.
-
-## Worked Recipe: Custom Tables → Taxonomies/Tags + Post-Pages Schema Attachment
-
-This recipe mirrors a common advanced scenario:
-
-- Source uses multiple custom tables as taxonomy/tag sources.
-- Page data stores selected values in a legacy format (for example pipe-separated IDs).
-- Target requires taxonomy/tag fields in reusable schema fields.
-
-### Flow
-
-1. **After `MigrateSitesCommand`**
-   - Read source custom table metadata and rows via `ModelFacade`.
-   - Create taxonomies and tags in target.
-   - Do not import source custom tables as final target structures if they are only intermediates.
-2. **Normal migration stages**
-   - Migrate page types and pages using standard flow.
-3. **After `MigratePagesCommand`**
-   - Attach reusable schema to selected content types.
-   - Convert legacy field values (for example `"1|2|3"`) into target taxonomy JSON format.
-   - Write converted values into schema fields.
-   - Remove obsolete legacy fields.
-
-### Why post-pages schema attachment can be preferable
-
-Attaching schema fields before page import can increase processing overhead and produce repeated unmapped-field warnings for large page sets. Deferring schema attachment until pages are imported can reduce noise and improve throughput.
-
-### Safety checklist
-
-- Make behavior operations idempotent for repeated runs.
-- Add guard clauses for missing content types, fields, or source rows.
-- Log each structural change (`add schema`, `remove field`, `skip because missing`).
-- Restrict scope to known class lists when validating the scenario.
-
-## Practical Guidance
-
-- Keep behaviors idempotent for repeated migration runs.
-- Add explicit guard logging for null/missing source or target objects.
-- For expensive operations, run them in the smallest viable command stage.
-- If a behavior materially changes content model shape, document run order and rerun strategy in your project notes.
-- If performance degrades, move schema/field structure mutations to a post-pages stage and keep import stages minimal.
+> **Safety checklist**
+>
+> - Make behavior operations idempotent for repeated runs.
+> - Add guard clauses for missing content types, fields, or source rows.
+> - Log each structural change (`add schema`, `remove field`, `skip because missing`).
+> - Restrict scope to known class lists when validating the scenario.
+> - For expensive operations, run them in the smallest viable command stage.
+> - If a behavior materially changes content model shape, document run order and rerun strategy in your project notes.
+> - If performance degrades, move schema/field structure mutations to a post-pages stage and keep import stages minimal.
 
 ## Related Documentation
 
-- [Data Transformation Extensions](Data-Transformation-Extensions.md)
-- [Migration.Tool.Extensions README](../../Migration.Tool.Extensions/README.md)
-- [Migration CLI README](../../Migration.Tool.CLI/README.md)
-- [Repository Structure](../Repository-Structure.md)
-
+- [Customization Guide](../Customization-Guide.md) - Overview of available Kentico Migration Tool customization options and recommended decision path.
+- [Data Transformation Extensions](Data-Transformation-Extensions.md) - Use these extension points first for object/field/widget transformation scenarios; use pipeline behaviors when you need command-stage flow control.
+- [Repository Structure](../Repository-Structure.md) - Project/component map showing where customization code belongs.
+- [Migration CLI README](../../Migration.Tool.CLI/README.md) - CLI command options and execution flow details.
