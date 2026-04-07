@@ -25,11 +25,11 @@ Each customization type is implemented by creating a class that implements a spe
 
 ### Custom Class Mappings (`IClassMapping`)
 
-See [Class Mappings (`IClassMapping`)](Class-Mappings.md).
-
 Transforms content type structure and field definitions between source and target instances.
 
 You can create multiple class mappings, each handling different source content types. For example, one mapping can merge blog-related page types while another handles product page types.
+
+See [Class Mappings (`IClassMapping`)](Class-Mappings.md) for details and implementation.
 
 **Use cases:**
 
@@ -41,11 +41,11 @@ You can create multiple class mappings, each handling different source content t
 
 ### Content Item Directors (`ContentItemDirectorBase`)
 
-See [Content Item Directors (`ContentItemDirectorBase`)](Content-Item-Directors.md).
-
 Controls migration behavior and relationships of individual content items during data migration.
 
 You can create multiple Directors, each targeting different content types or scenarios. For example, one Director can handle linked pages for `Article` types while another handles `Product` types differently.
+
+See [Content Item Directors (`ContentItemDirectorBase`)](Content-Item-Directors.md) for details and implementation.
 
 **Use cases:**
 
@@ -56,9 +56,9 @@ You can create multiple Directors, each targeting different content types or sce
 
 ### Widget Migrations (`IWidgetMigration`)
 
-See [Widget Migrations (`IWidgetMigration`)](Widget-Migrations.md).
-
 Changes widget types or restructures widget data.
+
+See [Widget Migrations (`IWidgetMigration`)](Widget-Migrations.md) for details and implementation.
 
 **Use cases:**
 
@@ -68,9 +68,9 @@ Changes widget types or restructures widget data.
 
 ### Widget Property Migrations (`IWidgetPropertyMigration`)
 
-See [Widget Property Migrations (`IWidgetPropertyMigration`)](Widget-Property-Migrations.md).
-
 Transforms individual widget property values.
+
+See [Widget Property Migrations (`IWidgetPropertyMigration`)](Widget-Property-Migrations.md) for details and implementation.
 
 **Use cases:**
 
@@ -80,9 +80,9 @@ Transforms individual widget property values.
 
 ### Field Migrations (`IFieldMigration`)
 
-See [Field Migrations (`IFieldMigration`)](Field-Migrations.md).
-
 Transforms individual field values during data migration.
+
+See [Field Migrations (`IFieldMigration`)](Field-Migrations.md) for details an implementation.
 
 **Use cases:**
 
@@ -146,15 +146,17 @@ Register custom implementations in [Migration.Tool.Extensions/ServiceCollectionE
 
 Rebuild the solution after changing registrations or custom migration classes.
 
+For more details by migration type, visit the detailed customization pages in the [Available Customization Types](#available-customization-types) section above.
+
 ## Working with Source and Target APIs
 
 - Query source data using [ModelFacade](../../KVA/Migration.Tool.Source/ModelFacade.cs).
 - Write to target using `IImporter` with UMT models (`ContentItemModel`, `DataClassModel`, `ContentItemLanguageMetadataModel`, `WebPageItemModel`).
-- For advanced scenarios, native Xperience table APIs are also available.
+- For advanced scenarios, native [Xperience table APIs](https://docs.kentico.com/documentation/developers-and-admins/api/database-table-api) are also available.
 
 ## Related Documentation
 
 - [Customization Guide](../Customization-Guide.md) - Overview of available Kentico Migration Tool customization options and recommended decision path.
+- [Pipeline Behaviors](Pipeline-Behaviors.md) - If your scenario is not covered by data transformation extensions and you need logic in the pipeline of a specific migration command (for example `--sites` or `--pages`), use pipeline behaviors.
 - [Repository Structure](../Repository-Structure.md) - Project/component map showing where customization code belongs.
 - [Migration.Tool.Extensions README](../../Migration.Tool.Extensions/README.md) - Scope and extension-point summary for the `Migration.Tool.Extensions` project.
-
