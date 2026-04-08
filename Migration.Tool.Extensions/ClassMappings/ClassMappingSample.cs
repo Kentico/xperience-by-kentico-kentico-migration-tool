@@ -7,6 +7,8 @@ using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.Builders;
 using Migration.Tool.Common.Helpers;
 using Migration.Tool.KXP.Api.Auxiliary;
+using Migration.Tool.Source;
+using Migration.Tool.Source.Model;
 
 // ReSharper disable ArrangeMethodOrOperatorBody
 
@@ -43,6 +45,38 @@ public static class ClassMappingSample
             .BuildField("FarmRM_Clone")
             .SetFrom(sourceClassName, "CoffeeFarm", true)
             .WithFieldPatch(f => f.SetPropertyValue(FormFieldPropertyEnum.FieldCaption, "Farm RM Clone"));
+
+        // SKU field sample
+        m
+            .BuildField("CoffeeSkuNumber")
+            .ConvertFrom(sourceClassName, "CoffeeAltitude", true, (v, context) =>
+            {
+                int? skuId = (context as ConvertorTreeNodeContext)?.NodeSKUID;
+
+                if (skuId is null or <= 0)
+                {
+                    return null;
+                }
+
+                var modelFacade = KsCoreDiExtensions.ServiceProvider.GetRequiredService<ModelFacade>();
+
+                // Alternately, you can work with SKU variants if you filter by SKUParentSKUID instead of SKUID and avoid FirstOrDefault
+                var kx13Sku = modelFacade.Select<IComSku>(
+                    $"SKUID = {skuId}",
+                    "SKUNumber",
+                    []
+                ).FirstOrDefault();
+
+                return kx13Sku?.SKUNumber;
+            })
+            .WithFieldPatch(f =>
+            {
+                f.Name = "CoffeeSkuNumber";
+                f.Caption = "SKU number";
+                f.DataType = FieldDataType.Text;
+                f.AllowEmpty = true;
+                f.SetComponentName(FormComponents.AdminTextInputComponent);
+            });
 
         m
             .BuildField("CoffeeCountryRM")
