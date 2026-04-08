@@ -1,6 +1,7 @@
 using CMS.DataEngine;
 using CMS.FormEngine;
 using Kentico.Xperience.UMT.Model;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Migration.Tool.Common.Abstractions;
@@ -60,12 +61,13 @@ public static class ClassMappingSample
 
                 var modelFacade = KsCoreDiExtensions.ServiceProvider.GetRequiredService<ModelFacade>();
 
-                // Alternately, you can work with SKU variants if you filter by SKUParentSKUID instead of SKUID and avoid FirstOrDefault
+                // Consider caching a method that queries all SKUs at once, then filter with linq to avoid querying the database for each page
                 var kx13Sku = modelFacade.Select<IComSku>(
-                    $"SKUID = {skuId}",
+                    $"SKUID = @skuId",
                     "SKUNumber",
-                    []
+                    new SqlParameter("skuId", skuId.Value)
                 ).FirstOrDefault();
+                // Alternately, you can work with SKU variants if you filter by SKUParentSKUID instead of SKUID
 
                 return kx13Sku?.SKUNumber;
             })
