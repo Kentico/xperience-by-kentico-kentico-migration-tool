@@ -58,9 +58,9 @@ public class CustomerAddressInfoMapper(
         }
 
         // Map state ID (optional)
-        if (address.AddressStateId.HasValue && mappingHelper.TryTranslateId<CmsState>(s => s.StateId, address.AddressStateId.Value, out int? stateId))
+        if (address.AddressStateId.HasValue && mappingHelper.TranslateIdAllowNulls<CmsState>(s => s.StateId, address.AddressStateId.Value, out int? stateId) && stateId.HasValue)
         {
-            target.CustomerAddressStateID = stateId ?? 0;
+            target.CustomerAddressStateID = stateId.Value;
         }
     }
 
