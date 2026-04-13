@@ -82,9 +82,9 @@ public class OrderAddressInfoMapper(
         }
 
         // Map state ID (optional)
-        if (address.AddressStateId.HasValue && mappingHelper.TryTranslateId<CmsState>(s => s.StateId, address.AddressStateId.Value, out int? stateId))
+        if (address.AddressStateId.HasValue && mappingHelper.TranslateIdAllowNulls<CmsState>(s => s.StateId, address.AddressStateId.Value, out int? stateId) && stateId.HasValue)
         {
-            target.OrderAddressStateID = stateId ?? 0;
+            target.OrderAddressStateID = stateId.Value;
         }
     }
 }
