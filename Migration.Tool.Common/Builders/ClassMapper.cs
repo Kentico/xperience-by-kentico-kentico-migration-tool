@@ -147,7 +147,7 @@ public class MultiClassMapping(string targetClassName, Action<DataClassInfo>? cl
 public delegate bool MultiClassMappingCategoryFilter(string sourceClassName, int categoryID);
 
 public interface IConvertorContext;
-public record ConvertorTreeNodeContext(Guid NodeGuid, int NodeSiteId, int? DocumentId, bool MigratingFromVersionHistory) : IConvertorContext;
+public record ConvertorTreeNodeContext(Guid NodeGuid, int NodeSiteId, int? NodeSKUID, int? DocumentId, bool MigratingFromVersionHistory) : IConvertorContext;
 public record ConvertorCustomTableContext() : IConvertorContext;
 
 public interface IMappingHandlerContext;

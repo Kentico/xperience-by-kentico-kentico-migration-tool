@@ -326,7 +326,7 @@ public class ContentItemMapper(
 
                 var includedMetadata = configuration.IncludeExtendedMetadata.GetValueOrDefault(false) ? IncludedMetadata.Extended : IncludedMetadata.Basic;
                 FormFieldInfo[] commonFields = UnpackReusableFieldSchemas(fi.GetFields<FormSchemaInfo>()).ToArray();
-                var convertorContext = new ConvertorTreeNodeContext(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsDocument.DocumentID, false);
+                var convertorContext = new ConvertorTreeNodeContext(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsTree.NodeSKUID, cmsDocument.DocumentID, false);
 
                 if (sourceNodeClass.ClassIsCoupledClass)
                 {
@@ -709,7 +709,7 @@ public class ContentItemMapper(
             var fi = new FormInfo(targetFormDefinition);
             var commonFields = UnpackReusableFieldSchemas(fi.GetFields<FormSchemaInfo>()).ToArray();
             var sfi = new FormInfo(sourceFormClassDefinition);
-            var convertorContext = new ConvertorTreeNodeContext(cmsTree.NodeGUID, cmsTree.NodeSiteID, adapter.DocumentID, false);
+            var convertorContext = new ConvertorTreeNodeContext(cmsTree.NodeGUID, cmsTree.NodeSiteID, cmsTree.NodeSKUID, adapter.DocumentID, false);
             if (sourceNodeClass.ClassIsCoupledClass)
             {
                 string primaryKeyName = "";
