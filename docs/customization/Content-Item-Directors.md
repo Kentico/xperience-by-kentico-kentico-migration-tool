@@ -15,9 +15,9 @@ You can create multiple Directors, each targeting different content types or sce
 
 ## Customize Linked Page Handling
 
-When migrating from Kentico versions that support [linked pages](https://docs.kentico.com/13/managing-website-content/working-with-pages/copying-and-moving-pages-creating-linked-pages#creating-linked-pages) (pages that reference content from other pages in the content tree), you need to decide how to handle them since Xperience by Kentico doesn't support linked pages in the same way.
+When migrating from Kentico versions that support [linked pages](https://docs.kentico.com/13/managing-website-content/working-with-pages/copying-and-moving-pages-creating-linked-pages#creating-linked-pages) (pages that reference content from other pages in the content tree), you need to decide how to handle them, since Xperience by Kentico doesn't support linked pages in the same way.
 
-The linked pages director feature provides a flexible solution to customize how linked pages are handled during migration. You can choose to materialize linked content, drop it entirely, or store references in ancestor pages.
+The linked pages director feature provides a flexible solution to customize how linked pages are handled during migration.
 
 ### Understanding Linked Pages
 
@@ -31,21 +31,21 @@ In older Kentico versions, linked pages allowed you to create pages that display
 
 The linked pages director offers three main strategies for handling linked pages:
 
-### 1. Materialize (Default)
+#### 1. Materialize (Default)
 
 Creates a full copy of the linked content as an independent page.
 
-- **Use when**: You want to preserve the content structure but can accept content duplication
+- **Use when**: You want to preserve the content structure and can accept content duplication
 - **Result**: Each linked page becomes a separate content item with its own copy of the data
 
-### 2. Drop
+#### 2. Drop
 
 Completely skips migration of the linked page.
 
 - **Use when**: The linked content is no longer needed or should be handled manually
 - **Result**: The linked page will not be migrated to the target instance
 
-### 3. Store as Reference
+#### 3. Store as Reference
 
 Creates a content item reference field in an ancestor page that points to the original linked content.
 
@@ -66,22 +66,11 @@ Implement your decision logic based on available node properties (`NodeClassID`,
 
 ### Available Actions
 
-### `options.Drop()`
+Behavior and strategy guidance is covered above in [Migration Strategies](#migration-strategies). This section focuses on method syntax.
 
-Skips migration of the linked page entirely. Use for temporary content, archived pages, or content that should be handled manually.
-
-### `options.Materialize()`
-
-Creates an independent copy of the linked content (default behavior). This preserves the content structure but results in content duplication.
-
-### `options.StoreReferenceInAncestor(parentLevel, fieldName)`
-
-Creates a content item reference field in an ancestor page that points to the original linked content.
-
-**Parameters:**
-
-- `parentLevel`: Relative level of the ancestor page (-1 = direct parent, -2 = grandparent, etc.)
-- `fieldName`: Name of the content item reference field (created automatically if it doesn't exist)
+- `options.Materialize()` - Creates an independent copy of the linked content.
+- `options.Drop()` - Skips migration of the linked page.
+- `options.StoreReferenceInAncestor(parentLevel, fieldName)` - Stores a reference to the linked content in an ancestor page field; `parentLevel` is the relative ancestor level (`-1` = direct parent, `-2` = grandparent, etc.), and `fieldName` is the content item reference field name (created automatically if it doesn't exist).
 
 ### Common Strategies
 
@@ -92,7 +81,7 @@ Creates a content item reference field in an ancestor page that points to the or
 
 ### Important Considerations
 
-1. **Field creation**: When using `StoreReferenceInAncestor`, the content item reference field is created automatically if it doesn't exist.
+1. **Field creation**: When using `StoreReferenceInAncestor`, the content item reference field is created automatically if it doesn't exist. If the ancestor page uses a shared content type, the field is added to all items of that type, including those without linked items.
 
 2. **Allowed types**: If the reference field exists but doesn't allow the linked content's type, the type is automatically added to the allowed types.
 
@@ -129,7 +118,7 @@ This migration allows you to migrate pages from the source instance as [widgets]
 - If you have a page that serves as a listing and displays content from child pages, you can convert the child pages into widgets and as content items in the content hub, then link them from the widgets.
 
 > [!WARNING]
-> The target page (with a [Page Builder editable area](https://docs.kentico.com/x/7AWiCQ)) and any [Page Builder components](https://docs.kentico.com/x/6QWiCQ) used in the migration need to be present in the system before you migrate content. The target page must be either the page itself or any ancestor of the page from which the content is migrated.
+> The target page (with a [Page Builder editable area](https://docs.kentico.com/x/7AWiCQ)) and any [Page Builder components](https://docs.kentico.com/x/6QWiCQ) used in the migration must already exist in the target Xperience by Kentico instance before you migrate content. The target page must be either the page itself or any ancestor of the page from which the content is migrated.
 
 In `Migration.Tool.Extensions/CommunityMigrations`, create a new file with a class that inherits from the `ContentItemDirectorBase` class and override the `Direct(source, options)` method:
 
@@ -139,7 +128,8 @@ In `Migration.Tool.Extensions/CommunityMigrations`, create a new file with a cla
    // Store page uses a template and is the parent listing page
    if (source.SourceNode.SourceClassName == "Acme.Store")
    {
-     // Ensures the page template is present in the system
+    // Assigns the page template identifier for the migrated page.
+    // The template must already exist (be registered) in the target Xperience by Kentico instance.
      options.OverridePageTemplate("StorePageTemplate");
    }
    ```
@@ -189,8 +179,6 @@ After implementing the content item director, you need to [register the director
 ## Custom Child Links
 
 This feature allows you to link child pages as referenced content items of a page converted to reusable content item.
-
-This feature is available through a content item director.
 
 You can apply a simple general rule to link child pages e.g. in `Children` field or you can apply more elaborate rules.
 

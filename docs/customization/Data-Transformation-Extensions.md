@@ -25,7 +25,7 @@ Each customization type is implemented by creating a class that implements a spe
 
 ### Custom Class Mappings (`IClassMapping`)
 
-Transforms content type structure and field definitions between source and target instances.
+Transform content type structure and field definitions between source and target instances.
 
 You can create multiple class mappings, each handling different source content types. For example, one mapping can merge blog-related page types while another handles product page types.
 
@@ -41,7 +41,7 @@ See [Class Mappings (`IClassMapping`)](Class-Mappings.md) for details and implem
 
 ### Content Item Directors (`ContentItemDirectorBase`)
 
-Controls migration behavior and relationships of individual content items during data migration.
+Control migration behavior and relationships of individual content items during data migration.
 
 You can create multiple Directors, each targeting different content types or scenarios. For example, one Director can handle linked pages for `Article` types while another handles `Product` types differently.
 
@@ -56,7 +56,7 @@ See [Content Item Directors (`ContentItemDirectorBase`)](Content-Item-Directors.
 
 ### Widget Migrations (`IWidgetMigration`)
 
-Changes widget types or restructures widget data.
+Change widget types or restructures widget data.
 
 See [Widget Migrations (`IWidgetMigration`)](Widget-Migrations.md) for details and implementation.
 
@@ -68,7 +68,7 @@ See [Widget Migrations (`IWidgetMigration`)](Widget-Migrations.md) for details a
 
 ### Widget Property Migrations (`IWidgetPropertyMigration`)
 
-Transforms individual widget property values.
+Transform individual widget property values.
 
 See [Widget Property Migrations (`IWidgetPropertyMigration`)](Widget-Property-Migrations.md) for details and implementation.
 
@@ -80,7 +80,7 @@ See [Widget Property Migrations (`IWidgetPropertyMigration`)](Widget-Property-Mi
 
 ### Field Migrations (`IFieldMigration`)
 
-Transforms individual field values during data migration.
+Transform individual field values during data migration.
 
 See [Field Migrations (`IFieldMigration`)](Field-Migrations.md) for details and implementation.
 
@@ -109,7 +109,7 @@ For detailed information about all available CLI parameters, their dependencies,
 | **Widget Property Migrations** | `--pages`                             |
 
 > [!NOTE]
-> Class mappings run before page data migration. Field value transformations defined in class mappings (using `ConvertFrom`) are applied during content type structure migration, not during individual page processing.
+> Class mappings run before page data migration to define target structure. Field value transformations defined with `ConvertFrom` run during item data mapping and receive item-level context (for example `ConvertorTreeNodeContext`).
 
 **Execution during page migration:**
 

@@ -1,6 +1,6 @@
 # Customization: Command Pipeline Architecture
 
-> **Audience:** Developers implementing advanced command-pipeline scenarios that span command boundaries (for example, logic that must run after `--sites` or after `--pages`).
+> **Audience:** Developers implementing advanced command-pipeline scenarios at specific command stages (for example, logic that must run after `--sites` or after `--pages`).
 
 This page explains command-pipeline architecture and customization using MediatR pipeline behaviors (`IPipelineBehavior<TRequest, TResponse>`).
 
@@ -38,11 +38,11 @@ The tool uses three standard behavior types:
 - **`RequestHandlingBehavior`**
   - Cross-cutting logging and protocol tracking around command execution. It starts a stopwatch, logs start/end timing, and reports command request/finish/error events to `IMigrationProtocol`. See [KVA/Migration.Tool.Source/Behaviors/RequestHandlingBehavior.cs](../../KVA/Migration.Tool.Source/Behaviors/RequestHandlingBehavior.cs).
 - **`CommandConstraintBehavior`**
-  - Pre-flight validation gate. It performs critical source checks and short-circuits with `CommandCheckFailedResult` if checks fail (site validity in all cores, and source-version key checks in KX12/KX13). See [KVA/Migration.Tool.Source/Behaviors/CommandConstraintBehavior.cs](../../KVA/Migration.Tool.Source/Behaviors/CommandConstraintBehavior.cs).
+  - Pre-flight validation gate. It performs critical source checks and short-circuits if checks fail, using `CommandCheckFailedResult` (site validity in all `Migration.Tool.Core.*` projects, and source-version key checks in KX12/KX13). See [KVA/Migration.Tool.Source/Behaviors/CommandConstraintBehavior.cs](../../KVA/Migration.Tool.Source/Behaviors/CommandConstraintBehavior.cs).
 - **`XbyKApiContextBehavior` / `XbKApiContextBehavior`**
-  - Target-environment bootstrap. It ensures target API initialization, verifies default admin existence, and executes downstream steps in a `CMSActionContext` under that admin. See [KVA/Migration.Tool.Source/Behaviors/XbyKApiContextBehavior.cs](../../KVA/Migration.Tool.Source/Behaviors/XbyKApiContextBehavior.cs).
+  - Target-environment bootstrap. It ensures target API initialization, verifies the existence of the default admin user, and executes downstream steps in a `CMSActionContext` under that admin. See [KVA/Migration.Tool.Source/Behaviors/XbyKApiContextBehavior.cs](../../KVA/Migration.Tool.Source/Behaviors/XbyKApiContextBehavior.cs).
 
-The same three behavior categories are also implemented in the version-specific source cores for Kentico 11, Kentico Xperience 12, and Kentico Xperience 13 (`Migration.Tool.Core.K11`, `Migration.Tool.Core.KX12`, `Migration.Tool.Core.KX13`). In those projects, the API-context behavior is named `XbKApiContextBehavior`.
+The same three behavior categories also exist in the version-specific core projects for Kentico 11, Kentico Xperience 12, and Kentico Xperience 13 (`Migration.Tool.Core.K11`, `Migration.Tool.Core.KX12`, `Migration.Tool.Core.KX13`), where the API-context behavior is named `XbKApiContextBehavior`.
 
 Behavior registrations are configured in [KVA/Migration.Tool.Source/KsCoreDiExtensions.cs](../../KVA/Migration.Tool.Source/KsCoreDiExtensions.cs), [Migration.Tool.Core.K11/K11CoreDiExtensions.cs](../../Migration.Tool.Core.K11/K11CoreDiExtensions.cs), [Migration.Tool.Core.KX12/KX12CoreDiExtensions.cs](../../Migration.Tool.Core.KX12/KX12CoreDiExtensions.cs), and [Migration.Tool.Core.KX13/DependencyInjectionExtensions.cs](../../Migration.Tool.Core.KX13/DependencyInjectionExtensions.cs).
 
@@ -67,6 +67,9 @@ For a given command, the execution order is:
 4. Your custom behavior (if registered for that exact command type)
 5. Command handler logic executes
 
+> [!IMPORTANT]
+> Keep this order intact in your custom implementations. Moving custom behaviors ahead of built-in behaviors may bypass mandatory validation checks, API context setup, and other shared logic, which may lead to hard-to-diagnose issues.
+
 Then control returns back up the chain in reverse order.
 
 This means code before `await next()` in your custom behavior runs before the handler, and code after `await next()` runs after the handler.
@@ -77,11 +80,9 @@ For example, when migration runs with the `--sites` switch:
 2. `RequestHandlingBehavior` runs
 3. `CommandConstraintBehavior` runs
 4. `XbyKApiContextBehavior`/`XbKApiContextBehavior` runs
-5. Custom behavior for `MigrateSitesCommand` (if registered) starts, runs pre-handler logic, then calls `await next()`
+5. `MigrateSitesCommand` custom behavior starts (if registered), runs pre-handler logic, then calls `await next()`
 6. `MigrateSitesCommand` handler runs
 7. Control returns to the custom behavior for post-handler logic (code after `await next()`), then returns up the remaining chain
-
-> [!NOTE] “Post-command” means logic that runs after `await next()` returns.
 
 This lets you add common command-level logic, for example checks before a command runs, logic after it finishes, run-order control, and logging/monitoring.
 
@@ -96,7 +97,7 @@ services.AddTransient(
 
 services.AddTransient(
     typeof(IPipelineBehavior<MigratePagesCommand, CommandResult>),
-    typeof(AttachGlobalTagsSchemaAfterPageTypesBehavior));
+    typeof(AttachGlobalTagsSchemaAfterPagesBehavior));
 ```
 
 #### Steps to use a custom pipeline behavior
@@ -114,7 +115,7 @@ services.AddTransient(
 For a full end-to-end example, see [Example: Global Tags Taxonomy Migration (KX13)](#example-global-tags-taxonomy-migration-kx13).
 
 > [!IMPORTANT]
-> If you have multiple custom processes for the same command stage (for example multiple post-`MigratePagesCommand` concerns), use **one consolidated custom behavior** for that command and delegate to processor services. In end-to-end runs with many customizations, this pattern is more predictable and makes it easier to verify that all steps run.
+> If you have multiple custom processes for the same command stage (for example multiple post-`MigratePagesCommand` concerns), register **one consolidated custom behavior** for that command and delegate to processor services. Avoid registering multiple `IPipelineBehavior<Command, CommandResult>` implementations for the same command stage. In end-to-end runs, with multiple same-command behaviors, some may silently not run, which is difficult to diagnose. The consolidated pattern is more predictable and easier to verify.
 
 ```csharp
 // Processor services
@@ -130,15 +131,16 @@ services.AddTransient(
 
 ## When to Use Custom Pipeline Behaviors
 
-When possible, prefer data transformation extension points first (for example field, widget, content-item-director, and class-mapping customizations); see [Data Transformation Extensions](Data-Transformation-Extensions.md).
+When possible, start with data transformation extension points (for example field, widget, content-item-director, and class-mapping customizations); see [Data Transformation Extensions](Data-Transformation-Extensions.md).
 
-Use `IPipelineBehavior` when you need command-flow customization around execution and explicit control over when logic runs.
+Use `IPipelineBehavior` when you need command-flow customization and explicit control over when logic runs.
+
+Pipeline behaviors are recommended for orchestration and post-import workflows. Class mappings can still handle many of these scenarios, but pipelines usually provide better control and efficiency for advanced cases such as cross-entity lookups. For a concrete example, see [Example: Global Tags Taxonomy Migration (KX13)](#example-global-tags-taxonomy-migration-kx13), where taxonomy setup runs after `MigrateSitesCommand` and value conversion/schema updates run after `MigratePagesCommand`.
 
 **Example use cases:**
 
 - **Create tags from source custom tables (`MigrateSitesCommand`)** - Read source lookup tables and create tags/taxonomies in the target. Do this when those tables are only helper data and should not be migrated as final objects.
 - **Fix page data after page import (`MigratePagesCommand`)** - After pages are migrated, add reusable schemas, convert old values (for example `"1|2|3"`) to a new taxonomy JSON format, and remove old fields.
-- **Run commerce commands in a safe order (`MigrateCustomersCommand` / `MigrateOrdersCommand`)** - Add checks so order migration runs only after customer/member data is ready and mapped.
 - **Run many post-page steps in one place** - Use one behavior for `MigratePagesCommand` and call small processor services from it, in a fixed order, with separate error logging for each step.
 
 ## Accessing Source and Target Data
@@ -212,7 +214,7 @@ DataClassInfoProvider.SetDataClassInfo(dataClass);
 
 ## Example: Global Tags Taxonomy Migration (KX13)
 
-This example reflects a common migration pattern and shows why command-scoped behaviors are chosen.
+This example reflects a common migration pattern and shows one practical way to use command-scoped behaviors.
 
 ### Scenario summary
 
@@ -293,6 +295,9 @@ public sealed class PostPageImportBehavior(
 }
 ```
 
+> [!NOTE]
+> This example uses a continue-on-error pattern for post-processing: each processor failure is logged, and the behavior still returns the original command result. Use this pattern when non-critical cleanup should not fail the whole command.
+
 Processor shape:
 
 ```csharp
@@ -318,8 +323,8 @@ Register custom behaviors in [Migration.Tool.Extensions/ServiceCollectionExtensi
 
 ```csharp
 services.AddTransient(
-    typeof(IPipelineBehavior<MigratePagesCommand, CommandResult>),
-    typeof(AttachGlobalTagsSchemaAfterPageTypesBehavior));
+    typeof(IPipelineBehavior<MigrateSitesCommand, CommandResult>),
+    typeof(CreateTaxonomiesFromCustomTablesBehavior));
 
 services.AddTransient<GlobalTagsSchemaPostProcessor>();
 services.AddTransient<HomepageSlideSmartFolderPostProcessor>();
@@ -328,6 +333,8 @@ services.AddTransient(
     typeof(IPipelineBehavior<MigratePagesCommand, CommandResult>),
     typeof(PostPageImportBehavior));
 ```
+
+This registration shows the recommended pattern: one behavior per command stage, with multiple processor services composed inside that behavior.
 
 `UseCustomizations()` is wired during CLI startup in [Migration.Tool.CLI/Program.cs](../../Migration.Tool.CLI/Program.cs).
 

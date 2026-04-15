@@ -96,7 +96,7 @@ You can create multiple class mappings, each handling different source content t
 
 ## Important Behavior
 
-Mappings replace default migration behavior for source classes where at least one source field is mapped. If only some fields are mapped, unmapped fields from that source class are not migrated automatically.
+Mappings replace the default migration behavior for any source class with at least one mapped field. When the mapping covers only a subset of fields, the remaining fields in that source class are not migrated automatically.
 
 ## Reusable Field Schema Note
 
@@ -113,7 +113,7 @@ If you need class mappings to alter several data classes in Kentico Xperience 13
 You can find sample class mappings in [Migration.Tool.Extensions/ClassMappings/ClassMappingSample.cs](../../Migration.Tool.Extensions/ClassMappings/ClassMappingSample.cs).
 
 - `AddSimpleRemodelingSample` showcases how to change the mapping of a single page type.
-- `AddClassMergeSample` showcases how to merge two page types into a single content type.
+- `AddClassMergeExample` showcases how to merge two page types into a single content type.
 - `AddReusableRemodelingSample` showcases how to migrate a page type as reusable content.
 
 ## Registration
