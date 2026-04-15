@@ -64,7 +64,7 @@ The `LinkedPageSource` provides access to:
 
 Implement your decision logic based on available node properties (`NodeClassID`, `NodeAliasPath`, `NodeName`, etc.) and call the appropriate action method.
 
-### Available Actions
+#### Available Actions
 
 Behavior and strategy guidance is covered above in [Migration Strategies](#migration-strategies). This section focuses on method syntax.
 
@@ -72,14 +72,14 @@ Behavior and strategy guidance is covered above in [Migration Strategies](#migra
 - `options.Drop()` - Skips migration of the linked page.
 - `options.StoreReferenceInAncestor(parentLevel, fieldName)` - Stores a reference to the linked content in an ancestor page field; `parentLevel` is the relative ancestor level (`-1` = direct parent, `-2` = grandparent, etc.), and `fieldName` is the content item reference field name (created automatically if it doesn't exist).
 
-### Common Strategies
+#### Common Strategies
 
 - **Content Type-Based**: Use `NodeClassID` to look up the content type and apply different strategies based on page type.
 - **Path-Based**: Filter by `NodeAliasPath` to handle different sections of your site (e.g., archive pages, temporary content).
 - **Site-Specific**: Use `source.SourceSite.SiteName` to apply different rules for different sites in multi-site scenarios.
 - **Contextual**: Combine node properties with ancestor analysis to make intelligent decisions about reference placement.
 
-### Important Considerations
+#### Important Considerations
 
 1. **Field creation**: When using `StoreReferenceInAncestor`, the content item reference field is created automatically if it doesn't exist. If the ancestor page uses a shared content type, the field is added to all items of that type, including those without linked items.
 
@@ -91,7 +91,7 @@ Behavior and strategy guidance is covered above in [Migration Strategies](#migra
 
 5. **Cross-site links**: Links between different sites are not supported and will be skipped with a warning.
 
-### Sample Implementation
+#### Sample Implementation
 
 You can see a comprehensive sample implementation in [SampleLinkedPageDirector.cs](../../Migration.Tool.Extensions/CommunityMigrations/SampleLinkedPageDirector.cs) that demonstrates various strategies for handling linked pages based on content type, path, and site context.
 
