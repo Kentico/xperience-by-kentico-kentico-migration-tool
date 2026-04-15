@@ -70,9 +70,9 @@ For a given command, the execution order is:
 > [!IMPORTANT]
 > Keep this order intact in your custom implementations. Moving custom behaviors ahead of built-in behaviors may bypass mandatory validation checks, API context setup, and other shared logic, which may lead to hard-to-diagnose issues.
 
-Then control returns back up the chain in reverse order.
+Control then moves back up the pipeline in reverse order.
 
-This means code before `await next()` in your custom behavior runs before the handler, and code after `await next()` runs after the handler.
+Code before `await next()` in your custom behavior runs before the handler. Code after `await next()` runs after the handler.
 
 For example, when migration runs with the `--sites` switch:
 
@@ -115,7 +115,9 @@ services.AddTransient(
 For a full end-to-end example, see [Example: Global Tags Taxonomy Migration (KX13)](#example-global-tags-taxonomy-migration-kx13).
 
 > [!IMPORTANT]
-> If you have multiple custom processes for the same command stage (for example multiple post-`MigratePagesCommand` concerns), register **one consolidated custom behavior** for that command and delegate to processor services. Avoid registering multiple `IPipelineBehavior<Command, CommandResult>` implementations for the same command stage. In end-to-end runs, with multiple same-command behaviors, some may silently not run, which is difficult to diagnose. The consolidated pattern is more predictable and easier to verify.
+> If you have multiple custom processes for the same command stage (for example, multiple post-`MigratePagesCommand` concerns), register **one consolidated custom behavior** for that command and delegate to processor services.
+>
+> Avoid registering multiple `IPipelineBehavior<Command, CommandResult>` implementations for the same command stage. In end-to-end runs with multiple same-command behaviors, some may silently not run, which is difficult to diagnose. The consolidated pattern is more predictable and easier to verify.
 
 ```csharp
 // Processor services
