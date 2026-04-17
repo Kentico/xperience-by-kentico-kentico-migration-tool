@@ -155,7 +155,10 @@ public class MigrateOrdersCommandHandler(
 
             try
             {
-                OrderInfo.Provider.Set(orderInfo);
+                using (new CMSActionContext { UpdateTimeStamp = false })
+                {
+                    OrderInfo.Provider.Set(orderInfo);
+                }
 
                 logger.LogEntitySetAction(newInstance, orderInfo);
             }
