@@ -477,7 +477,7 @@ public class AssetFacade(
                 !string.IsNullOrWhiteSpace(toolConfiguration.KxCmsDirPath))
         {
             var pathParts = new List<string>();
-            if (cmsMediaLibrariesFolder != null)
+            if (!string.IsNullOrEmpty(cmsMediaLibrariesFolder))
             {
                 if (Path.IsPathRooted(cmsMediaLibrariesFolder))
                 {

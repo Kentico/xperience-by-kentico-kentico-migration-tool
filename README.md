@@ -12,7 +12,7 @@ The Kentico Migration Tool transfers content and other data from **Kentico Xperi
 
 The tool migrates data models and content only. Code migration is not supported. Migrations can be performed multiple times with built-in and custom data transformations.
 
-## Complete Upgrade Documentation  
+## Complete Upgrade Documentation
 
 This repository contains the data migration tool and its technical reference documentation. For comprehensive guidance on upgrading from Kentico Xperience 13 to Xperience by Kentico, including planning, walkthroughs, and advanced techniques, see the [Learn portal upgrade guides](https://docs.kentico.com/x/migrate_from_kx13_guides).
 
@@ -32,13 +32,11 @@ This repository contains the data migration tool and its technical reference doc
 
 Technical reference documentation for configuring and running the migration tool:
 
-| Document | Purpose |
-|----------|---------|
-| **[Migration CLI README](./Migration.Tool.CLI/README.md)** | Commands, configuration options, object-specific instructions |
-| **[Supported Data](./docs/Supported-Data.md)** | Complete list of what can/cannot be migrated |
-| **[Extensions README](./Migration.Tool.Extensions/README.md)** | How to create custom migrations |
-| **[Repository Structure](./docs/Repository-Structure.md)** | Project organization, component relationships, codebase navigation |
-| **[Contributing Setup](./docs/Contributing-Setup.md)** | For contributors to this tool |
+- **[Migration CLI README](./Migration.Tool.CLI/README.md)** - Commands, configuration options, object-specific instructions
+- **[Supported Data](./docs/Supported-Data.md)** - Complete list of what can/cannot be migrated
+- **[Repository Structure](./docs/Repository-Structure.md)** - Project organization, component relationships, codebase navigation
+- **[Customization Guide](./docs/Customization-Guide.md)** - How you can customize this migration tool and how to choose the right customization approach
+- **[Contributing Setup](./docs/Contributing-Setup.md)** - For contributors to this tool
 
 ## How Data Migration Works
 
@@ -56,9 +54,13 @@ The migration follows six sequential steps:
 6. **Generate Reports** - Outputs console logs and log files
 
 The migration tool is:
+
 - **Iterative** - Supports multiple runs that update existing data without creating duplicates (UPSERT behavior)
 - **Selective** - Migrates only specific data types using command parameters
 - **Extensible** - Applies custom transformations for project-specific requirements
+
+> [!NOTE]
+> **Architecture note:** Migration execution is orchestrated using the [**Mediator pattern**](https://refactoring.guru/design-patterns/mediator), implemented with [**MediatR**](https://github.com/LuckyPennySoftware/MediatR) command handlers and pipeline behaviors. This means individual migration commands are handled through a central dispatching layer, which keeps execution flow modular and makes it easier to extend, customize, and reason about stage-specific behavior. For customization entry points, see [When You Need Customization](#when-you-need-customization).
 
 ## How to Run the Kentico Migration Tool
 
@@ -69,12 +71,12 @@ Before running the migration, ensure you have:
 - **Source instance** (K11/KX12/KX13) running and accessible
   - KX13 must be **Refresh 5 (hotfix 13.0.64) or higher**
 - **Target Xperience by Kentico instance** set up and running
-   - must be compatible with the version of migration tool (see [version compatibility matrix](#library-version-matrix))
+  - must be compatible with the version of migration tool (see [version compatibility matrix](#library-version-matrix))
 - **[.NET 8.0 or newer](https://dotnet.microsoft.com/en-us/download/dotnet) SDK** installed
 - **Kentico Migration Tool source code** cloned or downloaded from this repository
 
-   > [!NOTE]
-   > We recommend to maintain a separate copy of the Migration Tool per project to keep project-specific configurations and customizations isolated.
+  > [!NOTE]
+  > We recommend to maintain a separate copy of the Migration Tool per project to keep project-specific configurations and customizations isolated.
 
 > **Need help with instance setup?** The [Migration CLI README](./Migration.Tool.CLI/README.md) provides detailed instructions for configuring both source and target instances.
 
@@ -89,12 +91,14 @@ For a lift-and-shift migration, use the migration tool's default configuration:
 3. **Build the solution** - Open `Migration.Tool.sln` in your IDE and build in Release mode for optimal performance. (Use Debug mode when developing custom migrations or troubleshooting issues.)
 
 4. **Run the migration** - Navigate to the output directory and execute the CLI tool:
+
    ```powershell
    cd .\Migration.Tool.CLI\bin\Release\net8.0
    .\Migration.Tool.CLI.exe migrate --sites --users --page-types --pages
    ```
 
    For a complete migration with all data types:
+
    ```powershell
    .\Migration.Tool.CLI.exe migrate
    --sites --custom-modules --users --settings-keys --page-types --pages --type-restrictions --contact-management --forms --media-libraries --data-protection --custom-tables --members --categories
@@ -110,27 +114,22 @@ For a lift-and-shift migration, use the migration tool's default configuration:
 > [!TIP]
 > **First-time user?** See the **[Migration CLI Setup Guide](./Migration.Tool.CLI/README.md)** for detailed instructions on configuring source and target instances, understanding `appsettings.json` options, and command parameters.
 >
->
 > **Learning by doing?** Follow our [Upgrade Walkthrough](https://docs.kentico.com/x/upgrade_walkthrough_guides) - a step-by-step, code-along guide using the Dancing Goat sample site. The guide covers both data migration and code adjustments to display a Kentico Xperience 13 page seamlessly in Xperience by Kentico.
 
 ### When You Need Customization
 
-The migration tool handles standard data transformations automatically. However, you may need to customize the migration process for:
+The migration tool supports configuration-driven and code-driven customization.
 
-1. **Project-specific custom implementations** - When migrating custom field types, Page Builder widgets with non-standard properties, or custom modules/tables requiring specialized data handling
-2. **Content model optimization** - When restructuring your content to better align with Xperience by Kentico architecture, such as converting web pages to reusable content items, flattening hierarchical structures, or transforming Page Builder widget data
+You typically need customization to achieve custom project-specific behavior, and when you want to adjust your content model to take full advantage of Xperience by Kentico features (recommended).
 
-To understand when and how to implement customizations:
-
-1. Review the [Repository Structure](./docs/Repository-Structure.md) to understand how the migration tool components interact.
-2. Consult the [Extensions Guide](./Migration.Tool.Extensions/README.md) for detailed instructions on customizing migration.
+Start with the [Customization Guide](./docs/Customization-Guide.md) for an overview of options and a decision flow for your migration scenario.
 
 ## Library Version Matrix
 
 View all [project releases](https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/releases/).
 
 | Xperience Version | Library Version |
-| ------------------| ----------------|
+| ----------------- | --------------- |
 | >= 31.4.0         | >= 4.3.0        |
 | >= 31.2.0         | >= 4.2.0        |
 | >= 31.0.0         | >= 4.0.0        |
@@ -179,7 +178,6 @@ This project has **Full support by 7-day bug-fix policy**:
 - The Migration Tool is a temporary utility designed for one-time migrations, not long-term production software
 
 To report bugs, upgrade to the latest Migration Tool version before submitting issues.
-
 
 See [`SUPPORT.md`](https://github.com/Kentico/.github/blob/main/SUPPORT.md#full-support) for more information.
 
