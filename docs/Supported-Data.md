@@ -121,6 +121,8 @@ Currently, the Kentico Migration Tool supports the following types of data:
 
 - The migration only transfers the settings that exist in Xperience by Kentico.
 - The migration excludes site-specific settings that do not have a corresponding website channel-specific alternative in Xperience by Kentico.
+- The migration does not transfer settings configured in application files, like **web.config** and **appsettings.json**. Manually move these setting values to the corresponding settings in the Xperience by Kentico admin UI where possible, and set applicable [configuration keys](https://docs.kentico.com/x/JQKQC) when no admin setting is available.
+  - In the case of `CMSForbiddenURLValues`, we specifically recommend migrating its value to the `CMSForbiddenURLCharacters` setting, to avoid issues with migrated URLs during content sync.
 
 ### Customers
 
