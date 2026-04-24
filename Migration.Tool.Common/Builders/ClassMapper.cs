@@ -19,7 +19,7 @@ public interface IClassMapping
     string? GetTargetFieldName(string sourceColumnName, string sourceClassName);
     string GetSourceFieldName(string targetColumnName, string nodeClassClassName);
     bool IsCategoryMapped(string sourceClassName, int categoryID);
-    void UseResusableSchema(string reusableSchemaName);
+    void UseReusableSchema(string reusableSchemaName);
     IList<string> ReusableSchemaNames { get; }
 
     /// <summary>
@@ -117,7 +117,7 @@ public class MultiClassMapping(string targetClassName, Action<DataClassInfo>? cl
 
     public bool IsMatch(string sourceClassName) => SourceClassNames.Contains(sourceClassName);
 
-    public void UseResusableSchema(string reusableSchemaName)
+    public void UseReusableSchema(string reusableSchemaName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(reusableSchemaName);
 

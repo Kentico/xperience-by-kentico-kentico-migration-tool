@@ -535,13 +535,13 @@ public static class ClassMappingSample
         m.BuildField("CafeID").AsPrimaryKey();
 
         // declare that we intend to use reusable schema and set mappings to new fields from old ones
-        m.UseResusableSchema(schemaNameDgcCommon);
+        m.UseReusableSchema(schemaNameDgcCommon);
         m.BuildField("City").SetFrom(sourceClassName, "CafeCity");
         m.BuildField("Street").SetFrom(sourceClassName, "CafeStreet");
         m.BuildField("ZipCode").SetFrom(sourceClassName, "CafeZipCode");
         m.BuildField("Phone").SetFrom(sourceClassName, "CafePhone");
 
-        m.UseResusableSchema(schemaNameDgcName);
+        m.UseReusableSchema(schemaNameDgcName);
         m.BuildField("Name").SetFrom(sourceClassName, "CafeName");
 
         // old fields we leave in data class
@@ -551,7 +551,7 @@ public static class ClassMappingSample
         // in similar manner we can define other classes where we want to use reusable schema
         // var m2 = new MultiClassMapping("DancingGoatCore.MyOtherClass", target =>
         // ...
-        // m2.UseResusableSchema(schemaNameDgcCommon);
+        // m2.UseReusableSchema(schemaNameDgcCommon);
         // m2.BuildField ...
         // serviceCollection.AddSingleton<IClassMapping>(m2);
 
@@ -591,7 +591,7 @@ public static class ClassMappingSample
         m.BuildField("ArticleID").AsPrimaryKey();
 
         // declare that we intend to use reusable schema and set mappings to new fields from old ones
-        m.UseResusableSchema("DancingGoatCore.ArticleBase");
+        m.UseReusableSchema("DancingGoatCore.ArticleBase");
         m.BuildField("ArticleTitle").SetFrom("DancingGoatCore.Article", "ArticleTitle", true);
         m.BuildField("ArticleTeaser").SetFrom("DancingGoatCore.Article", "ArticleTeaser", true);
 
@@ -648,7 +648,7 @@ public static class ClassMappingSample
             .SetFrom(sourceClassName, "ArticleRelatedArticles");
 
         // Reusable field schema field mapping
-        m.UseResusableSchema("PrefabBase");
+        m.UseReusableSchema("PrefabBase");
         m.BuildField("PrefabBaseTitle")
             .SetFrom(sourceClassName, "ArticleTitle");
 
