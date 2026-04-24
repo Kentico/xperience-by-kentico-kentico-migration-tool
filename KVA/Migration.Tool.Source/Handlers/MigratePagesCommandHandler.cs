@@ -773,7 +773,7 @@ public class MigratePagesCommandHandler(
         List<ContentItemCommonDataInfo> contentItemCommonDataInfos, ICmsDocument? ksDocument, ICmsTree ksTree, string documentCulture, bool wasLinkedNode, WebPageItemInfo webPageItemInfo)
     {
         var languageInfo = ContentLanguageInfoProvider.ProviderObject.Get(languageGuid);
-        var webSiteChannel = WebsiteChannelInfoProvider.ProviderObject.Get(webSiteChannelGuid);
+        var webSiteChannel = WebsiteChannelInfo.Provider.Get(webSiteChannelGuid);
 
         #region Migration of custom routing model
 
@@ -960,7 +960,7 @@ public class MigratePagesCommandHandler(
         }
 
         var languageInfo = ContentLanguageInfoProvider.ProviderObject.Get(languageGuid);
-        var webSiteChannel = WebsiteChannelInfoProvider.ProviderObject.Get(ksSite.SiteGUID);
+        var webSiteChannel = WebsiteChannelInfo.Provider.Get(ksSite.SiteGUID);
 
         var ksUrls = modelFacade.SelectWhere<ICmsAlternativeUrl>("AlternativeUrlDocumentID = @documentId AND AlternativeUrlSiteID = @siteId",
             new SqlParameter("documentId", ksDocument.DocumentID), new SqlParameter("siteId", ksSite.SiteID)).ToArray();

@@ -163,7 +163,7 @@ public class ContentItemMapper(
             .FirstOrDefault();
         string? treePath = targetWebPage?.WebPageItemTreePath;
 
-        var websiteChannelInfo = WebsiteChannelInfoProvider.ProviderObject.Get(siteGuid);
+        var websiteChannelInfo = WebsiteChannelInfo.Provider.Get(siteGuid);
         var treePathConvertor = TreePathConvertor.GetSiteConverter(websiteChannelInfo.WebsiteChannelID);
         if (treePath == null)
         {
