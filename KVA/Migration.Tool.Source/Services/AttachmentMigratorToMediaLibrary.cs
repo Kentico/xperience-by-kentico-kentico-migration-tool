@@ -198,7 +198,7 @@ public class AttachmentMigratorToMediaLibrary(
                 logger.LogEntitySetAction(newInstance, mediaFileInfo);
 
 #pragma warning disable CS0618 // Type or member is obsolete
-                return Task.FromResult((IMigrateAttachmentResult)new MigrateAttachmentResultMediaFile(true, mediaFileInfo, MediaLibraryInfoProvider.ProviderObject.Get(targetMediaLibraryId)));
+                return Task.FromResult((IMigrateAttachmentResult)new MigrateAttachmentResultMediaFile(true, mediaFileInfo, MediaLibraryInfo.Provider.Get(targetMediaLibraryId)));
 #pragma warning restore CS0618 // Type or member is obsolete
             }
             catch (Exception exception)

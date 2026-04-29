@@ -46,7 +46,7 @@ public class MigrateMembersCommandHandler(
             protocol.FetchedSource(kx13User);
             logger.LogTrace("Migrating user {UserName} with UserGuid {UserGuid} to member", kx13User.UserName, kx13User.UserGuid);
 
-            var xbkMemberInfo = MemberInfoProvider.ProviderObject.Get(kx13User.UserGuid);
+            var xbkMemberInfo = MemberInfo.Provider.Get(kx13User.UserGuid);
 
             protocol.FetchedTarget(xbkMemberInfo);
 
@@ -84,7 +84,7 @@ public class MigrateMembersCommandHandler(
 
             try
             {
-                MemberInfoProvider.ProviderObject.Set(memberInfo);
+                MemberInfo.Provider.Set(memberInfo);
 
                 protocol.Success(kx13User, memberInfo, mapped);
                 logger.LogEntitySetAction(newInstance, memberInfo);

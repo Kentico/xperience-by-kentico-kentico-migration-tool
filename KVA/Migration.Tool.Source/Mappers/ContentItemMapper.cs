@@ -1383,7 +1383,7 @@ public class ContentItemMapper(
             return cachedLanguageName;
         }
 
-        var languageName = ContentLanguageInfoProvider.ProviderObject.Get()
+        var languageName = ContentLanguageInfo.Provider.Get()
             .WhereEquals(nameof(ContentLanguageInfo.ContentLanguageCultureFormat), cultureCode)
             .FirstOrDefault()?.ContentLanguageName;
 

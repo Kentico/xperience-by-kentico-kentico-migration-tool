@@ -70,7 +70,7 @@ public class MigrateSitesCommandHandler(
                     continue;
                 }
 
-                var existing = ContentLanguageInfoProvider.ProviderObject.Get()
+                var existing = ContentLanguageInfo.Provider.Get()
                     .WhereEquals(nameof(ContentLanguageInfo.ContentLanguageCultureFormat), cmsCulture.CultureCode)
                     .FirstOrDefault();
 

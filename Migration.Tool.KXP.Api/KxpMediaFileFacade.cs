@@ -44,7 +44,7 @@ public class KxpMediaFileFacade
 #pragma warning restore CS0618 // Type or member is obsolete
 
 #pragma warning disable CS0618 // Type or member is obsolete
-    public MediaLibraryInfo GetMediaLibraryInfo(Guid mediaLibraryGuid) => MediaLibraryInfoProvider.ProviderObject.Get(mediaLibraryGuid);
+    public MediaLibraryInfo GetMediaLibraryInfo(Guid mediaLibraryGuid) => MediaLibraryInfo.Provider.Get(mediaLibraryGuid);
 #pragma warning restore CS0618 // Type or member is obsolete
 
     public static bool IsDirectoryNameAllowed(string name)

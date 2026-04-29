@@ -203,10 +203,10 @@ public class ClassMappingProvider(
                 {
                     if (modelFacade.SelectById<ICmsSite>(cmsClassSite.SiteID) is { SiteGUID: var siteGuid })
                     {
-                        if (ChannelInfoProvider.ProviderObject.Get(siteGuid) is { ChannelID: var channelId })
+                        if (ChannelInfo.Provider.Get(siteGuid) is { ChannelID: var channelId })
                         {
                             var info = new ContentTypeChannelInfo { ContentTypeChannelChannelID = channelId, ContentTypeChannelContentTypeID = newDt.ClassID };
-                            ContentTypeChannelInfoProvider.ProviderObject.Set(info);
+                            ContentTypeChannelInfo.Provider.Set(info);
                         }
                         else
                         {

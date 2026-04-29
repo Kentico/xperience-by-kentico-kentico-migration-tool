@@ -57,7 +57,7 @@ public class AttachmentsService : ActionResultServiceBase
             string fileName = System.IO.Path.GetFileNameWithoutExtension(pathAndFileName);
 
 #pragma warning disable CS0618 // Type or member is obsolete
-            var mediaFiles = MediaFileInfoProvider.ProviderObject.Get()
+            var mediaFiles = MediaFileInfo.Provider.Get()
                 .Columns(
                     nameof(MediaFileInfo.FileID), nameof(MediaFileInfo.FilePath), nameof(MediaFileInfo.FileCustomData),
                     nameof(MediaFileInfo.FileLibraryID), nameof(MediaFileInfo.FileName), nameof(MediaFileInfo.FileMimeType)
