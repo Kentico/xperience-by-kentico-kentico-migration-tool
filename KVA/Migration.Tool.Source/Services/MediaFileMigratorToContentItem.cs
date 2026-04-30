@@ -99,7 +99,7 @@ public class MediaFileMigratorToContentItem(
         foreach (var director in directors)
         {
             director.Direct(contentItemSource, directiveFacade);
-            if (directiveFacade.Directive is not null)
+            if (directiveFacade.Directive is not PassthroughDirective)
             {
                 break;
             }

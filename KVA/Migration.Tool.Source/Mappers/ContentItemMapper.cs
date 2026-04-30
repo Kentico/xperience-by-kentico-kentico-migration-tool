@@ -633,7 +633,7 @@ public class ContentItemMapper(
         {
             director.MediaInfoLoader = new Func<Guid, JToken>(LoadMediaInfo);
             director.Direct(contentItemSource, directiveFacade);
-            if (directiveFacade.Directive is not null)
+            if (directiveFacade.Directive is not PassthroughDirective)
             {
                 break;
             }
