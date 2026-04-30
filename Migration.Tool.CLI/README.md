@@ -140,6 +140,8 @@ pages, you must manually adjust your website's implementation to match the new d
 See [Editing components in Xperience by Kentico](https://docs.xperience.io/x/wIfWCQ) to learn more about some of the
 most common components and selectors.
 
+If migrated content types contain fields with names used internally in Xperience by Kentico (*Asset* or *SystemFields*), rename those fields after migration. For naming rules, see [Field naming guidelines](https://docs.kentico.com/documentation/developers-and-admins/development/content-types#field-naming-guidelines).
+
 #### Reusable field schemas
 
 You can create [reusable field schemas](https://docs.kentico.com/x/D4_OD) from page types from which other page types
