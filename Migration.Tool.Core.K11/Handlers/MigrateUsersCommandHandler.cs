@@ -45,7 +45,7 @@ public class MigrateUsersCommandHandler(
             protocol.FetchedSource(k11User);
             logger.LogTrace("Migrating user {UserName} with UserGuid {UserGuid}", k11User.UserName, k11User.UserGuid);
 
-            var xbkUserInfo = UserInfoProvider.ProviderObject.Get(k11User.UserGuid);
+            var xbkUserInfo = UserInfo.Provider.Get(k11User.UserGuid);
 
             protocol.FetchedTarget(xbkUserInfo);
 
@@ -93,7 +93,7 @@ public class MigrateUsersCommandHandler(
                 {
                     logger.LogError($"User {userInfo.UserName} does not have an email set. Email is required. You can set it via admin web interface of your source instance or directly in CMS_User database table.");
                 }
-                UserInfoProvider.ProviderObject.Set(userInfo);
+                UserInfo.Provider.Set(userInfo);
 
                 protocol.Success(k11User, userInfo, mapped);
                 logger.LogEntitySetAction(newInstance, userInfo);
@@ -174,7 +174,7 @@ public class MigrateUsersCommandHandler(
 
             protocol.FetchedSource(k11CmsRole);
 
-            var xbkRoleInfo = RoleInfoProvider.ProviderObject.Get(k11CmsRole.RoleGuid);
+            var xbkRoleInfo = RoleInfo.Provider.Get().WhereEquals(nameof(RoleInfo.RoleGUID), k11CmsRole.RoleGuid).FirstOrDefault();
             protocol.FetchedTarget(xbkRoleInfo);
             var mapped = roleMapper.Map(k11CmsRole, xbkRoleInfo);
             protocol.MappedTarget(mapped);
@@ -187,7 +187,7 @@ public class MigrateUsersCommandHandler(
             ArgumentNullException.ThrowIfNull(roleInfo, nameof(roleInfo));
             try
             {
-                RoleInfoProvider.ProviderObject.Set(roleInfo);
+                RoleInfo.Provider.Set(roleInfo);
 
                 protocol.Success(k11CmsRole, roleInfo, mapped);
                 logger.LogEntitySetAction(newInstance, roleInfo);
@@ -244,7 +244,7 @@ public class MigrateUsersCommandHandler(
                 continue;
             }
 
-            var xbkUserRole = UserRoleInfoProvider.ProviderObject.Get(xbkUserId, xbkRoleId);
+            var xbkUserRole = UserRoleInfo.Provider.Get(xbkUserId, xbkRoleId);
             protocol.FetchedTarget(xbkUserRole);
 
             var mapped = userRoleMapper.Map(k11UserRole, xbkUserRole);
@@ -257,7 +257,7 @@ public class MigrateUsersCommandHandler(
 
                 try
                 {
-                    UserRoleInfoProvider.ProviderObject.Set(userRoleInfo);
+                    UserRoleInfo.Provider.Set(userRoleInfo);
 
                     protocol.Success(k11UserRole, userRoleInfo, mapped);
                     logger.LogEntitySetAction(newInstance, userRoleInfo);

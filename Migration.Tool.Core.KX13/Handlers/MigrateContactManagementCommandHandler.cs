@@ -370,7 +370,8 @@ public class MigrateContactManagementCommandHandler(
 
         if (columnName.Equals(nameof(KX13M.OmActivity.ActivityCulture), StringComparison.InvariantCultureIgnoreCase) && value is string cultureCode)
         {
-            return ValueInterceptorResult.ReplaceValue(ContentLanguageInfoProvider.ProviderObject.Get(cultureCode)?.ContentLanguageID);
+            var language = ContentLanguageInfo.Provider.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageName), cultureCode).FirstOrDefault();
+            return ValueInterceptorResult.ReplaceValue(language?.ContentLanguageID);
         }
 
         return ValueInterceptorResult.DoNothing;

@@ -60,7 +60,7 @@ public class MigrateCustomersCommandHandler(
             MemberInfo? xbkMemberInfo = null;
             if (kx13User is not null)
             {
-                xbkMemberInfo = MemberInfoProvider.ProviderObject.Get(kx13User.UserGuid);
+                xbkMemberInfo = MemberInfo.Provider.Get(kx13User.UserGuid);
             }
 
             var sourceSiteName = kx13Customer.CustomerSite?.SiteName;
