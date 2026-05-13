@@ -43,13 +43,20 @@ public class HtmlProcessor
         {
             if (node?.Attributes[attributeName].Value is { } src)
             {
-                var matchedLink = mediaLinkService.MatchMediaLink(src, currentSiteId);
-                var newValue = await TransformMediaLink(matchedLink, src, linkType, mediaLinkTransformer);
-
-                if (newValue != src)
+                try
                 {
-                    node.Attributes[attributeName].Value = newValue;
-                    changed = true;
+                    var matchedLink = mediaLinkService.MatchMediaLink(src, currentSiteId);
+                    var newValue = await TransformMediaLink(matchedLink, src, linkType, mediaLinkTransformer);
+
+                    if (newValue != src)
+                    {
+                        node.Attributes[attributeName].Value = newValue;
+                        changed = true;
+                    }
+                }
+                catch (UriFormatException)
+                {
+                    // Malformed URI in source HTML - skip this link and preserve the original value
                 }
             }
         }

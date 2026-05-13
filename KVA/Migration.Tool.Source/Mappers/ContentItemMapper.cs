@@ -633,12 +633,17 @@ public class ContentItemMapper(
         {
             director.MediaInfoLoader = new Func<Guid, JToken>(LoadMediaInfo);
             director.Direct(contentItemSource, directiveFacade);
-            if (directiveFacade.Directive is not null)
+            if (directiveFacade.Directive is DropDirective)
             {
                 break;
             }
         }
-        directiveFacade.Directive!.FormerUrlPaths ??= contentItemSource.FormerUrlPaths;
+
+        if (directiveFacade.Directive is not DropDirective)
+        {
+            directiveFacade.Directive!.FormerUrlPaths ??= contentItemSource.FormerUrlPaths;
+        }
+
         return directiveFacade.Directive!;
     }
 
