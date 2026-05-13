@@ -54,9 +54,9 @@ public class HtmlProcessor
                         changed = true;
                     }
                 }
-                catch (UriFormatException)
+                catch (Exception)
                 {
-                    // Malformed URI in source HTML - skip this link and preserve the original value
+                    // Unsupported/malformed URI in source HTML or other type of error during link conversion - skip this link and preserve the original value
                 }
             }
         }
