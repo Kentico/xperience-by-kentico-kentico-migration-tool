@@ -7,8 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Kentico.Xperience.Core" Version="31.4.0" />
-        <PackageReference Include="Kentico.Xperience.WebApp" Version="31.4.0" />
+        <PackageReference Include="Kentico.Xperience.Core" Version="31.5.0" />
+        <PackageReference Include="Kentico.Xperience.WebApp" Version="31.5.0" />
     </ItemGroup>
 
 </Project>
