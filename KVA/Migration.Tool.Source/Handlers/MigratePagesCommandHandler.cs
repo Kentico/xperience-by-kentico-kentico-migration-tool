@@ -417,13 +417,11 @@ public class MigratePagesCommandHandler(
                             }
                         }
 
-                        var targetClassInfo = contentItemDirective!.TargetClassInfo;
-
                         if (contentItemDirective is not DropDirective)
                         {
                             AssertVersionStatusRule(commonDataInfos);
 
-                            if (webPageItemInfo != null && targetClassInfo is { ClassWebPageHasUrl: true })
+                            if (contentItemDirective != null && webPageItemInfo != null && contentItemDirective.TargetClassInfo is { ClassWebPageHasUrl: true })
                             {
                                 await GenerateDefaultPageUrlPath(ksNode, webPageItemInfo);
                                 if (!contentItemDirective!.RegenerateUrlPath)
