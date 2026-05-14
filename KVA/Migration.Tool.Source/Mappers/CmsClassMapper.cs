@@ -172,7 +172,7 @@ public class CmsClassMapper(
                     target.ClassType = ClassType.OTHER;
                     target.ClassContentTypeType = null;
                 }
-                target = PatchDataClassInfo(target, existingFieldGUIDs, modelFacade.SelectVersion(), [], IncludedMetadata.None, out string? oldPrimaryKeyName, out string? documentNameField);
+                target = PatchDataClassInfo(target, existingFieldGUIDs, modelFacade.SelectVersion(), IncludedMetadata.None, out string? oldPrimaryKeyName, out string? documentNameField);
 
                 break;
             }
@@ -206,7 +206,7 @@ public class CmsClassMapper(
                 target.ClassType = ClassType.CONTENT_TYPE;
                 target.ClassContentTypeType = ClassContentTypeType.REUSABLE;
 
-                target = PatchDataClassInfo(target, existingFieldGUIDs, modelFacade.SelectVersion(), [], configuration.IncludeExtendedMetadata.GetValueOrDefault(false) ? IncludedMetadata.Extended : IncludedMetadata.Basic, out string? oldPrimaryKeyName, out string? documentNameField);
+                target = PatchDataClassInfo(target, existingFieldGUIDs, modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false) ? IncludedMetadata.Extended : IncludedMetadata.Basic, out string? oldPrimaryKeyName, out string? documentNameField);
                 break;
             }
 
@@ -224,7 +224,7 @@ public class CmsClassMapper(
                     ? ClassContentTypeType.REUSABLE
                     : ClassContentTypeType.WEBSITE;
 
-                target = PatchDataClassInfo(target, existingFieldGUIDs, modelFacade.SelectVersion(), [], configuration.IncludeExtendedMetadata.GetValueOrDefault(false) ? IncludedMetadata.Extended : IncludedMetadata.Basic, out string? oldPrimaryKeyName, out string? documentNameField);
+                target = PatchDataClassInfo(target, existingFieldGUIDs, modelFacade.SelectVersion(), configuration.IncludeExtendedMetadata.GetValueOrDefault(false) ? IncludedMetadata.Extended : IncludedMetadata.Basic, out string? oldPrimaryKeyName, out string? documentNameField);
                 break;
             }
 
@@ -268,7 +268,7 @@ public class CmsClassMapper(
         Extended
     }
 
-    public static DataClassInfo PatchDataClassInfo(DataClassInfo dataClass, Dictionary<string, Guid> existingFieldGUIDs, SemanticVersion version, Dictionary<Guid, string> reusableSchemaNames, IncludedMetadata includedMetadata, out string? oldPrimaryKeyName, out string? mappedLegacyField)
+    public static DataClassInfo PatchDataClassInfo(DataClassInfo dataClass, Dictionary<string, Guid> existingFieldGUIDs, SemanticVersion version, IncludedMetadata includedMetadata, out string? oldPrimaryKeyName, out string? mappedLegacyField)
     {
         oldPrimaryKeyName = null;
         mappedLegacyField = null;
@@ -299,7 +299,7 @@ public class CmsClassMapper(
 
             foreach (var dataDefinitionItem in fi.GetFormElements(true, true) ?? [])
             {
-                if (!nfi.ItemsList.Any(x => IsSameFormElement(reusableSchemaNames, dataDefinitionItem, x)))
+                if (!nfi.ItemsList.Any(x => IsSameFormElement(dataDefinitionItem, x)))
                 {
                     if (dataDefinitionItem is FormFieldInfo ffi)
                     {
@@ -337,7 +337,7 @@ public class CmsClassMapper(
 
             foreach (var field in GetLegacyMetadataFields(version, includedMetadata))
             {
-                AppendLegacyMetadataField(nfi, dataClass.ClassName, field, reusableSchemaNames, out mappedLegacyField);
+                AppendLegacyMetadataField(nfi, dataClass.ClassName, field, out mappedLegacyField);
             }
             dataClass.ClassFormDefinition = nfi.GetXmlDefinition();
 
@@ -377,7 +377,7 @@ public class CmsClassMapper(
         return null;
     }
 
-    private static void AppendLegacyMetadataField(FormInfo nfi, string newClassName, LegacyDocumentMetadataFieldMapping mapping, Dictionary<Guid, string> reusableSchemaNames, out string targetFieldName)
+    private static void AppendLegacyMetadataField(FormInfo nfi, string newClassName, LegacyDocumentMetadataFieldMapping mapping, out string targetFieldName)
     {
         if (GetMappedLegacyField(nfi, newClassName, mapping.LegacyFieldName) is { } fieldName)
         {
@@ -394,7 +394,7 @@ public class CmsClassMapper(
 
         var formFieldInfo = GetLegacyMetadataFormFieldInfo(mapping, targetFieldName, newClassName);
 
-        if (!nfi.ItemsList.Any(x => IsSameFormElement(reusableSchemaNames, formFieldInfo, x)))
+        if (!nfi.ItemsList.Any(x => IsSameFormElement(formFieldInfo, x)))
         {
             nfi.AddFormItem(formFieldInfo);
         }
@@ -415,7 +415,7 @@ public class CmsClassMapper(
     };
 
 
-    private static bool IsSameFormElement(Dictionary<Guid, string> reusableSchemaNames, IDataDefinitionItem element1, IDataDefinitionItem element2)
+    private static bool IsSameFormElement(IDataDefinitionItem element1, IDataDefinitionItem element2)
     {
         if (element1 is FormFieldInfo ffi1 && element2 is FormFieldInfo ffi2)
         {
@@ -423,9 +423,7 @@ public class CmsClassMapper(
         }
         else if (element1 is FormSchemaInfo fsi1 && element2 is FormSchemaInfo fsi2)
         {
-            return reusableSchemaNames.TryGetValue(fsi1.Guid, out string? schemaName1) &&
-                reusableSchemaNames.TryGetValue(fsi2.Guid, out string? schemaName2) &&
-                schemaName1.Equals(schemaName2, StringComparison.InvariantCultureIgnoreCase);
+            return fsi1.Guid == fsi2.Guid;
         }
         else
         {
