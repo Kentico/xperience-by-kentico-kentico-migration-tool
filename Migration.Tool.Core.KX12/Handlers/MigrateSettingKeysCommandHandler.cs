@@ -70,7 +70,7 @@ public class MigrateSettingKeysCommandHandler(
             {
                 ArgumentNullException.ThrowIfNull(result.Item, nameof(result.Item));
 
-                SettingsKeyInfoProvider.ProviderObject.Set(result.Item);
+                SettingsKeyInfo.Provider.Set(result.Item);
 
                 protocol.Success(k12CmsSettingsKey, kxoCmsSettingsKey, mapped);
                 logger.LogEntitySetAction(result.NewInstance, result.Item);
@@ -80,5 +80,5 @@ public class MigrateSettingKeysCommandHandler(
         return new GenericCommandResult();
     }
 
-    private SettingsKeyInfo? GetKxoSettingsKey(KX12M.CmsSettingsKey k12CmsSettingsKey) => SettingsKeyInfoProvider.ProviderObject.Get(k12CmsSettingsKey.KeyName);
+    private SettingsKeyInfo? GetKxoSettingsKey(KX12M.CmsSettingsKey k12CmsSettingsKey) => SettingsKeyInfo.Provider.Get(k12CmsSettingsKey.KeyName);
 }

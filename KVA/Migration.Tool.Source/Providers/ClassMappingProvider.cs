@@ -120,13 +120,6 @@ public class ClassMappingProvider(
 
             newDt.ClassFormDefinition = nfi.GetXmlDefinition();
 
-            var reusableSchemas = new Dictionary<Guid, string>();
-            foreach (string schemaName in classMapping.ReusableSchemaNames)
-            {
-                Guid schemaGuid = reusableSchemaService.AddReusableSchemaToDataClass(newDt, schemaName);
-                reusableSchemas[schemaGuid] = schemaName;
-            }
-
             nfi = new FormInfo(newDt.ClassFormDefinition);
 
             var fieldInReusableSchemas = reusableSchemaService.GetFieldsFromReusableSchema(newDt).ToDictionary(x => x.Name, x => x);
@@ -172,7 +165,7 @@ public class ClassMappingProvider(
 
             var includedMetadata = cmsClasses.Any(x => x.ClassResourceID.HasValue) ? IncludedMetadata.None : (configuration.IncludeExtendedMetadata.GetValueOrDefault(false) ? IncludedMetadata.Extended : IncludedMetadata.Basic);
             FormDefinitionHelper.MapFormDefinitionFields(logger, fieldMigrationService, nfi.GetXmlDefinition(), false, true, newDt, false, false, new FormInfo(newDt.ClassFormDefinition).GetFormElements(true, true).Select(x => GetFormElementName(x)));
-            PatchDataClassInfo(newDt, [], modelFacade.SelectVersion(), reusableSchemas, includedMetadata, out _, out _);
+            PatchDataClassInfo(newDt, [], modelFacade.SelectVersion(), includedMetadata, out _, out _);
 
             if (classMapping.TargetFieldPatchers.Count > 0)
             {
@@ -203,10 +196,10 @@ public class ClassMappingProvider(
                 {
                     if (modelFacade.SelectById<ICmsSite>(cmsClassSite.SiteID) is { SiteGUID: var siteGuid })
                     {
-                        if (ChannelInfoProvider.ProviderObject.Get(siteGuid) is { ChannelID: var channelId })
+                        if (ChannelInfo.Provider.Get(siteGuid) is { ChannelID: var channelId })
                         {
                             var info = new ContentTypeChannelInfo { ContentTypeChannelChannelID = channelId, ContentTypeChannelContentTypeID = newDt.ClassID };
-                            ContentTypeChannelInfoProvider.ProviderObject.Set(info);
+                            ContentTypeChannelInfo.Provider.Set(info);
                         }
                         else
                         {

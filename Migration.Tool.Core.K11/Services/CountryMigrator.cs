@@ -34,7 +34,7 @@ public class CountryMigrator(
         var k11Countries = k11Context.CmsCountries.AsNoTracking();
         foreach (var k11CmsCountry in k11Countries)
         {
-            var kxpCountryInfo = CountryInfoProvider.ProviderObject.Get(k11CmsCountry.CountryName);
+            var kxpCountryInfo = CountryInfo.Provider.Get(k11CmsCountry.CountryName);
 
             if (kxpCountryInfo != null) // do not update when exists
             {
@@ -48,7 +48,7 @@ public class CountryMigrator(
             {
                 try
                 {
-                    CountryInfoProvider.ProviderObject.Set(countryInfo);
+                    CountryInfo.Provider.Set(countryInfo);
 
                     protocol.Success(k11CmsCountry, countryInfo, mapped);
                     logger.LogEntitySetAction(newInstance, countryInfo);
@@ -70,7 +70,7 @@ public class CountryMigrator(
         var k11States = k11Context.CmsStates.AsNoTracking();
         foreach (var k11CmsState in k11States)
         {
-            var kxpStateInfo = StateInfoProvider.ProviderObject.Get(k11CmsState.StateName);
+            var kxpStateInfo = StateInfo.Provider.Get(k11CmsState.StateName);
 
             if (kxpStateInfo != null) // do not update when exists
             {
@@ -84,7 +84,7 @@ public class CountryMigrator(
             {
                 try
                 {
-                    StateInfoProvider.ProviderObject.Set(stateInfo);
+                    StateInfo.Provider.Set(stateInfo);
 
                     protocol.Success(k11CmsState, stateInfo, mapped);
                     logger.LogEntitySetAction(newInstance, stateInfo);

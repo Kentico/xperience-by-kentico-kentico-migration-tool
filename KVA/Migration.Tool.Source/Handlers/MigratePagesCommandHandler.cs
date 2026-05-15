@@ -84,7 +84,7 @@ public class MigratePagesCommandHandler(
             // Walk all pages in source instance. Gather their redirections & mapping from their original URLs to webpage entities in target instance
             foreach (var ksSite in sites)
             {
-                var channelInfo = ChannelInfoProvider.ProviderObject.Get(ksSite.SiteGUID);
+                var channelInfo = ChannelInfo.Provider.Get(ksSite.SiteGUID);
 
                 var ksTrees = modelFacade.Select<ICmsTree>(
                     "NodeSiteId = @siteId",
@@ -198,7 +198,7 @@ public class MigratePagesCommandHandler(
         var sites = modelFacade.GetMigratedSites();
         foreach (var ksSite in sites)
         {
-            var channelInfo = ChannelInfoProvider.ProviderObject.Get(ksSite.SiteGUID);
+            var channelInfo = ChannelInfo.Provider.Get(ksSite.SiteGUID);
             if (channelInfo == null)
             {
                 logger.LogError("Target channel for site '{SiteName}' not exists!", ksSite.SiteName);
@@ -417,13 +417,11 @@ public class MigratePagesCommandHandler(
                             }
                         }
 
-                        var targetClassInfo = contentItemDirective!.TargetClassInfo;
-
                         if (contentItemDirective is not DropDirective)
                         {
                             AssertVersionStatusRule(commonDataInfos);
 
-                            if (webPageItemInfo != null && targetClassInfo is { ClassWebPageHasUrl: true })
+                            if (contentItemDirective != null && webPageItemInfo != null && contentItemDirective.TargetClassInfo is { ClassWebPageHasUrl: true })
                             {
                                 await GenerateDefaultPageUrlPath(ksNode, webPageItemInfo);
                                 if (!contentItemDirective!.RegenerateUrlPath)
@@ -561,7 +559,7 @@ public class MigratePagesCommandHandler(
         if (ContentItemFromNode(ksNode)?.ContentItemID is { } contentItemId)
         {
             if (cultureCodeToLanguageGuid!.TryGetValue(linkedDocument.DocumentCulture, out var languageGuid) &&
-                ContentLanguageInfoProvider.ProviderObject.Get(languageGuid) is { } languageInfo)
+                ContentLanguageInfo.Provider.Get(languageGuid) is { } languageInfo)
             {
                 if (ContentItemCommonDataInfo.Provider.Get()
                         .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataContentItemID), contentItemId)
@@ -772,8 +770,8 @@ public class MigratePagesCommandHandler(
     private async Task MigratePageUrlPaths(Guid webSiteChannelGuid, Guid languageGuid,
         List<ContentItemCommonDataInfo> contentItemCommonDataInfos, ICmsDocument? ksDocument, ICmsTree ksTree, string documentCulture, bool wasLinkedNode, WebPageItemInfo webPageItemInfo)
     {
-        var languageInfo = ContentLanguageInfoProvider.ProviderObject.Get(languageGuid);
-        var webSiteChannel = WebsiteChannelInfoProvider.ProviderObject.Get(webSiteChannelGuid);
+        var languageInfo = ContentLanguageInfo.Provider.Get(languageGuid);
+        var webSiteChannel = WebsiteChannelInfo.Provider.Get(webSiteChannelGuid);
 
         #region Migration of custom routing model
 
@@ -959,8 +957,8 @@ public class MigratePagesCommandHandler(
             return;
         }
 
-        var languageInfo = ContentLanguageInfoProvider.ProviderObject.Get(languageGuid);
-        var webSiteChannel = WebsiteChannelInfoProvider.ProviderObject.Get(ksSite.SiteGUID);
+        var languageInfo = ContentLanguageInfo.Provider.Get(languageGuid);
+        var webSiteChannel = WebsiteChannelInfo.Provider.Get(ksSite.SiteGUID);
 
         var ksUrls = modelFacade.SelectWhere<ICmsAlternativeUrl>("AlternativeUrlDocumentID = @documentId AND AlternativeUrlSiteID = @siteId",
             new SqlParameter("documentId", ksDocument.DocumentID), new SqlParameter("siteId", ksSite.SiteID)).ToArray();
@@ -1166,7 +1164,7 @@ public class MigratePagesCommandHandler(
         var result = contentLanguageInfos.SingleOrDefault(x => x.ContentLanguageCultureFormat.Equals(cultureFormat, StringComparison.InvariantCultureIgnoreCase));
         if (result is null)
         {
-            result = ContentLanguageInfoProvider.ProviderObject.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageCultureFormat), cultureFormat).SingleOrDefault()
+            result = ContentLanguageInfo.Provider.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageCultureFormat), cultureFormat).SingleOrDefault()
                 ?? throw new InvalidOperationException($"Missing content language with culture format '{cultureFormat}'");
             contentLanguageInfos.Add(result);
         }
@@ -1178,7 +1176,7 @@ public class MigratePagesCommandHandler(
         var result = contentLanguageInfos.SingleOrDefault(x => x.ContentLanguageName.Equals(languageName, StringComparison.InvariantCultureIgnoreCase));
         if (result is null)
         {
-            result = ContentLanguageInfoProvider.ProviderObject.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageName), languageName).SingleOrDefault()
+            result = ContentLanguageInfo.Provider.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageName), languageName).SingleOrDefault()
                 ?? throw new InvalidOperationException($"Missing content language with name '{languageName}'");
             contentLanguageInfos.Add(result);
         }

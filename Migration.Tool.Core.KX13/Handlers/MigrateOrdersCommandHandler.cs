@@ -155,7 +155,10 @@ public class MigrateOrdersCommandHandler(
 
             try
             {
-                OrderInfo.Provider.Set(orderInfo);
+                using (new CMSActionContext { UpdateTimeStamp = false })
+                {
+                    OrderInfo.Provider.Set(orderInfo);
+                }
 
                 logger.LogEntitySetAction(newInstance, orderInfo);
             }
@@ -281,7 +284,7 @@ public class MigrateOrdersCommandHandler(
 
     private CMSActionContext GetCMSActionContext()
     {
-        var defaultAdmin = UserInfoProvider.ProviderObject.Get(UserInfoProvider.DEFAULT_ADMIN_USERNAME);
+        var defaultAdmin = UserInfo.Provider.Get(UserInfoProvider.DEFAULT_ADMIN_USERNAME);
         return defaultAdmin == null
             ? throw new InvalidOperationException($"Target XbK doesn't contain default administrator account ('{UserInfoProvider.DEFAULT_ADMIN_USERNAME}')")
             : new CMSActionContext(defaultAdmin) { User = defaultAdmin, UseGlobalAdminContext = true, SendEmails = false };

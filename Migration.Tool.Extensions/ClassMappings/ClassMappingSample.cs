@@ -1,12 +1,15 @@
 using CMS.DataEngine;
 using CMS.FormEngine;
 using Kentico.Xperience.UMT.Model;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.Builders;
 using Migration.Tool.Common.Helpers;
 using Migration.Tool.KXP.Api.Auxiliary;
+using Migration.Tool.Source;
+using Migration.Tool.Source.Model;
 
 // ReSharper disable ArrangeMethodOrOperatorBody
 
@@ -43,6 +46,39 @@ public static class ClassMappingSample
             .BuildField("FarmRM_Clone")
             .SetFrom(sourceClassName, "CoffeeFarm", true)
             .WithFieldPatch(f => f.SetPropertyValue(FormFieldPropertyEnum.FieldCaption, "Farm RM Clone"));
+
+        // SKU field sample
+        m
+            .BuildField("CoffeeSkuNumber")
+            .ConvertFrom(sourceClassName, "CoffeeAltitude", true, (v, context) =>
+            {
+                int? skuId = (context as ConvertorTreeNodeContext)?.NodeSKUID;
+
+                if (skuId is null or <= 0)
+                {
+                    return null;
+                }
+
+                var modelFacade = KsCoreDiExtensions.ServiceProvider.GetRequiredService<ModelFacade>();
+
+                // Consider caching a method that queries all SKUs at once, then filter with linq to avoid querying the database for each page
+                var kx13Sku = modelFacade.Select<IComSku>(
+                    $"SKUID = @skuId",
+                    "SKUNumber",
+                    new SqlParameter("skuId", skuId.Value)
+                ).FirstOrDefault();
+                // Alternately, you can work with SKU variants if you filter by SKUParentSKUID instead of SKUID
+
+                return kx13Sku?.SKUNumber;
+            })
+            .WithFieldPatch(f =>
+            {
+                f.Name = "CoffeeSkuNumber";
+                f.Caption = "SKU number";
+                f.DataType = FieldDataType.Text;
+                f.AllowEmpty = true;
+                f.SetComponentName(FormComponents.AdminTextInputComponent);
+            });
 
         m
             .BuildField("CoffeeCountryRM")
@@ -208,7 +244,7 @@ public static class ClassMappingSample
             {
                 case ConvertorTreeNodeContext treeNodeContext:
                     // here you can use available treenode context
-                    // (var nodeGuid, int nodeSiteId, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
+                    // (var nodeGuid, int nodeSiteId, int? nodeSKUID, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
                     break;
                 default:
                     // no context is available (in future, mapping feature could be extended and therefore different context will be supplied or no context at all)
@@ -303,7 +339,7 @@ public static class ClassMappingSample
             {
                 case ConvertorTreeNodeContext treeNodeContext:
                     // here you can use available treenode context
-                    // (var nodeGuid, int nodeSiteId, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
+                    // (var nodeGuid, int nodeSiteId, int? nodeSKUID, int? documentId, bool migratingFromVersionHistory) = treeNodeContext;
                     break;
                 case ConvertorCustomTableContext customTableContext:
                 {
@@ -499,13 +535,13 @@ public static class ClassMappingSample
         m.BuildField("CafeID").AsPrimaryKey();
 
         // declare that we intend to use reusable schema and set mappings to new fields from old ones
-        m.UseResusableSchema(schemaNameDgcCommon);
+        m.UseReusableSchema(schemaNameDgcCommon);
         m.BuildField("City").SetFrom(sourceClassName, "CafeCity");
         m.BuildField("Street").SetFrom(sourceClassName, "CafeStreet");
         m.BuildField("ZipCode").SetFrom(sourceClassName, "CafeZipCode");
         m.BuildField("Phone").SetFrom(sourceClassName, "CafePhone");
 
-        m.UseResusableSchema(schemaNameDgcName);
+        m.UseReusableSchema(schemaNameDgcName);
         m.BuildField("Name").SetFrom(sourceClassName, "CafeName");
 
         // old fields we leave in data class
@@ -515,7 +551,7 @@ public static class ClassMappingSample
         // in similar manner we can define other classes where we want to use reusable schema
         // var m2 = new MultiClassMapping("DancingGoatCore.MyOtherClass", target =>
         // ...
-        // m2.UseResusableSchema(schemaNameDgcCommon);
+        // m2.UseReusableSchema(schemaNameDgcCommon);
         // m2.BuildField ...
         // serviceCollection.AddSingleton<IClassMapping>(m2);
 
@@ -555,7 +591,7 @@ public static class ClassMappingSample
         m.BuildField("ArticleID").AsPrimaryKey();
 
         // declare that we intend to use reusable schema and set mappings to new fields from old ones
-        m.UseResusableSchema("DancingGoatCore.ArticleBase");
+        m.UseReusableSchema("DancingGoatCore.ArticleBase");
         m.BuildField("ArticleTitle").SetFrom("DancingGoatCore.Article", "ArticleTitle", true);
         m.BuildField("ArticleTeaser").SetFrom("DancingGoatCore.Article", "ArticleTeaser", true);
 
@@ -612,7 +648,7 @@ public static class ClassMappingSample
             .SetFrom(sourceClassName, "ArticleRelatedArticles");
 
         // Reusable field schema field mapping
-        m.UseResusableSchema("PrefabBase");
+        m.UseReusableSchema("PrefabBase");
         m.BuildField("PrefabBaseTitle")
             .SetFrom(sourceClassName, "ArticleTitle");
 

@@ -201,6 +201,153 @@ public class HtmlProcessorTests
         });
     }
 
+    [Theory]
+    [InlineData("mailto:user@example.com")]
+    [InlineData("mailto:support@kentico.com?subject=Hello&body=World")]
+    public async Task ProcessHtml_PreservesMailtoHref_AndDoesNotInvokeTransformer(string href)
+    {
+        var mediaLinkService = new MediaLinkService(
+            [(2, "MTExtensibilityTests", "https://localhost:51157/Kentico13_2024_DG_Extensibility")],
+            [],
+            [(2, "True")],
+            new Dictionary<int, HashSet<string>>()
+        );
+
+        var html = $"""<a href="{href}">Contact</a>""";
+        var processor = new HtmlProcessor(html, mediaLinkService);
+
+        var transformerInvoked = false;
+        var result = await processor.ProcessHtml(2, (match, originalUrl) =>
+        {
+            transformerInvoked = true;
+            return Task.FromResult(originalUrl);
+        });
+
+        Assert.Multiple(() =>
+        {
+            Assert.False(transformerInvoked, "Transformer should not be invoked for mailto links");
+            Assert.Contains(href, result);
+        });
+    }
+
+    [Theory]
+    [InlineData("javascript:void(0)")]
+    [InlineData("javascript:alert('xss')")]
+    public async Task ProcessHtml_PreservesJavascriptHref_AndDoesNotInvokeTransformer(string href)
+    {
+        var mediaLinkService = new MediaLinkService(
+            [(2, "MTExtensibilityTests", "https://localhost:51157/Kentico13_2024_DG_Extensibility")],
+            [],
+            [(2, "True")],
+            new Dictionary<int, HashSet<string>>()
+        );
+
+        var html = $"""<a href="{href}">Click</a>""";
+        var processor = new HtmlProcessor(html, mediaLinkService);
+
+        var transformerInvoked = false;
+        var result = await processor.ProcessHtml(2, (match, originalUrl) =>
+        {
+            transformerInvoked = true;
+            return Task.FromResult(originalUrl);
+        });
+
+        Assert.Multiple(() =>
+        {
+            Assert.False(transformerInvoked, "Transformer should not be invoked for javascript links");
+            Assert.Contains(href, result);
+        });
+    }
+
+    [Theory]
+    [InlineData(":::malformed:::")]
+    [InlineData("http://[invalid-ipv6")]
+    [InlineData("%gg-not-valid-percent-encoding")]
+    public async Task ProcessHtml_DoesNotThrow_ForMalformedHref(string href)
+    {
+        var mediaLinkService = new MediaLinkService(
+            [(2, "MTExtensibilityTests", "https://localhost:51157/Kentico13_2024_DG_Extensibility")],
+            [],
+            [(2, "True")],
+            new Dictionary<int, HashSet<string>>()
+        );
+
+        var html = $"""<a href="{href}">Link</a>""";
+        var processor = new HtmlProcessor(html, mediaLinkService);
+
+        var transformerInvoked = false;
+        var exception = await Record.ExceptionAsync(() => processor.ProcessHtml(2, (match, originalUrl) =>
+        {
+            transformerInvoked = true;
+            return Task.FromResult(originalUrl);
+        }));
+
+        Assert.Multiple(() =>
+        {
+            Assert.Null(exception);
+            Assert.False(transformerInvoked, "Transformer should not be invoked for malformed links");
+        });
+    }
+
+    [Theory]
+    [InlineData(":::malformed:::")]
+    [InlineData("%gg-not-valid-percent-encoding")]
+    public async Task ProcessHtml_DoesNotThrow_ForMalformedImgSrc(string src)
+    {
+        var mediaLinkService = new MediaLinkService(
+            [(2, "MTExtensibilityTests", "https://localhost:51157/Kentico13_2024_DG_Extensibility")],
+            [],
+            [(2, "True")],
+            new Dictionary<int, HashSet<string>>()
+        );
+
+        var html = $"""<img src="{src}" alt="broken" />""";
+        var processor = new HtmlProcessor(html, mediaLinkService);
+
+        var transformerInvoked = false;
+        var exception = await Record.ExceptionAsync(() => processor.ProcessHtml(2, (match, originalUrl) =>
+        {
+            transformerInvoked = true;
+            return Task.FromResult(originalUrl);
+        }));
+
+        Assert.Multiple(() =>
+        {
+            Assert.Null(exception);
+            Assert.False(transformerInvoked, "Transformer should not be invoked for malformed img src");
+        });
+    }
+
+    [Theory]
+    [InlineData("#anchor-only")]
+    [InlineData("?query=only")]
+    [InlineData("")]
+    public async Task ProcessHtml_PreservesLegacyOrRelativeHref_AndDoesNotInvokeTransformer(string href)
+    {
+        var mediaLinkService = new MediaLinkService(
+            [(2, "MTExtensibilityTests", "https://localhost:51157/Kentico13_2024_DG_Extensibility")],
+            [],
+            [(2, "True")],
+            new Dictionary<int, HashSet<string>>()
+        );
+
+        var html = $"""<a href="{href}">Legacy link</a>""";
+        var processor = new HtmlProcessor(html, mediaLinkService);
+
+        var transformerInvoked = false;
+        var result = await processor.ProcessHtml(2, (match, originalUrl) =>
+        {
+            transformerInvoked = true;
+            return Task.FromResult(originalUrl);
+        });
+
+        Assert.Multiple(() =>
+        {
+            Assert.False(transformerInvoked, "Transformer should not be invoked for anchor/query-only/empty links");
+            Assert.Contains(href, result);
+        });
+    }
+
     [Fact]
     public async Task ProcessHtml_HandlesDirectMediaPath()
     {

@@ -23,7 +23,7 @@ public class XbKApiContextBehavior<TRequest, TResponse>(
     {
         initializer.EnsureApiIsInitialized();
 
-        var defaultAdmin = UserInfoProvider.ProviderObject.Get(UserInfoProvider.DEFAULT_ADMIN_USERNAME);
+        var defaultAdmin = UserInfo.Provider.Get(UserInfoProvider.DEFAULT_ADMIN_USERNAME);
         if (defaultAdmin == null)
         {
             protocol.Append(HandbookReferences

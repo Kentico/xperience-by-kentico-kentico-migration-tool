@@ -73,7 +73,7 @@ public class MigrateContactManagementCommandHandler(
             // { nameof(OmContact.ContactStatusId), nameof(KXO.Models.OmContact.ContactStatusId) }, // No support 2022-07-07  but needs to be mapped because of constraint
             { nameof(OmContact.ContactNotes), nameof(ContactInfo.ContactNotes) },
             { nameof(OmContact.ContactOwnerUserId), nameof(ContactInfo.ContactOwnerUserID) },
-            // No support 2022-07-07  { nameof(OmContact.ContactMonitored), nameof(KXO.Models.OmContact.ContactMonitored) },
+            { nameof(OmContact.ContactMonitored), nameof(ContactInfo.ContactMonitored) },
             { nameof(OmContact.ContactGuid), nameof(ContactInfo.ContactGUID) },
             { nameof(OmContact.ContactLastModified), nameof(ContactInfo.ContactLastModified) },
             { nameof(OmContact.ContactCreated), nameof(ContactInfo.ContactCreated) },
@@ -370,7 +370,11 @@ public class MigrateContactManagementCommandHandler(
 
         if (columnName.Equals(nameof(ActivityInfo.ActivityLanguageID), StringComparison.InvariantCultureIgnoreCase) && value is string cultureCode)
         {
-            return ValueInterceptorResult.ReplaceValue(ContentLanguageInfoProvider.ProviderObject.Get(cultureCode)?.ContentLanguageID);
+            var language = ContentLanguageInfo.Provider.Get()
+                .WhereEquals(nameof(ContentLanguageInfo.ContentLanguageName), cultureCode)
+                .FirstOrDefault();
+
+            return ValueInterceptorResult.ReplaceValue(language?.ContentLanguageID);
         }
 
         return ValueInterceptorResult.DoNothing;

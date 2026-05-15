@@ -19,7 +19,7 @@ public interface IClassMapping
     string? GetTargetFieldName(string sourceColumnName, string sourceClassName);
     string GetSourceFieldName(string targetColumnName, string nodeClassClassName);
     bool IsCategoryMapped(string sourceClassName, int categoryID);
-    void UseResusableSchema(string reusableSchemaName);
+    void UseReusableSchema(string reusableSchemaName);
     IList<string> ReusableSchemaNames { get; }
 
     /// <summary>
@@ -117,7 +117,7 @@ public class MultiClassMapping(string targetClassName, Action<DataClassInfo>? cl
 
     public bool IsMatch(string sourceClassName) => SourceClassNames.Contains(sourceClassName);
 
-    public void UseResusableSchema(string reusableSchemaName)
+    public void UseReusableSchema(string reusableSchemaName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(reusableSchemaName);
 
@@ -147,7 +147,7 @@ public class MultiClassMapping(string targetClassName, Action<DataClassInfo>? cl
 public delegate bool MultiClassMappingCategoryFilter(string sourceClassName, int categoryID);
 
 public interface IConvertorContext;
-public record ConvertorTreeNodeContext(Guid NodeGuid, int NodeSiteId, int? DocumentId, bool MigratingFromVersionHistory) : IConvertorContext;
+public record ConvertorTreeNodeContext(Guid NodeGuid, int NodeSiteId, int? NodeSKUID, int? DocumentId, bool MigratingFromVersionHistory) : IConvertorContext;
 public record ConvertorCustomTableContext() : IConvertorContext;
 
 public interface IMappingHandlerContext;
