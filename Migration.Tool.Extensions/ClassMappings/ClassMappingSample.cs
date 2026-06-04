@@ -592,8 +592,9 @@ public static class ClassMappingSample
 
         // declare that we intend to use reusable schema and set mappings to new fields from old ones
         m.UseReusableSchema("DancingGoatCore.ArticleBase");
-        m.BuildField("ArticleTitle").SetFrom("DancingGoatCore.Article", "ArticleTitle", true);
-        m.BuildField("ArticleTeaser").SetFrom("DancingGoatCore.Article", "ArticleTeaser", true);
+        // we have to use new field names to avoid name collisions with fields from reusable field schema
+        m.BuildField("Title").SetFrom("DancingGoatCore.Article", "ArticleTitle", true).WithFieldPatch(f => f.Caption = "Article Title");
+        m.BuildField("Teaser").SetFrom("DancingGoatCore.Article", "ArticleTeaser", true).WithFieldPatch(f => f.Caption = "Article Teaser");
 
         // register mapping
         serviceCollection.AddSingleton<IClassMapping>(m);

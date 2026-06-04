@@ -120,6 +120,11 @@ public class ClassMappingProvider(
 
             newDt.ClassFormDefinition = nfi.GetXmlDefinition();
 
+            foreach (string schemaName in classMapping.ReusableSchemaNames)
+            {
+                reusableSchemaService.AddReusableSchemaToDataClass(newDt, schemaName);
+            }
+
             nfi = new FormInfo(newDt.ClassFormDefinition);
 
             var fieldInReusableSchemas = reusableSchemaService.GetFieldsFromReusableSchema(newDt).ToDictionary(x => x.Name, x => x);
