@@ -4,8 +4,5 @@
     "esbenp.prettier-vscode",
     "davidanson.vscode-markdownlint",
     "editorconfig.editorconfig",
-    "adrianwilczynski.user-secrets",
-    "dotjoshjohnson.xml",
-    "tintoy.msbuild-project-tools"
   ]
 }
