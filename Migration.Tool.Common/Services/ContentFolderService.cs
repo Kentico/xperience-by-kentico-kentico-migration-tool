@@ -1,4 +1,4 @@
-﻿using CMS.ContentEngine;
+using CMS.ContentEngine;
 using CMS.Helpers;
 using Kentico.Xperience.UMT.Model;
 using Kentico.Xperience.UMT.Services;
@@ -41,7 +41,7 @@ public class ContentFolderService(IImporter importer, ILogger<ContentFolderServi
             else
             {
                 var folderInfo = ContentFolderInfo.Provider.Get()
-                    .And().WhereEquals(nameof(ContentFolderInfo.ContentFolderTreePath), folderTemplate.DisplayName)
+                    .And().WhereEquals(nameof(ContentFolderInfo.ContentFolderTreePath), currentPath)
                     .And().WhereEquals(nameof(ContentFolderInfo.ContentFolderWorkspaceID), workspaceInfo.WorkspaceID)
                     .FirstOrDefault();
 
@@ -50,8 +50,8 @@ public class ContentFolderService(IImporter importer, ILogger<ContentFolderServi
                     var newFolderModel = new ContentFolderModel
                     {
                         ContentFolderGUID = folderTemplate.Guid,
-                        ContentFolderName = UniqueNameHelper.MakeUnique(folderTemplate.Name, x => !ContentFolderInfo.Provider.Get().WhereEquals(nameof(ContentFolderInfo.ContentFolderName), x).Any()),
-                        ContentFolderDisplayName = folderTemplate.DisplayName,
+                        ContentFolderName = UniqueNameHelper.MakeUnique(folderTemplate.Name, x => !ContentFolderInfo.Provider.Get().WhereEquals(nameof(ContentFolderInfo.ContentFolderName), x).Any(), 50),
+                        ContentFolderDisplayName = folderTemplate.DisplayName.Truncate(50),
                         ContentFolderTreePath = currentPath,
                         ContentFolderParentFolderGUID = parentFolderInfo.ContentFolderGUID,
                         ContentFolderWorkspaceGUID = workspaceInfo.WorkspaceGUID

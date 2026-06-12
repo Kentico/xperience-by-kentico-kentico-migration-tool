@@ -3,15 +3,23 @@ public static class UniqueNameHelper
 {
     /// <summary>
     /// Makes name unique by trying to append pseudorandom suffixes. Candidates are offered to 
-    /// <paramref name="availabilityChecker"/>, which determines, whether the candidate can be used
+    /// <paramref name="availabilityChecker"/>, which determines, whether the candidate can be used.
+    /// If <paramref name="maxLength"/> is specified, returned value is guaranteed not to exceed that length.
     /// </summary>
-    public static string MakeUnique(string name, Func<string, bool> availabilityChecker)
+    public static string MakeUnique(string name, Func<string, bool> availabilityChecker, int? maxLength = null)
     {
-        string uniqueCodeName = name;
+        string baseName = maxLength.HasValue
+            ? TruncateToLength(name, maxLength.Value)
+            : name;
+
+        string uniqueCodeName = baseName;
         int attemptIndex = 0;
         while (attemptIndex < UniqueSuffixCount && !availabilityChecker(uniqueCodeName)) // While conflict, try new GUID suffix to make unique
         {
-            uniqueCodeName = $"{name}-{GetSuffix(attemptIndex++)}";
+            var suffix = GetSuffix(attemptIndex++);
+            uniqueCodeName = maxLength.HasValue
+                ? $"{TruncateToLength(baseName, Math.Max(0, maxLength.Value - SuffixLength - 1))}-{suffix}"
+                : $"{baseName}-{suffix}";
         }
         if (attemptIndex >= UniqueSuffixCount)
         {
@@ -19,6 +27,8 @@ public static class UniqueNameHelper
         }
         return uniqueCodeName;
     }
+
+    private static string TruncateToLength(string value, int maxLength) => value.Length <= maxLength ? value : value[..maxLength];
 
     /// <summary>
     /// Returns pseudorandom string of <see cref="SuffixLength"/> characters. 
