@@ -134,13 +134,12 @@ Additionally, you can enable the Conversion of text fields with media links (_Me
 library files by setting
 the `OptInFeatures.CustomMigration.FieldMigrations` [configuration option](#convert-text-fields-with-media-links). If you need additional control or want to customize the default mappings of data types, you can [customize the Migration Tool behavior](../Migration.Tool.Extensions/README.md).
 
-Some [Form components](https://docs.xperience.io/x/5ASiCQ) used by content type fields in Xperience by Kentico store
-data differently than their equivalent Form control in Xperience 13. To ensure that content is displayed correctly on
-pages, you must manually adjust your website's implementation to match the new data format.
-See [Editing components in Xperience by Kentico](https://docs.xperience.io/x/wIfWCQ) to learn more about some of the
-most common components and selectors.
+Some [Form components](https://docs.xperience.io/x/5ASiCQ) used by content type fields in Xperience by Kentico store data differently than their equivalent Form control in Xperience 13. To ensure that content is displayed correctly on pages, you must manually adjust your website's implementation to match the new data format.
+See [Editing components in Xperience by Kentico](https://docs.xperience.io/x/wIfWCQ) to learn more about some of the most common components and selectors.
 
-If migrated content types contain fields with names used internally in Xperience by Kentico (*Asset* or *SystemFields*), rename those fields after migration. For naming rules, see [Field naming guidelines](https://docs.kentico.com/documentation/developers-and-admins/development/content-types#field-naming-guidelines).
+Unsupported data types, such as GUID or Time interval, do not have matching form components in Xperience by Kentico. As a result, the tool automatically hides these fields in the UI to prevent validation errors. To migrate these fields, use [custom class mapping](../Migration.Tool.Extensions/README.md) with `WithFieldPatch` set to `field.Visible = true`, and specify the appropriate form component and its settings. `WithFieldPatch` applies these overrides after the default field configuration.
+
+If migrated content types contain fields with names used internally in Xperience by Kentico (_Asset_ or _SystemFields_), rename those fields after migration. For naming rules, see [Field naming guidelines](https://docs.kentico.com/documentation/developers-and-admins/development/content-types#field-naming-guidelines).
 
 #### Reusable field schemas
 
