@@ -9,6 +9,9 @@ using Migration.Tool.Common.Helpers;
 namespace Migration.Tool.Common.Services;
 public class ContentFolderService(IImporter importer, ILogger<ContentFolderService> logger, WorkspaceService workspaceService)
 {
+    private const int MaxFolderNameLength = 50;
+    private const int MaxFolderDisplayNameLength = 50;
+
     /// <summary>
     /// Folder tree path as key
     /// </summary>
@@ -50,8 +53,8 @@ public class ContentFolderService(IImporter importer, ILogger<ContentFolderServi
                     var newFolderModel = new ContentFolderModel
                     {
                         ContentFolderGUID = folderTemplate.Guid,
-                        ContentFolderName = UniqueNameHelper.MakeUnique(folderTemplate.Name, x => !ContentFolderInfo.Provider.Get().WhereEquals(nameof(ContentFolderInfo.ContentFolderName), x).Any(), 50),
-                        ContentFolderDisplayName = folderTemplate.DisplayName.Truncate(50),
+                        ContentFolderName = UniqueNameHelper.MakeUnique(folderTemplate.Name, x => !ContentFolderInfo.Provider.Get().WhereEquals(nameof(ContentFolderInfo.ContentFolderName), x).Any(), MaxFolderNameLength),
+                        ContentFolderDisplayName = folderTemplate.DisplayName.Truncate(MaxFolderDisplayNameLength),
                         ContentFolderTreePath = currentPath,
                         ContentFolderParentFolderGUID = parentFolderInfo.ContentFolderGUID,
                         ContentFolderWorkspaceGUID = workspaceInfo.WorkspaceGUID
