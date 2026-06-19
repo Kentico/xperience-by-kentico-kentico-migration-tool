@@ -6,8 +6,18 @@ public static class UniqueNameHelper
     /// <paramref name="availabilityChecker"/>, which determines, whether the candidate can be used.
     /// If <paramref name="maxLength"/> is specified, returned value is guaranteed not to exceed that length.
     /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="maxLength"/> is smaller than <see cref="SuffixLength"/> + 2, which is the
+    /// minimum length required to keep at least one character of <paramref name="name"/> and append a unique
+    /// suffix without exceeding <paramref name="maxLength"/>.
+    /// </exception>
     public static string MakeUnique(string name, Func<string, bool> availabilityChecker, int? maxLength = null)
     {
+        if (maxLength.HasValue && maxLength.Value < (SuffixLength + 2))
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxLength), maxLength.Value, $"{nameof(maxLength)} must be at least {SuffixLength + 2} to keep at least one character of the original name and append a unique suffix.");
+        }
+
         string baseName = maxLength.HasValue
             ? TruncateToLength(name, maxLength.Value)
             : name;
