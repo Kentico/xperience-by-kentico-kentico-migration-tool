@@ -524,6 +524,8 @@ public static class ClassMappingSample
             });
 
 
+        // Sample: multiple reusable schemas sharing the same source field.
+        // When two schemas map a field from the same source, use WithFieldPatch to change the target GUID to avoid GUID collision.
         var sb3 = new ReusableSchemaBuilder(schemaNameDgcContact, "Contact information", "Reusable schema that defines contact information");
         sb3
             .BuildField("ContactPhone")
