@@ -148,6 +148,9 @@ public static class ClassMappingSample
             target.ClassDisplayName = "Coffee remodeled";
             target.ClassType = ClassType.CONTENT_TYPE;
             target.ClassContentTypeType = ClassContentTypeType.WEBSITE;
+            // For page (WEBSITE) content types, set to true to preserve URLs and routing ("Include in routing")
+            // Custom mappings do not inherit this automatically; if omitted, it defaults to false and routing is disabled
+            target.ClassWebPageHasUrl = true;
         });
 
         // set new primary key
@@ -205,6 +208,9 @@ public static class ClassMappingSample
             target.ClassDisplayName = "ET - MY new transformed event";
             target.ClassType = ClassType.CONTENT_TYPE;
             target.ClassContentTypeType = ClassContentTypeType.WEBSITE;
+            // For page (WEBSITE) content types, set to `true` to preserve URLs and routing ("Include in routing")
+            // Custom mappings do not inherit this automatically; if omitted, it defaults to false and routing is disabled
+            target.ClassWebPageHasUrl = true;
         });
 
         // register custom table handler once for all custom table mappings
@@ -218,7 +224,7 @@ public static class ClassMappingSample
         title.SetFrom(sourceClassName1, "EventTitle", true);
         // map "EventTitle" field form source data class "_ET.Event2"
         title.SetFrom(sourceClassName2, "EventTitle");
-        // patch field definition, in this case lets change field caption 
+        // patch field definition, in this case lets change field caption
         title.WithFieldPatch(f => f.Caption = "Event title");
 
 
@@ -529,6 +535,7 @@ public static class ClassMappingSample
             target.ClassDisplayName = "Coffee with reusable schema";
             target.ClassType = ClassType.CONTENT_TYPE;
             target.ClassContentTypeType = ClassContentTypeType.WEBSITE;
+            target.ClassWebPageHasUrl = true;
         });
 
         // set primary key
@@ -585,6 +592,7 @@ public static class ClassMappingSample
             target.ClassDisplayName = "Article with reusable schema";
             target.ClassType = ClassType.CONTENT_TYPE;
             target.ClassContentTypeType = ClassContentTypeType.WEBSITE;
+            target.ClassWebPageHasUrl = true;
         });
 
         // set primary key
