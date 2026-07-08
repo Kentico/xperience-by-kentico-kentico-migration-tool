@@ -224,7 +224,7 @@ public static class ClassMappingSample
         title.SetFrom(sourceClassName1, "EventTitle", true);
         // map "EventTitle" field form source data class "_ET.Event2"
         title.SetFrom(sourceClassName2, "EventTitle");
-        // patch field definition, in this case lets change field caption
+        // patch field definition, in this case let's change field caption
         title.WithFieldPatch(f => f.Caption = "Event title");
 
 

@@ -34,8 +34,8 @@ You can create multiple class mappings, each handling different source content t
    target.ClassType = ClassType.CONTENT_TYPE;
    // What the content type is used for (reusable content, pages, email, or headless)
    target.ClassContentTypeType = ClassContentTypeType.WEBSITE;
-   // For page content types, set to true to preserve URLs and routing (custom mappings do not inherit this automatically)
-   // When omitted, defaults to false and routing is disabled; leave at the default for reusable content
+   // For page content types, set to `true` to preserve URLs and routing (custom mappings do not inherit this automatically)
+   // When omitted, defaults to `false` and routing is disabled; leave at the default for reusable content
    target.ClassWebPageHasUrl = true;
    });
    ```
