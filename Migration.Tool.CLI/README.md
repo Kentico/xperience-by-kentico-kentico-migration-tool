@@ -171,6 +171,7 @@ Pages from older product versions can be migrated to either to [website channel 
 - Linked pages are currently not supported in Xperience by Kentico. By default, the migration creates standard page copies for any
   linked pages on the source instance. This behavior can be changed by implementing [custom handling of linked pages](../docs/customization/Content-Item-Directors.md#customize-linked-page-handling).
 - Page permissions (ACLs) are currently not migrated into Xperience by Kentico.
+- We DO NOT recommend migrating [checked out pages](https://docs.kentico.com/13/configuring-xperience/configuring-the-environment-for-content-editors/configuring-and-using-page-versioning/content-locking#checking-pages-in-and-out). Before migrating the pages, check in all the pages you want to transfer to Xperience by Kentico.
 - Migration of Page Builder content is only available for Kentico Xperience 13.
 
 Additionally, you can define [custom migrations](../Migration.Tool.Extensions/README.md) to change the default behavior, for example to migrate page content to widgets in Xperience by Kentico.
@@ -301,6 +302,8 @@ If required, you can [configure the tool](#convert-attachments-and-media-library
 #### Attachments
 
 Attachment files are migrated together with pages when using the `--pages` parameter. They are migrated as [content item assets](https://docs.kentico.com/x/content_item_assets_xp) to Content hub into a content folder `<site_name>/__Attachments`. Assets are created in the specified language if the language is available (e.g., attachments of pages). Migrated assets are created as content items of a _Legacy attachment_ content type (code name `Legacy.Attachment`) created by the tool.
+
+> :warning: **Warning** – Only attachments [stored in the database](https://docs.kentico.com/13/configuring-xperience/managing-files/storing-files) are currently migrated. To migrate attachments stored on the file system, enable storing files in the _database and file system_, and [copy the attachments](https://docs.kentico.com/13/configuring-xperience/managing-files/administering-files-globally#attachments-tab) to the database.
 
 If you want to use Xperience by Kentico's [automatic image optimization](https://docs.kentico.com/documentation/developers-and-admins/development/content-types#configure-asset-content-types) feature for the _Legacy attachment_ type, follow along with our [guide about customizing asset migration](https://docs.kentico.com/x/optimize_images_during_upgrade_guides).
 
