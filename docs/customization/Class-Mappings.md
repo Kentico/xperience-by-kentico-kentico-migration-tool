@@ -8,7 +8,7 @@ You can create multiple class mappings, each handling different source content t
 
 **Use cases:**
 
-- Merge multiple page types (e.g., `Article.BlogPost`, `Article.NewsArticle`) into a single content type in the [content hub](https://docs.kentico.com/x/barWCQ)
+- Merge multiple page types (e.g., `Article.BlogPost`, `Article.NewsArticle`) into a single content type in the [Content hub](https://docs.kentico.com/x/barWCQ)
 - Remodel page types as [reusable field schemas](https://docs.kentico.com/x/remodel_page_types_as_reusable_field_schemas_guides) by extracting common fields
 - Change field names, data types, or form controls (e.g., rename `OldName` to `NewName` and convert from `text` to `longtext` or custom type)
 - Add new fields
@@ -34,8 +34,18 @@ You can create multiple class mappings, each handling different source content t
    target.ClassType = ClassType.CONTENT_TYPE;
    // What the content type is used for (reusable content, pages, email, or headless)
    target.ClassContentTypeType = ClassContentTypeType.WEBSITE;
+   // For page content types, set to `true` to preserve URLs and routing (custom mappings do not inherit this automatically)
+   // When omitted, defaults to `false` and routing is disabled; leave at the default for reusable content
+   target.ClassWebPageHasUrl = true;
    });
    ```
+
+   > [!WARNING]
+   > When your target content type is used for pages (`ClassContentTypeType.WEBSITE`), you must explicitly set `target.ClassWebPageHasUrl = true` to preserve the content type's URLs and routing (the "Include in routing" option in the administration).
+   >
+   > The default migration (without a custom class mapping) sets this automatically based on the source page type. Custom class mappings build the target content type from scratch and do not inherit this behavior, so when the property is omitted it defaults to `false` and routing is disabled. Once the content type is created without routing, the setting cannot be enabled afterward - you need to correct the mapping and run the migration again.
+   >
+   > For reusable content (for example, items migrated into the [Content hub](https://docs.kentico.com/x/barWCQ)), this property does not apply - leave it at its default of `false`.
 
 1. Define a new primary key:
 
