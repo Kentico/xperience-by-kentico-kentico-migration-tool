@@ -140,10 +140,23 @@ public class CmsClassMapper(
             {
                 if (configuration.ClassNamesConvertToContentHub.Contains(target.ClassName))
                 {
+                    var isModuleClass = target.ClassType == ClassType.OTHER && classResourceId > 0;
                     target.ClassType = ClassType.CONTENT_TYPE;
                     target.ClassContentTypeType = ClassContentTypeType.REUSABLE;
 
                     var fi = new FormInfo(target.ClassFormDefinition);
+
+                    if (isModuleClass)
+                    {
+                        target.ClassResourceID = 0;
+                        target.ClassCodeGenerationSettings = null;
+                        foreach (var field in fi.GetFields(true, true))
+                        {
+                            field.System = false;
+                            fi.UpdateFormField(field.Name, field);
+                        }
+                    }
+
                     foreach (var field in fi.GetFields(true, true).Where(x => !x.System))
                     {
                         field.Visible = true;
