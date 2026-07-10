@@ -31,6 +31,8 @@ You can see samples:
   - A sample migration with further explanations
 - [AssetMigration.cs](../../Migration.Tool.Extensions/DefaultMigrations/AssetMigration.cs)
   - An example of a usable migration
+- [SelectDocumentMigration.cs](../../Migration.Tool.Extensions/CommunityMigrations/SelectDocumentMigration.cs)
+  - An example of Page selector field migration
 
 After implementing the migration, you need to [register the migration](#registration) in the system.
 

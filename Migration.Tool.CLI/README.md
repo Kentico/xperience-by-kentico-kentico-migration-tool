@@ -134,6 +134,8 @@ Additionally, you can enable the Conversion of text fields with media links (_Me
 library files by setting
 the `OptInFeatures.CustomMigration.FieldMigrations` [configuration option](#convert-text-fields-with-media-links). If you need additional control or want to customize the default mappings of data types, you can [customize the Migration Tool behavior](../Migration.Tool.Extensions/README.md).
 
+If you need to migrate fields of type Text that use the Page selector form control, you can use the example implementation provided in [`SelectDocumentMigration.cs`](../Migration.Tool.Extensions/CommunityMigrations/SelectDocumentMigration.cs). This migration converts the source field to the Webpages data type with the `Kentico.Administration.WebPageSelector` form component, and transforms the stored NodeGUID value into the page reference format required by Xperience by Kentico.
+
 Some [Form components](https://docs.xperience.io/x/5ASiCQ) used by content type fields in Xperience by Kentico store data differently than their equivalent Form control in Xperience 13. To ensure that content is displayed correctly on pages, you must manually adjust your website's implementation to match the new data format.
 See [Editing components in Xperience by Kentico](https://docs.xperience.io/x/wIfWCQ) to learn more about some of the most common components and selectors.
 
