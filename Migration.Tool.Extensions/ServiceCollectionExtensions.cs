@@ -1,6 +1,12 @@
+using MediatR;
+
 using Microsoft.Extensions.DependencyInjection;
+
+using Migration.Tool.Common;
+using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Extensions.CommunityMigrations;
 using Migration.Tool.Extensions.DefaultMigrations;
+using Migration.Tool.Extensions.MetadataSchema;
 using Migration.Tool.KXP.Api.Services.CmsClass;
 
 namespace Migration.Tool.Extensions;
@@ -15,6 +21,13 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IWidgetPropertyMigration, WidgetFileMigration>();
         services.AddTransient<IWidgetPropertyMigration, WidgetPathSelectorMigration>();
         services.AddTransient<IWidgetPropertyMigration, WidgetPageSelectorMigration>();
+
+        // ------------------------------------------------------------------
+        // Effective SEO metadata migration
+        // ------------------------------------------------------------------
+        services.AddSingleton<EffectiveMetadataService>();
+        services.AddTransient(typeof(IPipelineBehavior<MigratePageTypesCommand, CommandResult>), typeof(PageTypesSeoSchemaBehavior));
+        services.AddTransient(typeof(IPipelineBehavior<MigratePagesCommand, CommandResult>), typeof(PagesEffectiveMetadataBehavior));
 
 
         // services.AddClassMergeExample();
