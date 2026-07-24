@@ -347,40 +347,40 @@ public class ClassMappingProvider(
             }
         }
 
-        AssertReusableSchemasHaveNoDuplicateFieldGuids(resolvedSchemas);
-    }
-
-    private void AssertReusableSchemasHaveNoDuplicateFieldGuids(List<(IReusableSchemaBuilder Schema, FormFieldInfo[] Fields, SourceFieldIdentifier? SourceFieldIdentifier)> resolvedSchemas)
-    {
-        var fieldsFromSource = resolvedSchemas
-            .Where(x => x.SourceFieldIdentifier is not null)
-            .SelectMany(x => x.Fields.Select(f => new
-            {
-                x.Schema.SchemaName,
-                SourceField = x.SourceFieldIdentifier!,
-                FieldGuid = f.Guid
-            }))
-            .ToList();
-
-        var duplicateGroups = fieldsFromSource
-            .GroupBy(f => (f.SourceField.ClassName.ToLowerInvariant(), f.SourceField.FieldName.ToLowerInvariant()))
-            .Where(g => g.Count() > 1);
-
-        foreach (var group in duplicateGroups)
+        void AssertReusableSchemasHaveNoDuplicateFieldGuids()
         {
-            var guidCollisions = group
-                .GroupBy(f => f.FieldGuid)
+            var fieldsFromSource = resolvedSchemas
+                .Where(x => x.SourceFieldIdentifier is not null)
+                .SelectMany(x => x.Fields.Select(f => new
+                {
+                    x.Schema.SchemaName,
+                    SourceField = x.SourceFieldIdentifier!,
+                    FieldGuid = f.Guid
+                }))
+                .ToList();
+
+            var duplicateGroups = fieldsFromSource
+                .GroupBy(f => (f.SourceField.ClassName.ToLowerInvariant(), f.SourceField.FieldName.ToLowerInvariant()))
                 .Where(g => g.Count() > 1);
 
-            foreach (var collision in guidCollisions)
+            foreach (var group in duplicateGroups)
             {
-                string schemaNames = string.Join(", ", collision.Select(s => $"'{s.SchemaName}'"));
-                throw new InvalidOperationException(
-                    $"Reusable schemas {schemaNames} share the same source field '{group.First().SourceField.ClassName}.{group.First().SourceField.FieldName}' " +
-                    $"and the resulting field GUID '{collision.Key}' is identical. This will cause a GUID collision. " +
-                    $"Use 'WithFieldPatch' to change the GUID (e.g., ffi.Guid = new Guid(...)) on at least one of the fields.");
+                var guidCollisions = group
+                    .GroupBy(f => f.FieldGuid)
+                    .Where(g => g.Count() > 1);
+
+                foreach (var collision in guidCollisions)
+                {
+                    string schemaNames = string.Join(", ", collision.Select(s => $"'{s.SchemaName}'"));
+                    throw new InvalidOperationException(
+                        $"Reusable schemas {schemaNames} share the same source field '{group.First().SourceField.ClassName}.{group.First().SourceField.FieldName}' " +
+                        $"and the resulting field GUID '{collision.Key}' is identical. This will cause a GUID collision. " +
+                        $"Use 'WithFieldPatch' to change the GUID (e.g., ffi.Guid = new Guid(...)) on at least one of the fields.");
+                }
             }
         }
+
+        AssertReusableSchemasHaveNoDuplicateFieldGuids();
     }
 
     private void EnsureSettings()
