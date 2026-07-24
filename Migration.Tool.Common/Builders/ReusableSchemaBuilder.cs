@@ -124,9 +124,11 @@ public class ReusableFieldBuilder(string targetFieldName) : IReusableFieldBuilde
 
     public IReusableFieldBuilder WithFieldPatch(Action<FormFieldInfo> fieldInfoPatcher)
     {
+        ArgumentNullException.ThrowIfNull(fieldInfoPatcher);
+
         if (!TargetFieldPatchers.TryAdd(TargetFieldName, fieldInfoPatcher))
         {
-            throw new InvalidOperationException($"Target field mapper can be defined only once for each field, field '{targetFieldName}' has one already defined");
+            throw new InvalidOperationException($"Target field patcher can be defined only once for each field, field '{TargetFieldName}' has one already defined");
         }
         return this;
     }
