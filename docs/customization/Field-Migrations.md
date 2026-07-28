@@ -32,7 +32,7 @@ You can see samples:
 - [AssetMigration.cs](../../Migration.Tool.Extensions/DefaultMigrations/AssetMigration.cs)
   - An example of a usable migration
 - [SelectDocumentMigration.cs](../../Migration.Tool.Extensions/CommunityMigrations/SelectDocumentMigration.cs)
-  - An example of Page selector field migration
+  - Migrates `Text` fields using the _Page selector_ form control to the `Webpages` data type with the `Kentico.Administration.WebPageSelector` form component, and transforms the stored `NodeGUID` value into the page reference format required by Xperience by Kentico.
 
 After implementing the migration, you need to [register the migration](#registration) in the system.
 

@@ -9,22 +9,28 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection UseCustomizations(this IServiceCollection services)
     {
+        // Default built-in migrations
         services.AddTransient<IFieldMigration, AssetMigration>();
-        services.AddTransient<IFieldMigration, SampleTextMigration>();
-
         services.AddTransient<IWidgetPropertyMigration, WidgetFileMigration>();
         services.AddTransient<IWidgetPropertyMigration, WidgetPathSelectorMigration>();
         services.AddTransient<IWidgetPropertyMigration, WidgetPageSelectorMigration>();
 
+        // Community migration samples (uncomment to enable)
+        services.AddTransient<IFieldMigration, SampleTextMigration>();
+        // services.AddTransient<IFieldMigration, SelectDocumentMigration>();
+        // services.AddTransient<IWidgetMigration, SampleWidgetMigration>();
+        // services.AddTransient<ContentItemDirectorBase, SamplePageToWidgetDirector>();
+        // services.AddTransient<ContentItemDirectorBase, SampleChildLinkDirector>();
+        // services.AddTransient<ContentItemDirectorBase, SampleLinkedPageDirector>();
+        // services.AddTransient<ContentItemDirectorBase>(sp => new JsonBasedTypeRemapDirector("migration-mapping.json"));
 
+        // Class mapping samples (uncomment to enable)
         // services.AddClassMergeExample();
         // services.AddClassMergeExampleAsReusable();
         // services.AddSimpleRemodelingSample();
         // services.AddReusableRemodelingSample();
         // services.AddReusableSchemaIntegrationSample();
         // services.AddReusableSchemaAutoGenerationSample();
-        // services.AddTransient<ContentItemDirectorBase, SamplePageToWidgetDirector>();
-        // services.AddTransient<ContentItemDirectorBase, SampleChildLinkDirector>();
 
         // Routing content items to prefabricated content types (i.e., types not created by Migration Tool --page-types CLI argument)
         //
