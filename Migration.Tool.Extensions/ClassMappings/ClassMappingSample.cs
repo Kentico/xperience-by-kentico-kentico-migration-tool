@@ -466,6 +466,7 @@ public static class ClassMappingSample
     public static IServiceCollection AddReusableSchemaIntegrationSample(this IServiceCollection serviceCollection)
     {
         const string schemaNameDgcCommon = "DGC.Address";
+        const string schemaNameDgcContact = "DGC.Contact";
         const string schemaNameDgcName = "DGC.Name";
         const string sourceClassName = "DancingGoatCore.Cafe";
 
@@ -528,6 +529,19 @@ public static class ClassMappingSample
                 }
             });
 
+
+        // Sample: multiple reusable schemas sharing the same source field.
+        // When two schemas map a field from the same source, use WithFieldPatch on at least one of the fields to change the target GUID to avoid GUID collision.
+        var sb3 = new ReusableSchemaBuilder(schemaNameDgcContact, "Contact information", "Reusable schema that defines contact information");
+        sb3
+            .BuildField("ContactPhone")
+            .CreateFrom(sourceClassName, "CafePhone")
+            .WithFieldPatch(f =>
+            {
+                f.Caption = "Contact Phone";
+                f.Guid = new Guid("C9D7B0A1-3F4E-4D2A-BB5F-8C6D7E5F9A1B");
+            });
+
         var m = new MultiClassMapping("DancingGoatCore.CafeRS", target =>
         {
             target.ClassName = "DancingGoatCore.CafeRS";
@@ -543,10 +557,12 @@ public static class ClassMappingSample
 
         // declare that we intend to use reusable schema and set mappings to new fields from old ones
         m.UseReusableSchema(schemaNameDgcCommon);
+        m.UseReusableSchema(schemaNameDgcContact);
         m.BuildField("City").SetFrom(sourceClassName, "CafeCity");
         m.BuildField("Street").SetFrom(sourceClassName, "CafeStreet");
         m.BuildField("ZipCode").SetFrom(sourceClassName, "CafeZipCode");
         m.BuildField("Phone").SetFrom(sourceClassName, "CafePhone");
+        m.BuildField("ContactPhone").SetFrom(sourceClassName, "CafePhone");
 
         m.UseReusableSchema(schemaNameDgcName);
         m.BuildField("Name").SetFrom(sourceClassName, "CafeName");
@@ -567,6 +583,7 @@ public static class ClassMappingSample
         // register reusable schema builder
         serviceCollection.AddSingleton<IReusableSchemaBuilder>(sb);
         serviceCollection.AddSingleton<IReusableSchemaBuilder>(sb2);
+        serviceCollection.AddSingleton<IReusableSchemaBuilder>(sb3);
 
         return serviceCollection;
     }

@@ -78,10 +78,12 @@ public interface IReusableFieldBuilder
     string TargetFieldName { get; }
     Func<FormFieldInfo>? Factory { get; }
     SourceFieldIdentifier? SourceFieldIdentifier { get; }
+    IDictionary<string, Action<FormFieldInfo>> TargetFieldPatchers { get; }
 
     void AssertIsValid();
     IReusableFieldBuilder WithFactory(Func<FormFieldInfo> formFieldFactory);
     IReusableFieldBuilder CreateFrom(string sourceClassName, string sourceFieldName);
+    IReusableFieldBuilder WithFieldPatch(Action<FormFieldInfo> fieldInfoPatcher);
 }
 
 public class ReusableFieldBuilder(string targetFieldName) : IReusableFieldBuilder
@@ -89,6 +91,7 @@ public class ReusableFieldBuilder(string targetFieldName) : IReusableFieldBuilde
     public string TargetFieldName { get; } = targetFieldName;
     public Func<FormFieldInfo>? Factory { get; private set; }
     public SourceFieldIdentifier? SourceFieldIdentifier { get; private set; }
+    public IDictionary<string, Action<FormFieldInfo>> TargetFieldPatchers { get; } = new Dictionary<string, Action<FormFieldInfo>>();
 
     public void AssertIsValid()
     {
@@ -116,6 +119,17 @@ public class ReusableFieldBuilder(string targetFieldName) : IReusableFieldBuilde
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceFieldName, nameof(sourceFieldName));
 
         SourceFieldIdentifier = new SourceFieldIdentifier(sourceClassName, sourceFieldName);
+        return this;
+    }
+
+    public IReusableFieldBuilder WithFieldPatch(Action<FormFieldInfo> fieldInfoPatcher)
+    {
+        ArgumentNullException.ThrowIfNull(fieldInfoPatcher);
+
+        if (!TargetFieldPatchers.TryAdd(TargetFieldName, fieldInfoPatcher))
+        {
+            throw new InvalidOperationException($"Target field patcher can be defined only once for each field, field '{TargetFieldName}' has one already defined");
+        }
         return this;
     }
 }
