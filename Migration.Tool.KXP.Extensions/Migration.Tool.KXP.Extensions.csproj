@@ -1,14 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <!--        <TargetFramework>net7.0</TargetFramework>-->
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>disable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Kentico.Xperience.Core" Version="31.5.0" />
-        <PackageReference Include="Kentico.Xperience.WebApp" Version="31.5.0" />
+        <PackageReference Include="Kentico.Xperience.WebApp" Version="31.7.0" />
     </ItemGroup>
 
 </Project>
