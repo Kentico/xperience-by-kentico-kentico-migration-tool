@@ -23,6 +23,7 @@ public static class ServiceCollectionExtensions
         // services.AddReusableRemodelingSample();
         // services.AddReusableSchemaIntegrationSample();
         // services.AddReusableSchemaAutoGenerationSample();
+        // services.AddCustomContactFieldMappingSample();
         // services.AddTransient<ContentItemDirectorBase, SamplePageToWidgetDirector>();
         // services.AddTransient<ContentItemDirectorBase, SampleChildLinkDirector>();
 
