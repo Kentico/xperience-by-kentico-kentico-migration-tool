@@ -1064,11 +1064,15 @@ public class ContentItemMapper(
         if (!allowedTypesDict.Contains(sourceNodeClassID))
         {
             var fieldInfo = targetClassFormInfo.GetFormField(targetFieldName);
-            var guidList = new List<Guid>();
+            if (fieldInfo is null)
+            {
+                return;
+            }
+            var guidList = new HashSet<Guid>();
             string? settingsString = fieldInfo.Settings[FormDefinitionPatcher.AllowedContentItemTypeIdentifiers] as string;
             if (settingsString is not null)
             {
-                guidList.AddRange(JsonConvert.DeserializeObject<Guid[]>(settingsString)!);
+                guidList.UnionWith(JsonConvert.DeserializeObject<Guid[]>(settingsString)!);
             }
             guidList.Add(modelFacade.SelectById<ICmsClass>(sourceNodeClassID)!.ClassGUID);
             settingsString = JsonConvert.SerializeObject(guidList.ToArray());
