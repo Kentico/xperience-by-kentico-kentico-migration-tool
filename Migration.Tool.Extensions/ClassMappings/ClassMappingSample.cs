@@ -670,8 +670,10 @@ public static class ClassMappingSample
         const string targetClassName = "OM.Contact";
         const string sourceClassName = "OM.Contact";
 
-        // Create a custom mapping for the built-in OM.Contact system table to include 
-        // custom contact fields that are not handled by the default mapping.
+        // Create a custom mapping for the built-in OM.Contact system table.
+        // This adds custom contact fields that are not covered by the default
+        // Kentico Migration Tool mapping. See Migration.Tool.Source.Model.IOmContact
+        // for fields supported out of the box.
         var m = new MultiClassMapping(targetClassName, target =>
         {
             target.ClassName = targetClassName;

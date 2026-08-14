@@ -14,7 +14,7 @@ You can create multiple class mappings, each handling different source content t
 - Add new fields
 - Split one page type into multiple content types
 - Convert custom tables or module classes to content types
-- Migrate custom fields added to system tables, such as - _Contact management > Contact management - Contact_.
+- Migrate custom fields added to system tables, such as [Contact management](https://docs.kentico.com/13/on-line-marketing-features/managing-your-on-line-marketing-features/contact-management) `OM.Contact`.
 
 ## Create Custom Class Mappings
 
@@ -113,15 +113,17 @@ Mappings replace the default migration behavior for any source class with at lea
 
 Usage of `ReusableSchemaBuilder` in custom class mappings cannot be combined with the `Settings.CreateReusableFieldSchemaForClasses` configuration option.
 
-## Custom Contact Fields Note
-
-If SQL Server Management Studio reports an invalid column name after the migration, refresh IntelliSense with `Ctrl+Shift+R`. To learn how to display migrated custom database fields of the `OM.Contact` table, see [Add a custom field to the Contact profile](https://docs.kentico.com/guides/development/customizations-and-integrations/add-custom-contact-field#define-your-ui-form).
-
 ### Remodel Page Types as Reusable Field Schemas Guide
 
 For an end-to-end example of how to extract common fields from two page types from Kentico Xperience 13 and move them to a [reusable field schema](https://docs.kentico.com/x/D4_OD) shared by both web page content types in Xperience by Kentico, follow this [migration guide](https://docs.kentico.com/x/remodel_page_types_as_reusable_field_schemas_guides).
 
 If you need class mappings to alter several data classes in Kentico Xperience 13, consider [using AI tools to help you generate mappings quickly](https://docs.kentico.com/x/speed_up_remodeling_with_ai_guides).
+
+## Custom Contact Fields Note
+
+To learn how to display migrated custom database fields of the `OM.Contact` table, see [Add a custom field to the Contact profile](https://docs.kentico.com/guides/development/customizations-and-integrations/add-custom-contact-field#define-your-ui-form).
+
+If SQL Server Management Studio reports an invalid column name after the migration, refresh IntelliSense with `Ctrl+Shift+R`.
 
 ## Sample Class Mappings
 
