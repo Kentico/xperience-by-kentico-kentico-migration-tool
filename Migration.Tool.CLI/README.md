@@ -335,6 +335,11 @@ The command migrates all users with access to the administration interface. Note
     the `CMSEmailValidationRegex` [application key](https://docs.xperience.io/x/yA6RBg).
 - Custom user fields can be migrated together with _module classes_.
   - You can customize the default migration of fields using the [extensibility feature](../Migration.Tool.Extensions/README.md).
+- Users authenticated through _Single Sign-On (SSO)_ providers, such as Microsoft Entra ID, are migrated like other
+  administration users. The tool only migrates data stored in the source KX13 database and does not query the
+  identity provider.
+- Migrated administration users have `UserIsExternal` set to `0`, regardless of their source authentication method.
+  Configure SSO independently on the target instance.
 
 Additionally, the command migrates all roles and user-role bindings for users whose _Privilege level_ is _Editor_ or
 higher.
