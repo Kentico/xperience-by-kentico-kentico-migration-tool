@@ -67,7 +67,7 @@ public class ReusableSchemaService(ILogger<ReusableSchemaService> logger, ToolCo
             formInfo.RemoveFormField(formFieldInfo.Name);
         }
 
-        formInfo.AddFormItem(new FormSchemaInfo { Name = rfsName, Guid = reusableSchemaGuid });
+        formInfo.AddFormItem(new FormSchemaInfo { Name = reusableSchemaGuid.ToString(), Guid = reusableSchemaGuid });
         kxoDataClass.ClassFormDefinition = formInfo.GetXmlDefinition();
         return kxoDataClass;
     }
@@ -83,8 +83,7 @@ public class ReusableSchemaService(ILogger<ReusableSchemaService> logger, ToolCo
     public void AddReusableSchemaToDataClass(DataClassInfo dataClassInfo, Guid reusableFieldSchemaGuid)
     {
         var formInfo = new FormInfo(dataClassInfo.ClassFormDefinition);
-        var schema = reusableFieldSchemaManager.Get(reusableFieldSchemaGuid);
-        formInfo.AddFormItem(new FormSchemaInfo { Name = schema.Name, Guid = reusableFieldSchemaGuid });
+        formInfo.AddFormItem(new FormSchemaInfo { Name = reusableFieldSchemaGuid.ToString(), Guid = reusableFieldSchemaGuid });
         dataClassInfo.ClassFormDefinition = formInfo.GetXmlDefinition();
     }
 
@@ -94,7 +93,7 @@ public class ReusableSchemaService(ILogger<ReusableSchemaService> logger, ToolCo
         var schema = reusableFieldSchemaManager.Get(reusableFieldSchemaName);
         if (!formInfo.ItemsList.Any(x => x is FormSchemaInfo fsi && fsi.Guid == schema.Guid))
         {
-            formInfo.AddFormItem(new FormSchemaInfo { Name = reusableFieldSchemaName, Guid = schema.Guid });
+            formInfo.AddFormItem(new FormSchemaInfo { Name = schema.Guid.ToString(), Guid = schema.Guid });
             dataClassInfo.ClassFormDefinition = formInfo.GetXmlDefinition();
         }
         return schema.Guid;
@@ -103,9 +102,10 @@ public class ReusableSchemaService(ILogger<ReusableSchemaService> logger, ToolCo
     public IEnumerable<FormFieldInfo> GetFieldsFromReusableSchema(DataClassInfo dataClassInfo)
     {
         var formInfo = new FormInfo(dataClassInfo.ClassFormDefinition);
-        foreach (var formSchemaInfo in formInfo.GetFields<FormSchemaInfo>())
+        foreach (var formSchemaItem in formInfo.GetFields<FormSchemaInfo>())
         {
-            foreach (var formFieldInfo in reusableFieldSchemaManager.GetSchemaFields(formSchemaInfo.Name))
+            var schema = reusableFieldSchemaManager.Get(formSchemaItem.Guid);
+            foreach (var formFieldInfo in reusableFieldSchemaManager.GetSchemaFields(schema.Name))
             {
                 yield return formFieldInfo;
             }
