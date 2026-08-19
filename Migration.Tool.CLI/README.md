@@ -337,9 +337,8 @@ The command migrates all users with access to the administration interface. Note
   - You can customize the default migration of fields using the [extensibility feature](../Migration.Tool.Extensions/README.md).
 - Users authenticated through _Single Sign-On (SSO)_ providers, such as Microsoft Entra ID, are migrated like other
   administration users. The tool only migrates data stored in the source KX13 database and does not query the
-  identity provider.
+  identity provider. Configure SSO independently on the target instance.
 - Migrated administration users have `UserIsExternal` set to `0`, regardless of their source authentication method.
-  Configure SSO independently on the target instance.
 
 Additionally, the command migrates all roles and user-role bindings for users whose _Privilege level_ is _Editor_ or
 higher.
