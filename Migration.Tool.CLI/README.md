@@ -335,22 +335,19 @@ The command migrates all users with access to the administration interface. Note
     the `CMSEmailValidationRegex` [application key](https://docs.xperience.io/x/yA6RBg).
 - Custom user fields can be migrated together with _module classes_.
   - You can customize the default migration of fields using the [extensibility feature](../Migration.Tool.Extensions/README.md).
-- Users authenticated through _Single Sign-On (SSO)_ providers, such as Microsoft Entra ID, are migrated like other
+- Users authenticated through _Single Sign-On (SSO)_ providers, such as [Microsoft Entra ID (formerly Azure AD)](https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id), are migrated like other
   administration users. The tool only migrates data stored in the source KX13 database and does not query the
   identity provider. Configure SSO independently on the target instance.
-- Migrated administration users have `UserIsExternal` set to `0`, regardless of their source authentication method.
+  - Migrated administration users have `UserIsExternal` set to `0` because this field identifies [members](#members) (registered live site visitors) who use [external authentication](https://docs.kentico.com/documentation/developers-and-admins/development/registration-and-authentication/external-authentication).
 
 Additionally, the command migrates all roles and user-role bindings for users whose _Privilege level_ is _Editor_ or
 higher.
 
-Because Xperience by Kentico uses a different [permission model](https://docs.xperience.io/x/7IVwCg), no existing role
-permissions or UI personalization settings are migrated. After the migration, the permissions for each role must be
-configured again.
+Because Xperience by Kentico uses a different [permission model](https://docs.xperience.io/x/7IVwCg), no existing role permissions or UI personalization settings are migrated. After the migration, the permissions for each role must be configured again.
 
 #### Members
 
-In Xperience by Kentico, live site users are represented using a separate **Member** entity and stored in the
-_CMS_Member_ table.
+In Xperience by Kentico, live site users are represented using a separate **Member** entity and stored in the _CMS_Member_ table.
 
 The migration identifies live site users as those without access to the administration interface. That is, only those
 accounts whose _Privilege level_ is set to _None_ (Users -> edit a user -> General tab) are migrated.
