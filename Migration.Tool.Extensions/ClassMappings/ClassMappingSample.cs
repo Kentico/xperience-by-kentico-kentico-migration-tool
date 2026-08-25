@@ -690,4 +690,29 @@ public static class ClassMappingSample
         serviceCollection.AddSingleton<IClassMapping>(m);
         return serviceCollection;
     }
+
+    public static IServiceCollection AddCustomContactFieldMappingSample(this IServiceCollection serviceCollection)
+    {
+        const string targetClassName = "OM.Contact";
+        const string sourceClassName = "OM.Contact";
+
+        // Create a custom mapping for the built-in OM.Contact system table.
+        // This adds custom contact fields that are not covered by the default
+        // Kentico Migration Tool mapping. See Migration.Tool.Source.Model.IOmContact
+        // for fields supported out of the box.
+        var m = new MultiClassMapping(targetClassName, target =>
+        {
+            target.ClassName = targetClassName;
+            target.ClassTableName = "OM_Contact";
+            target.ClassType = ClassType.SYSTEM_TABLE;
+        });
+
+        // Map the custom contact field from the source table to the target contact table.
+        m
+            .BuildField("CustomContactField")
+            .SetFrom(sourceClassName, "CustomContactField", true);
+
+        serviceCollection.AddSingleton<IClassMapping>(m);
+        return serviceCollection;
+    }
 }
