@@ -113,6 +113,28 @@ Mappings replace the default migration behavior for any source class with at lea
 
 Usage of `ReusableSchemaBuilder` in custom class mappings cannot be combined with the `Settings.CreateReusableFieldSchemaForClasses` configuration option.
 
+### Shared Source Fields Across Multiple Schemas
+
+When two or more reusable schemas define fields that originate from the same source field (using `CreateFrom`), the resulting target fields will have identical GUIDs by default. This causes a GUID collision in Xperience by Kentico.
+
+To avoid this, use `WithFieldPatch` on at least one of the fields to assign a new GUID:
+
+```csharp
+var schema1 = new ReusableSchemaBuilder("DGC.Address", "Address", "Address schema");
+schema1.BuildField("Phone").CreateFrom("DancingGoatCore.Cafe", "CafePhone");
+
+var schema2 = new ReusableSchemaBuilder("DGC.Contact", "Contact", "Contact schema");
+schema2.BuildField("ContactPhone")
+    .CreateFrom("DancingGoatCore.Cafe", "CafePhone")
+    .WithFieldPatch(f =>
+    {
+        f.Guid = Guid.NewGuid(); // Required to avoid GUID collision
+    });
+```
+
+> [!NOTE]
+> The migration tool validates this scenario at runtime. If two schemas share the same source field and the resulting GUIDs are identical, an exception is thrown with guidance to apply `WithFieldPatch`.
+
 ### Remodel Page Types as Reusable Field Schemas Guide
 
 For an end-to-end example of how to extract common fields from two page types from Kentico Xperience 13 and move them to a [reusable field schema](https://docs.kentico.com/x/D4_OD) shared by both web page content types in Xperience by Kentico, follow this [migration guide](https://docs.kentico.com/x/remodel_page_types_as_reusable_field_schemas_guides).

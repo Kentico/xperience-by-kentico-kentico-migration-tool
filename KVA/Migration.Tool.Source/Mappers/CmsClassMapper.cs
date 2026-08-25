@@ -1,13 +1,14 @@
 using System.Diagnostics;
+using System.Reflection;
 using System.Xml;
 using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
 using CMS.Core;
 using CMS.DataEngine;
 using CMS.FormEngine;
+using Kentico.Xperience.Admin.Base;
 using Kentico.Xperience.Admin.Base.Forms;
 using Microsoft.Extensions.Logging;
-
 using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
 using Migration.Tool.Common.Enumerations;
@@ -32,6 +33,8 @@ public class CmsClassMapper(
         primaryKeyMappingContext, protocol)
 {
     private const string REQUIRED_RULE_IDENTIFIER = "Kentico.Administration.RequiredValue";
+
+    private static readonly Lazy<HashSet<string>> defaultIcons = new(GetDefaultIcons);
 
     protected override DataClassInfo? CreateNewInstance(ICmsClass source, MappingHelper mappingHelper, AddFailure addFailure) =>
         DataClassInfo.New();
@@ -89,7 +92,21 @@ public class CmsClassMapper(
         target.ClassConnectionString = source.ClassConnectionString;
         target.ClassDefaultObjectType = source.ClassDefaultObjectType;
         target.ClassCodeGenerationSettings = source.ClassCodeGenerationSettings;
-        target.ClassIconClass = source.ClassIconClass;
+
+        if (!string.IsNullOrEmpty(source.ClassIconClass))
+        {
+            // Convert the icon class to the new format if it starts with "icon-"
+            var iconClass = source.ClassIconClass.StartsWith("icon-", StringComparison.OrdinalIgnoreCase)
+                ? "xp-" + source.ClassIconClass[5..]
+                : source.ClassIconClass;
+
+            // Map the ClassIconClass only if it is in the default icons list to prevent validation exceptions
+            if (defaultIcons.Value.Contains(iconClass))
+            {
+                target.ClassIconClass = iconClass;
+            }
+        }
+
         if (source.ClassIsDocumentType)
         {
             target.ClassWebPageHasUrl = source switch
@@ -464,4 +481,13 @@ public class CmsClassMapper(
         document.FirstChild.AppendChild(document.ImportNode(oNode, true));
         return document.FirstChild.InnerXml;
     }
+
+
+    private static HashSet<string> GetDefaultIcons() =>
+        typeof(Icons)
+            .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+            .Where(f => f.IsLiteral && !f.IsInitOnly && f.FieldType == typeof(string))
+            .Select(f => f.GetRawConstantValue())
+            .OfType<string>()
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
 }
