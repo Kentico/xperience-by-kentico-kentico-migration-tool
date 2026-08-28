@@ -8,8 +8,23 @@ namespace Migration.Tool.Common.Services.Ipc;
 
 public class IpcService(ToolConfiguration toolConfiguration, ILogger<IpcService> logger)
 {
-    private const string IPC_PING_PATH = "/ToolApi/Test";
-    private const string IPC_DISCOVERED_INFO_PATH = "/ToolApi/GetAllDefinitions";
+    // NOTE: paths are intentionally RELATIVE (no leading '/') so that a base URI
+    // like 'https://host/be' keeps its path segment when combined. Combined with
+    // EnsureTrailingSlash below, this yields '.../be/ToolApi/Test' as required by
+    // multi-site KX13 installations that route sites by URL path prefix.
+    private const string IPC_PING_PATH = "ToolApi/Test";
+    private const string IPC_DISCOVERED_INFO_PATH = "ToolApi/GetAllDefinitions";
+
+    private static Uri BuildIpcUri(Uri baseUri, string relativePath)
+    {
+        // Uri only treats the base path as a directory when it ends with '/'.
+        // Without this, 'https://host/be' + 'ToolApi/Test' resolves to
+        // 'https://host/ToolApi/Test' (the last segment is treated as a file).
+        var normalized = baseUri.AbsoluteUri.EndsWith('/')
+            ? baseUri
+            : new Uri(baseUri.AbsoluteUri + "/");
+        return new Uri(normalized, relativePath);
+    }
 
     public async Task<bool> IsConfiguredAsync()
     {
@@ -30,7 +45,7 @@ public class IpcService(ToolConfiguration toolConfiguration, ILogger<IpcService>
         {
             if (connectionInfo.SourceInstanceUri != null)
             {
-                var pingUri = new Uri(connectionInfo.SourceInstanceUri, IPC_PING_PATH);
+                var pingUri = BuildIpcUri(connectionInfo.SourceInstanceUri, IPC_PING_PATH);
                 var request = new HttpRequestMessage(
                     HttpMethod.Post, pingUri
                 );
@@ -86,7 +101,7 @@ public class IpcService(ToolConfiguration toolConfiguration, ILogger<IpcService>
         {
             if (connectionInfo.SourceInstanceUri != null)
             {
-                var pingUri = new Uri(connectionInfo.SourceInstanceUri, IPC_DISCOVERED_INFO_PATH);
+                var pingUri = BuildIpcUri(connectionInfo.SourceInstanceUri, IPC_DISCOVERED_INFO_PATH);
                 var hc = new HttpClient();
                 var request = new HttpRequestMessage(
                     HttpMethod.Post, pingUri
