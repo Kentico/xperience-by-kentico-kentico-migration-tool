@@ -31,6 +31,7 @@ public static class ServiceCollectionExtensions
         // services.AddReusableRemodelingSample();
         // services.AddReusableSchemaIntegrationSample();
         // services.AddReusableSchemaAutoGenerationSample();
+        // services.AddCustomContactFieldMappingSample();
 
         // Routing content items to prefabricated content types (i.e., types not created by Migration Tool --page-types CLI argument)
         //
