@@ -148,6 +148,20 @@ public class AssetFacade(
                     FilePath = mediaFilePath
                 };
             }
+            else
+            {
+                contentItemData[LegacyMediaFileAssetField.Column!] = new AssetMetadataSource
+                {
+                    ContentItemGuid = translatedMediaGuid,
+                    Identifier = GuidHelper.CreateAssetGuid(translatedMediaGuid, contentLanguageName),
+                    Name = Path.GetFileNameWithoutExtension(mediaFile.FileName) + mediaFile.FileExtension,
+                    Extension = mediaFile.FileExtension,
+                    Size = mediaFile.FileSize,
+                    LastModified = mediaFile.FileModifiedWhen,
+                    ImageWidth = mediaFile.FileImageWidth,
+                    ImageHeight = mediaFile.FileImageHeight
+                };
+            }
 
             return new ContentItemLanguageData
             {
