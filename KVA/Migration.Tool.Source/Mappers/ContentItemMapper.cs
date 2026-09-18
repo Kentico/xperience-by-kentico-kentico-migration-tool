@@ -4,6 +4,7 @@ using CMS.ContentEngine.Internal;
 using CMS.Core;
 using CMS.DataEngine;
 using CMS.FormEngine;
+using CMS.Helpers;
 using CMS.MediaLibrary;
 using CMS.Membership;
 using CMS.Websites;
