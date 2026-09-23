@@ -133,10 +133,7 @@ public class AssetFacade(
             {
                 [LegacyMediaFileTitleField.Column!] = mediaFile.FileTitle,
                 [LegacyMediaFileDescriptionField.Column!] = mediaFile.FileDescription,
-            };
-            if (!toolConfiguration.MigrateOnlyMediaFileInfo.GetValueOrDefault(false))
-            {
-                contentItemData[LegacyMediaFileAssetField.Column!] = new AssetFileSource
+                [LegacyMediaFileAssetField.Column!] = new AssetFileSource
                 {
                     ContentItemGuid = translatedMediaGuid,
                     Identifier = GuidHelper.CreateAssetGuid(translatedMediaGuid, contentLanguageName),
@@ -146,8 +143,8 @@ public class AssetFacade(
                     Size = null,
                     LastModified = null,
                     FilePath = mediaFilePath
-                };
-            }
+                },
+            };
 
             return new ContentItemLanguageData
             {
