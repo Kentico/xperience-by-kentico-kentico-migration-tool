@@ -4,6 +4,7 @@ using CMS.ContentEngine.Internal;
 using CMS.Core;
 using CMS.DataEngine;
 using CMS.FormEngine;
+using CMS.Helpers;
 using CMS.MediaLibrary;
 using CMS.Membership;
 using CMS.Websites;
@@ -503,7 +504,7 @@ public class ContentItemMapper(
                 {
                     ContentItemLanguageMetadataGUID = documentGuid,
                     ContentItemLanguageMetadataContentItemGuid = contentItemGuid,
-                    ContentItemLanguageMetadataDisplayName = cmsDocument.DocumentName, // For the admin UI only
+                    ContentItemLanguageMetadataDisplayName = cmsDocument.DocumentName.Truncate(FieldConstants.ContentItemLanguageMetadataDisplayNameColumnSize), // For the admin UI only
                     ContentItemLanguageMetadataLatestVersionStatus = draftMigrated ? VersionStatus.Draft : versionStatus, // That's the latest status of th item for admin optimization
                     ContentItemLanguageMetadataCreatedWhen = cmsDocument.DocumentCreatedWhen, // DocumentCreatedWhen
                     ContentItemLanguageMetadataModifiedWhen = cmsDocument.DocumentModifiedWhen, // DocumentModifiedWhen
@@ -1366,7 +1367,7 @@ public class ContentItemMapper(
         {
             ContentItemLanguageMetadataGUID = commonDataGuid,
             ContentItemLanguageMetadataContentItemGuid = contentItemModel.ContentItemGUID,
-            ContentItemLanguageMetadataDisplayName = source.DisplayName,
+            ContentItemLanguageMetadataDisplayName = source.DisplayName.Truncate(FieldConstants.ContentItemLanguageMetadataDisplayNameColumnSize),
             ContentItemLanguageMetadataLatestVersionStatus = VersionStatus.Published,
             ContentItemLanguageMetadataCreatedWhen = source.LastModifiedDate,
             ContentItemLanguageMetadataModifiedWhen = source.LastModifiedDate,
