@@ -377,6 +377,12 @@ public class MigratePagesCommandHandler(
                                 {
                                     case { Success: false } result:
                                     {
+                                        // Detects the "referenced target not found" ArgumentNullException thrown by UMT's ContentItemReferencePopulator when a reference points to not-yet-migrated content
+                                        if (result.Exception is ArgumentNullException { ParamName: { } paramName } && paramName.Contains("does not exist or could not be found", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            protocol.Append(HandbookReferences.BrokenContentItemReference(result.Exception));
+                                        }
+
                                         logger.LogError("Failed to import: {Exception}, {ValidationResults}", result.Exception, JsonConvert.SerializeObject(result.ModelValidationResults));
                                         break;
                                     }
@@ -1128,7 +1134,7 @@ public class MigratePagesCommandHandler(
         {
             try
             {
-                var languageInfo = GetLanguageInfoByLanguageName(path.LanguageName);
+                var languageInfo = GetLanguageInfoByCultureFormat(path.LanguageName);
                 var ktPath = WebPageFormerUrlPathInfo.Provider.Get()
                     .WhereEquals(nameof(WebPageFormerUrlPathInfo.WebPageFormerUrlPathHash), GetWebPageUrlPathHashQueryExpression(path.Path))
                     .WhereEquals(nameof(WebPageFormerUrlPathInfo.WebPageFormerUrlPathWebsiteChannelID), targetPage.WebPageItemWebsiteChannelID)
@@ -1166,18 +1172,6 @@ public class MigratePagesCommandHandler(
         {
             result = ContentLanguageInfo.Provider.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageCultureFormat), cultureFormat).SingleOrDefault()
                 ?? throw new InvalidOperationException($"Missing content language with culture format '{cultureFormat}'");
-            contentLanguageInfos.Add(result);
-        }
-        return result;
-    }
-
-    private ContentLanguageInfo GetLanguageInfoByLanguageName(string languageName)
-    {
-        var result = contentLanguageInfos.SingleOrDefault(x => x.ContentLanguageName.Equals(languageName, StringComparison.InvariantCultureIgnoreCase));
-        if (result is null)
-        {
-            result = ContentLanguageInfo.Provider.Get().WhereEquals(nameof(ContentLanguageInfo.ContentLanguageName), languageName).SingleOrDefault()
-                ?? throw new InvalidOperationException($"Missing content language with name '{languageName}'");
             contentLanguageInfos.Add(result);
         }
         return result;
