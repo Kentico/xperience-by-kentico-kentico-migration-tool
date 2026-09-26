@@ -20,6 +20,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Migration.Tool.Common\Migration.Tool.Common.csproj" />
         <ProjectReference Include="..\Migration.Tool.CLI\Migration.Tool.CLI.csproj" />
+        <ProjectReference Include="..\KVA\Migration.Tool.Source\Migration.Tool.Source.csproj" />
     </ItemGroup>
 
 </Project>

@@ -68,6 +68,7 @@ Migration.Tool.CLI.exe migrate --sites --custom-modules --custom-tables --catego
 | `--media-libraries`         | Enables migration of [media libraries](https://docs.xperience.io/x/agKiCQ) to Content hub as [content item assets](https://docs.kentico.com/x/content_item_assets_xp). This behavior can be adjusted by `MigrateOnlyMediaFileInfo` and `MigrateMediaToMediaLibrary` [configuration options](#configuration).                                                                                                                                                                                                                                                         | `--sites`, `--custom-modules`, `--users`                             |
 | `--customers`               | Enables migration of customers and customer addresses.<br /><br />See: [Migration details for specific object types - Customers](#customers)                                                                                                                                                                                                                                                                                                                                                                                                                         | `--sites`, `--custom-modules`, `--users`, `--members`                |
 | `--orders`                  | Enables migration of orders, order items, and order addresses.<br /><br />See: [Migration details for specific object types - Orders](#orders)                                                                                                                                                                                                                                                                                                                                                                                                                       | `--sites`, `--custom-modules`, `--users`, `--members`, `--customers` |
+| `--transfer-media-assets`   | Copies the physical files of migrated media library files to the file/blob structure expected by content item assets. Intended to be used after `--media-libraries` when `MigrateOnlyMediaFileInfo` was set to `true` (i.e. only the database representation of media files was migrated). Source and target storage locations are configured via the `AssetFileTransfer` [configuration option](#configuration).<br /><br />See: [Migration details for specific object types - Transfer media assets](#transfer-media-assets)                                      | `--media-libraries`                                                  |
 | `--bypass-dependency-check` | Skips the migrate command's dependency check. Use for repeated runs of the migration if you know that dependencies were already migrated successfully (for example `--page types` when migrating pages).                                                                                                                                                                                                                                                                                                                                                             |                                                                      |
 
 ### Examples
@@ -299,7 +300,7 @@ If required, you can [configure the tool](#convert-attachments-and-media-library
 > The migration tool reads media library files from the **local file system** only. If your source instance stores media files in Azure Blob Storage, Amazon S3, or other remote/cloud storage, the tool cannot read files directly from these locations. In this case, either:
 >
 > - Download the files to the local file system before migration, or
-> - Set `MigrateOnlyMediaFileInfo` to `true` to migrate only database records, then manually transfer the files to the target storage.
+> - Set `MigrateOnlyMediaFileInfo` to `true` to migrate only database records, then use the [`--transfer-media-assets`](#transfer-media-assets) command to transfer the physical files (from the local file system or Azure Blob Storage) to the target storage afterwards.
 
 #### Attachments
 
@@ -577,6 +578,81 @@ Before migrating orders, the following requirements need to be met:
   }
   ```
 
+#### Transfer media assets
+
+The `--transfer-media-assets` command copies the physical files of already-migrated media library files (content
+item assets) from a source location to the target location expected by Xperience by Kentico. It is intended for
+scenarios where `MigrateOnlyMediaFileInfo` was set to `true` during the `--media-libraries` migration (for example,
+because source media files are stored in a location not directly reachable by the Kentico Migration Tool while it
+runs), so only the database representation of the content item and its asset metadata was created, without copying
+the file content.
+
+The command reads legacy media file records directly from the source database (`KxConnectionString`) and computes
+the same deterministic content item/asset identifiers used by `--media-libraries`, so it can be run independently,
+any time after media libraries were migrated.
+
+> [!NOTE]
+> `--transfer-media-assets` is intended to be executed as its own, separate `migrate` run, after a prior run of
+> `--media-libraries` (with `MigrateOnlyMediaFileInfo` set to `true`) has already completed - not passed together
+> with `--media-libraries` in the same run.
+>
+> Only supports the default target (media files migrated as content item assets, i.e. `MigrateMediaToMediaLibrary`
+> is `false`). Not supported when migrating to media libraries.
+
+Both the source and target locations must be the same kind of storage - either both the local file system, or
+both Azure Blob Storage containers (mixed local/Azure Blob transfers are not supported). This lets the command
+always use a fast, direct copy that never routes file content through the machine running the tool:
+
+- `Local` &rarr; `Local`: an OS-level file copy (`File.Copy`).
+- `AzureBlobStorage` &rarr; `AzureBlobStorage`: a server-side ["copy from URL"](https://learn.microsoft.com/en-us/rest/api/storageservices/copy-blob-from-url)
+  operation - Azure Storage transfers the blob directly between the source and target accounts/containers, so
+  transfer speed doesn't depend on the network bandwidth of the machine running the tool, even for very large files.
+
+Typical use cases:
+
+- **Both instances on the same machine/network share**: use `Local` (the default) - files are copied directly
+  between `KxCmsDirPath` and `XbyKDirPath`.
+- **Source and/or target media files live in Azure Blob Storage** (e.g. K13 mapped its media library folder to
+  Azure Storage, or the Xperience by Kentico project is deployed to SaaS/private cloud with Azure Storage mapping):
+  use `AzureBlobStorage`.
+- **Interrupted/very large transfers**: safe to re-run - files/blobs that were already fully copied are skipped
+  (see `ForceOverwrite` below), so a re-run only copies what's still missing.
+
+Configured via the `AssetFileTransfer` [configuration option](#configuration):
+
+```json
+"AssetFileTransfer": {
+  "StorageType": "Local",
+  "SourceAzureBlobStorage": {
+    "ConnectionString": "[TODO]",
+    "ContainerName": "cmsstorage"
+  },
+  "TargetAzureBlobStorage": {
+    "ConnectionString": "[TODO]",
+    "ContainerName": "cmsstorage"
+  },
+  "ForceOverwrite": false
+}
+```
+
+- `StorageType`: either `Local` or `AzureBlobStorage`, applied to both source and target. Defaults to `Local`.
+  - When `Local`, source files are read from `KxCmsDirPath`, and target files are written to `XbyKDirPath`.
+  - When `AzureBlobStorage`, both `SourceAzureBlobStorage` and `TargetAzureBlobStorage` must be configured with a
+    valid `ConnectionString` that includes an account key (not only a SAS token) - the source storage account
+    needs to issue a short-lived read SAS for each blob so the target account can authenticate the server-side
+    copy. Set `ContainerName` to whatever container the source/target instance actually maps that data to (e.g.
+    K13's `mediaProvider.CustomRootPath`, or Xperience by Kentico's `ContainerName`/per-path container override) -
+    it defaults to `cmsstorage`, matching Xperience by Kentico's default, but K13 instances commonly use a
+    custom name.
+    - `KxCmsDirPath` is still required in this mode (even though it isn't read from directly) - Kentico's Azure
+      Storage provider preserves the file's full path relative to the site's `~/` application root as the blob
+      name (just lower-cased, since Azure Blob Storage names are case-sensitive and Kentico lower-cases them),
+      so the tool needs `KxCmsDirPath` to compute that same relative path.
+- `ForceOverwrite`: if `false` (default), files/blobs that already exist at the target location are skipped. If
+  `true`, they are always overwritten.
+
+If a source file cannot be found, the command logs a warning and continues with the remaining files.
+
 ## Configuration
 
 Before you run the migration, configure options in the `Migration.Tool.CLI/appsettings.json` file.
@@ -592,6 +668,7 @@ Add the options under the `Settings` section in the configuration file.
 | ConvertClassesToContentHub                                        | Specifies which page types, custom tables or custom module classes are migrated to [reusable content items](https://docs.kentico.com/x/content_items_xp) (instead of website channel pages or custom module classes for custom tables and classes). Enter page type code names, separated with either `;` or `,`. See [Convert pages or custom tables to Content hub](#convert-pages-or-custom-tables-to-content-hub) or [Convert module classes to Content hub](#convert-module-classes-to-content-hub) for detailed information.                                                                                                                    |
 | CustomModuleClassDisplayNamePatterns                              | Specifies the format of content item names for items migrated from custom module classes. Add a dictionary with the class name as the key and the name pattern as the value. The name pattern can use placeholders that are replaced by values from a specific column in the source class. <br /><br />Example: `CustomModuleItem-{CustomClassGuid}`                                                                                                                                                                                                                                                                                                  |
 | MigrateOnlyMediaFileInfo                                          | If set to `true`, only the database representations of media files are migrated, without the files in the media folder in the project's file system. For example, enable this option if your media library files are mapped to a shared directory or cloud storage, then manually transfer the files to the target storage after migration.<br /><br />If `false`, media files are migrated based on the `KxCmsDirPath` location.                                                                                                                                                                                                                     |
+| AssetFileTransfer                                                 | Configuration for the [`--transfer-media-assets`](#transfer-media-assets) command, which copies the physical files of migrated media library files between local file system and/or Azure Blob Storage locations.                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | MigrateMediaToMediaLibrary                                        | **:warning: Deprecated:** Media libraries will be removed in a future release. <br /><br />Determines whether media library files and attachments from the source instance are migrated to the target instance as media libraries or as [content item assets](https://docs.kentico.com/x/content_item_assets_xp) in the content hub. The default value is `false` – media files and attachments are migrated as content item assets. <br /><br /> See [Convert attachments and media library files to media libraries instead of content item assets](#convert-attachments-and-media-library-files-to-media-libraries-instead-of-content-item-assets) |
 | LegacyFlatAssetTree                                               | Use legacy behavior of versions up to 2.3.0. Content folders for asset content items will be created in a flat structure (all under root folder)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | LegacyPermissiveMediaLibrarySubfolders                            | Allows media library subfolder names that don’t follow current Xperience by Kentico naming rules. When set to `true`, skips validation requiring only alphanumeric characters, underscores, and hyphens, and allows names that may otherwise conflict with OS-reserved keywords (such as `CON`, `PRN`, `AUX`). This configuration should only be used when necessary (for example, when re-running migrations from older tool versions), as it may limit functionality like media library migration to the [Content hub](https://docs.kentico.com/documentation/business-users/content-hub).                                                          |
