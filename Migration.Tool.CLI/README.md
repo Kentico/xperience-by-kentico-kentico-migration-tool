@@ -365,6 +365,12 @@ The migration includes:
   |MemberId|MemberEmail|...|MemberSecurityStamp|
   ```
 
+  here is the list of all system field
+
+  ```text
+  FirstName|MiddleName|LastName|FullName|UserPassword|PreferredCultureCode|PreferredUICultureCode|UserPrivilegeLevel|UserIsExternal|UserPasswordFormat|LastLogon|UserStartingAliasPath|UserLastModified|UserLastLogonInfo|UserIsHidden|UserIsDomain|UserHasAllowedCultures|UserMFRequired|UserMFSecret|UserMFTimestep|UserNickName|UserSignature|UserURLReferrer|UserCampaign|UserCustomData|UserRegistrationInfo|UserActivationDate|UserActivatedByUserID|UserTimeZoneID|UserAvatarID|UserGender|UserDateOfBirth|UserSettingsUserGUID|UserSettingsUserID|UserWaitingForApproval|UserDialogsConfiguration|UserDescription|UserAuthenticationGUID|UserSkype|UserIM|UserPhone|UserPosition|UserLogActivities|UserPasswordRequestHash|UserInvalidLogOnAttempts|UserInvalidLogOnAttemptsHash|UserPasswordLastChanged|UserAccountLockReason|UserShowIntroductionTile|UserDashboardApplications|UserDismissedSmartTips
+  ```
+
   And the following `Migration.Tool.CLI/appsettings.json` configuration.
 
   ```json
@@ -378,6 +384,8 @@ The migration includes:
   ```text
   |MemberId|MemberEmail|...|MemberSecurityStamp|FirstName|LastName|UserPrivilegeLevel|`
   ```
+
+  Don't forget that if you migrate system fields which are required you need to handle this by yourself when creating new record via Info object.
 
   > If you are migrating custom fields, the `--custom-modules` migration command must be run before the `--members`
   > command. For example:
