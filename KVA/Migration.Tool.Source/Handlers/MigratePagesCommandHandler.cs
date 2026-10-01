@@ -843,7 +843,7 @@ public class MigratePagesCommandHandler(
 
             if (ksPaths.Count > 0)
             {
-                bool languageDomainsChannel = SiteUsesLanguageDomains(ksTree.NodeSiteID);
+                bool languageDomainsChannel = ChannelUsesLanguageDomains(webSiteChannelGuid);
 
                 foreach (var ksPath in ksPaths)
                 {
@@ -1047,32 +1047,23 @@ public class MigratePagesCommandHandler(
         return groupsFiltered.Where(x => x.Count() > 1).SelectMany(x => x.Select(y => new PagePath(y.WebPageItemID, y.WebsiteChannelID, y.ContentLanguageID, y.Path)));
     }
 
-    private readonly Dictionary<int, bool> siteUsesLanguageDomainsCache = [];
     private Dictionary<string, string?>? cultureAliasCache;
 
     /// <summary>
-    /// A source site with a domain alias bound to a non-default visitor culture is migrated as a website channel
-    /// in the language-domains routing mode (language-specific domains) - detection mirrors MigrateSitesCommandHandler.
+    /// The channel's stored routing mode (CMS_WebsiteChannel.WebsiteChannelLanguageRoutingMode) is the value the
+    /// url path uniqueness constraint acts on, so it alone decides the shape of the generated page url paths.
+    /// The mode is derived from the source configuration exactly once - when the sites migration creates the
+    /// channel - and is deliberately not re-derived here: the source may have changed since the channel was
+    /// created, and sources migrated by handlers without language-domains support (K11/KX12) always get
+    /// path-prefix channels.
     /// </summary>
-    private bool SiteUsesLanguageDomains(int siteId)
-    {
-        if (siteUsesLanguageDomainsCache.TryGetValue(siteId, out bool languageDomains))
-        {
-            return languageDomains;
-        }
+    private static bool ChannelUsesLanguageDomains(int websiteChannelId) =>
+        WebsiteChannelInfo.Provider.Get(websiteChannelId) is { } websiteChannel
+        && websiteChannel.WebsiteChannelLanguageRoutingMode == WebsiteChannelLanguageRoutingMode.LanguageDomains;
 
-        string? siteDefaultCulture = modelFacade.SelectById<ICmsSite>(siteId)?.SiteDefaultVisitorCulture
-                                     ?? KenticoHelper.GetSettingsKey(modelFacade, siteId, "CMSDefaultCultureCode");
-
-        languageDomains = modelFacade
-            .SelectWhere<ICmsSiteDomainAlias>("SiteID = @siteId", new SqlParameter("siteId", siteId))
-            .Any(a => !string.IsNullOrWhiteSpace(a.SiteDomainAliasName)
-                      && !string.IsNullOrWhiteSpace(a.SiteDefaultVisitorCulture)
-                      && !string.Equals(a.SiteDefaultVisitorCulture, siteDefaultCulture, StringComparison.InvariantCultureIgnoreCase));
-
-        siteUsesLanguageDomainsCache[siteId] = languageDomains;
-        return languageDomains;
-    }
+    private static bool ChannelUsesLanguageDomains(Guid websiteChannelGuid) =>
+        WebsiteChannelInfo.Provider.Get(websiteChannelGuid) is { } websiteChannel
+        && websiteChannel.WebsiteChannelLanguageRoutingMode == WebsiteChannelLanguageRoutingMode.LanguageDomains;
 
     /// <summary>
     /// Strips the leading language segment ("fr/articles" => "articles") when it matches the culture code or
@@ -1125,7 +1116,7 @@ public class MigratePagesCommandHandler(
             resolved = !collisionData.Any();
 
             // Catch collision cases that GeneratePageUrlPath doesn't catch
-            var collidingPaths = GetCollidingPaths(languageScoped: SiteUsesLanguageDomains(ksTree.NodeSiteID)).Where(x => x.WebPageItemID == webPageItemInfo.WebPageItemID);
+            var collidingPaths = GetCollidingPaths(languageScoped: ChannelUsesLanguageDomains(webPageItemInfo.WebPageItemWebsiteChannelID)).Where(x => x.WebPageItemID == webPageItemInfo.WebPageItemID);
             if (collidingPaths.Any())
             {
                 collisions.AddRange(collidingPaths);
