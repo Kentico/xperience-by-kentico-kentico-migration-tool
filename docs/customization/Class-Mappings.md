@@ -14,6 +14,7 @@ You can create multiple class mappings, each handling different source content t
 - Add new fields
 - Split one page type into multiple content types
 - Convert custom tables or module classes to content types
+- Migrate custom fields added to system tables, such as [Contact management](https://docs.kentico.com/13/on-line-marketing-features/managing-your-on-line-marketing-features/contact-management) `OM.Contact`.
 
 ## Create Custom Class Mappings
 
@@ -140,6 +141,12 @@ For an end-to-end example of how to extract common fields from two page types fr
 
 If you need class mappings to alter several data classes in Kentico Xperience 13, consider [using AI tools to help you generate mappings quickly](https://docs.kentico.com/x/speed_up_remodeling_with_ai_guides).
 
+## Custom Contact Fields Note
+
+To learn how to display migrated custom database fields of the `OM.Contact` table, see [Add a custom field to the Contact profile](https://docs.kentico.com/guides/development/customizations-and-integrations/add-custom-contact-field#define-your-ui-form).
+
+If SQL Server Management Studio reports an invalid column name after the migration, refresh IntelliSense with `Ctrl+Shift+R`.
+
 ## Sample Class Mappings
 
 You can find sample class mappings in [Migration.Tool.Extensions/ClassMappings/ClassMappingSample.cs](../../Migration.Tool.Extensions/ClassMappings/ClassMappingSample.cs).
@@ -147,6 +154,7 @@ You can find sample class mappings in [Migration.Tool.Extensions/ClassMappings/C
 - `AddSimpleRemodelingSample` showcases how to change the mapping of a single page type.
 - `AddClassMergeExample` showcases how to merge two page types into a single content type.
 - `AddReusableRemodelingSample` showcases how to migrate a page type as reusable content.
+- `AddCustomContactFieldMappingSample` showcases how to migrate custom fields added to system tables, such as `OM.Contact`.
 
 ## Registration
 

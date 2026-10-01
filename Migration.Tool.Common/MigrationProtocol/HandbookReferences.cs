@@ -81,6 +81,12 @@ public static class HandbookReferences
             .NeedsManualAction()
             .WithData(new { TargetEntityType = typeof(TTarget).FullName, Exception = exception.ToString() });
 
+    public static HandbookReference BrokenContentItemReference(Exception exception) =>
+        new HandbookReference("BrokenContentItemReference")
+            .NeedsManualAction()
+            .WithMessage(exception.Message)
+            .WithSuggestion("Run the \"Track missing content item usages\" scheduled task in the target instance to rebuild content item references.");
+
     public static HandbookReference MissingConfiguration<TCommand>(string configurationName) =>
         new HandbookReference("MissingConfiguration")
             .NeedsManualAction()

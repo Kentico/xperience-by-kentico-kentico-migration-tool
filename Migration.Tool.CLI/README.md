@@ -152,9 +152,11 @@ type fields:
 | Unique identifier (Guid) | Unique identifier (Guid) | _any_                   | None (not supported)                                                                    |
 | Pages                    | Pages                    | _any_ (Pages)           | Page selector                                                                           |
 
-Additionally, you can enable the Conversion of text fields with media links (_Media selection_ form control) to content item assets or media
+Additionally, you can enable the Conversion of Text fields with media links (_Media selection_ form control) to content item assets or media
 library files by setting
 the `OptInFeatures.CustomMigration.FieldMigrations` [configuration option](#convert-text-fields-with-media-links). If you need additional control or want to customize the default mappings of data types, you can [customize the Migration Tool behavior](../Migration.Tool.Extensions/README.md).
+
+For `Text` fields using the _Page selector_ form control, see the [Page selector example in Field Migrations](../docs/customization/Field-Migrations.md#create-custom-field-migrations).
 
 Some [Form components](https://docs.xperience.io/x/5ASiCQ) used by content type fields in Xperience by Kentico store data differently than their equivalent Form control in Xperience 13. To ensure that content is displayed correctly on pages, you must manually adjust your website's implementation to match the new data format.
 See [Editing components in Xperience by Kentico](https://docs.xperience.io/x/wIfWCQ) to learn more about some of the most common components and selectors.
@@ -357,18 +359,19 @@ The command migrates all users with access to the administration interface. Note
     the `CMSEmailValidationRegex` [application key](https://docs.xperience.io/x/yA6RBg).
 - Custom user fields can be migrated together with _module classes_.
   - You can customize the default migration of fields using the [extensibility feature](../Migration.Tool.Extensions/README.md).
+- Users authenticated through _Single Sign-On (SSO)_ providers, such as [Microsoft Entra ID (formerly Azure AD)](https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id), are migrated like other
+  administration users. The tool only migrates data stored in the source KX13 database and does not query the
+  identity provider. Configure SSO independently on the target instance.
+  - Migrated administration users have `UserIsExternal` set to `0` because this field identifies [members](#members) (registered live site visitors) who use [external authentication](https://docs.kentico.com/documentation/developers-and-admins/development/registration-and-authentication/external-authentication).
 
 Additionally, the command migrates all roles and user-role bindings for users whose _Privilege level_ is _Editor_ or
 higher.
 
-Because Xperience by Kentico uses a different [permission model](https://docs.xperience.io/x/7IVwCg), no existing role
-permissions or UI personalization settings are migrated. After the migration, the permissions for each role must be
-configured again.
+Because Xperience by Kentico uses a different [permission model](https://docs.xperience.io/x/7IVwCg), no existing role permissions or UI personalization settings are migrated. After the migration, the permissions for each role must be configured again.
 
 #### Members
 
-In Xperience by Kentico, live site users are represented using a separate **Member** entity and stored in the
-_CMS_Member_ table.
+In Xperience by Kentico, live site users are represented using a separate **Member** entity and stored in the _CMS_Member_ table.
 
 The migration identifies live site users as those without access to the administration interface. That is, only those
 accounts whose _Privilege level_ is set to _None_ (Users -> edit a user -> General tab) are migrated.
@@ -625,7 +628,7 @@ Add the options under the `Settings` section in the configuration file.
 | CreateReusableFieldSchemaForClasses                               | Specifies which page types are also converted to [reusable field schemas](#convert-page-types-to-reusable-field-schemas). This option cannot be combined with usage of `ReusableSchemaBuilder` in [custom class mappings](../Migration.Tool.Extensions/README.md).                                                                                                                                                                                                                                                                                                                                                                                    |
 | OptInFeatures.QuerySourceInstanceApi.Enabled                      | If `true`, [source instance API discovery](#source-instance-api-discovery) is enabled to allow advanced migration of Page Builder content for pages and page templates.                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | OptInFeatures.QuerySourceInstanceApi.Connections                  | To use [source instance API discovery](#source-instance-api-discovery), you need to add a connection JSON object containing the following values:<br />`SourceInstanceUri` - the base URI where the source instance's live site application is running.<br />`Secret` - the secret that you set in the _ToolkitApiController.cs_ file on the source instance.                                                                                                                                                                                                                                                                                         |
-| OptInFeatures.CustomMigration.FieldMigrations                     | Enables conversion of media selection text fields to content item assets or media library files. See [Convert text fields with media links](#convert-text-fields-with-media-links) for more information.                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| OptInFeatures.CustomMigration.FieldMigrations                     | Enables conversion of media selection Text fields to content item assets or media library files. See [Convert Text fields with media links](#convert-text-fields-with-media-links) for more information.                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | CommerceConfiguration.CommerceSiteNames                           | Specifies the site names from the source instance for which commerce data (customers, orders) should be migrated. This option is required when migrating commerce data.<br />It is recommended to migrate commerce stores one by one (per site) to make data validation easier.                                                                                                                                                                                                                                                                                                                                                                       |
 | CommerceConfiguration.SystemFieldPrefix                           | The prefix added to migrated system fields of commerce objects from the source instance to avoid conflicts with Xperience by Kentico's internal system fields. Default value is `KX13_`.                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | CommerceConfiguration.IncludeCustomerSystemFields                 | Determines which system fields from the _COM_Customer_ table are migrated to _Commerce_Customer_ in Xperience by Kentico. Fields are migrated as custom fields and prefixed with the value set in `SystemFieldPrefix`.                                                                                                                                                                                                                                                                                                                                                                                                                                |
@@ -950,7 +953,7 @@ For advanced scenarios, you can use the extensibility feature to implement [cust
 
 - Any usage of `ReusableSchemaBuilder` in [custom class mappings](../Migration.Tool.Extensions/README.md) cannot be combined together with usage of the `Settings.CreateReusableFieldSchemaForClasses` [configuration option](#configuration).
 
-## Convert text fields with media links
+## Convert Text fields with media links
 
 By default, page type and module class fields with the _Text_ data type and the _Media
 selection_ [form control](https://docs.xperience.io/x/0A_RBg) from the source instance are converted to plain _Text_
