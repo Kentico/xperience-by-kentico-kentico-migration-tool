@@ -78,6 +78,8 @@ public class MigratePagesCommandHandler(
         if (modelFacade.SelectVersion() is { Major: 13 })
         {
             Dictionary<string, (Guid ContentItemGuid, ContentLanguageInfo LanguageInfo)> pathToXbykPage = [];
+            // language-scoped variant of the lookup - on language-domains channels the same bare path can exist for multiple languages
+            Dictionary<string, (Guid ContentItemGuid, ContentLanguageInfo LanguageInfo)> pathToXbykPageByLanguage = [];
             List<(Guid DocumentGuid, Guid SiteGuid, ContentLanguageInfo LanguageInfo, Guid ContentItemGuid, string RedirectUrl)> sourceInstanceRedirects = [];
 
             var sites = modelFacade.GetMigratedSites();
@@ -100,6 +102,7 @@ public class MigratePagesCommandHandler(
                     {
                         var xbykLanguageInfo = GetLanguageInfoByCultureFormat(ksPath.PageUrlPathCulture);
                         pathToXbykPage[$"{ksSite.SiteGUID}|{NormalizeUrlPath(ksPath.PageUrlPathUrlPath)}"] = (xbykContentItemGuid, xbykLanguageInfo);
+                        pathToXbykPageByLanguage[$"{ksSite.SiteGUID}|{ksPath.PageUrlPathCulture.ToLowerInvariant()}|{NormalizeUrlPath(ksPath.PageUrlPathUrlPath)}"] = (xbykContentItemGuid, xbykLanguageInfo);
                     }
 
                     var ksDocuments = modelFacade
@@ -118,7 +121,10 @@ public class MigratePagesCommandHandler(
 
             foreach (var (DocumentGuid, SiteGuid, LanguageInfo, ContentItemGuid, RedirectUrl) in sourceInstanceRedirects)
             {
-                if (pathToXbykPage.TryGetValue($"{SiteGuid}|{NormalizeUrlPath(RedirectUrl)}", out var targetPage))
+                // prefer the page of the redirected document's language; the unscoped fallback applies to path-prefix
+                // channels only - on a language-domains channel it could silently bind the redirect to another language's page
+                if (pathToXbykPageByLanguage.TryGetValue($"{SiteGuid}|{LanguageInfo.ContentLanguageCultureFormat.ToLowerInvariant()}|{NormalizeUrlPath(RedirectUrl)}", out var targetPage)
+                    || (!ChannelUsesLanguageDomains(SiteGuid) && pathToXbykPage.TryGetValue($"{SiteGuid}|{NormalizeUrlPath(RedirectUrl)}", out targetPage)))
                 {
                     var targetContentItem = ContentItemInfo.Provider.Get(targetPage.ContentItemGuid);
                     if (targetContentItem is null)
@@ -838,6 +844,8 @@ public class MigratePagesCommandHandler(
 
             if (ksPaths.Count > 0)
             {
+                bool languageDomainsChannel = ChannelUsesLanguageDomains(webSiteChannelGuid);
+
                 foreach (var ksPath in ksPaths)
                 {
                     logger.LogTrace("Page url path: C={Culture} S={Site} P={Path}", ksPath.PageUrlPathCulture, ksPath.PageUrlPathSiteID, ksPath.PageUrlPathUrlPath);
@@ -852,11 +860,24 @@ public class MigratePagesCommandHandler(
                         string path = ksPath.PageUrlPathUrlPath.TrimStart('/');
                         string? hash = ksPath.PageUrlPathUrlPathHash;
 
+                        if (languageDomainsChannel)
+                        {
+                            // language-domains channels store paths without the language prefix - the host carries the language
+                            string strippedPath = StripLanguagePrefix(path, documentCulture, out bool stripped);
+                            if (stripped)
+                            {
+                                logger.LogInformation("Language prefix stripped from url path '{Path}' of tree node GUID='{NodeGuid}' (culture '{Culture}') - the website channel uses language-specific domains. New path = '{NewPath}'",
+                                    path, ksTree.NodeGUID, documentCulture, strippedPath);
+                                path = strippedPath;
+                                hash = null;    // Let UMT compute new hash
+                            }
+                        }
+
                         // Check collisions with other pages
                         string uniquePath;
                         try
                         {
-                            uniquePath = PreventUrlPathCollisions(webPageItemInfo, path);
+                            uniquePath = PreventUrlPathCollisions(webPageItemInfo, path, languageInfo.ContentLanguageID, languageDomainsChannel);
                         }
                         catch (Exception ex)
                         {
@@ -919,7 +940,7 @@ public class MigratePagesCommandHandler(
                 if (urlPath is not null)
                 {
                     // Check collisions with other pages
-                    string uniquePath = PreventUrlPathCollisions(webPageItemInfo, urlPath);
+                    string uniquePath = PreventUrlPathCollisions(webPageItemInfo, urlPath, languageInfo.ContentLanguageID, languageScoped: false);
                     if (!string.Equals(uniquePath, urlPath, StringComparison.OrdinalIgnoreCase))
                     {
                         logger.LogWarning("Path '{Path}' of tree node GUID='{NodeGuid}', NodeAliasPath='{NodeAliasPath}' could not be used as is due to collision with already existing path(s)." +
@@ -1000,29 +1021,83 @@ public class MigratePagesCommandHandler(
         }
     }
 
-    private string PreventUrlPathCollisions(WebPageItemInfo webPageItemInfo, string path) =>
+    private string PreventUrlPathCollisions(WebPageItemInfo webPageItemInfo, string path, int contentLanguageId, bool languageScoped) =>
         UniqueNameHelper.MakeUnique(path, testedUniquePath =>
         {
-            var collidingPaths = GetCollidingPaths(stored => stored.Where(x => string.Equals(NormalizeUrlPath(x.Path), NormalizeUrlPath(path))).Concat([new PagePath(webPageItemInfo.WebPageItemID, webPageItemInfo.WebPageItemWebsiteChannelID, testedUniquePath)])).Where(x => x.WebPageItemID != webPageItemInfo.WebPageItemID);
+            var collidingPaths = GetCollidingPaths(stored => stored.Where(x => string.Equals(NormalizeUrlPath(x.Path), NormalizeUrlPath(testedUniquePath))).Concat([new PagePath(webPageItemInfo.WebPageItemID, webPageItemInfo.WebPageItemWebsiteChannelID, contentLanguageId, testedUniquePath)]), languageScoped).Where(x => x.WebPageItemID != webPageItemInfo.WebPageItemID);
 
             return !collidingPaths.Any();
         });
 
-    private record PagePath(int WebPageItemID, int WebsiteChannelID, string Path);
-    private IEnumerable<PagePath> GetCollidingPaths(Func<IEnumerable<PagePath>, IEnumerable<PagePath>>? preprocessTestedSet = null)
+    private record PagePath(int WebPageItemID, int WebsiteChannelID, int ContentLanguageID, string Path);
+    private IEnumerable<PagePath> GetCollidingPaths(Func<IEnumerable<PagePath>, IEnumerable<PagePath>>? preprocessTestedSet = null, bool languageScoped = false)
     {
         var storedPaths = WebPageUrlPathInfo.Provider.Get()
-            .Columns(nameof(WebPageUrlPathInfo.WebPageUrlPath), nameof(WebPageUrlPathInfo.WebPageUrlPathWebsiteChannelID), nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID)).ToArray()
-            .Select(x => new PagePath(x.WebPageUrlPathWebPageItemID, x.WebPageUrlPathWebsiteChannelID, x.WebPageUrlPath));
+            .Columns(nameof(WebPageUrlPathInfo.WebPageUrlPath), nameof(WebPageUrlPathInfo.WebPageUrlPathWebsiteChannelID), nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID), nameof(WebPageUrlPathInfo.WebPageUrlPathContentLanguageID)).ToArray()
+            .Select(x => new PagePath(x.WebPageUrlPathWebPageItemID, x.WebPageUrlPathWebsiteChannelID, x.WebPageUrlPathContentLanguageID, x.WebPageUrlPath));
 
         var testedPaths = preprocessTestedSet is null ? storedPaths : preprocessTestedSet(storedPaths);
 
-        var groups = testedPaths.Select(x => (x.Path, NormalizedPath: NormalizeUrlPath(x.Path), x.WebsiteChannelID, x.WebPageItemID)).GroupBy(x => $"{x.WebsiteChannelID}|{x.NormalizedPath}");
+        // on language-domains channels the same path may exist once per language, so collisions are evaluated per (channel, language)
+        var groups = testedPaths.Select(x => (x.Path, NormalizedPath: NormalizeUrlPath(x.Path), x.WebsiteChannelID, x.ContentLanguageID, x.WebPageItemID))
+            .GroupBy(x => languageScoped ? $"{x.WebsiteChannelID}|{x.ContentLanguageID}|{x.NormalizedPath}" : $"{x.WebsiteChannelID}|{x.NormalizedPath}");
 
         // If one WebPageItem has multiple WebPageUrlPath entries (e.g. in draft), we will have multiple entries in a group, but this isn't really a collision
         var groupsFiltered = groups.Select(g => g.DistinctBy(x => $"{x.WebPageItemID}|{x.WebsiteChannelID}|{x.NormalizedPath}"));
 
-        return groupsFiltered.Where(x => x.Count() > 1).SelectMany(x => x.Select(y => new PagePath(y.WebPageItemID, y.WebsiteChannelID, y.Path)));
+        return groupsFiltered.Where(x => x.Count() > 1).SelectMany(x => x.Select(y => new PagePath(y.WebPageItemID, y.WebsiteChannelID, y.ContentLanguageID, y.Path)));
+    }
+
+    private Dictionary<string, string?>? cultureAliasCache;
+
+    /// <summary>
+    /// The channel's stored routing mode (CMS_WebsiteChannel.WebsiteChannelLanguageRoutingMode) is the value the
+    /// url path uniqueness constraint acts on, so it alone decides the shape of the generated page url paths.
+    /// The mode is derived from the source configuration exactly once - when the sites migration creates the
+    /// channel - and is deliberately not re-derived here: the source may have changed since the channel was
+    /// created, and sources migrated by handlers without language-domains support (K11/KX12) always get
+    /// path-prefix channels.
+    /// </summary>
+    private static bool ChannelUsesLanguageDomains(int websiteChannelId) =>
+        WebsiteChannelInfo.Provider.Get(websiteChannelId) is { } websiteChannel
+        && websiteChannel.WebsiteChannelLanguageRoutingMode == WebsiteChannelLanguageRoutingMode.LanguageDomains;
+
+    private static bool ChannelUsesLanguageDomains(Guid websiteChannelGuid) =>
+        WebsiteChannelInfo.Provider.Get(websiteChannelGuid) is { } websiteChannel
+        && websiteChannel.WebsiteChannelLanguageRoutingMode == WebsiteChannelLanguageRoutingMode.LanguageDomains;
+
+    /// <summary>
+    /// Strips the leading language segment ("fr/articles" => "articles") when it matches the culture code or
+    /// culture alias of the path's own culture. Language-domains channels store paths without the prefix.
+    /// </summary>
+    private string StripLanguagePrefix(string path, string cultureCode, out bool stripped)
+    {
+        stripped = false;
+        cultureAliasCache ??= modelFacade.SelectAll<ICmsCulture>()
+            .ToDictionary(c => c.CultureCode, c => c.CultureAlias, StringComparer.InvariantCultureIgnoreCase);
+
+        string?[] prefixCandidates = [cultureCode, cultureAliasCache.TryGetValue(cultureCode, out string? alias) ? alias : null];
+        foreach (string? candidate in prefixCandidates)
+        {
+            if (string.IsNullOrWhiteSpace(candidate))
+            {
+                continue;
+            }
+
+            if (path.StartsWith($"{candidate}/", StringComparison.InvariantCultureIgnoreCase))
+            {
+                stripped = true;
+                return path[(candidate.Length + 1)..];
+            }
+
+            if (string.Equals(path, candidate, StringComparison.InvariantCultureIgnoreCase))
+            {
+                logger.LogWarning("Url path '{Path}' of culture '{Culture}' equals the language prefix itself and cannot be stripped for the language-domains channel - the path is migrated as is", path, cultureCode);
+                return path;
+            }
+        }
+
+        return path;
     }
 
     private async Task GenerateDefaultPageUrlPath(ICmsTree ksTree, WebPageItemInfo webPageItemInfo)
@@ -1042,7 +1117,7 @@ public class MigratePagesCommandHandler(
             resolved = !collisionData.Any();
 
             // Catch collision cases that GeneratePageUrlPath doesn't catch
-            var collidingPaths = GetCollidingPaths().Where(x => x.WebPageItemID == webPageItemInfo.WebPageItemID);
+            var collidingPaths = GetCollidingPaths(languageScoped: ChannelUsesLanguageDomains(webPageItemInfo.WebPageItemWebsiteChannelID)).Where(x => x.WebPageItemID == webPageItemInfo.WebPageItemID);
             if (collidingPaths.Any())
             {
                 collisions.AddRange(collidingPaths);

@@ -164,7 +164,8 @@ public class ContentItemMapper(
             .FirstOrDefault();
         string? treePath = targetWebPage?.WebPageItemTreePath;
 
-        var websiteChannelInfo = WebsiteChannelInfo.Provider.Get(siteGuid);
+        var websiteChannelInfo = WebsiteChannelInfo.Provider.Get(siteGuid)
+            ?? throw new InvalidOperationException($"Website channel with GUID '{siteGuid}' was not found in the target instance. The sites migration either failed or was not run - check the output of 'migrate --sites' before migrating pages.");
         var treePathConvertor = TreePathConvertor.GetSiteConverter(websiteChannelInfo.WebsiteChannelID);
         if (treePath == null)
         {

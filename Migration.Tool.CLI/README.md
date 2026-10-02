@@ -52,7 +52,7 @@ Migration.Tool.CLI.exe migrate --sites --custom-modules --custom-tables --catego
 
 | Parameter                   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Dependencies                                                         |
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| `--sites`                   | Enables migration of sites to [website channels](https://docs.xperience.io/x/34HFC). The site's basic properties and settings are transferred to the target instance.                                                                                                                                                                                                                                                                                                                                                                                                |                                                                      |
+| `--sites`                   | Enables migration of sites to [website channels](https://docs.xperience.io/x/34HFC). The site's basic properties and settings are transferred to the target instance. Sites using culture-specific domain aliases are migrated as channels with language-specific domains.<br /><br />See: [Migration details for specific object types - Sites](#sites)                                                                                                                                                                                                              |                                                                      |
 | `--custom-modules`          | Enables migration of custom modules, [custom module classes and their data](https://docs.xperience.io/x/AKDWCQ), and [custom fields in supported system classes](https://docs.xperience.io/x/V6rWCQ).<br /><br />See: [Migration details for specific object types - Custom modules and classes](#custom-modules-and-classes)                                                                                                                                                                                                                                        | `--sites`                                                            |
 | `--custom-tables`           | Enables migration of [custom tables](https://docs.kentico.com/x/eQ2RBg). Custom table data can be migrated to either [custom module classes](https://docs.kentico.com/x/AKDWCQ) (default behavior) or [reusable content items](https://docs.kentico.com/x/content_items_xp) in Content hub.<br /><br />See: [Migration details for specific object types - Custom tables](#custom-tables)                                                                                                                                                                            |                                                                      |
 | `--users`                   | Enables migration of [users](https://docs.xperience.io/x/8ILWCQ) and [roles](https://docs.xperience.io/x/7IVwCg).<br /><br />See: [Migration details for specific object types - Users](#users)                                                                                                                                                                                                                                                                                                                                                                      | `--sites`, `--custom-modules`                                        |
@@ -86,6 +86,28 @@ Migration.Tool.CLI.exe migrate --sites --custom-modules --custom-tables --catego
 > Refer to our [FAQ page](https://docs.kentico.com/guides/upgrade-to-xbyk/upgrade-from-kx13/upgrade-faq#can-i-run-the-kentico-migration-tool-against-my-project-multiple-times) for best practices of performing repeated (iterative) data migration.
 
 ### Migration Details for Specific Object Types
+
+#### Sites
+
+Each site on the source is migrated to a [website channel](https://docs.kentico.com/x/34HFC).
+
+**Domain aliases** (Kentico Xperience 13 sources only):
+
+- If a site has [domain aliases](https://docs.kentico.com/13/multilingual-websites/setting-up-multilingual-websites/configuring-urls-for-multilingual-websites) with their own **default visitor culture** (each language served on its own domain), the tool automatically creates the website channel in the **language-domains routing mode** ([language-specific domains](https://docs.kentico.com/x/language_specific_domains_xp)). This requires Xperience by Kentico **31.9.0 or newer** on the target.
+- Xperience by Kentico stores per-language domains and additional channel domains only in **application configuration** — they have no database equivalent and cannot be written by the migration. Instead, the tool generates a suggested `WebsiteChannelDomains` configuration section:
+  - The snippet is written to `WebsiteChannelDomains.suggested.json` in the target project folder and also logged as a warning at the end of the `--sites` migration.
+  - Merge the section into the target application's `appsettings.json` (per environment) and bind it during application startup:
+
+    ```csharp
+    builder.Services.Configure<WebsiteChannelDomainOptions>(
+        builder.Configuration.GetSection("WebsiteChannelDomains"));
+    ```
+
+  - The first domain listed for each language is the **canonical** domain used when generating absolute URLs; any further domains are inbound-only aliases.
+- Domain aliases **without** a default visitor culture:
+  - On sites migrated with language-specific domains, they are included as inbound-only alias domains of the default language.
+  - On other sites, they are offered as a `DomainOverrides` suggestion in the same generated configuration section. Nothing changes on the target unless you merge the configuration.
+- Domain aliases that are not valid domains are skipped with a warning.
 
 #### Content types
 
