@@ -346,20 +346,26 @@ public class MigrateSitesCommandHandler(
     /// alias's presentation URL, so it takes precedence; the (admin) domain alias name is the fallback.
     /// </summary>
     private static bool TryGetAliasDomain(CmsSiteDomainAlias alias, out string domain) =>
-        UriHelper.TryNormalizeDomain(
-            string.IsNullOrWhiteSpace(alias.SiteDomainPresentationUrl) ? alias.SiteDomainAliasName : alias.SiteDomainPresentationUrl,
-            out domain);
+        UriHelper.TryNormalizeDomain(alias.SiteDomainPresentationUrl, out domain)
+        || UriHelper.TryNormalizeDomain(alias.SiteDomainAliasName, out domain);
 
     private async Task EmitDomainsConfigSuggestion(WebsiteChannelDomainsConfigCollector collector, CancellationToken cancellationToken)
     {
+        // the CLI switches its working directory to XbyKDirPath on startup, so the file lands next to the target project's appsettings.json
+        string filePath = Path.GetFullPath("WebsiteChannelDomains.suggested.json");
         if (!collector.HasAny)
         {
+            // the file is derived output - a leftover from a previous run would present removed domains as current
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+                logger.LogInformation("Stale '{FilePath}' from a previous run was removed - the current source configuration yields no domain suggestions", filePath);
+            }
+
             return;
         }
 
         string json = collector.BuildJson();
-        // the CLI switches its working directory to XbyKDirPath on startup, so the file lands next to the target project's appsettings.json
-        string filePath = Path.GetFullPath("WebsiteChannelDomains.suggested.json");
         await File.WriteAllTextAsync(filePath, json, cancellationToken);
 
         logger.LogWarning(

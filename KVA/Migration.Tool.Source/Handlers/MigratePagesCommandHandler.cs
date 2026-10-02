@@ -121,9 +121,10 @@ public class MigratePagesCommandHandler(
 
             foreach (var (DocumentGuid, SiteGuid, LanguageInfo, ContentItemGuid, RedirectUrl) in sourceInstanceRedirects)
             {
-                // prefer the page of the redirected document's language (same bare path can exist for multiple languages on language-domains channels)
+                // prefer the page of the redirected document's language; the unscoped fallback applies to path-prefix
+                // channels only - on a language-domains channel it could silently bind the redirect to another language's page
                 if (pathToXbykPageByLanguage.TryGetValue($"{SiteGuid}|{LanguageInfo.ContentLanguageCultureFormat.ToLowerInvariant()}|{NormalizeUrlPath(RedirectUrl)}", out var targetPage)
-                    || pathToXbykPage.TryGetValue($"{SiteGuid}|{NormalizeUrlPath(RedirectUrl)}", out targetPage))
+                    || (!ChannelUsesLanguageDomains(SiteGuid) && pathToXbykPage.TryGetValue($"{SiteGuid}|{NormalizeUrlPath(RedirectUrl)}", out targetPage)))
                 {
                     var targetContentItem = ContentItemInfo.Provider.Get(targetPage.ContentItemGuid);
                     if (targetContentItem is null)
@@ -1023,7 +1024,7 @@ public class MigratePagesCommandHandler(
     private string PreventUrlPathCollisions(WebPageItemInfo webPageItemInfo, string path, int contentLanguageId, bool languageScoped) =>
         UniqueNameHelper.MakeUnique(path, testedUniquePath =>
         {
-            var collidingPaths = GetCollidingPaths(stored => stored.Where(x => string.Equals(NormalizeUrlPath(x.Path), NormalizeUrlPath(path))).Concat([new PagePath(webPageItemInfo.WebPageItemID, webPageItemInfo.WebPageItemWebsiteChannelID, contentLanguageId, testedUniquePath)]), languageScoped).Where(x => x.WebPageItemID != webPageItemInfo.WebPageItemID);
+            var collidingPaths = GetCollidingPaths(stored => stored.Where(x => string.Equals(NormalizeUrlPath(x.Path), NormalizeUrlPath(testedUniquePath))).Concat([new PagePath(webPageItemInfo.WebPageItemID, webPageItemInfo.WebPageItemWebsiteChannelID, contentLanguageId, testedUniquePath)]), languageScoped).Where(x => x.WebPageItemID != webPageItemInfo.WebPageItemID);
 
             return !collidingPaths.Any();
         });
