@@ -354,21 +354,22 @@ In Xperience by Kentico, live site users are represented using a separate **Memb
 The migration identifies live site users as those without access to the administration interface. That is, only those
 accounts whose _Privilege level_ is set to _None_ (Users -> edit a user -> General tab) are migrated.
 
-The migration includes:
+- All system fields from the _CMS_User_ and _CMS_UserSettings_ tables can be migrated. _Member_ entities in Xperience by Kentico have fewer system fields, therefore most of the original system fields are not migrated by default. You can specify additional fields to be migrated via the `MemberIncludeUserSystemFields` configuration option. Below, you can reference the maximum configuration that migrates all system fields:
 
-- All system fields from the _CMS_User_ and _CMS_UserSettings_ tables. You can customize which fields are migrated via
-  the `MemberIncludeUserSystemFields` configuration option. See [configuration](#configuration).
+  ```text
+  FirstName|MiddleName|LastName|FullName|UserPassword|PreferredCultureCode|PreferredUICultureCode|UserPrivilegeLevel|UserIsExternal|UserPasswordFormat|LastLogon|UserStartingAliasPath|UserLastModified|UserLastLogonInfo|UserIsHidden|UserIsDomain|UserHasAllowedCultures|UserMFRequired|UserMFSecret|UserMFTimestep|UserNickName|UserSignature|UserURLReferrer|UserCampaign|UserCustomData|UserRegistrationInfo|UserActivationDate|UserActivatedByUserID|UserTimeZoneID|UserAvatarID|UserGender|UserDateOfBirth|UserSettingsUserGUID|UserSettingsUserID|UserWaitingForApproval|UserDialogsConfiguration|UserDescription|UserAuthenticationGUID|UserSkype|UserIM|UserPhone|UserPosition|UserLogActivities|UserPasswordRequestHash|UserInvalidLogOnAttempts|UserInvalidLogOnAttemptsHash|UserPasswordLastChanged|UserAccountLockReason|UserShowIntroductionTile|UserDashboardApplications|UserDismissedSmartTips
+  ```
+
+Review which fields are necessary for your project to avoid transferring unnecessary data. Don't forget that if you migrate system fields which are required you need to handle this by yourself when creating new record via Info object.
+
+See [configuration](#configuration).
+
 - All custom fields added to the _CMS_User_ and _CMS_UserSettings_ tables are migrated under `CMS_Member`. The columns specified in the `MemberIncludeSystemFields` option are appended to the `CMS_Member` table in the order in which they were specified.
+
   As an example, take the following `CMS_Member` columns
 
   ```text
   |MemberId|MemberEmail|...|MemberSecurityStamp|
-  ```
-
-  here is the list of all system field
-
-  ```text
-  FirstName|MiddleName|LastName|FullName|UserPassword|PreferredCultureCode|PreferredUICultureCode|UserPrivilegeLevel|UserIsExternal|UserPasswordFormat|LastLogon|UserStartingAliasPath|UserLastModified|UserLastLogonInfo|UserIsHidden|UserIsDomain|UserHasAllowedCultures|UserMFRequired|UserMFSecret|UserMFTimestep|UserNickName|UserSignature|UserURLReferrer|UserCampaign|UserCustomData|UserRegistrationInfo|UserActivationDate|UserActivatedByUserID|UserTimeZoneID|UserAvatarID|UserGender|UserDateOfBirth|UserSettingsUserGUID|UserSettingsUserID|UserWaitingForApproval|UserDialogsConfiguration|UserDescription|UserAuthenticationGUID|UserSkype|UserIM|UserPhone|UserPosition|UserLogActivities|UserPasswordRequestHash|UserInvalidLogOnAttempts|UserInvalidLogOnAttemptsHash|UserPasswordLastChanged|UserAccountLockReason|UserShowIntroductionTile|UserDashboardApplications|UserDismissedSmartTips
   ```
 
   And the following `Migration.Tool.CLI/appsettings.json` configuration.
@@ -384,8 +385,6 @@ The migration includes:
   ```text
   |MemberId|MemberEmail|...|MemberSecurityStamp|FirstName|LastName|UserPrivilegeLevel|`
   ```
-
-  Don't forget that if you migrate system fields which are required you need to handle this by yourself when creating new record via Info object.
 
   > If you are migrating custom fields, the `--custom-modules` migration command must be run before the `--members`
   > command. For example:
@@ -605,7 +604,9 @@ Add the options under the `Settings` section in the configuration file.
 | LegacyPermissiveMediaLibrarySubfolders                            | Allows media library subfolder names that don’t follow current Xperience by Kentico naming rules. When set to `true`, skips validation requiring only alphanumeric characters, underscores, and hyphens, and allows names that may otherwise conflict with OS-reserved keywords (such as `CON`, `PRN`, `AUX`). This configuration should only be used when necessary (for example, when re-running migrations from older tool versions), as it may limit functionality like media library migration to the [Content hub](https://docs.kentico.com/documentation/business-users/content-hub).                                                          |
 | AssetRootFolders                                                  | Dictionary defining the root folder for Asset content items per site: Key is site name (`CMS_Site.SiteName`). Value is in format _/FolderDisplayName1/FolderDisplayName2/..._                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | TargetWorkspaceName                                               | The code name of the [workspace](https://docs.kentico.com/x/workspaces_xp) to which content items, content folders and other related entities are migrated. This workspace is used if another workspace is not specified explicitly, for example by the content item director API in [migration customizations](../Migration.Tool.Extensions/README.md). This configuration is not necessary if the target project only contains a single workspace.                                                                                                                                                                                                  |
-| MemberIncludeUserSystemFields                                     | Determines which system fields from the _CMS_User_ and _CMS_UserSettings_ tables are migrated to _CMS_Member_ in Xperience by Kentico. Fields that do not exist in _CMS_Member_ are automatically created. <br /><br />The sample `appsettings.json` file included with the tool by default includes all user fields that can be migrated from Kentico Xperience 13. Exclude specific fields from the migration by removing them from this configuration option.                                                                                                                                                                                      |
+| MemberIncludeUserSystemFields                                     | Determines which system fields from the _CMS_User_ and _CMS_UserSettings_ tables are migrated to _CMS_Member_ in Xperience by Kentico. Fields that do not exist in _CMS_Member_ are automatically created. <br /><br />The sample `appsettings.json` file included with the tool by default uses an empty configuration. This configuration migrates only 
+
+includes all user fields that can be migrated from Kentico Xperience 13. Exclude specific fields from the migration by removing them from this configuration option.                                                                                                                                                                                      |
 | IncludeExtendedMetadata                                           | Migrates DocumentPageTitle, DocumentPageDescription and DocumentPageKeywords if they are available in the source instance                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | UseOmActivityNodeRelationAutofix                                  | Determines how the migration handles references from Contact management activities to non-existing pages.<br /><br />Possible options:<br />`DiscardData` - faulty references are removed,<br />`AttemptFix` - references are updated to the IDs of corresponding pages created by the migration,<br />`Error` - an error is reported and the reference can be translated or otherwise handled manually                                                                                                                                                                                                                                               |
 | UseOmActivitySiteRelationAutofix                                  | Determines how the migration handles site references from Contact management activities.<br /><br />Possible options: `DiscardData`,`AttemptFix`,`Error`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
