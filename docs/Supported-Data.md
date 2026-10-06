@@ -77,7 +77,7 @@ Currently, the Kentico Migration Tool supports the following types of data:
 - Xperience by Kentico uses separate entities for users with access to the administration interface (_CMS_User_ table) and live site visitor accounts (_CMS_Member_ table). Consequently, only users whose _Privilege level_ is _Editor_ or higher are migrated (_Users_ -> edit a user -> _General_ tab).
 - Users in Xperience by Kentico must have an email address. Migration is only supported for users who have a unique email address value on the source instance.
 - Custom user fields are an optional part of _module class_ migration.
-- Live site users are represented using a separate **Member** entity and stored in the _CMS_Member_ table. The migration identifies live site users as those without access to the administration interface - accounts with _Privilege level_ set to _None_ (Users -> edit a user -> General tab).
+- Live site users are represented using a separate **Member** entity and stored in the _CMS_Member_ table. The migration identifies live site users as those without access to the administration interface - accounts with _Privilege level_ set to _None_ (Users -> edit a user -> General tab). By default, only system fields with a counterpart in the _CMS_Member_ table and custom user fields are migrated. Additional system fields can be migrated as custom fields via the `MemberIncludeUserSystemFields` configuration option (see the [Migration.Tool.CLI README - Members](../Migration.Tool.CLI/README.md#members)). Password hashes are never migrated to `MemberPassword`.
 
 ### Roles
 
