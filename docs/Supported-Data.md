@@ -14,10 +14,13 @@ Currently, the Kentico Migration Tool supports the following types of data:
 ### Sites
 
 - The tool migrates each site on the source to a [website channel](https://docs.kentico.com/x/34HFC) object in Xperience by Kentico.
-- **Domain aliases** (Kentico Xperience 13 sources only):
-  - If a site has domain aliases with their own **default visitor culture** (culture-specific domains), the tool automatically creates the website channel in the **language-domains routing mode** (language-specific domains, requires Xperience by Kentico 31.9.0 or newer).
-  - Xperience by Kentico stores language-specific domains and additional channel domains only in **application configuration** — there is no database equivalent. The tool therefore generates a suggested `WebsiteChannelDomains` configuration section (written to `WebsiteChannelDomains.suggested.json` in the target project folder and logged as a warning). Merge it into the target application's `appsettings.json` and bind it to `WebsiteChannelDomainOptions` in the application startup.
-  - Domain aliases without a culture are included in the generated configuration as inbound-only alias domains (for language-domains channels) or as a `DomainOverrides` suggestion (for standard path-prefix channels).
+- **URL format for multilingual sites** (Kentico Xperience 13 sources only):
+  - Each website channel is created with the URL format setting corresponding to the one used by the site in Kentico Xperience 13.
+  - Migrating sites with separate domains for different languages:
+    - Language-specific domains require Xperience by Kentico version 31.9.0 or newer.
+    - Xperience by Kentico stores language-specific domains and additional channel domains only in **application configuration** — there is no database equivalent. The tool generates a suggested `WebsiteChannelDomains` configuration section (written to `WebsiteChannelDomains.suggested.json` in the target project folder and logged as a warning). Review the file and add the configuration section to the target application's `appsettings.json` and bind it to `WebsiteChannelDomainOptions` in the application startup (see [Configure language-specific domains](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#configure-language-specific-domains)).
+    - The URL format is set only when the website channel is created and later runs don't change it. To change it, migrate into an empty target database or use [conversion CLI tool](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#change-the-url-format-for-multilingual-sites).
+- Domain aliases without a culture are included in the generated configuration as inbound-only alias domains (for language-domains channels) or as a `DomainOverrides` suggestion (for standard path-prefix channels).
 
 ### Cultures
 

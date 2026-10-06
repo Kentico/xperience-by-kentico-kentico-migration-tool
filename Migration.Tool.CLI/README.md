@@ -16,6 +16,7 @@ If you are migrating from Kentico Xperience 13, remember to [update your source 
 
 The target of the migration must be an Xperience by Kentico instance that fulfills the following requirements:
 
+- The instance must run Xperience by Kentico **31.9.0 or newer**. 
 - The instance's database and file system must be accessible from the environment where you run the migration.
 - The target application _must not be running_ when you start the migration.
 - The target instance must be empty except for data from the source instance created by previous runs of this tool.
@@ -52,7 +53,7 @@ Migration.Tool.CLI.exe migrate --sites --custom-modules --custom-tables --catego
 
 | Parameter                   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Dependencies                                                         |
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| `--sites`                   | Enables migration of sites to [website channels](https://docs.xperience.io/x/34HFC). The site's basic properties and settings are transferred to the target instance. Sites using culture-specific domain aliases are migrated as channels with language-specific domains.<br /><br />See: [Migration details for specific object types - Sites](#sites)                                                                                                                                                                                                              |                                                                      |
+| `--sites`                   | Enables migration of sites to [website channels](https://docs.xperience.io/x/34HFC). The site's basic properties and settings are transferred to the target instance, including the site's URL format.<br /><br />See: [Migration details for specific object types - Sites](#sites)                                                                                                                                                                                                              |                                                                      |
 | `--custom-modules`          | Enables migration of custom modules, [custom module classes and their data](https://docs.xperience.io/x/AKDWCQ), and [custom fields in supported system classes](https://docs.xperience.io/x/V6rWCQ).<br /><br />See: [Migration details for specific object types - Custom modules and classes](#custom-modules-and-classes)                                                                                                                                                                                                                                        | `--sites`                                                            |
 | `--custom-tables`           | Enables migration of [custom tables](https://docs.kentico.com/x/eQ2RBg). Custom table data can be migrated to either [custom module classes](https://docs.kentico.com/x/AKDWCQ) (default behavior) or [reusable content items](https://docs.kentico.com/x/content_items_xp) in Content hub.<br /><br />See: [Migration details for specific object types - Custom tables](#custom-tables)                                                                                                                                                                            |                                                                      |
 | `--users`                   | Enables migration of [users](https://docs.xperience.io/x/8ILWCQ) and [roles](https://docs.xperience.io/x/7IVwCg).<br /><br />See: [Migration details for specific object types - Users](#users)                                                                                                                                                                                                                                                                                                                                                                      | `--sites`, `--custom-modules`                                        |
@@ -91,12 +92,34 @@ Migration.Tool.CLI.exe migrate --sites --custom-modules --custom-tables --catego
 
 Each site on the source is migrated to a [website channel](https://docs.kentico.com/x/34HFC).
 
-**Domain aliases** (Kentico Xperience 13 sources only):
+**URL format for multilingual sites** (Kentico Xperience 13 sources only):
 
-- If a site has [domain aliases](https://docs.kentico.com/13/multilingual-websites/setting-up-multilingual-websites/configuring-urls-for-multilingual-websites) with their own **default visitor culture** (each language served on its own domain), the tool automatically creates the website channel in the **language-domains routing mode** ([language-specific domains](https://docs.kentico.com/x/language_specific_domains_xp)). This requires Xperience by Kentico **31.9.0 or newer** on the target.
-- Xperience by Kentico stores per-language domains and additional channel domains only in **application configuration** — they have no database equivalent and cannot be written by the migration. Instead, the tool generates a suggested `WebsiteChannelDomains` configuration section:
-  - The snippet is written to `WebsiteChannelDomains.suggested.json` in the target project folder and also logged as a warning at the end of the `--sites` migration.
-  - Merge the section into the target application's `appsettings.json` (per environment) and bind it during application startup:
+- The tool automatically creates the website channel using the same URL format as in Kentico Xperience 13.
+- Migrating sites with separate domains for different languages:
+  - Language-specific domains require Xperience by Kentico version 31.9.0 or newer.
+  - Xperience by Kentico does not store language-specific domains and additional channel domains in the database. Instead, the domains are set via ASP.NET Core [Configuration providers](https://learn.microsoft.com/en-us/dotnet/core/extensions/configuration) and the `WebsiteChannelDomainOptions` options class.
+  - The tool generates a suggested `WebsiteChannelDomains` configuration section, written to `WebsiteChannelDomains.suggested.json` in the target project folder and logged as a warning at the end of the `--sites` migration. The warning does not mean that the migration failed. Nothing changes on the target until you add this configuration into your application.  The tool overwrites this file on every `--sites` run and deletes it when there's nothing to suggest. Don't edit the file directly. Instead, use its content in your configuration.
+  - The suggested domains are taken from the source instance, so they're usually your production domains. Set the correct domains for each environment (development, QA, staging), for example, in that environment's `appsettings.<Environment>.json`:
+
+    ```json
+      {
+      "WebsiteChannelDomains": {
+        "LanguageDomains": {
+          "<channel-code-name>": {
+            "Domains": {
+              "en": [ "dancinggoat.com", "second-english-domain.com" ],
+              "fr-FR": [ "fr.dancinggoat.com" ],
+              "cs-CZ": [ "www.dancinggoat.cz"]
+            }
+          }
+        }
+      }
+    }
+    ```
+  
+  The keys listed under `"Domains"` are code names for _Languages_ on the target. Reference the generated file to get the language code names. Language code names in Xperience by Kentico are not constrained to culture codes.
+
+  Bind the configuration to `WebsiteChannelDomainOptions` in `Program.cs` before `builder.Build()`:
 
     ```csharp
     builder.Services.Configure<WebsiteChannelDomainOptions>(
@@ -108,6 +131,8 @@ Each site on the source is migrated to a [website channel](https://docs.kentico.
   - On sites migrated with language-specific domains, they are included as inbound-only alias domains of the default language.
   - On other sites, they are offered as a `DomainOverrides` suggestion in the same generated configuration section. Nothing changes on the target unless you merge the configuration.
 - Domain aliases that are not valid domains are skipped with a warning.
+
+– Sites from Kentico 11 and Kentico 12 are always migrated using the Language prefix URL format.
 
 #### Content types
 
