@@ -354,11 +354,35 @@ In Xperience by Kentico, live site users are represented using a separate **Memb
 The migration identifies live site users as those without access to the administration interface. That is, only those
 accounts whose _Privilege level_ is set to _None_ (Users -> edit a user -> General tab) are migrated.
 
-All system fields from the _CMS_User_ and _CMS_UserSettings_ tables can be migrated. _Member_ entities in Xperience by Kentico have fewer system fields; therefore, most of the original system fields are not migrated by default.
+##### What is migrated by default
 
-You can specify additional fields to be migrated via the `MemberIncludeUserSystemFields` [configuration option](#configuration). The fields specified in this option are added to _CMS_Member_ as custom fields. The following fields can be migrated this way:
+By default, the migration transfers:
 
-|  |  |  |  |  |
+- System fields from the _CMS_User_ and _CMS_UserSettings_ tables that have a counterpart in _CMS_Member_ in Xperience by Kentico, for example, _CMS_User.UserName_ and _CMS_User.Email_. Fields that store authentication data are not migrated. See [Password reset](#password-reset).
+- All custom fields added to the _CMS_User_ and _CMS_UserSettings_ tables.
+  - If you are migrating custom fields, the `--custom-modules` migration command must be run before the `--members` command. For example:
+
+    ```powershell
+    Migration.Tool.CLI.exe migrate --sites --custom-modules --users --members
+    ```
+
+No other system fields are migrated unless they are specified in the [configuration option](#configuration) `MemberIncludeUserSystemFields` (see [Migrate additional system fields](#migrate-additional-system-fields)). The option is set to `null` in the sample `appsettings.json` file.
+
+> Sample `appsettings.json` files from earlier versions of the tool list all possible fields in `MemberIncludeUserSystemFields`. If you reuse an older configuration file, review this option before you run the migration.
+
+##### Migrate additional system fields
+
+To migrate other system fields, list them in the `MemberIncludeUserSystemFields` [configuration option](#configuration). Separate the field names with a vertical bar (`|`). For example:
+
+```text
+FirstName|LastName|UserGender|UserDateOfBirth
+```
+
+The migration creates each listed field as a custom field in the _CMS_Member_ table and copies the original values.
+
+Include only the fields that your project needs. You can migrate the following fields:
+
+| Available fields | | | | |
 |---|---|---|---|---|
 | `FirstName` | `MiddleName` | `LastName` | `FullName` | `UserPassword` |
 | `PreferredCultureCode` | `PreferredUICultureCode` | `UserPrivilegeLevel` | `UserIsExternal` | `UserPasswordFormat` |
@@ -370,60 +394,32 @@ You can specify additional fields to be migrated via the `MemberIncludeUserSyste
 | `UserDialogsConfiguration` | `UserDescription` | `UserAuthenticationGUID` | `UserSkype` | `UserIM` |
 | `UserPhone` | `UserPosition` | `UserLogActivities` | `UserPasswordRequestHash` | `UserInvalidLogOnAttempts` |
 | `UserInvalidLogOnAttemptsHash` | `UserPasswordLastChanged` | `UserAccountLockReason` | `UserShowIntroductionTile` | `UserDashboardApplications` |
-| `UserDismissedSmartTips` |  |  |  |  |
+| `UserDismissedSmartTips` | | | | |
 
-In the configuration option, separate the desired fields by `|`:
+> If you add `UserPassword` or related fields to the `MemberIncludeUserSystemFields` option, the original values are copied as-is to custom columns in _CMS_Member_. These columns are not used by Xperience by Kentico for authentication.
 
-```text
-FirstName|MiddleName|LastName|FullName|UserPassword|PreferredCultureCode|PreferredUICultureCode|UserPrivilegeLevel|UserIsExternal|UserPasswordFormat|LastLogon|UserStartingAliasPath|UserLastModified|UserLastLogonInfo|UserIsHidden|UserIsDomain|UserHasAllowedCultures|UserMFRequired|UserMFSecret|UserMFTimestep|UserNickName|UserSignature|UserURLReferrer|UserCampaign|UserCustomData|UserRegistrationInfo|UserActivationDate|UserActivatedByUserID|UserTimeZoneID|UserAvatarID|UserGender|UserDateOfBirth|UserSettingsUserGUID|UserSettingsUserID|UserWaitingForApproval|UserDialogsConfiguration|UserDescription|UserAuthenticationGUID|UserSkype|UserIM|UserPhone|UserPosition|UserLogActivities|UserPasswordRequestHash|UserInvalidLogOnAttempts|UserInvalidLogOnAttemptsHash|UserPasswordLastChanged|UserAccountLockReason|UserShowIntroductionTile|UserDashboardApplications|UserDismissedSmartTips
-```
+> You can also customize the default migration of fields using the [extensibility feature](../Migration.Tool.Extensions/README.md).
 
-Use only the fields necessary for your project to avoid transferring unnecessary data. Don't forget that if you migrate fields which are marked as required, you need to ensure that the required fields are populated when creating new member records (See [Add fields to member objects](https://docs.kentico.com/documentation/developers-and-admins/development/registration-and-authentication/add-fields-to-member-objects)).
+##### What to expect after the migration
 
-All custom fields added to the _CMS_User_ and _CMS_UserSettings_ tables are migrated under `CMS_Member`. The columns specified in the `MemberIncludeUserSystemFields` option are appended to the `CMS_Member` table in the order in which they were specified.
+Fields that you add using `MemberIncludeUserSystemFields` are stored as custom fields. The default Member functionality in Xperience by Kentico does not use them.
 
-  As an example, take the following `CMS_Member` columns
+If a migrated field is required, your code must set a value for it whenever it creates a new member, for example, during registration. See [Add fields to member objects](https://docs.kentico.com/documentation/developers-and-admins/development/registration-and-authentication/add-fields-to-member-objects).
 
-  ```text
-  |MemberId|MemberEmail|...|MemberSecurityStamp|
-  ```
-
-  And the following `Migration.Tool.CLI/appsettings.json` configuration.
-
-  ```json
-  {
-    "MemberIncludeUserSystemFields": "FirstName|LastName|UserPrivilegeLevel"
-  }
-  ```
-
-  This will result in the following `CMS_Member` structure after migration.
-
-  ```text
-  |MemberId|MemberEmail|...|MemberSecurityStamp|FirstName|LastName|UserPrivilegeLevel|`
-  ```
-
-  > If you are migrating custom fields, the `--custom-modules` migration command must be run before the `--members`
-  > command. For example:
-
-  ```powershell
-  Migration.Tool.CLI.exe migrate --sites --custom-modules  --users --members
-  ```
-
-- You can customize the default migration of fields using the [extensibility feature](../Migration.Tool.Extensions/README.md).
+##### Password reset
 
 The migration **_DOES NOT_** include:
 
 - External sign-in information associated with each account (e.g., Google or Facebook logins).
-- User password hashes from the `CMS_User.UserPassword` column.
+- User password hashes from the `CMS_User.UserPassword` column are never transferred to the `CMS_Member.MemberPassword` column, even if you migrate the `UserPassword` field as a custom field.
 
-If you add `UserPassword` (or related fields such as `UserPasswordFormat`, `UserMFSecret` or `UserPasswordRequestHash`) to the `MemberIncludeUserSystemFields` option, the original values are copied as-is to custom columns in _CMS_Member_. These columns are not used by Xperience by Kentico for authentication, and the data (including password hashes and secrets) is transferred to the target database. Include these fields only if you have a specific need for them.
+After the migration, the corresponding `CMS_Member.MemberPassword` in the target Xperience by Kentico instance
+is `NULL`. This means that the migrated accounts **CANNOT** be used to sign in to the system under any circumstances.
+The account owners must first reset their password via ASP.NET Identity.
 
-  After the migration, the corresponding `CMS_Member.MemberPassword` in the target Xperience by Kentico instance
-  is `NULL`. This means that the migrated accounts **CANNOT** be used to sign in to the system under any circumstances.
-  The account owners must first reset their password via ASP.NET Identity.
+See [Forms authentication](https://docs.xperience.io/x/t4ouCw) for a sample password reset process that can be adapted
+for this scenario. The general flow consists of these steps:
 
-  See [Forms authentication](https://docs.xperience.io/x/t4ouCw) for a sample password reset process that can be adapted
-  for this scenario. The general flow consists of these steps:
   1. Select the migrated member accounts.
 
      ```csharp
@@ -448,6 +444,30 @@ If you add `UserPassword` (or related fields such as `UserPasswordFormat`, `User
                  Body = $"To reset your account's password, click <a href=\"{resetUrl}\">here</a>."
              });
      ```
+
+##### Example table structure
+
+All custom fields added to the _CMS_User_ and _CMS_UserSettings_ tables are migrated under `CMS_Member`. The columns specified in the `MemberIncludeUserSystemFields` option are appended to the `CMS_Member` table in the order in which they were specified.
+
+  As an example, take the following `CMS_Member` columns
+
+  ```text
+  |MemberId|MemberEmail|...|MemberSecurityStamp|
+  ```
+
+  And the following `Migration.Tool.CLI/appsettings.json` configuration.
+
+  ```json
+  {
+    "MemberIncludeUserSystemFields": "FirstName|LastName|UserPrivilegeLevel"
+  }
+  ```
+
+  This will result in the following `CMS_Member` structure after migration.
+
+  ```text
+  |MemberId|MemberEmail|...|MemberSecurityStamp|FirstName|LastName|UserPrivilegeLevel|`
+  ```
 
 #### Contacts
 
