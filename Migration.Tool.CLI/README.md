@@ -99,12 +99,12 @@ In Xperience by Kentico, website channels can use either the language prefix URL
 - Migrating sites with **separate domains for different languages**:
   - If a site has [domain aliases](https://docs.kentico.com/13/multilingual-websites/setting-up-multilingual-websites/configuring-urls-for-multilingual-websites) bound to a non-default visitor culture, the tool creates the website channel with [language-specific domains](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#website-channels-in-private-cloud-environments) URL format.
     - The tool decides the URL format only when it creates the website channel. If the channel already exists, later runs don't change its URL format.
-    - If the source no longer matches the channel's URL format, the tool logs a warning. To change the URL format, migrate into an empty target database or convert the channel using the [conversion CLI tool](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#change-the-url-format-for-multilingual-sites).
+    - If the source no longer matches the channel's URL format, the tool logs a warning. To change the URL format, migrate into an empty target database or convert the channel using the [conversion CLI tool](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#change-the-url-format-for-multilingual-sites) on the target.
   - Language-specific domains require Xperience by Kentico version 31.9.0 or newer and are currently not supported in the [Xperience by Kentico SaaS environment](https://docs.kentico.com/documentation/developers-and-admins/saas/saas-overview).
   - Xperience by Kentico does not store language-specific domains and additional channel domains in the database. Instead, the domains are set via ASP.NET Core [Configuration providers](https://learn.microsoft.com/en-us/dotnet/core/extensions/configuration) and the `WebsiteChannelDomainOptions` options class.
   - The tool generates a suggested `WebsiteChannelDomains` configuration section, written to `WebsiteChannelDomains.suggested.json` in the target project folder (`XbyKDirPath` setting) and logs it as a warning at the end of the `--sites` migration. The warning does not mean that the migration failed.
     - Nothing changes on the target until you add this configuration into your application. The tool overwrites this file on every `--sites` run and deletes it when there's nothing to suggest. Don't edit the file directly. Instead, use its content in your configuration.
-  - The suggested domains are taken from the source instance, so they're usually your production domains. Set the correct domains for each environment (development, QA, staging), for example, in that environment's `appsettings.<Environment>.json`:
+  - The suggested domains are taken from the source instance, so they're usually your production domains. [Configure language-specific domains](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#configure-language-specific-domains) by setting correct domains for each environment (development, QA, staging), for example, in that environment's `appsettings.<Environment>.json`:
 
     ```json
       {
@@ -124,9 +124,9 @@ In Xperience by Kentico, website channels can use either the language prefix URL
   
   The keys listed under `"Domains"` are code names for _Languages_ on the target. Reference the generated file to get the language code names. Language code names in Xperience by Kentico are not constrained to culture codes.
 
-  Do not include the URL protocol in the domain name (e.g., `http`). See [Domain name format](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#domain-name-format) for the correct format in Xperience by Kentico.
-  
-  The first domain listed for each language is the **main** domain used when generating absolute URLs; any further domains listed for that language are [inbound-only aliases](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#domain-aliases-and-environment-specific-domains) that are not reflected in the URLs.
+  The first domain listed for each language is the **main** live site domain used when generating absolute URLs for pages in that language; any further domains listed for the language are [inbound-only aliases](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#domain-aliases-and-environment-specific-domains) that are not reflected in the URLs. Do not include administration domains in the configuration.
+
+  Every listed domain has to be unique. Do not include the URL protocol in the domain name (e.g., `http`). See [Domain name format](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#domain-name-format) for the correct format in Xperience by Kentico.
 
   Bind the configuration to `WebsiteChannelDomainOptions` in `Program.cs` before `builder.Build()`:
 
@@ -138,8 +138,10 @@ In Xperience by Kentico, website channels can use either the language prefix URL
 - Domain aliases with no visitor culture, or with the site's default culture:
   - On sites that are migrated to channels with language-specific domains, they are added as inbound-only alias domains of the default language.
   - On sites migrated with the language prefix URL format, they are suggested as `DomainOverrides`: additional domains that can be used to access the website. See the [documentation](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#domain-aliases-and-environment-specific-domains) for details and add them to your configuration to keep the website accessible under these domains.
+    - Note that if you include the `DomainOverrides` configuration in your project, the first domain specified in the `Domains` array will be used as the main domain.
+    - Do not add the `DomainOverrides` section if you plan to use [Xperience by Kentico SaaS](https://docs.kentico.com/documentation/developers-and-admins/saas/saas-overview) or if the channel uses language-specific domains.
 
-- Domain aliases that are not valid domain names are skipped with a warning.
+- Invalid domain names are skipped with a warning.
 
 - Sites from Kentico 11 and Kentico 12 are always migrated using the language prefix URL format.
 
@@ -223,6 +225,7 @@ Pages from older product versions can be migrated to either to [website channel 
   - _Archived_
 - Page URLs are included only when migrating to [website channel pages](https://docs.kentico.com/x/JwKQC) (default behavior). URL migration depends on the source instance version:
   - For Kentico Xperience 13, the migration includes the URL paths of pages and Former URLs.
+    - If a [site](..\Migration.Tool.CLI\README.md#sites) is migrated to a channel with language-specific domains, the language prefix (the culture code or culture alias) is removed from the start of page URL paths when a path begins with it. URL collisions are checked per language. Redirects resolve only to pages in the same language. Review custom routing, hard-coded links, and redirect rules if you used the language prefix.
   - For Kentico 12 and Kentico 11, URL paths are not migrated. Instead, a default URL path is created from
     the `DocumentUrlPath` or `NodeAliasPath`.
   - For Kentico Xperience 13 and Kentico 12, [Alternative URLs](https://docs.kentico.com/13/managing-website-content/working-with-pages/managing-page-urls#alternative-urls) are migrated to [Vanity URLs](https://docs.kentico.com/documentation/business-users/website-content/manage-page-urls#manage-vanity-urls-of-pages).
