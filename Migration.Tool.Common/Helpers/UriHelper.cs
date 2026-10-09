@@ -21,6 +21,29 @@ public static class UriHelper
         return sb.ToString();
     }
 
+    public static bool TryNormalizeDomain(string? input, out string normalized)
+    {
+        normalized = string.Empty;
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return false;
+        }
+
+        string candidate = input.Trim().TrimEnd('/');
+        if (!candidate.Contains("//"))
+        {
+            candidate = $"https://{candidate}";
+        }
+
+        if (!Uri.TryCreate(candidate, UriKind.Absolute, out var uri))
+        {
+            return false;
+        }
+
+        normalized = BuildXbyKDomainString(uri, candidate.Length);
+        return normalized.Length > 0;
+    }
+
     public static UniqueDomainResult GetUniqueDomainCandidate(string input, ref int startPort, Func<string, bool> checkIsUnique, int maxAttempts = 100)
     {
         bool useFallback = false;
