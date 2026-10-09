@@ -49,7 +49,7 @@ Currently, the Kentico Migration Tool supports the following types of data:
   - _Archived_ pages are migrated to the _Unpublished_ status.
 - Page URLs are included only when migrating to [website channel pages](https://docs.kentico.com/x/JwKQC) (default behavior). URL migration depends on the source instance version:
 - For Kentico Xperience 13, the migration includes the URL paths of pages and Former URLs.
-  - If a [site](..\Migration.Tool.CLI\README.md#sites) is migrated to a channel with language-specific domains, the language prefix (the culture code or culture alias) is removed from the start of page URL paths when a path begins with it.
+  - If a [site](../Migration.Tool.CLI/README.md#sites) is migrated to a channel with language-specific domains, the language prefix (the culture code or culture alias) is removed from the start of page URL paths when a path begins with it.
 - For Kentico 12 and Kentico 11, URL paths are not migrated. Instead, a default URL path is created from
   the `DocumentUrlPath` or `NodeAliasPath`.
 - For Kentico Xperience 13 and Kentico 12, [Alternative URLs](https://docs.kentico.com/13/managing-website-content/working-with-pages/managing-page-urls#alternative-urls) are migrated to [Vanity URLs](https://docs.kentico.com/documentation/business-users/website-content/manage-page-urls#manage-vanity-urls-of-pages).
