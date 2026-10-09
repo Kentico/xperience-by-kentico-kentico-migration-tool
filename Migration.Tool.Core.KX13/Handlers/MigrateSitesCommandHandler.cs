@@ -48,17 +48,19 @@ public class MigrateSitesCommandHandler(
                 string existingSiteDefaultCulture = GetSiteCulture(kx13CmsSite);
                 var (existingCultureBoundAliases, existingPlainAliases) = AnalyzeDomainAliases(kx13CmsSite, existingSiteDefaultCulture);
                 bool sourceUsesLanguageDomains = existingCultureBoundAliases.Count > 0;
-                WarnOnLanguageRoutingModeMismatch(existingChannel, sourceUsesLanguageDomains);
+                var existingWebsiteChannel = WebsiteChannelInfo.Provider.Get()
+                    .WhereEquals(nameof(WebsiteChannelInfo.WebsiteChannelChannelID), existingChannel.ChannelID)
+                    .FirstOrDefault();
+                WarnOnLanguageRoutingModeMismatch(existingChannel, existingWebsiteChannel, sourceUsesLanguageDomains);
 
-                // domains live only in application configuration, so the suggestion is regenerated also for
-                // already-migrated sites - domain changes in the source don't require migrating into an empty target
+                // regenerate the suggestion for existing sites too, reusing the stored (already sanitized) channel domain
                 CollectDomainConfiguration(
                     domainsConfigCollector,
                     kx13CmsSite,
                     sourceUsesLanguageDomains,
                     existingCultureBoundAliases,
                     existingPlainAliases,
-                    UriHelper.TryNormalizeDomain(kx13CmsSite.SiteDomainName, out string existingSiteDomain) ? existingSiteDomain : null,
+                    existingWebsiteChannel?.WebsiteChannelDomain.NullIf(string.Empty),
                     existingSiteDefaultCulture,
                     migratedCultureCodes);
                 continue;
@@ -135,23 +137,29 @@ public class MigrateSitesCommandHandler(
                 ? bool.TryParse(storeFormerUrlsStr, out bool sfu) ? sfu : null
                 : null;
 
-            if (!domainSanitizer.GetCandidate(kx13CmsSite.SiteName, kx13CmsSite.SiteDomainName.Trim('/'), out var domainName))
+            var (cultureBoundAliases, plainAliases) = AnalyzeDomainAliases(kx13CmsSite, defaultCultureCode);
+
+            // a live site domain alias with its own default visitor culture means the source site served languages on
+            // dedicated domains => the channel is created in the language-domains routing mode (LSD)
+            bool useLanguageDomains = cultureBoundAliases.Count > 0;
+            string? domainName = null;
+            if (useLanguageDomains)
+            {
+                // a language-domains channel stores no domain, so the (administration) site domain name is not sanitized nor reserved
+                logger.LogInformation(
+                    "Site '{SiteName}' uses culture-specific live site domain aliases ({Aliases}) - the website channel will be created in the language-domains routing mode (requires Xperience by Kentico 31.9.0 or newer)",
+                    kx13CmsSite.SiteName,
+                    string.Join(", ", cultureBoundAliases.Select(a => $"{a.SiteDomainPresentationUrl}={a.SiteDefaultVisitorCulture}")));
+            }
+            else if (!domainSanitizer.GetCandidate(kx13CmsSite.SiteName, kx13CmsSite.SiteDomainName.Trim('/'), out domainName))
             {
                 continue;
             }
 
-            var (cultureBoundAliases, plainAliases) = AnalyzeDomainAliases(kx13CmsSite, defaultCultureCode);
-
-            // a domain alias with its own default visitor culture means the source site served languages on
-            // dedicated domains => the channel is created in the language-domains routing mode (LSD)
-            bool useLanguageDomains = cultureBoundAliases.Count > 0;
-            if (useLanguageDomains)
-            {
-                logger.LogInformation(
-                    "Site '{SiteName}' uses culture-specific domain aliases ({Aliases}) - the website channel will be created in the language-domains routing mode (requires Xperience by Kentico 31.9.0 or newer)",
-                    kx13CmsSite.SiteName,
-                    string.Join(", ", cultureBoundAliases.Select(a => $"{a.SiteDomainAliasName}={a.SiteDefaultVisitorCulture}")));
-            }
+            // UMT upserts the channel by GUID - remember whether it existed, so a failed website channel import never removes a pre-existing channel
+            bool channelExistedBefore = ChannelInfo.Provider.Get()
+                .WhereEquals(nameof(ChannelInfo.ChannelGUID), kx13CmsSite.SiteGuid)
+                .Any();
 
             var channelResult = await importer.ImportAsync(new ChannelModel { ChannelDisplayName = kx13CmsSite.SiteDisplayName, ChannelName = kx13CmsSite.SiteName, ChannelGUID = kx13CmsSite.SiteGuid, ChannelType = ChannelType.Website });
 
@@ -192,7 +200,7 @@ public class MigrateSitesCommandHandler(
 
                 // a channel without its website channel breaks the Channel management UI - remove the channel
                 // imported a moment ago so a failed run does not leave the target in a broken state
-                if (channelResult.Imported is ChannelInfo orphanedChannel)
+                if (!channelExistedBefore && channelResult.Imported is ChannelInfo orphanedChannel)
                 {
                     try
                     {
@@ -273,7 +281,7 @@ public class MigrateSitesCommandHandler(
         bool useLanguageDomains,
         IReadOnlyCollection<CmsSiteDomainAlias> cultureBoundAliases,
         IReadOnlyCollection<CmsSiteDomainAlias> plainAliases,
-        string? channelDomain,
+        string? storedChannelDomain,
         string defaultCultureCode,
         IReadOnlyDictionary<string, ContentLanguageInfo> migratedCultureCodes)
     {
@@ -290,14 +298,18 @@ public class MigrateSitesCommandHandler(
         {
             string defaultLanguageName = TryResolveLanguageName(defaultCultureCode) ?? defaultCultureCode;
 
-            // the live-site domain serves the default language; MVC sites run on the site presentation URL,
-            // so it takes precedence over the (admin) site domain name. Plain aliases become inbound-only aliases.
-            string? defaultLanguageDomain = UriHelper.TryNormalizeDomain(site.SitePresentationUrl, out string sitePresentationDomain)
-                ? sitePresentationDomain
-                : channelDomain;
-            if (defaultLanguageDomain is not null)
+            // the site presentation URL is the live site domain of the default language - KX13 live sites run only on
+            // presentation URLs, the site domain name is the administration domain and is never used as a live site domain.
+            // Plain live site aliases become inbound-only aliases.
+            if (UriHelper.TryNormalizeDomain(site.SitePresentationUrl, out string sitePresentationDomain))
             {
-                collector.AddLanguageDomain(site.SiteName, defaultLanguageName, defaultLanguageDomain);
+                collector.AddLanguageDomain(site.SiteName, defaultLanguageName, sitePresentationDomain);
+            }
+            else
+            {
+                logger.LogWarning(
+                    "Site '{SiteName}' has no valid presentation URL ('{PresentationUrl}'), so the generated configuration contains no main domain for the default language '{Language}'. Add the domain to the configuration manually",
+                    site.SiteName, site.SitePresentationUrl, defaultLanguageName);
             }
             foreach (var alias in plainAliases)
             {
@@ -315,7 +327,7 @@ public class MigrateSitesCommandHandler(
                 {
                     logger.LogWarning(
                         "Domain alias '{Alias}' of site '{SiteName}' is bound to culture '{Culture}' which matches no content language in the target instance. The domain is included in the generated configuration, but Xperience by Kentico will report it as unknown until such content language exists",
-                        alias.SiteDomainPresentationUrl ?? alias.SiteDomainAliasName, site.SiteName, cultureCode);
+                        alias.SiteDomainPresentationUrl, site.SiteName, cultureCode);
                 }
 
                 if (TryGetAliasDomain(alias, out string normalized))
@@ -327,9 +339,10 @@ public class MigrateSitesCommandHandler(
         else if (plainAliases.Count > 0)
         {
             // domain aliases have no database counterpart in Xperience by Kentico - offer them as configuration-based domain overrides
-            if (channelDomain is not null)
+            // the stored channel domain stays the main domain - DomainOverrides take precedence over the stored domain
+            if (storedChannelDomain is not null)
             {
-                collector.AddDomainOverride(site.SiteName, channelDomain);
+                collector.AddDomainOverride(site.SiteName, storedChannelDomain);
             }
             foreach (var alias in plainAliases)
             {
@@ -342,12 +355,10 @@ public class MigrateSitesCommandHandler(
     }
 
     /// <summary>
-    /// Resolves the live-site domain represented by a KX13 domain alias. MVC sites serve the live site on the
-    /// alias's presentation URL, so it takes precedence; the (admin) domain alias name is the fallback.
+    /// Resolves the live-site domain of a KX13 live site domain alias - its presentation URL.
     /// </summary>
     private static bool TryGetAliasDomain(CmsSiteDomainAlias alias, out string domain) =>
-        UriHelper.TryNormalizeDomain(alias.SiteDomainPresentationUrl, out domain)
-        || UriHelper.TryNormalizeDomain(alias.SiteDomainAliasName, out domain);
+        UriHelper.TryNormalizeDomain(alias.SiteDomainPresentationUrl, out domain);
 
     private async Task EmitDomainsConfigSuggestion(WebsiteChannelDomainsConfigCollector collector, CancellationToken cancellationToken)
     {
@@ -380,20 +391,31 @@ public class MigrateSitesCommandHandler(
     }
 
     /// <summary>
-    /// Classifies the site's domain aliases into culture-bound ones (bound to a non-default visitor culture - these
-    /// switch the channel to the language-domains routing mode) and plain ones, warning about aliases without any
-    /// usable domain. Aliases are ordered by ID, so the first domain of each language is stable across runs.
+    /// Classifies the site's live site domain aliases into culture-bound ones (bound to a non-default visitor culture - these
+    /// switch the channel to the language-domains routing mode) and plain ones, warning about aliases without a valid
+    /// presentation URL. Administration domain aliases are ignored. Aliases are ordered by ID, so the first domain of
+    /// each language is stable across runs.
     /// </summary>
     private (List<CmsSiteDomainAlias> CultureBoundAliases, List<CmsSiteDomainAlias> PlainAliases) AnalyzeDomainAliases(CmsSite kx13CmsSite, string defaultCultureCode)
     {
-        foreach (var unusable in kx13CmsSite.CmsSiteDomainAliases.Where(a => !TryGetAliasDomain(a, out _)))
+        var liveSiteAliases = kx13CmsSite.CmsSiteDomainAliases
+            .Where(a => a.SiteDomainAliasType == 1)    // live site aliases; 0 = administration aliases
+            .ToList();
+
+        int administrationAliasCount = kx13CmsSite.CmsSiteDomainAliases.Count - liveSiteAliases.Count;
+        if (administrationAliasCount > 0)
         {
-            logger.LogWarning(
-                "Domain alias (ID {AliasId}, visitor culture '{VisitorCulture}') of site '{SiteName}' has neither a valid presentation URL nor a domain alias name and was skipped - a culture-bound alias would otherwise switch the channel to the language-domains routing mode",
-                unusable.SiteDomainAliasId, unusable.SiteDefaultVisitorCulture, kx13CmsSite.SiteName);
+            logger.LogDebug("{Count} administration domain alias(es) of site '{SiteName}' skipped - only live site domain aliases are migrated", administrationAliasCount, kx13CmsSite.SiteName);
         }
 
-        var domainAliases = kx13CmsSite.CmsSiteDomainAliases
+        foreach (var unusable in liveSiteAliases.Where(a => !TryGetAliasDomain(a, out _)))
+        {
+            logger.LogWarning(
+                "Live site domain alias (ID {AliasId}, visitor culture '{VisitorCulture}') of site '{SiteName}' has no valid presentation URL ('{PresentationUrl}') and was skipped - a culture-bound alias would otherwise switch the channel to the language-domains routing mode",
+                unusable.SiteDomainAliasId, unusable.SiteDefaultVisitorCulture, kx13CmsSite.SiteName, unusable.SiteDomainPresentationUrl);
+        }
+
+        var domainAliases = liveSiteAliases
             .Where(a => TryGetAliasDomain(a, out _))
             .OrderBy(a => a.SiteDomainAliasId)
             .ToList();
@@ -408,14 +430,10 @@ public class MigrateSitesCommandHandler(
     /// <summary>
     /// An existing channel is never updated, so a routing mode decided by a previous run cannot be corrected by re-running
     /// the migration. Without this warning a mismatch (e.g. culture-bound aliases added or fixed in the source after the
-    /// first run) would go unnoticed - pages migration derives path shape from the source and would silently diverge
-    /// from the channel's stored mode.
+    /// first run) would go unnoticed - pages migration follows the channel's stored mode, not the source configuration.
     /// </summary>
-    private void WarnOnLanguageRoutingModeMismatch(ChannelInfo existingChannel, bool sourceUsesLanguageDomains)
+    private void WarnOnLanguageRoutingModeMismatch(ChannelInfo existingChannel, WebsiteChannelInfo? websiteChannel, bool sourceUsesLanguageDomains)
     {
-        var websiteChannel = WebsiteChannelInfo.Provider.Get()
-            .WhereEquals(nameof(WebsiteChannelInfo.WebsiteChannelChannelID), existingChannel.ChannelID)
-            .FirstOrDefault();
         if (websiteChannel is null)
         {
             return;

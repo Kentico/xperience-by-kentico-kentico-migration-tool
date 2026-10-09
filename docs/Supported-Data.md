@@ -16,12 +16,14 @@ Currently, the Kentico Migration Tool supports the following types of data:
 - The tool migrates each site on the source to a [website channel](https://docs.kentico.com/x/34HFC) object in Xperience by Kentico.
 - **Domain aliases** (Kentico Xperience 13 sources only):
   - Website channels in Xperience by Kentico use either the language prefix URL format or language-specific domains (domain per language).
-  - If a site has domain aliases bound to a non-default visitor culture (each language served on its own domain), the tool creates the website channel with the language-specific domains URL format. Otherwise, the channel is created with the language prefix URL format.
+  - Only live site domain aliases are migrated, using their presentation URL. Administration domain aliases are not migrated.
+  - If a site has live site domain aliases bound to a non-default visitor culture (each language served on its own domain), the tool creates the website channel with the language-specific domains URL format. Otherwise, the channel is created with the language prefix URL format.
   - Migrating sites with separate domains for different languages:
     - Language-specific domains require Xperience by Kentico version 31.9.0 or newer, and are currently not supported in the Xperience by Kentico SaaS environment.
     - Xperience by Kentico stores language-specific domains and additional channel domains only in **application configuration** — there is no database equivalent. The tool generates a suggested `WebsiteChannelDomains` configuration section (written to `WebsiteChannelDomains.suggested.json` in the target project folder and logged as a warning). Review the file and add the configuration section to the target application's `appsettings.json` and bind it to `WebsiteChannelDomainOptions` in the application startup (see [Configure language-specific domains](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#configure-language-specific-domains)).
+    - The site's presentation URL is the main domain of the default language. Sites without a valid presentation URL are logged with a warning.
     - The URL format is set only when the website channel is created and later runs don't change it. To change it, migrate into an empty target database or use the [conversion CLI tool](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#change-the-url-format-for-multilingual-sites) (intended for use before the site goes live).
-- Domain aliases with no visitor culture, or with the site's default culture, are included in the generated configuration as inbound-only alias domains of the default language (for channels with language-specific domains) or as a `DomainOverrides` suggestion (for channels with the language prefix URL format).
+- Live site domain aliases with no visitor culture, or with the site's default culture, are included in the generated configuration as inbound-only alias domains of the default language (for channels with language-specific domains) or as a `DomainOverrides` suggestion (for channels with the language prefix URL format).
 - See [README – Sites](../Migration.Tool.CLI/README.md#sites) for details.
 
 ### Cultures
