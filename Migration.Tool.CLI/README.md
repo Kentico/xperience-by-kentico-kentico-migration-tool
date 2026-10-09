@@ -16,7 +16,7 @@ If you are migrating from Kentico Xperience 13, remember to [update your source 
 
 The target of the migration must be an Xperience by Kentico instance that fulfills the following requirements:
 
-- The instance must run Xperience by Kentico **31.9.0 or newer**.
+- The instance must run Xperience by Kentico **31.9.2 or newer**.
 - The instance's database and file system must be accessible from the environment where you run the migration.
 - The target application _must not be running_ when you start the migration.
 - The target instance must be empty except for data from the source instance created by previous runs of this tool.
