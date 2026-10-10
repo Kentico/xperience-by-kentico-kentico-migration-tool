@@ -174,3 +174,14 @@ public record MigrateOrdersCommand : IRequest<CommandResult>, ICommand
 
     public Type[] Dependencies => [typeof(MigrateSitesCommand), typeof(MigrateCustomModulesCommand), typeof(MigrateUsersCommand), typeof(MigrateMembersCommand), typeof(MigrateCustomersCommand)];
 }
+
+public record TransferMediaFileAssetsCommand : IRequest<CommandResult>, ICommand
+{
+    public static readonly int Rank = 1 + MigrateMediaLibrariesCommand.Rank;
+
+    public static string Moniker => "transfer-media-assets";
+
+    public static string MonikerFriendly => "Transfer media file assets";
+
+    public Type[] Dependencies => [typeof(MigrateMediaLibrariesCommand)];
+}

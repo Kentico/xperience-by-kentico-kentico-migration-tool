@@ -49,6 +49,8 @@ public class ConfigurationNames
 
     public const string TargetWorkspaceName = "TargetWorkspaceName";
 
+    public const string AssetFileTransfer = "AssetFileTransfer";
+
     #region "Section names"
 
     public const string CmsConnectionString = "CMSConnectionString";

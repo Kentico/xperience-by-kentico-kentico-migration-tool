@@ -143,6 +143,12 @@ public class CommandParser : ICommandParser
                 continue;
             }
 
+            if (arg == $"--{TransferMediaFileAssetsCommand.Moniker}")
+            {
+                subcommands.Add(new TransferMediaFileAssetsCommand());
+                continue;
+            }
+
             throw new InvalidOperationException($"Unknown command '{arg}'");
         }
 
@@ -168,6 +174,8 @@ public class CommandParser : ICommandParser
         WriteCommandDesc($"starts migration of {Green(MigrateCustomModulesCommand.MonikerFriendly)}", $"migrate --{MigrateCustomModulesCommand.Moniker}");
         WriteCommandDesc($"starts migration of {Green(MigrateCustomersCommand.MonikerFriendly)}", $"migrate --{MigrateCustomersCommand.Moniker}");
         WriteCommandDesc($"starts migration of {Green(MigrateOrdersCommand.MonikerFriendly)}", $"migrate --{MigrateOrdersCommand.Moniker}");
+        WriteCommandDesc($"transfers legacy media library files to the content item asset file/blob structure (use after {Green(MigrateMediaLibrariesCommand.MonikerFriendly)} when '{nameof(ToolConfiguration.MigrateOnlyMediaFileInfo)}' was used)",
+            $"migrate --{TransferMediaFileAssetsCommand.Moniker}");
         Console.WriteLine();
         Console.WriteLine($"Command {Green("patch")}: Applies migration patches to XbyK database. Patches are also applied at each run of {Green("migrate")}. Use this command to run patches without migration. " +
             $"Migration patches fix data problems caused by bugs in previous versions of Migration Tool. This command is idempotent - i.e. tolerant to multiple runs.");

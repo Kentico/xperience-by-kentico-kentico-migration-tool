@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using Migration.Tool.Common.Model;
 
 namespace Migration.Tool.Common;
 
@@ -82,6 +83,9 @@ public class ToolConfiguration
 
     [ConfigurationKeyName(ConfigurationNames.TargetWorkspaceName)]
     public string? TargetWorkspaceName { get; set; }
+
+    [ConfigurationKeyName(ConfigurationNames.AssetFileTransfer)]
+    public AssetFileTransferConfiguration? AssetFileTransfer { get; set; }
 
     #region Opt-in features
 
