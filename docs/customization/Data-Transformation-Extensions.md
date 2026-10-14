@@ -54,6 +54,24 @@ See [Content Item Directors (`ContentItemDirectorBase`)](Content-Item-Directors.
 - Link child pages as content item references (e.g., link child `Book` pages in a `Books` field when migrating `Author` pages to reusable content)
 - Apply conditional logic based on content structure or hierarchy
 
+### Form Directors (`FormDirectorBase`)
+
+Control migration behavior of individual forms.
+
+**Use cases:**
+
+- Migrate forms to a specific [workspace](https://docs.kentico.com/x/workspaces_xp) (e.g., one workspace per source site)
+
+Override the `Direct(source, options)` method. `source` provides the source form (`SourceForm`) and its site (`SourceSite`). Call `options.OverrideWorkspace(name, displayName)` to migrate the form to the workspace with the given code name (the workspace is created if it doesn't exist), or `options.OverrideWorkspace(guid)` to use an existing workspace. Forms without an override are migrated to the workspace specified by the `TargetWorkspaceName` configuration key.
+
+When a director overrides the workspace, it is applied on every migration run. Forms without an override keep their current workspace in the target instance, if they have one.
+
+See [SampleFormWorkspaceDirector.cs](../../Migration.Tool.Extensions/CommunityMigrations/SampleFormWorkspaceDirector.cs) for an example. Register form directors as `FormDirectorBase` implementations:
+
+```csharp
+services.AddTransient<FormDirectorBase, SampleFormWorkspaceDirector>();
+```
+
 ### Widget Migrations (`IWidgetMigration`)
 
 Change widget types or restructures widget data.
@@ -104,6 +122,7 @@ For detailed information about all available CLI parameters, their dependencies,
 | ------------------------------ | ------------------------------------- |
 | **Custom Class Mappings**      | `--page-types` `--custom-modules`     |
 | **Content Item Directors**     | `--pages`                             |
+| **Form Directors**             | `--forms`                             |
 | **Field Migrations**           | `--pages` `--forms` `--custom-tables` |
 | **Widget Migrations**          | `--pages`                             |
 | **Widget Property Migrations** | `--pages`                             |

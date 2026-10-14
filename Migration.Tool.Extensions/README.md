@@ -18,6 +18,7 @@ The project enables you to:
 
 - `IClassMapping` – remodel content type structure and field definitions
 - `ContentItemDirectorBase` – control per-item migration decisions and relationships
+- `FormDirectorBase` – control per-form migration decisions (e.g., target workspace)
 - `IFieldMigration` – transform field definitions and values
 - `IWidgetMigration` – transform widget types/structures
 - `IWidgetPropertyMigration` – transform widget property values
