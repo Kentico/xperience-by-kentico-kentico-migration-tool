@@ -2,6 +2,7 @@ using System.Diagnostics;
 using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
 using CMS.Core;
+using CMS.Core.Internal;
 using CMS.DataEngine;
 using CMS.FormEngine;
 using CMS.Helpers;
@@ -237,28 +238,51 @@ public class ContentItemMapper(
             bool ndp = false;
             if (!migratedAsContentFolder)
             {
+                // publish/unpublish dates already in the past are applied directly instead of being scheduled,
+                // otherwise published pages would be reverted to draft and expired pages would stay published until the scheduler catches up
+                var now = Service.Resolve<IDateTimeNowService>().GetDateTimeNow();
                 if (cmsDocument is { DocumentPublishFrom: { } publishFrom1, DocumentPublishTo: null })
                 {
-                    if (versionStatus == VersionStatus.Published)
+                    if (publishFrom1 > now)
                     {
-                        versionStatus = VersionStatus.InitialDraft;
+                        if (versionStatus == VersionStatus.Published)
+                        {
+                            versionStatus = VersionStatus.InitialDraft;
+                        }
+                        scheduledPublishWhen = publishFrom1;
                     }
-                    scheduledPublishWhen = publishFrom1;
                 }
                 else if (cmsDocument is { DocumentPublishFrom: null, DocumentPublishTo: { } publishTo1 })
                 {
                     if (versionStatus == VersionStatus.Published)
                     {
-                        scheduleUnpublishWhen = publishTo1;
+                        if (publishTo1 > now)
+                        {
+                            scheduleUnpublishWhen = publishTo1;
+                        }
+                        else
+                        {
+                            versionStatus = VersionStatus.Unpublished;
+                        }
                     }
                 }
                 else if (cmsDocument is { DocumentPublishFrom: { } publishFrom2, DocumentPublishTo: { } publishTo2 })
                 {
                     if (versionStatus == VersionStatus.Published)
                     {
-                        versionStatus = VersionStatus.InitialDraft;
-                        scheduledPublishWhen = publishFrom2;
-                        scheduleUnpublishWhen = publishTo2;
+                        if (publishTo2 <= now)
+                        {
+                            versionStatus = VersionStatus.Unpublished;
+                        }
+                        else
+                        {
+                            if (publishFrom2 > now)
+                            {
+                                versionStatus = VersionStatus.InitialDraft;
+                                scheduledPublishWhen = publishFrom2;
+                            }
+                            scheduleUnpublishWhen = publishTo2;
+                        }
                     }
                 }
 
