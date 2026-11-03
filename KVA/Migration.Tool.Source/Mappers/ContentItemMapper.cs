@@ -614,7 +614,8 @@ public class ContentItemMapper(
                                 ContentItemDataClassGuid = DataClassInfoProvider.GetDataClassInfo("CMS.ContentItemCommonData").ClassGUID,
                                 ContentItemGUID = targetGuid,
                                 ContentItemName = $"{targetGuid}",
-                                ContentItemIsReusable = true
+                                ContentItemIsReusable = true,
+                                ContentItemWorkspaceGUID = contentItemModel.ContentItemWorkspaceGUID ?? workspaceService.FallbackWorkspace.Value.WorkspaceGUID
                             };
                         }
                     }
