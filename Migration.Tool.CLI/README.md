@@ -16,6 +16,7 @@ If you are migrating from Kentico Xperience 13, remember to [update your source 
 
 The target of the migration must be an Xperience by Kentico instance that fulfills the following requirements:
 
+- The instance must run Xperience by Kentico **31.9.2 or newer**.
 - The instance's database and file system must be accessible from the environment where you run the migration.
 - The target application _must not be running_ when you start the migration.
 - The target instance must be empty except for data from the source instance created by previous runs of this tool.
@@ -52,7 +53,7 @@ Migration.Tool.CLI.exe migrate --sites --custom-modules --custom-tables --catego
 
 | Parameter                   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Dependencies                                                         |
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| `--sites`                   | Enables migration of sites to [website channels](https://docs.xperience.io/x/34HFC). The site's basic properties and settings are transferred to the target instance.                                                                                                                                                                                                                                                                                                                                                                                                |                                                                      |
+| `--sites`                   | Enables migration of sites to [website channels](https://docs.xperience.io/x/34HFC). The site's basic properties and settings are transferred to the target instance. Sites with live site domain aliases bound to a non-default visitor culture are migrated as channels with language-specific domains.<br /><br />See: [Migration details for specific object types - Sites](#sites)                                                                                                                                                                                                              |                                                                      |
 | `--custom-modules`          | Enables migration of custom modules, [custom module classes and their data](https://docs.xperience.io/x/AKDWCQ), and [custom fields in supported system classes](https://docs.xperience.io/x/V6rWCQ).<br /><br />See: [Migration details for specific object types - Custom modules and classes](#custom-modules-and-classes)                                                                                                                                                                                                                                        | `--sites`                                                            |
 | `--custom-tables`           | Enables migration of [custom tables](https://docs.kentico.com/x/eQ2RBg). Custom table data can be migrated to either [custom module classes](https://docs.kentico.com/x/AKDWCQ) (default behavior) or [reusable content items](https://docs.kentico.com/x/content_items_xp) in Content hub.<br /><br />See: [Migration details for specific object types - Custom tables](#custom-tables)                                                                                                                                                                            |                                                                      |
 | `--users`                   | Enables migration of [users](https://docs.xperience.io/x/8ILWCQ) and [roles](https://docs.xperience.io/x/7IVwCg).<br /><br />See: [Migration details for specific object types - Users](#users)                                                                                                                                                                                                                                                                                                                                                                      | `--sites`, `--custom-modules`                                        |
@@ -87,6 +88,67 @@ Migration.Tool.CLI.exe migrate --sites --custom-modules --custom-tables --catego
 > Refer to our [FAQ page](https://docs.kentico.com/guides/upgrade-to-xbyk/upgrade-from-kx13/upgrade-faq#can-i-run-the-kentico-migration-tool-against-my-project-multiple-times) for best practices of performing repeated (iterative) data migration.
 
 ### Migration Details for Specific Object Types
+
+#### Sites
+
+Each site on the source is migrated to a [website channel](https://docs.kentico.com/x/34HFC).
+
+**Domain aliases** (Kentico Xperience 13 sources only):
+
+In Xperience by Kentico, website channels can use either the language prefix URL format or language-specific domains (domain per language). Both channel types can also have [inbound-only aliases](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#domain-aliases-and-environment-specific-domains) that allow website access but are not reflected in the URLs.
+
+The tool only works with **live site** domain aliases and takes their domains from the alias **presentation URL**. Administration domain aliases are not migrated.
+
+- Migrating sites with **separate domains for different languages**:
+  - If a site has live site [domain aliases](https://docs.kentico.com/13/multilingual-websites/setting-up-multilingual-websites/configuring-urls-for-multilingual-websites) bound to a non-default visitor culture, the tool creates the website channel with [language-specific domains](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#website-channels-in-private-cloud-environments) URL format.
+    - The tool decides the URL format only when it creates the website channel. If the channel already exists, later runs don't change its URL format.
+    - If the source no longer matches the channel's URL format, the tool logs a warning. To change the URL format, migrate into an empty target database or convert the channel using the [conversion CLI tool](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#change-the-url-format-for-multilingual-sites) on the target.
+  - Language-specific domains require Xperience by Kentico version 31.9.0 or newer and are currently not supported in the [Xperience by Kentico SaaS environment](https://docs.kentico.com/documentation/developers-and-admins/saas/saas-overview).
+  - Xperience by Kentico does not store language-specific domains and additional channel domains in the database. Instead, the domains are set via ASP.NET Core [Configuration providers](https://learn.microsoft.com/en-us/dotnet/core/extensions/configuration) and the `WebsiteChannelDomainOptions` options class.
+  - The tool generates a suggested `WebsiteChannelDomains` configuration section, written to `WebsiteChannelDomains.suggested.json` in the target project folder (`XbyKDirPath` setting) and logs it as a warning at the end of the `--sites` migration. The warning does not mean that the migration failed.
+    - Nothing changes on the target until you add this configuration into your application. The tool overwrites this file on every `--sites` run and deletes it when there's nothing to suggest. Don't edit the file directly. Instead, use its content in your configuration.
+  - The suggested domains are taken from the source instance. [Configure language-specific domains](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#configure-language-specific-domains) by setting correct domains for each environment (development, QA, staging), for example, in that environment's `appsettings.<Environment>.json`:
+
+    ```json
+    {
+      "WebsiteChannelDomains": {
+        "LanguageDomains": {
+          "<channel-code-name>": {
+            "Domains": {
+              "en": [ "dancinggoat.com", "second-english-domain.com" ],
+              "fr-FR": [ "fr.dancinggoat.com" ],
+              "cs-CZ": [ "www.dancinggoat.cz" ]
+            }
+          }
+        }
+      }
+    }
+    ```
+
+  The keys listed under `"Domains"` are code names for _Languages_ on the target. Reference the generated file to get the language code names. Languages on the target are created during a site's first migration, when the channel is created. Language code names in Xperience by Kentico are not constrained to culture codes.
+
+  The first domain listed for each language is the **main** live site domain used when generating absolute URLs for pages in that language; any further domains listed for the language are [inbound-only aliases](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#domain-aliases-and-environment-specific-domains) that are not reflected in the URLs. Do not include administration domains in the configuration.
+
+  Every listed domain has to be unique. Do not include the URL protocol in the domain name (e.g., `http`). See [Domain name format](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#domain-name-format) for the correct format in Xperience by Kentico.
+
+  The main domain of the default language is the site's presentation URL. If the site has no valid presentation URL, the tool logs a warning and you need to add the default language's domain to the configuration manually. The site's domain name (administration domain) is never used as a live site domain.
+
+  Bind the configuration to `WebsiteChannelDomainOptions` in `Program.cs` before `builder.Build()`:
+
+    ```csharp
+    builder.Services.Configure<WebsiteChannelDomainOptions>(
+        builder.Configuration.GetSection("WebsiteChannelDomains"));
+    ```
+
+- Live site domain aliases with no visitor culture, or with the site's default culture:
+  - On sites that are migrated to channels with language-specific domains, they are added as inbound-only alias domains of the default language.
+  - On sites migrated with the language prefix URL format, they are suggested as `DomainOverrides`: additional domains that can be used to access the website. See the [documentation](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#domain-aliases-and-environment-specific-domains) for details and add them to your configuration to keep the website accessible under these domains.
+    - If you include the `DomainOverrides` configuration in your project, verify that the first domain specified under `Domains` is the one you wish to use as the main domain.
+    - Do not add the `DomainOverrides` section if you plan to use [Xperience by Kentico SaaS](https://docs.kentico.com/documentation/developers-and-admins/saas/saas-overview) or if the channel uses language-specific domains.
+
+- Live site domain aliases without a valid presentation URL are skipped with a warning.
+
+- Sites from Kentico 11 and Kentico 12 are always migrated using the language prefix URL format.
 
 #### Content types
 
@@ -168,6 +230,7 @@ Pages from older product versions can be migrated to either to [website channel 
   - _Archived_
 - Page URLs are included only when migrating to [website channel pages](https://docs.kentico.com/x/JwKQC) (default behavior). URL migration depends on the source instance version:
   - For Kentico Xperience 13, the migration includes the URL paths of pages and Former URLs.
+    - If a [site](#sites) is migrated to a channel with language-specific domains, the language prefix (the culture code or culture alias) is removed from the start of page URL paths when a path begins with it. URL collisions are checked per language. Redirects from unpublished pages resolve only to pages in the same language. Review custom routing, hard-coded links, and redirect rules if you used the language prefix.
   - For Kentico 12 and Kentico 11, URL paths are not migrated. Instead, a default URL path is created from
     the `DocumentUrlPath` or `NodeAliasPath`.
   - For Kentico Xperience 13 and Kentico 12, [Alternative URLs](https://docs.kentico.com/13/managing-website-content/working-with-pages/managing-page-urls#alternative-urls) are migrated to [Vanity URLs](https://docs.kentico.com/documentation/business-users/website-content/manage-page-urls#manage-vanity-urls-of-pages).
@@ -355,51 +418,72 @@ In Xperience by Kentico, live site users are represented using a separate **Memb
 The migration identifies live site users as those without access to the administration interface. That is, only those
 accounts whose _Privilege level_ is set to _None_ (Users -> edit a user -> General tab) are migrated.
 
-The migration includes:
+##### What is migrated by default
 
-- All system fields from the _CMS_User_ and _CMS_UserSettings_ tables. You can customize which fields are migrated via
-  the `MemberIncludeUserSystemFields` configuration option. See [configuration](#configuration).
-- All custom fields added to the _CMS_User_ and _CMS_UserSettings_ tables are migrated under `CMS_Member`. The columns specified in the `MemberIncludeSystemFields` option are appended to the `CMS_Member` table in the order in which they were specified.
-  As an example, take the following `CMS_Member` columns
+By default, the migration transfers:
 
-  ```text
-  |MemberId|MemberEmail|...|MemberSecurityStamp|
-  ```
+- System fields from the _CMS_User_ and _CMS_UserSettings_ tables that have a counterpart in _CMS_Member_ in Xperience by Kentico, for example, _CMS_User.UserName_ and _CMS_User.Email_. Fields that store authentication data are not migrated. See [Password reset](#password-reset).
+- All custom fields added to the _CMS_User_ and _CMS_UserSettings_ tables.
+  - If you are migrating custom fields, the `--custom-modules` migration command must be run before the `--members` command. For example:
 
-  And the following `Migration.Tool.CLI/appsettings.json` configuration.
+    ```powershell
+    Migration.Tool.CLI.exe migrate --sites --custom-modules --users --members
+    ```
 
-  ```json
-  {
-    "MemberIncludeUserSystemFields": "FirstName|LastName|UserPrivilegeLevel"
-  }
-  ```
+No other system fields are migrated unless they are specified in the [configuration option](#configuration) `MemberIncludeUserSystemFields` (see [Migrate additional system fields](#migrate-additional-system-fields)). The option is set to `null` in the sample `appsettings.json` file.
 
-  This will result in the following `CMS_Member` structure after migration.
+> Sample `appsettings.json` files from earlier versions of the tool list all possible fields in `MemberIncludeUserSystemFields`. If you reuse an older configuration file, review this option before you run the migration.
 
-  ```text
-  |MemberId|MemberEmail|...|MemberSecurityStamp|FirstName|LastName|UserPrivilegeLevel|`
-  ```
+##### Migrate additional system fields
 
-  > If you are migrating custom fields, the `--custom-modules` migration command must be run before the `--members`
-  > command. For example:
+To migrate other system fields, list them in the `MemberIncludeUserSystemFields` [configuration option](#configuration). Separate the field names with a vertical bar (`|`). For example:
 
-  ```powershell
-  Migration.Tool.CLI.exe migrate --sites --custom-modules  --users --members
-  ```
+```text
+FirstName|LastName|UserGender|UserDateOfBirth
+```
 
-- You can customize the default migration of fields using the [extensibility feature](../Migration.Tool.Extensions/README.md).
+The migration creates each listed field as a custom field in the _CMS_Member_ table and copies the original values.
+
+Include only the fields that your project needs. You can migrate the following fields:
+
+| Available fields | | | | |
+|---|---|---|---|---|
+| `FirstName` | `MiddleName` | `LastName` | `FullName` | `UserPassword` |
+| `PreferredCultureCode` | `PreferredUICultureCode` | `UserPrivilegeLevel` | `UserIsExternal` | `UserPasswordFormat` |
+| `LastLogon` | `UserStartingAliasPath` | `UserLastModified` | `UserLastLogonInfo` | `UserIsHidden` |
+| `UserIsDomain` | `UserHasAllowedCultures` | `UserMFRequired` | `UserMFSecret` | `UserMFTimestep` |
+| `UserNickName` | `UserSignature` | `UserURLReferrer` | `UserCampaign` | `UserCustomData` |
+| `UserRegistrationInfo` | `UserActivationDate` | `UserActivatedByUserID` | `UserTimeZoneID` | `UserAvatarID` |
+| `UserGender` | `UserDateOfBirth` | `UserSettingsUserGUID` | `UserSettingsUserID` | `UserWaitingForApproval` |
+| `UserDialogsConfiguration` | `UserDescription` | `UserAuthenticationGUID` | `UserSkype` | `UserIM` |
+| `UserPhone` | `UserPosition` | `UserLogActivities` | `UserPasswordRequestHash` | `UserInvalidLogOnAttempts` |
+| `UserInvalidLogOnAttemptsHash` | `UserPasswordLastChanged` | `UserAccountLockReason` | `UserShowIntroductionTile` | `UserDashboardApplications` |
+| `UserDismissedSmartTips` | | | | |
+
+> If you add `UserPassword` or related fields to the `MemberIncludeUserSystemFields` option, the original values are copied as-is to custom columns in _CMS_Member_. These columns are not used by Xperience by Kentico for authentication.
+
+> You can also customize the default migration of fields using the [extensibility feature](../Migration.Tool.Extensions/README.md).
+
+##### What to expect after the migration
+
+Fields that you add using `MemberIncludeUserSystemFields` are stored as custom fields. The default Member functionality in Xperience by Kentico does not use them.
+
+If a migrated field is required, your code must set a value for it whenever it creates a new member, for example, during registration. See [Add fields to member objects](https://docs.kentico.com/documentation/developers-and-admins/development/registration-and-authentication/add-fields-to-member-objects).
+
+##### Password reset
 
 The migration **_DOES NOT_** include:
 
 - External sign-in information associated with each account (e.g., Google or Facebook logins).
-- User password hashes from the `CMS_User.UserPassword` column.
+- User password hashes from the `CMS_User.UserPassword` column are never transferred to the `CMS_Member.MemberPassword` column, even if you migrate the `UserPassword` field as a custom field.
 
-  After the migration, the corresponding `CMS_Member.MemberPassword` in the target Xperience by Kentico instance
-  is `NULL`. This means that the migrated accounts **CANNOT** be used to sign in to the system under any circumstances.
-  The account owners must first reset their password via ASP.NET Identity.
+After the migration, the corresponding `CMS_Member.MemberPassword` in the target Xperience by Kentico instance
+is `NULL`. This means that the migrated accounts **CANNOT** be used to sign in to the system under any circumstances.
+The account owners must first reset their password via ASP.NET Identity.
 
-  See [Forms authentication](https://docs.xperience.io/x/t4ouCw) for a sample password reset process that can be adapted
-  for this scenario. The general flow consists of these steps:
+See [Forms authentication](https://docs.xperience.io/x/t4ouCw) for a sample password reset process that can be adapted
+for this scenario. The general flow consists of these steps:
+
   1. Select the migrated member accounts.
 
      ```csharp
@@ -424,6 +508,30 @@ The migration **_DOES NOT_** include:
                  Body = $"To reset your account's password, click <a href=\"{resetUrl}\">here</a>."
              });
      ```
+
+##### Example table structure
+
+All custom fields added to the _CMS_User_ and _CMS_UserSettings_ tables are migrated under `CMS_Member`. The columns specified in the `MemberIncludeUserSystemFields` option are appended to the `CMS_Member` table in the order in which they were specified.
+
+  As an example, take the following `CMS_Member` columns
+
+  ```text
+  |MemberId|MemberEmail|...|MemberSecurityStamp|
+  ```
+
+  And the following `Migration.Tool.CLI/appsettings.json` configuration.
+
+  ```json
+  {
+    "MemberIncludeUserSystemFields": "FirstName|LastName|UserPrivilegeLevel"
+  }
+  ```
+
+  This will result in the following `CMS_Member` structure after migration.
+
+  ```text
+  |MemberId|MemberEmail|...|MemberSecurityStamp|FirstName|LastName|UserPrivilegeLevel|`
+  ```
 
 #### Contacts
 
@@ -674,7 +782,7 @@ Add the options under the `Settings` section in the configuration file.
 | LegacyPermissiveMediaLibrarySubfolders                            | Allows media library subfolder names that don’t follow current Xperience by Kentico naming rules. When set to `true`, skips validation requiring only alphanumeric characters, underscores, and hyphens, and allows names that may otherwise conflict with OS-reserved keywords (such as `CON`, `PRN`, `AUX`). This configuration should only be used when necessary (for example, when re-running migrations from older tool versions), as it may limit functionality like media library migration to the [Content hub](https://docs.kentico.com/documentation/business-users/content-hub).                                                          |
 | AssetRootFolders                                                  | Dictionary defining the root folder for Asset content items per site: Key is site name (`CMS_Site.SiteName`). Value is in format _/FolderDisplayName1/FolderDisplayName2/..._                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | TargetWorkspaceName                                               | The code name of the [workspace](https://docs.kentico.com/x/workspaces_xp) to which content items, content folders and other related entities are migrated. This workspace is used if another workspace is not specified explicitly, for example by the content item director API in [migration customizations](../Migration.Tool.Extensions/README.md). This configuration is not necessary if the target project only contains a single workspace.                                                                                                                                                                                                  |
-| MemberIncludeUserSystemFields                                     | Determines which system fields from the _CMS_User_ and _CMS_UserSettings_ tables are migrated to _CMS_Member_ in Xperience by Kentico. Fields that do not exist in _CMS_Member_ are automatically created. <br /><br />The sample `appsettings.json` file included with the tool by default includes all user fields that can be migrated from Kentico Xperience 13. Exclude specific fields from the migration by removing them from this configuration option.                                                                                                                                                                                      |
+| MemberIncludeUserSystemFields                                     | Determines which system fields from the _CMS_User_ and _CMS_UserSettings_ tables are migrated to _CMS_Member_ in Xperience by Kentico. Fields that do not exist in _CMS_Member_ are automatically created. <br /><br />Listed fields are added to _CMS_Member_ as custom fields. The sample `appsettings.json` file included with the tool by default sets this option to `null`, which migrates only the system fields that have a counterpart in Xperience by Kentico (with the exception of fields storing authentication data) and all custom user fields. Earlier versions of the sample file listed all user fields; if you reuse an old configuration file, review this option. See the [Members section](#members) for more information.                                                                                                                                                                                     |
 | IncludeExtendedMetadata                                           | Migrates DocumentPageTitle, DocumentPageDescription and DocumentPageKeywords if they are available in the source instance                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | UseOmActivityNodeRelationAutofix                                  | Determines how the migration handles references from Contact management activities to non-existing pages.<br /><br />Possible options:<br />`DiscardData` - faulty references are removed,<br />`AttemptFix` - references are updated to the IDs of corresponding pages created by the migration,<br />`Error` - an error is reported and the reference can be translated or otherwise handled manually                                                                                                                                                                                                                                               |
 | UseOmActivitySiteRelationAutofix                                  | Determines how the migration handles site references from Contact management activities.<br /><br />Possible options: `DiscardData`,`AttemptFix`,`Error`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |

@@ -14,6 +14,17 @@ Currently, the Kentico Migration Tool supports the following types of data:
 ### Sites
 
 - The tool migrates each site on the source to a [website channel](https://docs.kentico.com/x/34HFC) object in Xperience by Kentico.
+- **Domain aliases** (Kentico Xperience 13 sources only):
+  - Website channels in Xperience by Kentico use either the language prefix URL format or language-specific domains (domain per language).
+  - Only live site domain aliases are migrated, using their presentation URL. Administration domain aliases are not migrated.
+  - If a site has live site domain aliases bound to a non-default visitor culture (each language served on its own domain), the tool creates the website channel with the language-specific domains URL format. Otherwise, the channel is created with the language prefix URL format.
+  - Migrating sites with separate domains for different languages:
+    - Language-specific domains require Xperience by Kentico version 31.9.0 or newer, and are currently not supported in the Xperience by Kentico SaaS environment.
+    - Xperience by Kentico stores language-specific domains and additional channel domains only in **application configuration** — there is no database equivalent. The tool generates a suggested `WebsiteChannelDomains` configuration section (written to `WebsiteChannelDomains.suggested.json` in the target project folder and logged as a warning). Review the file and add the configuration section to the target application's `appsettings.json` and bind it to `WebsiteChannelDomainOptions` in the application startup (see [Configure language-specific domains](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#configure-language-specific-domains)).
+    - The site's presentation URL is the main domain of the default language. Sites without a valid presentation URL are logged with a warning.
+    - The URL format is set only when the website channel is created and later runs don't change it. To change it, migrate into an empty target database or use the [conversion CLI tool](https://docs.kentico.com/documentation/developers-and-admins/configuration/website-channel-management#change-the-url-format-for-multilingual-sites) (intended for use before the site goes live).
+- Live site domain aliases with no visitor culture, or with the site's default culture, are included in the generated configuration as inbound-only alias domains of the default language (for channels with language-specific domains) or as a `DomainOverrides` suggestion (for channels with the language prefix URL format).
+- See [README – Sites](../Migration.Tool.CLI/README.md#sites) for details.
 
 ### Cultures
 
@@ -40,6 +51,7 @@ Currently, the Kentico Migration Tool supports the following types of data:
   - _Archived_ pages are migrated to the _Unpublished_ status.
 - Page URLs are included only when migrating to [website channel pages](https://docs.kentico.com/x/JwKQC) (default behavior). URL migration depends on the source instance version:
 - For Kentico Xperience 13, the migration includes the URL paths of pages and Former URLs.
+  - If a [site](../Migration.Tool.CLI/README.md#sites) is migrated to a channel with language-specific domains, the language prefix (the culture code or culture alias) is removed from the start of page URL paths when a path begins with it.
 - For Kentico 12 and Kentico 11, URL paths are not migrated. Instead, a default URL path is created from
   the `DocumentUrlPath` or `NodeAliasPath`.
 - For Kentico Xperience 13 and Kentico 12, [Alternative URLs](https://docs.kentico.com/13/managing-website-content/working-with-pages/managing-page-urls#alternative-urls) are migrated to [Vanity URLs](https://docs.kentico.com/documentation/business-users/website-content/manage-page-urls#manage-vanity-urls-of-pages).
@@ -77,7 +89,7 @@ Currently, the Kentico Migration Tool supports the following types of data:
 - Xperience by Kentico uses separate entities for users with access to the administration interface (_CMS_User_ table) and live site visitor accounts (_CMS_Member_ table). Consequently, only users whose _Privilege level_ is _Editor_ or higher are migrated (_Users_ -> edit a user -> _General_ tab).
 - Users in Xperience by Kentico must have an email address. Migration is only supported for users who have a unique email address value on the source instance.
 - Custom user fields are an optional part of _module class_ migration.
-- Live site users are represented using a separate **Member** entity and stored in the _CMS_Member_ table. The migration identifies live site users as those without access to the administration interface - accounts with _Privilege level_ set to _None_ (Users -> edit a user -> General tab).
+- Live site users are represented using a separate **Member** entity and stored in the _CMS_Member_ table. The migration identifies live site users as those without access to the administration interface - accounts with _Privilege level_ set to _None_ (Users -> edit a user -> General tab). By default, only system fields with a counterpart in the _CMS_Member_ table and custom user fields are migrated. Additional system fields can be migrated as custom fields via the `MemberIncludeUserSystemFields` configuration option (see the [Migration.Tool.CLI README - Members](../Migration.Tool.CLI/README.md#members)). Password hashes are never migrated to `MemberPassword`.
 
 ### Roles
 

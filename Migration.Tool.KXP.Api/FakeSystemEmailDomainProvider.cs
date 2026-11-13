@@ -1,15 +1,15 @@
-﻿using CMS;
+using CMS;
 using CMS.Core;
 using CMS.Helpers.Internal;
 
 using Migration.Tool.KXP.Api;
 
-[assembly: RegisterImplementation(typeof(IAdministrationDomainProvider), typeof(FakeAdministrationDomainProvider), Lifestyle = Lifestyle.Singleton, Priority = RegistrationPriority.Default)]
+[assembly: RegisterImplementation(typeof(ISystemEmailDomainProvider), typeof(FakeSystemEmailDomainProvider), Lifestyle = Lifestyle.Singleton, Priority = RegistrationPriority.Default)]
 
 namespace Migration.Tool.KXP.Api;
 
 /// <summary>
-/// Provides a fake implementation of the IAdministrationDomainProvider interface. 
+/// Provides a fake implementation of the ISystemEmailDomainProvider interface.
 /// </summary>
 /// <remarks>
 /// This is done because Migration tool reference Kentico.Xperience.Admin nuget package.
@@ -18,8 +18,8 @@ namespace Migration.Tool.KXP.Api;
 /// therfore it can't be resolved and Exception is thrown.
 /// NOTE: when the Kentico.Xperience.Admin is removed from the project this service can be deleted.
 /// </remarks>
-internal class FakeAdministrationDomainProvider : IAdministrationDomainProvider
+internal class FakeSystemEmailDomainProvider : ISystemEmailDomainProvider
 {
     /// <inheritdoc />
-    public string Get() => string.Empty;
+    public string GetDomain() => string.Empty;
 }

@@ -2,8 +2,10 @@ using System.Diagnostics;
 using CMS.ContentEngine;
 using CMS.ContentEngine.Internal;
 using CMS.Core;
+using CMS.Core.Internal;
 using CMS.DataEngine;
 using CMS.FormEngine;
+using CMS.Helpers;
 using CMS.MediaLibrary;
 using CMS.Membership;
 using CMS.Websites;
@@ -163,7 +165,8 @@ public class ContentItemMapper(
             .FirstOrDefault();
         string? treePath = targetWebPage?.WebPageItemTreePath;
 
-        var websiteChannelInfo = WebsiteChannelInfo.Provider.Get(siteGuid);
+        var websiteChannelInfo = WebsiteChannelInfo.Provider.Get(siteGuid)
+            ?? throw new InvalidOperationException($"Website channel with GUID '{siteGuid}' was not found in the target instance. The sites migration either failed or was not run - check the output of 'migrate --sites' before migrating pages.");
         var treePathConvertor = TreePathConvertor.GetSiteConverter(websiteChannelInfo.WebsiteChannelID);
         if (treePath == null)
         {
@@ -235,28 +238,51 @@ public class ContentItemMapper(
             bool ndp = false;
             if (!migratedAsContentFolder)
             {
+                // publish/unpublish dates already in the past are applied directly instead of being scheduled,
+                // otherwise published pages would be reverted to draft and expired pages would stay published until the scheduler catches up
+                var now = Service.Resolve<IDateTimeNowService>().GetDateTimeNow();
                 if (cmsDocument is { DocumentPublishFrom: { } publishFrom1, DocumentPublishTo: null })
                 {
-                    if (versionStatus == VersionStatus.Published)
+                    if (publishFrom1 > now)
                     {
-                        versionStatus = VersionStatus.InitialDraft;
+                        if (versionStatus == VersionStatus.Published)
+                        {
+                            versionStatus = VersionStatus.InitialDraft;
+                        }
+                        scheduledPublishWhen = publishFrom1;
                     }
-                    scheduledPublishWhen = publishFrom1;
                 }
                 else if (cmsDocument is { DocumentPublishFrom: null, DocumentPublishTo: { } publishTo1 })
                 {
                     if (versionStatus == VersionStatus.Published)
                     {
-                        scheduleUnpublishWhen = publishTo1;
+                        if (publishTo1 > now)
+                        {
+                            scheduleUnpublishWhen = publishTo1;
+                        }
+                        else
+                        {
+                            versionStatus = VersionStatus.Unpublished;
+                        }
                     }
                 }
                 else if (cmsDocument is { DocumentPublishFrom: { } publishFrom2, DocumentPublishTo: { } publishTo2 })
                 {
                     if (versionStatus == VersionStatus.Published)
                     {
-                        versionStatus = VersionStatus.InitialDraft;
-                        scheduledPublishWhen = publishFrom2;
-                        scheduleUnpublishWhen = publishTo2;
+                        if (publishTo2 <= now)
+                        {
+                            versionStatus = VersionStatus.Unpublished;
+                        }
+                        else
+                        {
+                            if (publishFrom2 > now)
+                            {
+                                versionStatus = VersionStatus.InitialDraft;
+                                scheduledPublishWhen = publishFrom2;
+                            }
+                            scheduleUnpublishWhen = publishTo2;
+                        }
                     }
                 }
 
@@ -503,7 +529,7 @@ public class ContentItemMapper(
                 {
                     ContentItemLanguageMetadataGUID = documentGuid,
                     ContentItemLanguageMetadataContentItemGuid = contentItemGuid,
-                    ContentItemLanguageMetadataDisplayName = cmsDocument.DocumentName, // For the admin UI only
+                    ContentItemLanguageMetadataDisplayName = cmsDocument.DocumentName.Truncate(FieldConstants.ContentItemLanguageMetadataDisplayNameColumnSize), // For the admin UI only
                     ContentItemLanguageMetadataLatestVersionStatus = draftMigrated ? VersionStatus.Draft : versionStatus, // That's the latest status of th item for admin optimization
                     ContentItemLanguageMetadataCreatedWhen = cmsDocument.DocumentCreatedWhen, // DocumentCreatedWhen
                     ContentItemLanguageMetadataModifiedWhen = cmsDocument.DocumentModifiedWhen, // DocumentModifiedWhen
@@ -588,7 +614,8 @@ public class ContentItemMapper(
                                 ContentItemDataClassGuid = DataClassInfoProvider.GetDataClassInfo("CMS.ContentItemCommonData").ClassGUID,
                                 ContentItemGUID = targetGuid,
                                 ContentItemName = $"{targetGuid}",
-                                ContentItemIsReusable = true
+                                ContentItemIsReusable = true,
+                                ContentItemWorkspaceGUID = contentItemModel.ContentItemWorkspaceGUID ?? workspaceService.FallbackWorkspace.Value.WorkspaceGUID
                             };
                         }
                     }
@@ -1366,7 +1393,7 @@ public class ContentItemMapper(
         {
             ContentItemLanguageMetadataGUID = commonDataGuid,
             ContentItemLanguageMetadataContentItemGuid = contentItemModel.ContentItemGUID,
-            ContentItemLanguageMetadataDisplayName = source.DisplayName,
+            ContentItemLanguageMetadataDisplayName = source.DisplayName.Truncate(FieldConstants.ContentItemLanguageMetadataDisplayNameColumnSize),
             ContentItemLanguageMetadataLatestVersionStatus = VersionStatus.Published,
             ContentItemLanguageMetadataCreatedWhen = source.LastModifiedDate,
             ContentItemLanguageMetadataModifiedWhen = source.LastModifiedDate,
