@@ -435,7 +435,7 @@ public class MigratePagesCommandHandler(
 
                             if (contentItemDirective != null && webPageItemInfo != null && contentItemDirective.TargetClassInfo is { ClassWebPageHasUrl: true })
                             {
-                                await GenerateDefaultPageUrlPath(ksNode, webPageItemInfo);
+                                await GenerateDefaultPageUrlPath(ksNode, webPageItemInfo, contentItemDirective.RegenerateUrlPath);
                                 if (!contentItemDirective!.RegenerateUrlPath)
                                 {
                                     foreach (var migratedDocument in migratedDocuments)
@@ -1100,9 +1100,35 @@ public class MigratePagesCommandHandler(
         return path;
     }
 
-    private async Task GenerateDefaultPageUrlPath(ICmsTree ksTree, WebPageItemInfo webPageItemInfo)
+    private async Task GenerateDefaultPageUrlPath(ICmsTree ksTree, WebPageItemInfo webPageItemInfo, bool regenerateUrlPath)
     {
         var man = Service.Resolve<IWebPageUrlManager>();
+
+        // GeneratePageUrlPath always inserts new system paths for all content languages, even if the page already has them (repeated migration).
+        // Generated path is based on NodeAlias, which may differ from migrated URL slug and would remain as duplicate system path
+        var systemPathsCondition = new WhereCondition()
+            .WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID), webPageItemInfo.WebPageItemID)
+            .WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathType), (int)WebPageUrlPathType.System);
+
+        // Remove duplicates created by previous migrations first, generation may be skipped below
+        var preexistingSystemPaths = RemoveDuplicateSystemPaths(WebPageUrlPathInfo.Provider.Get()
+            .Where(systemPathsCondition)
+            .ToList());
+
+        var allLanguages = ContentLanguageInfo.Provider.Get()
+            .Column(nameof(ContentLanguageInfo.ContentLanguageID))
+            .GetListResult<int>();
+        var languagesWithSystemPath = preexistingSystemPaths.Select(x => x.WebPageUrlPathContentLanguageID).ToHashSet();
+
+        if (!regenerateUrlPath && allLanguages.All(languagesWithSystemPath.Contains))
+        {
+            logger.LogTrace("Default path generation skipped for tree node GUID='{NodeGuid}', page already has system url path in all languages", ksTree.NodeGUID);
+            return;
+        }
+
+        // GeneratePageUrlPath produces only system paths
+        var newPathsCondition = new WhereCondition(systemPathsCondition)
+            .WhereNotIn(nameof(WebPageUrlPathInfo.WebPageUrlPathID), preexistingSystemPaths.Select(x => x.WebPageUrlPathID).ToList());
 
         // In case of collision, try to avoid it by appending 4 random characters
         bool resolved = false;
@@ -1116,14 +1142,23 @@ public class MigratePagesCommandHandler(
 
             resolved = !collisionData.Any();
 
-            // Catch collision cases that GeneratePageUrlPath doesn't catch
-            var collidingPaths = GetCollidingPaths(languageScoped: ChannelUsesLanguageDomains(webPageItemInfo.WebPageItemWebsiteChannelID)).Where(x => x.WebPageItemID == webPageItemInfo.WebPageItemID);
+            // Catch collision cases that GeneratePageUrlPath doesn't catch.
+            // Only paths generated in this attempt are evaluated - pre-existing paths of the page (system or vanity) must not block the retry
+            var attemptPaths = WebPageUrlPathInfo.Provider.Get()
+                .Where(newPathsCondition)
+                .Column(nameof(WebPageUrlPathInfo.WebPageUrlPath))
+                .GetListResult<string>()
+                .Select(NormalizeUrlPath)
+                .ToHashSet();
+            var collidingPaths = GetCollidingPaths(languageScoped: ChannelUsesLanguageDomains(webPageItemInfo.WebPageItemWebsiteChannelID))
+                .Where(x => x.WebPageItemID == webPageItemInfo.WebPageItemID && attemptPaths.Contains(NormalizeUrlPath(x.Path)))
+                .ToList();
             if (collidingPaths.Any())
             {
                 collisions.AddRange(collidingPaths);
                 resolved = false;
                 // Cleanup added paths
-                WebPageUrlPathInfo.Provider.BulkDelete(new WhereCondition().WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID), webPageItemInfo.WebPageItemID));
+                WebPageUrlPathInfo.Provider.BulkDelete(newPathsCondition);
             }
 
             if (resolved)
@@ -1146,6 +1181,43 @@ public class MigratePagesCommandHandler(
                 "Note that the default path may not be used in the end, if there exists path for this tree node in the source instance. Collisions: {Collisions}", ksTree.NodeGUID, ksTree.NodeAliasPath, string.Join(";", collisions.Select(x => x.Path)));
         }
 
+        MergeGeneratedSystemPaths(newPathsCondition, preexistingSystemPaths);
+    }
+
+    /// <summary>
+    /// Where the page already has system path (repeated migration), update it with the generated value instead of keeping the generated one as duplicate.
+    /// Paths of languages without system path (e.g. newly migrated language) are kept as generated.
+    /// </summary>
+    private void MergeGeneratedSystemPaths(WhereCondition generatedPathsCondition, List<WebPageUrlPathInfo> preexistingSystemPaths)
+    {
+        var generatedPaths = WebPageUrlPathInfo.Provider.Get()
+            .Where(generatedPathsCondition)
+            .ToList();
+
+        foreach (var generatedPath in generatedPaths)
+        {
+            var existingPath = ConsolidateSystemPaths(preexistingSystemPaths,
+                generatedPath.WebPageUrlPathContentLanguageID,
+                generatedPath.WebPageUrlPathIsDraft,
+                generatedPath.WebPageUrlPathWebsiteChannelID,
+                generatedPath.WebPageUrlPath);
+
+            if (existingPath is null)
+            {
+                continue;
+            }
+
+            // delete first, the generated path occupies the same url
+            generatedPath.Delete();
+
+            if (!string.Equals(existingPath.WebPageUrlPath, generatedPath.WebPageUrlPath, StringComparison.Ordinal))
+            {
+                logger.LogTrace("Existing system url path '{Path}' updated to generated default '{NewPath}'", existingPath.WebPageUrlPath, generatedPath.WebPageUrlPath);
+                existingPath.WebPageUrlPath = generatedPath.WebPageUrlPath;
+                existingPath.WebPageUrlPathHash = generatedPath.WebPageUrlPathHash;
+                existingPath.Update();
+            }
+        }
     }
 
     private void CheckPathAlreadyExists(WebPageUrlPathModel webPageUrlPath,
@@ -1154,16 +1226,16 @@ public class MigratePagesCommandHandler(
     {
         Debug.Assert(webPageUrlPath is not { WebPageUrlPathIsLatest: false, WebPageUrlPathIsDraft: true }, "webPageUrlPath is not { WebPageUrlPathIsLatest: false, WebPageUrlPathIsDraft: true }");
 
-        var existingPaths = WebPageUrlPathInfo.Provider.Get()
+        var existingSystemPaths = WebPageUrlPathInfo.Provider.Get()
             .WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathWebPageItemID), webPageItemId)
+            .WhereEquals(nameof(WebPageUrlPathInfo.WebPageUrlPathType), (int)WebPageUrlPathType.System)
             .ToList();
 
-        var ep = existingPaths.FirstOrDefault(ep =>
-            ep.WebPageUrlPathContentLanguageID == languageInfo.ContentLanguageID &&
-            ep.WebPageUrlPathIsDraft == webPageUrlPath.WebPageUrlPathIsDraft &&
-            ep.WebPageUrlPathWebsiteChannelID == webSiteChannel.WebsiteChannelID &&
-            ep.WebPageUrlPathWebPageItemID == webPageItemId
-        );
+        var ep = ConsolidateSystemPaths(existingSystemPaths,
+            languageInfo.ContentLanguageID,
+            webPageUrlPath.WebPageUrlPathIsDraft ?? false,
+            webSiteChannel.WebsiteChannelID,
+            webPageUrlPath.WebPageUrlPath);
 
         if (ep != null)
         {
@@ -1171,6 +1243,41 @@ public class MigratePagesCommandHandler(
             logger.LogTrace("Existing page url path found for '{Path}', fixing GUID to '{Guid}'", webPageUrlPath.WebPageUrlPath, webPageUrlPath.WebPageUrlPathGUID);
         }
     }
+
+    /// <summary>
+    /// Page may have only one system url path per language and version. Previous migrations could have created duplicates -
+    /// keep single path (preferably the one already having <paramref name="preferredPath"/>) and delete the others.
+    /// Vanity paths are never deleted.
+    /// </summary>
+    /// <returns>Kept path to be updated, null if there is no system path</returns>
+    private WebPageUrlPathInfo? ConsolidateSystemPaths(IEnumerable<WebPageUrlPathInfo> systemPaths, int contentLanguageId, bool isDraft, int websiteChannelId, string? preferredPath)
+    {
+        var matchingPaths = systemPaths.Where(x =>
+            x.WebPageUrlPathType == WebPageUrlPathType.System &&
+            x.WebPageUrlPathContentLanguageID == contentLanguageId &&
+            x.WebPageUrlPathIsDraft == isDraft &&
+            x.WebPageUrlPathWebsiteChannelID == websiteChannelId
+        ).ToList();
+
+        // the oldest path is the original one, duplicates were added by subsequent migrations
+        var kept = matchingPaths.FirstOrDefault(x => string.Equals(x.WebPageUrlPath, preferredPath, StringComparison.OrdinalIgnoreCase))
+                   ?? matchingPaths.MinBy(x => x.WebPageUrlPathID);
+
+        foreach (var duplicate in matchingPaths.Where(x => x != kept))
+        {
+            logger.LogWarning("Duplicate system url path '{Path}' of WebPageItemID={WebPageItemId} removed", duplicate.WebPageUrlPath, duplicate.WebPageUrlPathWebPageItemID);
+            duplicate.Delete();
+        }
+
+        return kept;
+    }
+
+    /// <returns>Single system path per language, version and channel</returns>
+    private List<WebPageUrlPathInfo> RemoveDuplicateSystemPaths(List<WebPageUrlPathInfo> systemPaths) =>
+        systemPaths
+            .GroupBy(x => (x.WebPageUrlPathContentLanguageID, x.WebPageUrlPathIsDraft, x.WebPageUrlPathWebsiteChannelID))
+            .Select(g => ConsolidateSystemPaths(g, g.Key.WebPageUrlPathContentLanguageID, g.Key.WebPageUrlPathIsDraft, g.Key.WebPageUrlPathWebsiteChannelID, null)!)
+            .ToList();
 
     private void LogImportResult(IImportResult importResult)
     {
