@@ -1,12 +1,16 @@
 using CMS.FormEngine;
 using CMS.OnlineForms;
+using CMS.Workspaces;
 
 using Microsoft.Extensions.Logging;
 
 using Migration.Tool.Common;
 using Migration.Tool.Common.Abstractions;
+using Migration.Tool.Common.ContentItemOptions;
 using Migration.Tool.Common.MigrationProtocol;
+using Migration.Tool.Common.Services;
 using Migration.Tool.Source.Contexts;
+using Migration.Tool.Source.Mappers.FormMapperDirectives;
 using Migration.Tool.Source.Model;
 
 namespace Migration.Tool.Source.Mappers;
@@ -14,7 +18,10 @@ namespace Migration.Tool.Source.Mappers;
 public class CmsFormMapper(
     ILogger<CmsFormMapper> logger,
     PrimaryKeyMappingContext primaryKeyMappingContext,
-    IProtocol protocol)
+    IProtocol protocol,
+    WorkspaceService workspaceService,
+    ModelFacade modelFacade,
+    IEnumerable<FormDirectorBase> directors)
     : EntityMapperBase<ICmsForm, BizFormInfo>(logger, primaryKeyMappingContext, protocol)
 {
     protected override BizFormInfo? CreateNewInstance(ICmsForm source, MappingHelper mappingHelper, AddFailure addFailure)
@@ -35,6 +42,34 @@ public class CmsFormMapper(
         target.FormSubmitButtonImage = source.FormSubmitButtonImage;
         target.FormLastModified = source.FormLastModified;
         target.FormGUID = source.FormGUID;
+
+        var actionProvider = new FormActionProvider();
+        var formSource = new FormSource(source, modelFacade.SelectById<ICmsSite>(source.FormSiteID));
+        foreach (var director in directors)
+        {
+            director.Direct(formSource, actionProvider);
+        }
+
+        if (actionProvider.WorkspaceOptions is { } workspaceOptions)
+        {
+            // Workspace explicitly chosen by director is always applied
+            if (ResolveWorkspace(workspaceOptions) is { } workspace)
+            {
+                target.FormWorkspaceID = workspace.WorkspaceID;
+            }
+            else
+            {
+                addFailure(HandbookReferences
+                    .MissingRequiredDependency<WorkspaceInfo>(nameof(target.FormWorkspaceID), workspaceOptions)
+                    .AsFailure<BizFormInfo>()
+                );
+            }
+        }
+        // Assign fallback workspace only to forms without one, so that forms reassigned in target instance are not moved back on repeated migration
+        else if (newInstance || target.FormWorkspaceID == 0)
+        {
+            target.FormWorkspaceID = workspaceService.FallbackWorkspace.Value.WorkspaceID;
+        }
 
         switch (source)
         {
@@ -67,4 +102,9 @@ public class CmsFormMapper(
 
         return target;
     }
+
+    private WorkspaceInfo? ResolveWorkspace(WorkspaceOptions options) =>
+        workspaceService.EnsureWorkspace(options) is { } workspaceGuid
+            ? workspaceService.GetWorkspace(workspaceGuid)
+            : null;
 }

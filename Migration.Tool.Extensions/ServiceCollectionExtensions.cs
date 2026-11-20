@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Migration.Tool.Extensions.CommunityMigrations;
 using Migration.Tool.Extensions.DefaultMigrations;
 using Migration.Tool.KXP.Api.Services.CmsClass;
+using Migration.Tool.Source.Mappers.FormMapperDirectives;
 
 namespace Migration.Tool.Extensions;
 
@@ -31,6 +32,7 @@ public static class ServiceCollectionExtensions
         // services.AddReusableRemodelingSample();
         // services.AddReusableSchemaIntegrationSample();
         // services.AddReusableSchemaAutoGenerationSample();
+        // services.AddTransient<FormDirectorBase, SampleFormWorkspaceDirector>();
         // services.AddCustomContactFieldMappingSample();
 
         // Routing content items to prefabricated content types (i.e., types not created by Migration Tool --page-types CLI argument)
